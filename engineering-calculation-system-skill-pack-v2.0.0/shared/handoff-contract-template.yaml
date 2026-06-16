@@ -1,0 +1,104 @@
+handoff_id: H001
+book_name: example_book
+version: 0.1.0
+status: prototype_allowed # no_go | prototype_allowed | production_allowed
+
+source_basis:
+  acquisition_handoff: references/acquisition/acquisition_handoff.yaml
+  source_registry: references/source_registry.yaml
+  governing_sources:
+    - source_id: S01
+      role: governing_code
+      priority: 1
+  example_sources:
+    - source_id: S02
+      role: regression_reference
+
+evidence_library_status:
+  status: analysis_allowed
+  remaining_gaps:
+    - gap_id: G001
+      description: example remaining gap
+      blocks_production: true
+
+calculation_scope:
+  domain: geotechnical
+  object: shallow_foundation
+  checks:
+    - bearing_capacity
+    - settlement
+
+input_model_groups:
+  - ProjectInfo
+  - DesignBasis
+  - GeometryInput
+  - LoadInput
+  - MaterialOrSoilInput
+  - DesignOptions
+
+result_model_groups:
+  - ModuleResult
+  - CheckResult
+  - GoverningSummary
+  - BookResult
+
+runner_sequence:
+  - validate_input
+  - normalize_units
+  - select_method
+  - compute_module_results
+  - check_utilization
+  - summarize_governing
+  - build_report_context
+
+module_candidates:
+  - module: libraries.domain.category.module_name
+    responsibility: compute source-backed engineering result
+    source_nodes: [N001]
+    formulas: [F001]
+    lookups: []
+
+formula_inventory_refs:
+  - F001
+
+lookup_inventory_refs: []
+
+branch_inventory_refs: []
+
+validation_rules:
+  - rule_id: V001
+    severity: error
+    description: required input must be present
+    related_inputs: []
+
+test_requirements:
+  - test_id: T001
+    type: regression
+    basis: S02 worked example
+    tolerance: to_be_defined
+
+report_sections:
+  - section_id: R001
+    title: Input summary
+    result_paths: []
+
+traceability_requirements:
+  - input_hash
+  - result_hash
+  - formula_traces
+  - source_references
+
+open_questions:
+  - question_id: Q001
+    severity: high
+    blocks_production: true
+    description: unresolved source issue
+
+coding_gate:
+  status: prototype_allowed
+  allowed_work:
+    - scaffold typed models
+    - implement formulas with needs_confirmation markers
+  blocked_work:
+    - production release
+    - final report certification

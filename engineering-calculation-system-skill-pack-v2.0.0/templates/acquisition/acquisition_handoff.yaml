@@ -1,0 +1,35 @@
+acquisition_handoff_id: ACQ-HANDOFF-001
+project_or_calculation_name: example
+created_at: 2026-06-16
+status: analysis_allowed # evidence_no_go | search_required | partial_analysis_allowed | analysis_allowed
+
+source_registry: references/source_registry.yaml
+evidence_library_manifest: references/evidence_library_manifest.yaml
+coverage_matrix: references/acquisition/source_coverage_matrix.csv
+
+source_ids:
+  - S01
+
+coverage_summary:
+  critical_requirements_total: 0
+  critical_requirements_covered: 0
+  partially_covered: []
+  remaining_gaps: []
+
+governing_sources:
+  - source_id: S01
+    role: governing_or_primary_reference
+    priority: 1
+
+example_or_regression_sources: []
+background_sources: []
+
+copyright_or_access_limitations:
+  - source_id: S01
+    limitation: source card only unless authorized
+
+recommended_next_skill_path:
+  - 04-source-intake-and-authority
+  - 05-engineering-logic-blueprint
+  - 06-formula-lookup-branch-extraction
+  - 07-implementation-handoff-contract

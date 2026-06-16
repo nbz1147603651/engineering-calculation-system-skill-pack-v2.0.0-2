@@ -1,0 +1,2 @@
+"""Engineering calculation package scaffold."""
+

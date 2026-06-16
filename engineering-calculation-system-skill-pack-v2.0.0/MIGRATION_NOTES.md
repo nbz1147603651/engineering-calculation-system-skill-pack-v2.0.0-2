@@ -1,0 +1,74 @@
+# Migration Notes from v1.0 to v2.0.0
+
+## v2.0.0 to v2.1.0 hardening
+
+No lifecycle renumbering is required. Existing v2.0 artifacts remain valid.
+
+Recommended additions:
+
+```text
+SKILL.md
+agents/openai.yaml
+adapters/agent-entrypoints.md
+schemas/artifact_contracts.json
+scripts/validate_artifacts.py
+scripts/build_package_index.py
+```
+
+Recommended validation:
+
+```bash
+python3 scripts/validate_artifacts.py --package-root .
+python3 scripts/validate_artifacts.py --package-root . --project project_template/engineering_calc_project
+```
+
+Gate terminology is now separated:
+
+```text
+Evidence gate: evidence_no_go | search_required | partial_analysis_allowed | analysis_allowed
+Coding gate: no_go | prototype_allowed | production_allowed
+```
+
+If an existing v2.0 `implementation_handoff.yaml` lacks these keys, add them before production coding:
+
+```text
+formula_inventory_refs
+lookup_inventory_refs
+branch_inventory_refs
+traceability_requirements
+```
+
+## Numbering change
+
+```text
+v1.0 01-source-intake-and-authority              -> v2.0 04-source-intake-and-authority
+v1.0 02-engineering-logic-blueprint              -> v2.0 05-engineering-logic-blueprint
+v1.0 03-formula-lookup-branch-extraction         -> v2.0 06-formula-lookup-branch-extraction
+v1.0 04-implementation-handoff-contract          -> v2.0 07-implementation-handoff-contract
+v1.0 05-calculation-book-architecture            -> v2.0 08-calculation-book-architecture
+v1.0 06-core-and-data-models                     -> v2.0 09-core-and-data-models
+v1.0 07-reusable-calculation-modules             -> v2.0 10-reusable-calculation-modules
+v1.0 08-book-runner-and-governing-summary        -> v2.0 11-book-runner-and-governing-summary
+v1.0 09-report-review-batch-interfaces           -> v2.0 12-report-review-batch-interfaces
+v1.0 10-verification-regression-traceability     -> v2.0 13-verification-regression-traceability
+```
+
+## New upstream artifacts
+
+Add these before analysis when references are missing or insufficient:
+
+```text
+references/acquisition/reference_gap_assessment.md
+references/acquisition/acquisition_plan.yaml
+references/acquisition/search_log.csv
+references/acquisition/candidate_sources.csv
+references/acquisition/source_coverage_matrix.csv
+references/acquisition/retrieval_decisions.csv
+references/source_registry.yaml
+references/evidence_library_manifest.yaml
+references/acquisition/acquisition_handoff.yaml
+```
+
+## Compatibility
+
+Existing v1.0 analysis and implementation workflows remain valid when the user already provides enough reliable reference material. The new upstream phase is activated only when materials are absent, incomplete, stale, contradictory, or insufficiently authoritative.

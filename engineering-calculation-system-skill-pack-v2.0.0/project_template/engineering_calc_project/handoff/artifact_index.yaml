@@ -1,0 +1,35 @@
+artifact_index_id: A001
+project_or_book: example_book
+version: 0.1.0
+created_at: 2026-06-16
+
+references:
+  acquisition_handoff: references/acquisition/acquisition_handoff.yaml
+  source_registry: references/source_registry.yaml
+  evidence_library_manifest: references/evidence_library_manifest.yaml
+
+analysis:
+  source_inventory: analysis/01_source_inventory/source_inventory.yaml
+  calculation_blueprint: analysis/02_logic_blueprint/calculation_blueprint.md
+  calculation_nodes: analysis/02_logic_blueprint/calculation_nodes.csv
+  formula_inventory: analysis/03_logic_details/formula_inventory.csv
+  lookup_inventory: analysis/03_logic_details/lookup_inventory.csv
+  branch_inventory: analysis/03_logic_details/branch_inventory.csv
+  risk_register: analysis/05_risks_and_questions/risk_register.csv
+  open_questions: analysis/05_risks_and_questions/open_questions.csv
+
+handoff:
+  implementation_handoff: handoff/implementation_handoff.yaml
+  coding_go_no_go: handoff/coding_go_no_go.md
+
+implementation:
+  architecture: implementation/00_architecture/project_structure.md
+  models: implementation/01_core_models/data_model_spec.md
+  modules: implementation/02_modules/module_interface_spec.md
+  runner: implementation/03_book_runner/runner_sequence.md
+  interfaces: implementation/04_interfaces/report_context_spec.md
+
+verification:
+  test_matrix: verification/test_matrix.csv
+  tolerance_policy: verification/tolerance_policy.md
+  acceptance_checklist: verification/acceptance_checklist.md

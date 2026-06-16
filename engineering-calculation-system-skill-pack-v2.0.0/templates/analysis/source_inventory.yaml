@@ -1,0 +1,13 @@
+sources:
+  - source_id: S01
+    source_name: example source
+    source_type: official_manual
+    version_or_date: 2026
+    jurisdiction_or_project: to_be_defined
+    role_in_analysis: governing_source
+    priority: 1
+    authority_level: high
+    reliability_notes: []
+    scope_of_applicability: []
+    known_limitations: []
+    local_path_or_source_card: references/source_cards/S01_source_card.md

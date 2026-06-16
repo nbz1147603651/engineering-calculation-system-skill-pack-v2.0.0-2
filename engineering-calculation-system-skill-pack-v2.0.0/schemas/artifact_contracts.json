@@ -1,0 +1,218 @@
+{
+  "version": "2.1.1",
+  "package_required_paths": [
+    "SKILL.md",
+    "agents/openai.yaml",
+    "adapters/agent-entrypoints.md",
+    "skills/00-engineering-calculation-router.skill.md",
+    "parent/engineering-calculation-reference-acquisition.skill.md",
+    "parent/engineering-calculation-logic-architecture.skill.md",
+    "parent/engineering-calculation-book.skill.md",
+    "shared/quality-gates.md",
+    "templates/acquisition/open_reference_questions.md",
+    "templates/acquisition/acquisition_notes.md",
+    "templates/analysis/source_intake_notes.md",
+    "templates/analysis/unit_and_sign_conventions.md",
+    "templates/handoff/implementation_handoff.md",
+    "templates/implementation/project_structure.md",
+    "templates/implementation/dependency_rules.md",
+    "templates/implementation/package_layout.md",
+    "templates/implementation/core_model_plan.md",
+    "templates/implementation/status_semantics.md",
+    "templates/implementation/unit_system.md",
+    "templates/implementation/formula_trace_spec.md",
+    "templates/implementation/lookup_module_spec.md",
+    "templates/implementation/governing_summary_spec.md",
+    "templates/implementation/input_mapping_spec.md",
+    "templates/implementation/ui_layout_spec.md",
+    "templates/implementation/import_export_contract.md",
+    "templates/implementation/marimo_review_spec.md",
+    "templates/implementation/review_readability_checklist.md",
+    "templates/implementation/data_package_manifest.yaml",
+    "schemas/artifact_contracts.json",
+    "scripts/validate_artifacts.py",
+    "scripts/build_package_index.py"
+  ],
+  "skill_files": [
+    "SKILL.md",
+    "skills/00-engineering-calculation-router.skill.md",
+    "skills/01-reference-adequacy-and-gap-assessment.skill.md",
+    "skills/02-reference-discovery-and-acquisition.skill.md",
+    "skills/03-reference-persistence-and-local-library.skill.md",
+    "skills/04-source-intake-and-authority.skill.md",
+    "skills/05-engineering-logic-blueprint.skill.md",
+    "skills/06-formula-lookup-branch-extraction.skill.md",
+    "skills/07-implementation-handoff-contract.skill.md",
+    "skills/08-calculation-book-architecture.skill.md",
+    "skills/09-core-and-data-models.skill.md",
+    "skills/10-reusable-calculation-modules.skill.md",
+    "skills/11-book-runner-and-governing-summary.skill.md",
+    "skills/12-report-review-batch-interfaces.skill.md",
+    "skills/13-verification-regression-traceability.skill.md",
+    "parent/engineering-calculation-reference-acquisition.skill.md",
+    "parent/engineering-calculation-logic-architecture.skill.md",
+    "parent/engineering-calculation-book.skill.md"
+  ],
+  "csv_headers": {
+    "templates/acquisition/candidate_sources.csv": "candidate_id,title,publisher,source_type,version_or_date,jurisdiction,url_or_location,access_date,authority_level,relevance_score,gaps_covered,recommended_action,limitations,license_or_access_notes",
+    "templates/acquisition/local_persistence_log.csv": "entry_id,source_id,file_role,path,sha256,created_at,notes",
+    "templates/acquisition/retrieval_decisions.csv": "decision_id,candidate_id,decision,reason,local_target,raw_allowed,source_card_required,extraction_required,follow_up",
+    "templates/acquisition/search_log.csv": "search_id,gap_id,query,tool_or_location,date,results_reviewed,candidates_selected,notes",
+    "templates/acquisition/source_coverage_matrix.csv": "requirement_id,requirement,importance,covered,current_source_id,gap,needed_source_type,blocks_analysis,blocks_coding",
+    "templates/analysis/applicability_limits.csv": "limit_id,assumption_or_limit,applies_to,source_reference,program_handling,risk_level",
+    "templates/analysis/assumption_register.csv": "assumption_id,assumption,source_reference,reason,program_handling,blocks_production",
+    "templates/analysis/branch_inventory.csv": "branch_id,condition,engineering_meaning,source_reference,path_if_true,path_if_false,not_applicable_behavior,program_representation,required_tests,risk_level",
+    "templates/analysis/calculation_nodes.csv": "node_id,node_type,node_name,engineering_meaning,inputs,outputs,units,formula_or_method,source_reference,branch_condition,applicability,assumptions,module_candidate,result_visibility,report_visibility,test_requirement,risk_level",
+    "templates/analysis/concept_map.csv": "concept,meaning,role_in_calculation,source_id,notes",
+    "templates/analysis/formula_inventory.csv": "formula_id,name,purpose,inputs,outputs,units,source_reference,applicability,branch_dependencies,lookup_dependencies,implementation_note,test_requirement,risk_level",
+    "templates/analysis/input_inventory.csv": "field,symbol,unit,source_id,required,default,validation_rule,module",
+    "templates/analysis/intermediate_inventory.csv": "value,symbol,unit,derived_from,used_by,should_be_reported",
+    "templates/analysis/lookup_inventory.csv": "lookup_id,name,inputs,outputs,source_reference,interpolation_rule,out_of_range_behavior,implementation_note,test_requirement,risk_level",
+    "templates/analysis/open_questions.csv": "question_id,question,severity,affected_artifact,blocks_analysis,blocks_coding,recommended_resolution",
+    "templates/analysis/output_inventory.csv": "output,symbol,unit,meaning,status_logic,report_section",
+    "templates/analysis/risk_register.csv": "risk_id,risk,cause,impact,mitigation,owner,status",
+    "templates/analysis/source_authority_table.csv": "source_id,source,source_type,version_or_date,role,priority,authority_level,notes",
+    "templates/analysis/source_conflicts.csv": "conflict_id,affected_item,source_a,source_a_method,source_b,source_b_method,engineering_consequence,recommended_resolution,blocks_analysis,blocks_coding",
+    "templates/implementation/feature_classification.csv": "feature,layer,existing_module,new_module_needed,reusable,location,notes",
+    "templates/implementation/frontend_fields.csv": "field_path,label,unit,group,editable,source,notes",
+    "templates/implementation/module_review_log.csv": "module_review_id,module_id,review_scope,input_source,edited_fields,runner_or_function,result_status,decision,output_path,notes",
+    "templates/implementation/result_path_registry.csv": "result_path,meaning,unit,source_module,report_visibility,regression_check",
+    "templates/implementation/review_schema.csv": "field_path,label,unit,input_type,required,validation,help_text",
+    "templates/verification/test_matrix.csv": "test_id,target,type,reference_basis,input_case,expected_result,tolerance,priority,notes"
+  },
+  "yaml_required_keys": {
+    "templates/acquisition/acquisition_handoff.yaml": [
+      "acquisition_handoff_id",
+      "project_or_calculation_name",
+      "status",
+      "source_ids",
+      "coverage_summary",
+      "recommended_next_skill_path"
+    ],
+    "templates/acquisition/acquisition_plan.yaml": [
+      "plan_id",
+      "project_or_calculation_name",
+      "status",
+      "gaps"
+    ],
+    "templates/acquisition/evidence_library_manifest.yaml": [
+      "manifest_id",
+      "status",
+      "files",
+      "coverage_summary"
+    ],
+    "templates/acquisition/source_registry.yaml": [
+      "sources"
+    ],
+    "templates/handoff/implementation_handoff.yaml": [
+      "handoff_id",
+      "book_name",
+      "status",
+      "source_basis",
+      "calculation_scope",
+      "runner_sequence",
+      "module_candidates",
+      "coding_gate"
+    ],
+    "templates/handoff/artifact_index.yaml": [
+      "artifact_index_id",
+      "project_or_book",
+      "references",
+      "analysis",
+      "handoff",
+      "implementation",
+      "verification"
+    ],
+    "templates/implementation/data_package_manifest.yaml": [
+      "package_id",
+      "schema_version",
+      "created_at",
+      "project_or_book",
+      "package_status",
+      "inputs",
+      "results",
+      "files",
+      "hashes",
+      "versions",
+      "validation"
+    ]
+  },
+  "text_required_phrases": {
+    "skills/12-report-review-batch-interfaces.skill.md": [
+      "Report Production Decision Protocol",
+      "Report Status",
+      "Production Report Minimum",
+      "Unified Frontend Layout",
+      "Marimo Module Review Pattern",
+      "Import, Report Import, and Upload Packages"
+    ],
+    "templates/implementation/ui_layout_spec.md": [
+      "Standard Page Zones",
+      "Left input panel",
+      "Right review workbench"
+    ],
+    "templates/implementation/import_export_contract.md": [
+      "Upload Package Flow",
+      "Report Import Rules",
+      "Export Package Contents"
+    ],
+    "templates/implementation/marimo_review_spec.md": [
+      "marimo edit",
+      "marimo run",
+      "Module Review Rules"
+    ],
+    "templates/implementation/review_readability_checklist.md": [
+      "Governing result is visible",
+      "Imported reports are labeled",
+      "Marimo exploratory edits"
+    ],
+    "templates/implementation/report_context_spec.md": [
+      "Report Production Decision Record",
+      "Production Eligibility",
+      "Traceability",
+      "Template Boundaries"
+    ],
+    "templates/verification/acceptance_checklist.md": [
+      "Report production decision is recorded",
+      "Report status is explicit"
+    ],
+    "shared/quality-gates.md": [
+      "Report production gate",
+      "report production decision recorded"
+    ]
+  },
+  "project_required_paths": [
+    "README.md",
+    "pyproject.toml",
+    "tests/conftest.py",
+    "webapp/.gitkeep",
+    "apps/review/.gitkeep",
+    "data/input/.gitkeep",
+    "data/imported/reports/.gitkeep",
+    "data/imported/references/.gitkeep",
+    "data/staging/.gitkeep",
+    "data/normalized/cases/.gitkeep",
+    "data/packages/.gitkeep",
+    "outputs/results_json/.gitkeep",
+    "outputs/reports_html/.gitkeep",
+    "outputs/reports_pdf/.gitkeep",
+    "outputs/reports_docx/.gitkeep",
+    "outputs/upload_packages/.gitkeep",
+    "outputs/logs/.gitkeep",
+    "src/pkg/__init__.py",
+    "src/pkg/core/__init__.py",
+    "src/pkg/books/__init__.py",
+    "src/pkg/books/book_name/__init__.py",
+    "src/pkg/books/book_name/book_runner.py",
+    "src/pkg/books/book_name/book_models.py",
+    "src/pkg/books/book_name/report_context.py",
+    "src/pkg/interfaces/__init__.py",
+    "src/pkg/report/__init__.py",
+    "tests/integration/test_book_runner.py"
+  ],
+  "project_csv_headers": {
+    "references/acquisition/candidate_sources.csv": "candidate_id,title,publisher,source_type,version_or_date,jurisdiction,url_or_location,access_date,authority_level,relevance_score,gaps_covered,recommended_action,limitations,license_or_access_notes",
+    "references/acquisition/search_log.csv": "search_id,gap_id,query,tool_or_location,date,results_reviewed,candidates_selected,notes",
+    "references/acquisition/source_coverage_matrix.csv": "requirement_id,requirement,importance,covered,current_source_id,gap,needed_source_type,blocks_analysis,blocks_coding"
+  }
+}

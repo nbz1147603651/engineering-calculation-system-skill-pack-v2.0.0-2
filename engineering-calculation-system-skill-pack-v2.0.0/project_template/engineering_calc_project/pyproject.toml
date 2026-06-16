@@ -1,0 +1,22 @@
+[project]
+name = "engineering-calc-project"
+version = "0.1.0"
+description = "Scaffold for source-backed engineering calculation book software."
+requires-python = ">=3.9"
+
+[project.optional-dependencies]
+web = [
+    "flask>=3.0",
+    "gunicorn>=21.2",
+]
+review = [
+    "marimo>=0.8",
+    "pandas>=2.0",
+]
+dev = [
+    "pytest>=7.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
