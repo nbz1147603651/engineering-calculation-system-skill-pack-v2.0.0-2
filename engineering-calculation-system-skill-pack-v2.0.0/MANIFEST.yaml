@@ -1,7 +1,7 @@
 package: engineering-calculation-system-skill-pack
-version: 2.1.1
+version: 2.2.0
 created_at: 2026-06-16
-file_count_excluding_manifest_and_checksums: 189
+file_count_excluding_manifest_and_checksums: 205
 lifecycle:
   - reference_acquisition_and_persistence
   - reference_analysis_and_logic_blueprint
@@ -29,8 +29,8 @@ files:
     size_bytes: 298
     sha256: a31ec8a6a2dfd81dfecb8c16c4ab56210c4f925a9c7dc21dd0becb7d4eee2ea8
   - path: CHANGELOG.md
-    size_bytes: 3995
-    sha256: 5c30f927e35e725595f905f07da9cf21b9ab525403dc1820a2fb07b318b9e6cb
+    size_bytes: 6066
+    sha256: b23698112e8e170d9715669c76ea128d1c1ce327e796c42461055262f59464c4
   - path: examples/example_acquisition_handoff.yaml
     size_bytes: 1186
     sha256: e4f8c1933d1a894507f1a6a5e5cb00a291332836f9e30312f806d32a99439de8
@@ -226,6 +226,9 @@ files:
   - path: project_template/engineering_calc_project/src/pkg/core/enums.py
     size_bytes: 249
     sha256: a5019fc6b6ea92a8097e35f8af6059f5a077a95261b3a13927e9d9bec2444385
+  - path: project_template/engineering_calc_project/src/pkg/core/sanitize.py
+    size_bytes: 2041
+    sha256: 8495b725ee62d5e8e757d9cb0fe794495f6997474c8dc1df77dd67a14060dba5
   - path: project_template/engineering_calc_project/src/pkg/interfaces/.gitkeep
     size_bytes: 0
     sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
@@ -274,6 +277,39 @@ files:
   - path: project_template/engineering_calc_project/webapp/.gitkeep
     size_bytes: 39
     sha256: 31617e0eced47fceef641d04d904b5ba89d0033bf8bb349036871133b5fd5da8
+  - path: project_template/engineering_calc_project/webapp/config.py
+    size_bytes: 1392
+    sha256: 5a0de87e0f9c282bcc6e7fb4847e775645b0e3f9abee1828d2601d7102129ae6
+  - path: project_template/engineering_calc_project/webapp/form_utils.py
+    size_bytes: 6343
+    sha256: 5639ffe29d1f94c6c112dc6f50587dbe2f47c59b281e5add19f2ffa8ae34aaff
+  - path: project_template/engineering_calc_project/webapp/i18n.py
+    size_bytes: 5385
+    sha256: 4a8b6858d803dc95e1970044a31d6e14bb4964d39890a3d4e9384a654e469663
+  - path: project_template/engineering_calc_project/webapp/routes.py
+    size_bytes: 6232
+    sha256: 2a23ad9e763c1393437ebfbebca254bf2008cccd1375be6091b096820e034794
+  - path: project_template/engineering_calc_project/webapp/static/css/style.css
+    size_bytes: 3194
+    sha256: 73b74a26ab0fbf3ba5070e27635cdf418c3215e793437d0f961a5a5bd4c7bd6a
+  - path: project_template/engineering_calc_project/webapp/static/js/forms.js
+    size_bytes: 2026
+    sha256: b97b0a1fbedca584011a6d061f1449992a8c7c38db5a0dbe2df1ba0a8739f5ef
+  - path: project_template/engineering_calc_project/webapp/static/js/i18n.js
+    size_bytes: 1963
+    sha256: ff0acbcbb89469240a8ae13617bef8c328ceaa16b281f63df98150b75ff8d779
+  - path: project_template/engineering_calc_project/webapp/static/js/main.js
+    size_bytes: 7368
+    sha256: ea37249f55cdccb852e381c6f7f30b4fe53ecab558e6eb0e1fafdc9d8ad80a27
+  - path: project_template/engineering_calc_project/webapp/static/js/results.js
+    size_bytes: 3975
+    sha256: 653ccaebac339ebe5c691195b90537df39cbe8ff4bd7ebef2794d09d50ad0758
+  - path: project_template/engineering_calc_project/webapp/templates/base.html
+    size_bytes: 5455
+    sha256: 3947b1f1ff6c89f2d548feb15d81ab209e02bf23c35f056a73908b8201a162a7
+  - path: project_template/engineering_calc_project/webapp/templates/index.html
+    size_bytes: 3645
+    sha256: 02be028fd3da8c5d679b1319fcb8077e61ec0388798ed7eca12c37f40b9a26f8
   - path: README.md
     size_bytes: 3306
     sha256: 870b1b1f1f34603d29cb7739936c6e85f4228045dc23d9543d71fe8d03954b98
@@ -368,8 +404,8 @@ files:
     size_bytes: 1826
     sha256: 11c69dc3b308796167967d51b86bf2ae00e12499fec1a93d67b75f5a9aed018a
   - path: skills/12-report-review-batch-interfaces.skill.md
-    size_bytes: 12725
-    sha256: de559d0beaf27070844e4729226604953b319138bd926256d8213c4b8e8d4dab
+    size_bytes: 21474
+    sha256: 35fedf05f31632bf2f4f74c54a5f5d9643457904156f0557177a73bb42e11a6d
   - path: skills/13-verification-regression-traceability.skill.md
     size_bytes: 2841
     sha256: befbe25429cb90b5d968be1ff92924ba4d5de7cb2b06be7386d090ec6244c467
@@ -484,9 +520,15 @@ files:
   - path: templates/handoff/unresolved_items_before_coding.md
     size_bytes: 131
     sha256: 60237b3f43525167aca9b2793870cbaf3c3da5aa08a4bab5f8c1bedc3960468a
+  - path: templates/implementation/api_route_skeleton.md
+    size_bytes: 3689
+    sha256: 1758c00de7f8774b3c4cfbb9eea1cb9cc7ae800ebe2af5c534619aa74689e540
   - path: templates/implementation/batch_flow.md
     size_bytes: 123
     sha256: 680a8f2bc4f4f879b7dac9c2e4c4e9eba326632a6dc4a18d0d36ed705c938d1c
+  - path: templates/implementation/chart_integration.md
+    size_bytes: 3728
+    sha256: f6a3c12ba8414de51539d5f4940a7afc409fdc0b01e7c498a18607cc2c8d4a1b
   - path: templates/implementation/core_model_plan.md
     size_bytes: 603
     sha256: b6760bae11ba1e2c4456d9dd6dbb4c89fcf5554f0994b7a0163fd741c657fafd
@@ -505,12 +547,18 @@ files:
   - path: templates/implementation/formula_trace_spec.md
     size_bytes: 543
     sha256: 906a9391cb8e3fc01b256f2767d35c79dd8d333f2b259b6b5c6f40835b6fad51
+  - path: templates/implementation/form_mapping_spec.md
+    size_bytes: 3150
+    sha256: da5883480de3e560123e6bac67448f8bfcae0eafe6a8da47c5fc7465679c3f80
   - path: templates/implementation/frontend_fields.csv
-    size_bytes: 50
-    sha256: eb55906c5898e88326561b18df929a588e05916c8fe94dce787c01983596ce18
+    size_bytes: 540
+    sha256: 202972e7c97791439c743c20e521f923b0897c93d2b3ccac8d0a9df7f39ab334
   - path: templates/implementation/governing_summary_spec.md
     size_bytes: 670
     sha256: 9b036246a36481fef5896ed9397d309a391eeb04d24bc9b4e32db4ac79140ad1
+  - path: templates/implementation/i18n_pattern.md
+    size_bytes: 3223
+    sha256: 2a4e0d03e5bc309c54007906f9864fca19a542508669405ae8b4e1a659e26945
   - path: templates/implementation/import_export_contract.md
     size_bytes: 3039
     sha256: a7d2c6c59c16dddb515ec6204afc6fb289dbc476bb1e8a2a9ebbdc7aee154565
@@ -554,8 +602,8 @@ files:
     size_bytes: 618
     sha256: cc7175421565a74b80a3c5dbc31c76513a20461c87049bde8fc96b975b40119b
   - path: templates/implementation/ui_layout_spec.md
-    size_bytes: 3121
-    sha256: 1651e39fa8f1c76f34c8fb918c80b14cb963ee685f45e4d103b592f00c0cebf9
+    size_bytes: 4015
+    sha256: 4ed0669a3198c05521bc4abf975147f8ce131e525fdecf36e10faba71ae5e3f9
   - path: templates/implementation/unit_system.md
     size_bytes: 423
     sha256: 736508752ae5602e33c57599c3d8c9228a9931930f6128cccfd93cf7ad64075c

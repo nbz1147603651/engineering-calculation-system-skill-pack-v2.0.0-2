@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row g-3">
+    <!-- ─── LEFT PANEL: Input Forms ─────────────────────────────── -->
+    <div class="col-lg-4 col-xl-3">
+        <div class="input-panel">
+            <!-- Project Info -->
+            <div class="card mb-3 shadow-sm">
+                <div class="card-header"><h6 class="mb-0" data-i18n="section_project">Project Information</h6></div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <label class="form-label small" data-i18n="project_id">Project ID</label>
+                        <input type="text" class="form-control form-control-sm" id="project_id" value="EXAMPLE_001">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small" data-i18n="project_name">Project Name</label>
+                        <input type="text" class="form-control form-control-sm" id="project_name" value="">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small" data-i18n="case_id">Case ID</label>
+                        <input type="text" class="form-control form-control-sm" id="case_id" value="CASE_001">
+                    </div>
+                    <!-- Scaffold: add book-specific input cards here -->
+                </div>
+            </div>
+
+            <!-- Scaffold: add more input cards (foundation, loads, options, etc.) -->
+
+            <!-- Calculate button (sticky bottom) -->
+            <div class="sticky-bottom bg-white border-top p-3 mt-3">
+                <button class="btn btn-primary btn-lg w-100 fw-bold shadow-sm" id="btnCalculate">
+                    <i class="bi bi-play-fill me-1"></i>
+                    <span data-i18n="btn_calculate">Run Calculation</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── RIGHT PANEL: Results ────────────────────────────────── -->
+    <div class="col-lg-8 col-xl-9">
+        <div id="resultsPanel" class="results-panel">
+            <!-- Placeholder -->
+            <div id="resultsPlaceholder" class="text-center py-5">
+                <div class="mb-3">
+                    <i class="bi bi-clipboard2-data display-1 text-muted"></i>
+                </div>
+                <h4 class="text-muted" data-i18n="result_placeholder">Click "Run Calculation" to see results.</h4>
+            </div>
+
+            <!-- Governing status box (hidden until calculated) -->
+            <div id="governingBox" class="alert d-none mb-3" role="alert"></div>
+
+            <!-- Scaffold: add book-specific result cards here -->
+            <!-- Each card follows the pattern:
+            <div id="xxxSection" class="card result-card mb-3 shadow-sm d-none">
+                <div class="card-header result-card-header" data-bs-toggle="collapse" data-bs-target="#collapseXxx">
+                    <h6 class="mb-0">
+                        <i class="bi bi-icon me-2"></i>
+                        <span data-i18n="result_xxx">Section Title</span>
+                        <span class="float-end" id="xxxStatusBadge"></span>
+                    </h6>
+                </div>
+                <div id="collapseXxx" class="collapse show">
+                    <div class="card-body py-2" id="xxxBody"></div>
+                </div>
+            </div>
+            -->
+        </div>
+    </div>
+</div>
+{% endblock %}

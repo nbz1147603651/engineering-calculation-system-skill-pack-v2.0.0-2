@@ -1,5 +1,34 @@
 # Changelog
 
+## v2.2.0 — 2026-06-16
+
+### Added — Frontend Implementation Layer
+
+- **Skill 12 expanded** with 8 new sections: Form↔Model Mapping, API Route Architecture, Frontend JS Architecture, i18n System, NaN/Infinity Sanitization, Chart Integration, Config & Error Handling patterns, and extended Required Output Artifacts.
+- **4 new implementation templates**:
+  - `form_mapping_spec.md` — bidirectional form↔BookInput mapping contract
+  - `i18n_pattern.md` — `data-i18n` + API endpoint internationalization strategy
+  - `chart_integration.md` — bilingual matplotlib SVG chart generation pattern
+  - `api_route_skeleton.md` — Flask/FastAPI thin-route API architecture
+- **12 new webapp skeleton files** under `project_template/engineering_calc_project/webapp/`:
+  - `config.py` — application configuration with DEFAULTS dict
+  - `routes.py` — Flask Blueprint API routes (calculate, report, import/export, i18n)
+  - `form_utils.py` — form↔BookInput bidirectional mapping + NaN sanitization + result→UI
+  - `i18n.py` — bilingual translation dictionary with `get_translations()` / `t()` helpers
+  - `static/js/main.js` — core orchestration (calculate, report preview, import/export)
+  - `static/js/results.js` — result rendering, status badges, utilization bars
+  - `static/js/forms.js` — form data collection, population, reset-to-defaults
+  - `static/js/i18n.js` — language switching, bilingual chart CSS toggle
+  - `templates/base.html` — Bootstrap 5 + KaTeX layout skeleton with report modal
+  - `templates/index.html` — left input panel (col-lg-4) + right result panel (col-lg-8)
+  - `static/css/style.css` — unified layout styles (navbar, scroll panel, status colors)
+- **New core utility**: `src/pkg/core/sanitize.py` — standalone `sanitize_for_json()` for recursive NaN/Infinity cleaning
+
+### Changed
+
+- Updated `ui_layout_spec.md` with Frontend Stack Decision table and Related Templates cross-references.
+- Updated `frontend_fields.csv` with example data rows demonstrating field_path/label/unit/group/editable/source columns.
+
 ## v2.1.1 — 2026-06-16
 
 ### Added

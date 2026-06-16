@@ -1,0 +1,185 @@
+"""Form data ↔ BookInput builder and BookResult → UI dict converter.
+
+Scaffold: customize for each calculation book's BookInput / BookResult models.
+
+This module is the SINGLE source of truth for form ↔ model mapping.
+Never put mapping logic in route handlers or template renderers.
+"""
+
+from __future__ import annotations
+
+import math
+from typing import Any, Optional
+
+from pkg.books.book_name.book_models import BookInput, BookResult, ProjectInfo
+from pkg.core.enums import Status
+
+
+# ---------------------------------------------------------------------------
+# JSON Sanitization
+# ---------------------------------------------------------------------------
+
+def _sanitize_json(obj: Any, _path: str = "") -> tuple[Any, list[dict]]:
+    """Recursively replace non-finite floats (inf, -inf, nan) with None.
+
+    Python's float('inf') serializes as ``Infinity`` which is not valid JSON
+    and causes ``JSON.parse`` to throw on the browser side.
+
+    Returns:
+        Tuple of (sanitized_object, list_of_warnings).
+    """
+    warnings: list[dict] = []
+
+    if isinstance(obj, float):
+        if math.isfinite(obj):
+            return obj, warnings
+        reason = "Infinity" if math.isinf(obj) else "NaN"
+        warnings.append({"field": _path or "value", "reason": reason})
+        return None, warnings
+
+    if isinstance(obj, dict):
+        result = {}
+        for k, v in obj.items():
+            child_path = f"{_path}.{k}" if _path else k
+            sanitized, child_warnings = _sanitize_json(v, child_path)
+            result[k] = sanitized
+            warnings.extend(child_warnings)
+        return result, warnings
+
+    if isinstance(obj, (list, tuple)):
+        result = []
+        for i, v in enumerate(obj):
+            child_path = f"{_path}[{i}]"
+            sanitized, child_warnings = _sanitize_json(v, child_path)
+            result.append(sanitized)
+            warnings.extend(child_warnings)
+        return result, warnings
+
+    return obj, warnings
+
+
+# ---------------------------------------------------------------------------
+# Helper
+# ---------------------------------------------------------------------------
+
+def _opt(val: Any, default: Optional[float] = None) -> Optional[float]:
+    """Convert to float or return default."""
+    if val is None or val == "" or val == "null":
+        return default
+    try:
+        return float(val)
+    except (ValueError, TypeError):
+        return default
+
+
+# ---------------------------------------------------------------------------
+# Form → BookInput
+# ---------------------------------------------------------------------------
+
+def build_case_input_from_form(data: dict) -> BookInput:
+    """Build a BookInput from web form JSON data.
+
+    Customize this function for each calculation book.
+    Use explicit field-by-field conversion — no reflection or magic.
+    """
+    proj = data.get("project", {})
+
+    project = ProjectInfo(
+        project_id=proj.get("project_id", "UNKNOWN"),
+        case_id=proj.get("case_id", "CASE_001"),
+        title=proj.get("title", "Untitled Project"),
+    )
+
+    # Scaffold: add book-specific input groups here.
+    # foundation = Foundation(...)
+    # load_case = LoadCase(...)
+    # options = DesignOptions(...)
+
+    return BookInput(
+        project=project,
+        design_options=data.get("options", {}),
+        inputs=data.get("inputs", {}),
+    )
+
+
+# ---------------------------------------------------------------------------
+# BookInput → Form (for import/export)
+# ---------------------------------------------------------------------------
+
+def book_input_to_form(bi: BookInput) -> dict:
+    """Convert a BookInput back to the web form structure.
+
+    Used for JSON export and populating forms after import.
+    """
+    return {
+        "project": {
+            "project_id": bi.project.project_id,
+            "case_id": bi.project.case_id,
+            "title": bi.project.title,
+        },
+        "design_options": bi.design_options,
+        "inputs": bi.inputs,
+    }
+
+
+# ---------------------------------------------------------------------------
+# BookResult → UI dict
+# ---------------------------------------------------------------------------
+
+def case_result_to_ui(r: BookResult, bi: BookInput) -> dict:
+    """Convert BookResult to a UI-friendly dictionary.
+
+    Customize for each calculation book's result structure.
+
+    Rules:
+    - round all floats to display precision (3-4 decimals)
+    - convert enums to strings for JSON serialization
+    - include governing status, utilization, and status badge text
+    - embed SVG charts inline when available (bilingual if i18n active)
+    - sanitize NaN/Infinity before returning
+    """
+    out: dict[str, Any] = {"status": "ok"}
+
+    # Governing summary
+    g = r.governing
+    out["governing"] = {
+        "check": g.governing_check_name or "—",
+        "utilization": round(g.governing_utilization_or_margin, 4) if g.governing_utilization_or_margin is not None else None,
+        "status": str(g.overall_status),
+    }
+
+    # Scaffold: add book-specific result sections here.
+    # e.g. out["bearing"] = { ... }
+    # e.g. out["settlement"] = { ... }
+    # e.g. out["sliding"] = { ... }
+
+    # Checks
+    out["checks"] = [
+        {
+            "check_id": c.check_id,
+            "name": c.name,
+            "status": str(c.status),
+            "demand": round(c.demand, 3) if c.demand is not None else None,
+            "capacity": round(c.capacity, 3) if c.capacity is not None else None,
+            "utilization": round(c.utilization, 4) if c.utilization is not None else None,
+            "unit": c.unit,
+            "warnings": c.warnings,
+            "errors": c.errors,
+        }
+        for c in r.checks
+    ]
+
+    # Warnings and errors
+    out["warnings"] = r.warnings
+    out["errors"] = r.errors
+
+    # Sanitize non-finite floats
+    sanitized, sanitize_warnings = _sanitize_json(out)
+    if sanitize_warnings:
+        existing = sanitized.get("warnings") or []
+        existing.extend(
+            f"Sanitized {w['field']}: {w['reason']}" for w in sanitize_warnings
+        )
+        sanitized["warnings"] = existing
+
+    return sanitized

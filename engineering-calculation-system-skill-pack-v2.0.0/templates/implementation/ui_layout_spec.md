@@ -56,3 +56,22 @@ Use this template for production frontend, review UI, or app-like engineering ca
 - Use tables for comparable engineering checks and compact metric boxes for headline values.
 - Provide chart containers only when figures improve engineering review.
 
+## Frontend Stack Decision
+
+| Item | Selected value | Reason |
+| --- | --- | --- |
+| Template engine | Jinja2 / React / Vue | to_be_defined | server-rendered vs SPA |
+| CSS framework | Bootstrap 5 / Tailwind / custom | to_be_defined | rapid prototyping |
+| JS architecture | vanilla modules / React hooks | to_be_defined | see `api_route_skeleton.md` |
+| i18n strategy | data-i18n + API endpoint | to_be_defined | see `i18n_pattern.md` |
+| Chart library | matplotlib SVG / plotly / D3 | to_be_defined | see `chart_integration.md` |
+| Formula rendering | KaTeX / MathJax / none | to_be_defined | for report preview |
+
+## Related Templates
+
+```text
+form_mapping_spec.md    — form ↔ model bidirectional mapping
+i18n_pattern.md         — internationalization strategy
+chart_integration.md    — chart generation and embedding
+api_route_skeleton.md   — Flask/FastAPI route architecture
+```

@@ -168,6 +168,220 @@ treat imported reports as calculation truth unless converted through a source-ba
 overwrite final inputs or results from exploratory UI edits without an explicit save, hash, and verification step
 ```
 
+## Form ↔ Model Bidirectional Mapping
+
+Every production frontend needs two conversion functions that form the bridge between web forms and typed models:
+
+```text
+form_to_model(data: dict) -> BookInput    # parse web form JSON into typed BookInput
+model_to_form(model: BookInput) -> dict    # serialize BookInput back to form JSON
+result_to_ui(result: BookResult) -> dict   # flatten BookResult into UI-friendly dict
+```
+
+Rules:
+
+```text
+place all mapping logic in one module (e.g. webapp/form_utils.py)
+never put mapping logic in route handlers or template renderers
+use explicit field-by-field conversion, not reflection or magic
+default every optional field to a safe value (0.0, None, empty list)
+validate required fields and raise clear errors before runner call
+sanitize output for JSON: replace NaN/Infinity with null before response
+preserve units during conversion — convert only at boundaries
+record mapping decisions in implementation/04_interfaces/form_mapping_spec.md
+```
+
+The result-to-UI converter should:
+
+```text
+round all floats to display precision (3–4 decimals)
+convert enums to strings for JSON serialization
+include governing status, utilization, and status badge text
+embed SVG charts inline when available
+include bilingual chart variants when i18n is active
+flag sanitized (Infinity/NaN) fields with warnings
+```
+
+## API Route Pattern
+
+Use a single Blueprint or router module with these standard endpoints:
+
+```text
+GET  /                          serve main page
+GET  /api/defaults              return default calculation parameters
+GET  /api/i18n/<lang>           return i18n translations
+POST /api/calculate             accept form JSON → run_book() → return result UI dict
+POST /api/report/html           generate and download HTML report
+POST /api/report/preview        generate HTML report and return as inline preview string
+POST /api/import/json           import CaseInput/BookInput JSON file
+GET  /api/export/json           export current config as JSON download
+POST /api/optimize              auto-optimize parameters if applicable
+```
+
+Route handler rules:
+
+```text
+keep handlers thin: parse → build model → call runner → convert result → return
+use try/except with structured error JSON response
+delegate all conversion to the form mapping module
+never call calculation modules directly from route handlers
+support both file upload and raw JSON body for import endpoints
+return Content-Disposition header for all download responses
+```
+
+Error response contract:
+
+```json
+{"status": "error", "message": "human-readable description"}
+```
+
+In debug mode, include traceback. In production, return generic error message.
+
+## Frontend Architecture Pattern
+
+Use a lightweight frontend stack that stays close to the server:
+
+```text
+recommended stack: Jinja2 templates + Bootstrap 5 + vanilla JS
+alternative stack: React/Vue + Flask/FastAPI backend
+review stack: Marimo for interactive engineering review
+```
+
+Separate frontend JS into focused modules:
+
+```text
+forms.js     form interaction, dynamic lists (e.g. soil layers), validation feedback
+results.js   render result cards, status badges, utilization bars, trace expansion
+i18n.js      language toggle, data-i18n attribute replacement, bilingual content
+main.js      API calls, event binding, orchestration, loading states
+```
+
+HTML template structure:
+
+```text
+base.html                layout shell: navbar, modal, script includes
+index.html               extends base, defines left-input / right-result grid
+partials/_project_form   project info input card
+partials/_soil_form      soil profile with dynamic layer list
+partials/_foundation_form  geometry input card
+partials/_loads_form     load case input card
+partials/_options_form   design options input card
+partials/_results_panel  governing box + result cards (collapsible)
+```
+
+Interaction flow:
+
+```text
+page load → fetch /api/defaults → populate forms
+click calculate → POST /api/calculate → render results panel
+click preview → POST /api/report/preview → show in modal iframe
+click import → file upload → POST /api/import/json → populate forms
+click export → GET /api/export/json → browser download
+click optimize → POST /api/optimize → show suggestion dialog → apply
+toggle language → fetch /api/i18n/<lang> → replace all data-i18n elements
+```
+
+## Internationalization (i18n)
+
+For projects that serve multilingual engineers or international clients:
+
+```text
+use a single master dictionary: key -> (english, chinese)
+expose via /api/i18n/<lang> endpoint
+use data-i18n="key" attributes in HTML elements
+replace text content on language toggle via JS
+generate bilingual charts (one SVG per language) and toggle via CSS classes
+include i18n for: form labels, buttons, result titles, status text, error messages, chart labels
+do not hard-code display text in templates — always use i18n keys
+```
+
+i18n dictionary categories:
+
+```text
+navigation and layout (title, subtitle, buttons)
+section titles (project, soil, foundation, loads, options, results)
+form field labels and help text
+result display labels (governing, bearing, settlement, sliding, uplift)
+status text (PASS, FAIL, warnings, errors)
+error and warning messages
+report sections
+```
+
+Record the i18n strategy in `implementation/04_interfaces/i18n_pattern.md`.
+
+## Numeric Sanitization
+
+Engineering calculations frequently produce non-finite floats (Infinity from division by zero, NaN from invalid parameters). These values break JSON serialization and frontend rendering.
+
+```text
+implement a recursive sanitizer that walks dicts/lists/tuples
+replace float('inf'), float('-inf'), float('nan') with None
+record sanitization warnings with field path and reason
+attach warnings to the API response under a "warnings" key
+frontend should display '--' or 'N/A' for null numeric values
+show a non-blocking warning banner when sanitization occurred
+```
+
+Place the sanitizer in the form mapping module or core utilities. Call it as the last step before `jsonify()` in every API response that contains calculation results.
+
+## Chart and Visualization Integration
+
+Charts improve engineering review when they reveal patterns that tables cannot.
+
+```text
+generate charts server-side using matplotlib or plotly
+render as SVG strings for inline embedding in HTML responses
+support bilingual chart labels when i18n is active
+embed charts in the result-to-UI dict as {zh: svg_zh, en: svg_en}
+frontend toggles visibility via CSS classes (bi-zh / bi-en)
+```
+
+Recommended chart types for geotechnical and structural calculations:
+
+```text
+result breakdown (bar chart showing component contributions)
+stress or force distribution (line chart over depth)
+influence factor distribution (line chart)
+time-dependent curve (consolidation, creep)
+soil or member profile (schematic diagram)
+utilization summary (horizontal bar chart for all checks)
+```
+
+Rules:
+
+```text
+charts must not calculate — they visualize already-computed BookResult values
+label axes with units
+use consistent color coding for PASS (green) / FAIL (red) / WARNING (amber)
+keep SVG size reasonable (< 50KB per chart)
+provide chart data as structured dicts alongside SVG for accessibility
+```
+
+Record chart strategy in `implementation/04_interfaces/chart_integration.md`.
+
+## Default Configuration and Error Handling
+
+Every production frontend should load with sensible defaults so the user can calculate immediately:
+
+```text
+define a DEFAULTS dict in webapp/config.py with all form fields populated
+serve defaults via GET /api/defaults on page load
+allow user to reset to defaults via a button
+```
+
+Error handling strategy:
+
+```text
+API errors return structured JSON: {status: "error", message: "..."}
+HTTP 400 for bad input or calculation failure
+HTTP 404 for missing resources
+HTTP 500 for unexpected server errors
+in debug mode, include full traceback in the message
+in production, log full traceback server-side, return generic message to client
+frontend shows error in a dismissible alert banner
+never lose user input on error — preserve form state
+```
+
 ## Import, Report Import, and Upload Packages
 
 Use a managed data area:
@@ -331,11 +545,25 @@ implementation/04_interfaces/frontend_fields.csv
 implementation/04_interfaces/module_review_log.csv
 implementation/04_interfaces/data_package_manifest.yaml
 implementation/04_interfaces/batch_flow.md
+implementation/04_interfaces/form_mapping_spec.md
+implementation/04_interfaces/i18n_pattern.md
+implementation/04_interfaces/chart_integration.md
+implementation/04_interfaces/api_route_skeleton.md
 src/<pkg>/books/<book_name>/input_mapping.py
 src/<pkg>/books/<book_name>/report_context.py
 src/<pkg>/interfaces/
 src/<pkg>/report/
+src/<pkg>/core/sanitize.py
 webapp/ or src/<pkg>/interfaces/webapp/
+webapp/config.py
+webapp/routes.py
+webapp/form_utils.py
+webapp/i18n.py
+webapp/templates/base.html
+webapp/templates/index.html
+webapp/templates/partials/
+webapp/static/js/
+webapp/static/css/
 apps/review/ when Marimo review is requested
 tests/smoke/test_<report_or_interface>.py
 ```
@@ -349,6 +577,12 @@ which BookInput or BookResult is consumed
 which runner is called
 unified UI layout summary
 field mapping or display schema
+form ↔ model bidirectional mapping module location and key functions
+API route table with endpoints, methods, and responsibilities
+frontend JS module breakdown
+i18n strategy and dictionary scope
+numeric sanitization approach
+chart types and generation pipeline
 import/export and upload package flow
 Marimo review pages and module editing scope if used
 report context fields
