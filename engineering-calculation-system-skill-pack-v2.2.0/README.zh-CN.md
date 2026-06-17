@@ -149,11 +149,21 @@ Codex 兼容环境优先从根目录加载：
 SKILL.md
 ```
 
-其他 Agent 可参考：
+Qoder 入口位于 `.qoder/`，OpenCode 和 AGENTS.md 兼容入口位于 `AGENTS.md`、`.opencode/` 和 `.agents/`，TRAE 项目规则位于 `.trae/`。
+
+各 Agent 的加载方式可参考：
 
 ```text
 adapters/agent-entrypoints.md
 ```
+
+可选 MCP 建议位于：
+
+```text
+adapters/mcp-recommendations.md
+```
+
+MCP 只作为加速器，不作为正确性依赖。建议只按任务启用搜索/抓取、文档查询、公共代码搜索、诊断/LSP、授权文档提取、浏览器测试等 MCP；不要默认启用带密钥、外部系统或可能绕过访问控制的 MCP。
 
 如果目标环境不适合加载多个文件，可使用：
 

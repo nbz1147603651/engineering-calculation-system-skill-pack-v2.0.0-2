@@ -2,6 +2,14 @@
 
 ```text
 engineering-calculation-system-skill-pack-v2.2.0/
+├── .agents
+│   └── skills
+│       └── engineering-calc-system
+│           └── SKILL.md
+├── .opencode
+│   └── skills
+│       └── engineering-calc-system
+│           └── SKILL.md
 ├── .qoder
 │   ├── agents
 │   │   ├── engineering-calc-system.md
@@ -13,8 +21,10 @@ engineering-calculation-system-skill-pack-v2.2.0/
 │           │   └── lifecycle-console.html
 │           └── reference.md
 ├── .trae
+│   ├── project_rules.md
 │   └── rules
 │       └── engineering-calc-system.md
+├── AGENTS.md
 ├── CHANGELOG.md
 ├── INSTALL.md
 ├── MIGRATION_NOTES.md
@@ -23,7 +33,8 @@ engineering-calculation-system-skill-pack-v2.2.0/
 ├── SKILL.md
 ├── SKILL_PACKAGE_SUMMARY.md
 ├── adapters
-│   └── agent-entrypoints.md
+│   ├── agent-entrypoints.md
+│   └── mcp-recommendations.md
 ├── agents
 │   └── openai.yaml
 ├── examples

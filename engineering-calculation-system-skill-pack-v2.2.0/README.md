@@ -98,11 +98,19 @@ parent/engineering-calculation-book.skill.md
 
 ## Agent entrypoints
 
-Use `SKILL.md` as the root skill entrypoint for Codex-compatible environments. Qoder-compatible files are included under `.qoder/`. Trae-compatible project rules are included under `.trae/rules/`. For other agents, see:
+Use `SKILL.md` as the root skill entrypoint for Codex-compatible environments. Qoder-compatible files are included under `.qoder/`. OpenCode and AGENTS.md-compatible entries are included in `AGENTS.md`, `.opencode/`, and `.agents/`. Trae-compatible project rules are included under `.trae/`. For other agents, see:
 
 ```text
 adapters/agent-entrypoints.md
 ```
+
+Optional MCP guidance is included in:
+
+```text
+adapters/mcp-recommendations.md
+```
+
+MCP servers are optional accelerators. Enable only task-scoped MCPs for search/fetch, documentation lookup, public code search, diagnostics, authorized document extraction, or browser testing. Do not make MCPs mandatory for correctness or use them to bypass access controls.
 
 If the target environment cannot coordinate multiple files, load:
 

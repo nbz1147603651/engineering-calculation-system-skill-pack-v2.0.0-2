@@ -21,6 +21,8 @@ Use progressive disclosure:
 
 For environments that cannot load multiple files reliably, use `engineering-calculation-system.all-in-one.md`.
 
+For agent-specific loading paths, read `adapters/agent-entrypoints.md`. For optional MCP selection, read `adapters/mcp-recommendations.md`; MCPs are accelerators, not required dependencies.
+
 ## Non-Negotiable Gates
 
 Optimize for engineering operation quality and reviewer convenience first. Keep the stack as simple as possible only after the workflow is complete, clear, traceable, and pleasant to use.

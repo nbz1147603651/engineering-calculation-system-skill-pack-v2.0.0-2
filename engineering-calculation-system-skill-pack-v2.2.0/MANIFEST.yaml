@@ -1,16 +1,22 @@
 package: engineering-calculation-system-skill-pack
 version: 2.2.0
 created_at: 2026-06-16
-file_count_excluding_manifest_and_checksums: 234
+file_count_excluding_manifest_and_checksums: 239
 lifecycle:
   - reference_acquisition_and_persistence
   - reference_analysis_and_logic_blueprint
   - implementation_and_verification
   - release_and_linux_cloud_deployment
 files:
+  - path: .agents/skills/engineering-calc-system/SKILL.md
+    size_bytes: 1589
+    sha256: 9f6f5c7ec97cf553a614a342dc86f6d07ebb5f2813da723fe728e148c7f3e067
+  - path: .opencode/skills/engineering-calc-system/SKILL.md
+    size_bytes: 1877
+    sha256: 6634bec72c6823d4549f0894cbe5c5d290ab9124be0c121bc1fa8967a820e300
   - path: .qoder/agents/engineering-calc-system.md
-    size_bytes: 12683
-    sha256: 2f4b95bec2f8cb9fa95ecaf64972a3d1b5053d6e984a4989e8622991df6a95b9
+    size_bytes: 13195
+    sha256: 7e1ccf007af3a5b2711e7fcdcad0c20920815527f033ec8130fb4f2b4413a867
   - path: .qoder/agents/reference.md
     size_bytes: 23690
     sha256: f115b908403886785df55e1f76edefd48f15a6501cf410874779e86a202f799d
@@ -21,20 +27,29 @@ files:
     size_bytes: 23690
     sha256: f115b908403886785df55e1f76edefd48f15a6501cf410874779e86a202f799d
   - path: .qoder/skills/engineering-calc-system/SKILL.md
-    size_bytes: 15635
-    sha256: cfc0731f12a388073c86d7e40046ecc51d804ebd3994fd853bcbaddc73ef6c83
+    size_bytes: 16049
+    sha256: c9ca0912a5a6421cf113defcd91cf48c269233a22214f366b588c026fac83181
+  - path: .trae/project_rules.md
+    size_bytes: 2012
+    sha256: e92c710fdc29016b17829604a3b0057e41174d9ff33533aa8ccb5e321a3d815a
   - path: .trae/rules/engineering-calc-system.md
-    size_bytes: 1870
-    sha256: 993112e610bf5f4a54fe67a02019ef1bb950c9678e548dfb4bf45e307877c4a2
+    size_bytes: 2400
+    sha256: 6a4dff6ed1fa12a58442dfea327b152e3091007a5f183e8d8de02173fa2fbda3
   - path: adapters/agent-entrypoints.md
-    size_bytes: 1652
-    sha256: c33ebc601628761ae5b3463bb6306b21db451fa7ec7ffa0de96197c8460c0c4c
+    size_bytes: 5184
+    sha256: f174bb029e19fac819158f0eda7bd5966a31004a0f44a219f97379d106113cca
+  - path: adapters/mcp-recommendations.md
+    size_bytes: 5229
+    sha256: 7c5b71e1aa7224f1a73690a96839a8634761b14d7a8cae5469969be588eda92c
   - path: agents/openai.yaml
     size_bytes: 335
     sha256: d9f631379fa4f83713a16dea3b4ebc89118aa2567682d8795d99c312fc5d9b4a
+  - path: AGENTS.md
+    size_bytes: 2188
+    sha256: c8079cf6ff24d66f78ed41248c41ddfa87a38cd90e5d97df871a16c805eecd03
   - path: CHANGELOG.md
-    size_bytes: 7131
-    sha256: 85cc726b26d0f5622d82dbf8ee03a70fb32ebfc2184cfecbf80ae5b2072b0f12
+    size_bytes: 7937
+    sha256: 7b4e89ad37080fe769edf7fa3a0de81cdea0bae7a508e6f95e4cfad8e424b453
   - path: examples/example_acquisition_handoff.yaml
     size_bytes: 1186
     sha256: e4f8c1933d1a894507f1a6a5e5cb00a291332836f9e30312f806d32a99439de8
@@ -45,8 +60,8 @@ files:
     size_bytes: 598
     sha256: d882011addf88c49ad2485ceb5fc308e936f77a507e9f9529b8360e530a7885a
   - path: INSTALL.md
-    size_bytes: 1386
-    sha256: 814eb3fec6716f5fd88fd803412f8d76e566eb56ee461a7c8cc47cf9ce0025c8
+    size_bytes: 2031
+    sha256: a6b1fb5ceb327b7fd088fc0a2bf2924db13f2160319faf09a21e18f60261bf8a
   - path: MIGRATION_NOTES.md
     size_bytes: 2680
     sha256: 4f0438658529ee1ffcdda0961d79beeeca9f19acb489a6206469adc8ee4ef6c5
@@ -363,17 +378,17 @@ files:
     size_bytes: 3724
     sha256: 020593ce4d48de7f85175826bf5b6c32aa17bd215e3efd4fcf176bc316ec4975
   - path: README.md
-    size_bytes: 5268
-    sha256: 255fc743710ad2e84e6e316424c9a90cdccb00a3415440b652ff63ef0db021c8
+    size_bytes: 5723
+    sha256: 8954bd2e0f34979028dd7287ed9ac2299aefc5d90fe60cf04cbda1b4774f3c8d
   - path: README.zh-CN.md
-    size_bytes: 5475
-    sha256: 464e8e40d878f96491e7156fa66064484fa62608dbe82750e9c34a5625f3b6f9
+    size_bytes: 5982
+    sha256: 2c27ff54f266aaf7dffb3c913817fc0135859c9a34802df933eb8c357cedad9e
   - path: schemas/artifact_contracts.json
-    size_bytes: 16847
-    sha256: 8a7c3e0b2120810af1ffa03146b7c9839792c9e3863b70b6421b0f40ce680305
+    size_bytes: 17359
+    sha256: a930dde04dc006b1b19c42e3d5f46ac996f3c6cc93bdcc64d47f19fc9c794d13
   - path: scripts/build_package_index.py
-    size_bytes: 5261
-    sha256: 932fe564926c2224735244678f36462d789d5b557d07844bb99ffc71d95bb7cf
+    size_bytes: 5362
+    sha256: f9872472b4fba3ea5f52692e4292870d9e1d9fd0de97884e314ccf71bf1c6887
   - path: scripts/validate_artifacts.py
     size_bytes: 6201
     sha256: 20ae96933215119a13a818a2f78accb4c584b5d2e7d27aba1d23dc2dfce59200
@@ -414,8 +429,8 @@ files:
     size_bytes: 489
     sha256: b62347805d8782f1da28174d60d77e8f83f43edab5f1613e3ed25e25e43ba65f
   - path: SKILL.md
-    size_bytes: 4279
-    sha256: 95cfb5f014920a42a8b79f446eabbdccfee7d8fb791d6a4117516c5a027237ce
+    size_bytes: 4470
+    sha256: 2902e3b937e2f84970d238ce7b3eac29c06f9557c014482b81ac4a4eb88ba9b4
   - path: SKILL_PACKAGE_SUMMARY.md
     size_bytes: 5213
     sha256: ab7561b908ee298e55fd3eadffb3198be82020bfd55bc56035083668e481034e

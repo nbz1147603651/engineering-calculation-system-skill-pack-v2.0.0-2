@@ -15,7 +15,7 @@ skills/00-engineering-calculation-router.skill.md
 
 Do not load every child skill at once. Load only the parent and child skills selected by the router.
 
-If the environment cannot read the package as multiple files, load:
+If Trae cannot read the package as multiple files, load:
 
 ```text
 engineering-calculation-system.all-in-one.md
@@ -28,7 +28,7 @@ Route work through:
 ```text
 reference acquisition and persistence
 -> reference analysis and Calculation Logic Blueprint
--> implementation, interfaces, verification, and traceability
+-> implementation, interfaces, verification, traceability, and release
 ```
 
 ## Required Gates
@@ -45,19 +45,6 @@ Official calculations must flow through:
 run_book(BookInput) -> BookResult
 ```
 
-## Interface Routing
-
-For report, UI, import/export, and batch work:
-
-```text
-12-report-review-batch-interfaces.skill.md
-12a-report-context-and-rendering.skill.md
-12b-frontend-and-review-interfaces.skill.md
-12c-batch-import-export-packages.skill.md
-```
-
-Use only the subskills required by the task.
-
 ## Search and Evidence
 
 During reference discovery, use available internet search or browser tools for missing, insufficient, stale, or jurisdiction-specific references. Log meaningful searches in:
@@ -70,13 +57,13 @@ Record accepted and rejected candidates before analysis proceeds.
 
 ## Optional MCPs
 
-MCP servers are optional accelerators, not required dependencies. Before enabling MCPs, read:
+MCP servers are optional. Read:
 
 ```text
 adapters/mcp-recommendations.md
 ```
 
-Prefer search/fetch, documentation lookup, LSP/diagnostics, authorized PDF extraction, and browser testing. Do not enable secret-bearing, broad external-system, or restricted-access MCPs unless the user confirms scope and credentials.
+Prefer search/fetch, documentation lookup, LSP/diagnostics, authorized PDF extraction, and browser testing. Do not enable secret-bearing or restricted-access MCPs unless the user confirms scope and credentials.
 
 ## Completion
 

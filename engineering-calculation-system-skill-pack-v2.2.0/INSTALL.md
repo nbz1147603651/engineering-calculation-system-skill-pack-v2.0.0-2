@@ -6,6 +6,7 @@ At minimum, copy these files and directories into the target skill environment:
 
 ```text
 SKILL.md
+AGENTS.md
 agents/
 adapters/
 parent/
@@ -23,6 +24,8 @@ project_template/
 examples/
 workflow_diagrams/
 original_sources/
+.agents/
+.opencode/
 .qoder/
 .trae/
 ```
@@ -32,6 +35,20 @@ If the target environment cannot reliably coordinate multiple skill files, load 
 ```text
 engineering-calculation-system.all-in-one.md
 ```
+
+## Agent-specific entrypoints
+
+Use `adapters/agent-entrypoints.md` to choose the target platform entry:
+
+```text
+Codex: SKILL.md + agents/openai.yaml
+Qoder: .qoder/skills/engineering-calc-system/SKILL.md or .qoder/agents/engineering-calc-system.md
+OpenCode: AGENTS.md + .opencode/skills/engineering-calc-system/SKILL.md
+TRAE: .trae/project_rules.md or .trae/rules/engineering-calc-system.md
+Generic: .agents/skills/engineering-calc-system/SKILL.md
+```
+
+Use `adapters/mcp-recommendations.md` before enabling MCP servers. MCPs are optional; keep credentials outside the repository and enable only task-scoped tools.
 
 ## Validate installation
 

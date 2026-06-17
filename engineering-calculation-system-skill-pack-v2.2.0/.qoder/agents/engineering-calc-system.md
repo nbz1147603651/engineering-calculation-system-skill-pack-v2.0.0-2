@@ -272,6 +272,12 @@ handoff/implementation_handoff.yaml              → 分析→实现
 **共享契约**：`shared/`
 **验证脚本**：`scripts/validate_artifacts.py`
 
+## Agent 与 MCP 适配
+
+跨 Agent 加载入口见 `../../adapters/agent-entrypoints.md` 或包根目录的 `adapters/agent-entrypoints.md`。MCP 工具建议见 `../../adapters/mcp-recommendations.md` 或包根目录的 `adapters/mcp-recommendations.md`。
+
+MCP 只作为加速器，不作为正确性依赖。优先按任务启用搜索/抓取、文档查询、公共代码搜索、诊断/LSP、授权文档提取和浏览器测试。不要默认启用带密钥、外部系统或可能绕过访问控制的 MCP。
+
 ## 详细参考
 
 各技能的完整字段定义、产物清单、执行细节见 [reference.md](reference.md)

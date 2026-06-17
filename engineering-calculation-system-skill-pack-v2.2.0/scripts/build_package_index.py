@@ -27,8 +27,13 @@ EXCLUDED_FILES = {
 
 ALL_IN_ONE_PREFIXES = (
     "SKILL.md",
+    "AGENTS.md",
     "README.md",
     "README.zh-CN.md",
+    ".agents/",
+    ".opencode/",
+    ".trae/project_rules.md",
+    ".trae/rules/",
     "adapters/",
     "parent/",
     "skills/",

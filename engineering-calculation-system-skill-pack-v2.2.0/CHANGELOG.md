@@ -1,5 +1,16 @@
 # Changelog
 
+## Agent adapter hardening - 2026-06-17
+
+### Added - Cross-Agent Entrypoints and MCP Guidance
+
+- Added root `AGENTS.md` for OpenCode and AGENTS.md-compatible coding agents.
+- Added `.opencode/skills/engineering-calc-system/SKILL.md` as an OpenCode project skill wrapper.
+- Added `.agents/skills/engineering-calc-system/SKILL.md` as a portable generic skill wrapper.
+- Added `.trae/project_rules.md` and updated `.trae/rules/engineering-calc-system.md` for Trae-compatible project rules.
+- Expanded `adapters/agent-entrypoints.md` with Codex, Qoder, OpenCode, Trae, generic rules agents, and single-file fallback guidance.
+- Added `adapters/mcp-recommendations.md` to document optional MCP presets inspired by curated agent stacks such as oh-my-openagent without making MCP servers mandatory dependencies.
+
 ## v2.2.0 deployment hardening - 2026-06-16
 
 ### Added - Cloud Web Release, Deployment, and Module Assets

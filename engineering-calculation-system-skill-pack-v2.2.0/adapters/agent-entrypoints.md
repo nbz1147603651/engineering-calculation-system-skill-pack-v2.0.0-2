@@ -1,38 +1,100 @@
 # Agent Entrypoints
 
-Use this file when the target agent cannot automatically discover the root `SKILL.md`.
+Use this file when adapting the Engineering Calculation System skill pack to a target agent that cannot automatically discover the root `SKILL.md`, or when deciding which adapter files to expose.
+
+## Universal Loading Rule
+
+The root package entrypoint is:
+
+```text
+SKILL.md
+```
+
+The first task-specific file is always:
+
+```text
+skills/00-engineering-calculation-router.skill.md
+```
+
+Do not load all child skills at once. Let the router select one parent orchestrator and only the child skills needed for the task.
+
+If the target agent can only accept one instruction file, load:
+
+```text
+engineering-calculation-system.all-in-one.md
+```
 
 ## Codex
 
-Install the package as a skill folder when possible. The root `SKILL.md` is the primary entrypoint. For a single-file import, use `engineering-calculation-system.all-in-one.md`.
+Preferred setup:
+
+1. Install or expose the package root as a Codex skill folder.
+2. Use root `SKILL.md` as the primary trigger and entrypoint.
+3. Keep `agents/openai.yaml` with the package so Codex-compatible skill UIs can show metadata.
+
+Fallback:
+
+- Paste or attach `engineering-calculation-system.all-in-one.md` when file-by-file progressive disclosure is unavailable.
+- If only repository rules are available, use `AGENTS.md` plus the root `SKILL.md`.
 
 ## Qoder
 
-Use the included `.qoder/agents/engineering-calc-system.md` or `.qoder/skills/engineering-calc-system/SKILL.md` when the environment supports Qoder-style agents or skills.
+Preferred setup:
+
+1. Use `.qoder/skills/engineering-calc-system/SKILL.md` as the project skill.
+2. Use `.qoder/agents/engineering-calc-system.md` when the environment supports custom agents.
+3. Keep `.qoder/skills/engineering-calc-system/reference.md` and assets with the Qoder skill wrapper.
+
+Behavior:
+
+- Qoder should still route to the package router rather than reading every child file.
+- Widget or custom UI features are optional. If unavailable, continue with text artifacts and validation scripts.
+
+Fallback:
+
+- Use root `SKILL.md` and `skills/00-engineering-calculation-router.skill.md`.
+- Use `engineering-calculation-system.all-in-one.md` for single-file import.
+
+## OpenCode
+
+Preferred setup:
+
+1. Keep root `AGENTS.md` in the repository.
+2. Use `.opencode/skills/engineering-calc-system/SKILL.md` as the project skill wrapper.
+3. Expose the package root so the wrapper can read `../../../SKILL.md` and the selected `skills/` files.
+
+Behavior:
+
+- `AGENTS.md` gives repository-level guardrails.
+- The OpenCode skill wrapper gives a discoverable tool-style skill.
+- Optional MCPs should be configured outside the skill pack or copied from examples after review.
+
+Fallback:
+
+- Use `.agents/skills/engineering-calc-system/SKILL.md` for agents that share the `.agents/skills` convention.
+- Use `engineering-calculation-system.all-in-one.md` when OpenCode cannot traverse the package files.
 
 ## Trae
 
-Use `.trae/rules/engineering-calc-system.md` as project rules when the environment supports repository-level rule files. If the environment only supports manual instructions, paste the routing prompt below.
+Preferred setup:
 
-## Trae / opencode / Generic Rules Agents
+1. Use `.trae/project_rules.md` as project rules when Trae supports project-level rule files.
+2. Use `.trae/rules/engineering-calc-system.md` when the environment supports rule folders.
+3. Expose the package root so Trae can read the root `SKILL.md`, router, selected parent skill, and selected child skills.
 
-Register the package root as project instructions or a reusable prompt bundle. Use this routing prompt:
+Fallback:
 
-```text
-Use the Engineering Calculation System skill pack.
-Start with skills/00-engineering-calculation-router.skill.md.
-Do not load all child skills at once. Load only the parent and child skills selected by the router.
-During 02-reference-discovery-and-acquisition, use available internet search/browser tools actively for missing or insufficient references, and log searches in references/acquisition/search_log.csv.
-Use templates/ for output artifacts and scripts/validate_artifacts.py before considering the work complete.
-```
+- Paste the routing prompt below into Trae manual instructions.
+- Use `engineering-calculation-system.all-in-one.md` when only one file can be loaded.
 
-## Generic Agent
+## Generic Rules Agents
 
-If the platform only accepts one instruction file, load `engineering-calculation-system.all-in-one.md`.
-
-If the platform accepts multiple files, expose these directories:
+If the platform accepts repository rules, expose:
 
 ```text
+AGENTS.md
+SKILL.md
+adapters/
 parent/
 skills/
 shared/
@@ -41,3 +103,45 @@ schemas/
 scripts/
 project_template/
 ```
+
+If the platform accepts a skill folder, use one of:
+
+```text
+.agents/skills/engineering-calc-system/SKILL.md
+.opencode/skills/engineering-calc-system/SKILL.md
+SKILL.md
+```
+
+If the platform only accepts one instruction file, load:
+
+```text
+engineering-calculation-system.all-in-one.md
+```
+
+## Routing Prompt
+
+Use this prompt for agents that cannot discover adapter files:
+
+```text
+Use the Engineering Calculation System skill pack.
+Start with SKILL.md and skills/00-engineering-calculation-router.skill.md.
+Do not load all child skills at once. Load only the parent and child skills selected by the router.
+During 02-reference-discovery-and-acquisition, use available internet search/browser tools actively for missing, insufficient, stale, or jurisdiction-specific references, and log meaningful searches in references/acquisition/search_log.csv.
+Use templates/ for output artifacts and scripts/validate_artifacts.py before considering the work complete.
+Do not invent engineering formulas, lookup rules, units, coefficients, branch logic, or pass/fail criteria.
+Do not start production implementation unless handoff/implementation_handoff.yaml and handoff/coding_go_no_go.md allow it.
+Keep formulas out of UI, report templates, frontend JavaScript, review notebooks, batch scripts, and CSV/XLSX input files.
+Official calculations must flow through run_book(BookInput) -> BookResult.
+```
+
+## MCP Guidance
+
+MCP servers are optional. Read `adapters/mcp-recommendations.md` before enabling MCPs.
+
+Short version:
+
+- Borrow the MCP capability pattern from curated agent stacks such as oh-my-openagent.
+- Do not bundle a full MCP stack as mandatory package behavior.
+- Enable only task-scoped MCPs for search/fetch, documentation lookup, public code search, LSP/diagnostics, authorized document extraction, or browser testing.
+- Keep credentials and user data outside this package.
+- Never use MCPs to bypass paywalls, login walls, license limits, or access controls.
