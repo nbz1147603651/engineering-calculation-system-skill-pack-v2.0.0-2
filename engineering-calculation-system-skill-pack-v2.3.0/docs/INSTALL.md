@@ -35,7 +35,7 @@ dist/source-dev/
   Development/reference source bundle, not the default install target.
 
 dist/release/
-  CODEX, MiniMaxCode, QODER Skill, QODER project, TRAE, and OpenCode release zips, checksums, and RELEASE_INDEX.md.
+  CODEX, MiniMaxCode, QODER Skill, QODER project, TRAE, OpenCode, and AGENTS Generic release zips, checksums, and RELEASE_INDEX.md.
 ```
 
 Publish files:
@@ -47,6 +47,7 @@ dist/release/engineering-calculation-system-QODER-v2.4.0.zip
 dist/release/engineering-calculation-system-QODER-Project-v2.4.0.zip
 dist/release/engineering-calculation-system-TRAE-v2.4.0.zip
 dist/release/engineering-calculation-system-OpenCode-v2.4.0.zip
+dist/release/engineering-calculation-system-AGENTS-Generic-v2.4.0.zip
 ```
 
 Each zip contains one install folder plus `INSTALL.md`:
@@ -54,11 +55,17 @@ Each zip contains one install folder plus `INSTALL.md`:
 ```text
 CODEX zip:         copy engineering-calculation-system/ to the Codex skills directory
 MiniMaxCode zip:   copy engineering-calculation-system/ to a MiniMax Code-discovered skills directory
-QODER zip:         upload the zip directly in QODER Skills / Install Skill
+QODER zip:         upload the zip directly in QODER Skills / Install Skill; this is a lightweight entrypoint
 QODER Project zip: copy copy-to-project-root/ contents to the QODER project root
 TRAE zip:          copy copy-to-project-root/ contents to the TRAE project root
 OpenCode zip:      copy copy-to-project-root/ contents to the OpenCode project root
+AGENTS Generic zip: copy copy-to-project-root/ contents to an AGENTS.md-compatible project root
 ```
+
+For QODER web-complete generation, prefer the QODER Project zip. The direct
+QODER zip keeps `SKILL.md` at the archive root for QODER skill-import
+compatibility, but it does not contain the core templates, schemas, validator,
+or project scaffold by itself.
 
 To build only one layer during development:
 
@@ -120,6 +127,18 @@ Use these files only when a platform supports worker agents or the user asks to
 split work. Workers must have disjoint owned paths and return result packets;
 the supervisor performs merge review and keeps all gate decisions serial.
 
+## Web-Complete Delivery Contract
+
+All platform packages share `shared/delivery-contract.md`. Generated projects
+that are intended to be complete web systems must validate with:
+
+```bash
+python scripts/validate_artifacts.py --package-root . --profile core --project <project-root> --delivery web-complete
+```
+
+Do not mark CLI runners, static HTML, exported report HTML, notebooks, or UI
+mockups as deployable web systems.
+
 ## Validate
 
 Validate the core source or installed core release:
@@ -140,7 +159,7 @@ python core/engineering-calculation-system/scripts/validate_artifacts.py --packa
 Validate the included project scaffold:
 
 ```bash
-python core/engineering-calculation-system/scripts/validate_artifacts.py --package-root dist/core/engineering-calculation-system --profile core --project dist/core/engineering-calculation-system/project_template/engineering_calc_project
+python core/engineering-calculation-system/scripts/validate_artifacts.py --package-root dist/core/engineering-calculation-system --profile core --project dist/core/engineering-calculation-system/project_template/engineering_calc_project --delivery web-complete
 cd dist/core/engineering-calculation-system/project_template/engineering_calc_project
 python -m pytest -q
 ```

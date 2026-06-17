@@ -7,6 +7,7 @@ import argparse
 from dataclasses import dataclass
 import hashlib
 import json
+import re
 import shutil
 import tempfile
 import zipfile
@@ -20,6 +21,7 @@ QODER_ADAPTER_SOURCE = REPO_ROOT / "adapter_sources" / "qoder"
 DIST_ROOT = REPO_ROOT / "dist"
 RELEASE_ROOT = DIST_ROOT / "release"
 RELEASE_CONFIG_PATH = REPO_ROOT / "tools" / "release_config.json"
+FRONTMATTER_RE = re.compile(r"^---\n(?P<body>.*?)\n---\n", re.DOTALL)
 
 EXCLUDED_DIR_NAMES = {
     ".git",
@@ -208,6 +210,58 @@ def copy_file(src: Path, dst: Path) -> None:
     shutil.copy2(src, dst)
 
 
+def sync_frontmatter_versions(root: Path) -> None:
+    """Synchronize SKILL.md frontmatter versions in generated artifacts."""
+    for path in root.rglob("SKILL.md"):
+        text = path.read_text(encoding="utf-8")
+        match = FRONTMATTER_RE.match(text)
+        if not match:
+            continue
+        body = match.group("body")
+        if re.search(r"^version:\s*.+$", body, re.MULTILINE):
+            body = re.sub(r"^version:\s*.+$", f"version: {VERSION}", body, flags=re.MULTILINE)
+        else:
+            lines = body.splitlines()
+            insert_at = len(lines)
+            for index, line in enumerate(lines):
+                if line.startswith("description:"):
+                    insert_at = index + 1
+                    break
+            lines.insert(insert_at, f"version: {VERSION}")
+            body = "\n".join(lines)
+        path.write_text(f"---\n{body}\n---\n{text[match.end():]}", encoding="utf-8")
+
+
+def assert_frontmatter_versions(root: Path) -> None:
+    for path in root.rglob("SKILL.md"):
+        text = path.read_text(encoding="utf-8")
+        match = FRONTMATTER_RE.match(text)
+        if not match:
+            continue
+        version_match = re.search(r"^version:\s*(.+)$", match.group("body"), re.MULTILINE)
+        if not version_match:
+            continue
+        actual = version_match.group(1).strip().strip('"').strip("'")
+        if actual != VERSION:
+            rel = path.relative_to(root).as_posix()
+            raise RuntimeError(
+                f"frontmatter version mismatch in {rel}: expected {VERSION}, got {actual}"
+            )
+
+
+def require_paths(root: Path, paths: list[str], *, context: str) -> None:
+    missing = [path for path in paths if not (root / path).exists()]
+    if missing:
+        raise RuntimeError(f"{context} missing required path(s): {', '.join(missing)}")
+
+
+def require_text(path: Path, phrases: list[str], *, context: str) -> None:
+    text = path.read_text(encoding="utf-8")
+    missing = [phrase for phrase in phrases if phrase not in text]
+    if missing:
+        raise RuntimeError(f"{context} missing required phrase(s): {', '.join(missing)}")
+
+
 def iter_files(root: Path, *, include_indexes: bool = False) -> list[Path]:
     files: list[Path] = []
     for path in root.rglob("*"):
@@ -284,6 +338,8 @@ def build_core() -> Path:
     profile_root = DIST_ROOT / "core"
     clean_dir(profile_root)
     copy_tree(CORE_SOURCE, profile_root / "engineering-calculation-system")
+    sync_frontmatter_versions(profile_root)
+    assert_frontmatter_versions(profile_root)
     write_indexes(profile_root, "engineering-calculation-system-core")
     return profile_root
 
@@ -292,6 +348,8 @@ def build_adapters_light() -> Path:
     profile_root = DIST_ROOT / "adapters-light"
     clean_dir(profile_root)
     copy_tree(LIGHT_ADAPTER_SOURCE, profile_root)
+    sync_frontmatter_versions(profile_root)
+    assert_frontmatter_versions(profile_root)
     write_indexes(profile_root, "engineering-calculation-system-adapters-light")
     return profile_root
 
@@ -300,6 +358,8 @@ def build_qoder_addon() -> Path:
     profile_root = DIST_ROOT / "qoder-addon"
     clean_dir(profile_root)
     copy_tree(QODER_ADAPTER_SOURCE, profile_root)
+    sync_frontmatter_versions(profile_root)
+    assert_frontmatter_versions(profile_root)
     write_indexes(profile_root, "engineering-calculation-system-qoder-addon")
     return profile_root
 
@@ -343,6 +403,8 @@ def build_source_dev() -> Path:
         else:
             dst.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(src, dst)
+    sync_frontmatter_versions(profile_root)
+    assert_frontmatter_versions(profile_root)
     write_indexes(profile_root, "engineering-calculation-system-source-dev")
     return profile_root
 
@@ -453,6 +515,79 @@ def stage_target_payload(profile_roots: dict[str, Path], target: BundleTarget, p
         apply_bundle_copy(profile_roots, copy, payload_root)
 
 
+def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
+    context = f"{target.name} payload"
+    if target.name == "QODER":
+        require_paths(
+            payload_root,
+            [
+                "SKILL.md",
+                "reference.md",
+                "assets/lifecycle-console.html",
+            ],
+            context=context,
+        )
+        require_text(
+            payload_root / "SKILL.md",
+            [
+                "QODER-Project",
+                "web-complete",
+                "轻量入口",
+            ],
+            context=context,
+        )
+        return
+
+    if target.include_core:
+        require_paths(
+            payload_root,
+            [
+                "SKILL.md",
+                "skills/00-engineering-calculation-router.skill.md",
+                "shared/delivery-contract.md",
+                "templates/implementation/ui_layout_spec.md",
+                "schemas/artifact_contracts.json",
+                "scripts/validate_artifacts.py",
+                "project_template/engineering_calc_project/webapp/routes.py",
+                "project_template/engineering_calc_project/deploy/Dockerfile",
+                "project_template/engineering_calc_project/tests/smoke/test_web_routes.py",
+            ],
+            context=context,
+        )
+
+    platform_required = {
+        "QODER Project": [
+            ".qoder/skills/engineering-calc-system/SKILL.md",
+            ".qoder/skills/engineering-calc-system/reference.md",
+            ".qoder/agents/engineering-calc-system.md",
+            ".qoder/agents/reference.md",
+        ],
+        "TRAE": [
+            ".trae/project_rules.md",
+            ".trae/rules/engineering-calc-system.md",
+        ],
+        "OpenCode": [
+            ".opencode/skills/engineering-calc-system/SKILL.md",
+        ],
+        "AGENTS Generic": [
+            "AGENTS.md",
+            ".agents/skills/engineering-calc-system/SKILL.md",
+        ],
+    }
+    if target.name in platform_required:
+        require_paths(payload_root, platform_required[target.name], context=context)
+
+    if target.include_adapter_docs:
+        require_paths(
+            payload_root,
+            [
+                "adapters/agent-entrypoints.md",
+                "adapters/mcp-recommendations.md",
+            ],
+            context=context,
+        )
+
+
 def build_platform_package(profile_roots: dict[str, Path], target: BundleTarget, package_root: Path) -> Path:
     missing = [profile for profile in RELEASE_REQUIRED_PROFILES if profile not in profile_roots]
     if missing:
@@ -465,6 +600,9 @@ def build_platform_package(profile_roots: dict[str, Path], target: BundleTarget,
     install_folder = target_install_folder(target)
     payload_root = package_root if target.payload_at_root else package_root / install_folder
     stage_target_payload(profile_roots, target, payload_root)
+    sync_frontmatter_versions(package_root)
+    assert_frontmatter_versions(package_root)
+    validate_target_payload(target, payload_root)
     if target.include_install_guide:
         write_target_install_guide(package_root, target, install_folder)
     return package_root

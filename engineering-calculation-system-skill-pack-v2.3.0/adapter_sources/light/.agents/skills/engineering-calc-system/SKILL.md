@@ -5,6 +5,7 @@ compatibility: generic-agent
 metadata:
   package: engineering-calculation-system-skill-pack
   entrypoint: ../../../SKILL.md
+version: 2.4.0
 ---
 
 # Engineering Calculation System
@@ -21,6 +22,17 @@ Read the root package entrypoint:
 ```
 
 Then read only the parent and child skill files selected by the router.
+
+Before implementation or release work, also read:
+
+```text
+../../../shared/delivery-contract.md
+```
+
+If the package shape does not include `skills/`, `shared/`, `templates/`,
+`schemas/`, `scripts/validate_artifacts.py`, and `project_template/`, treat the
+current install as a lightweight entrypoint and use the full project/root package
+or single-file fallback before claiming `web-complete` delivery.
 
 For explicit multi-agent or parallel work, also read:
 
@@ -43,9 +55,12 @@ the generated dist/singlefile/engineering-calculation-system.all-in-one.md relea
 - Do not skip evidence and handoff gates.
 - Keep all official calculations in reusable calculation modules and `run_book(BookInput) -> BookResult`.
 - Keep UI, reports, batch scripts, and review tools as thin consumers of trusted results.
+- Declare delivery mode before implementation: `core-only`, `report-only`, `prototype-web`, or `web-complete`.
+- Default to `web-complete`; its path is `08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14`.
+- Do not call CLI runners, static HTML, exported report HTML, notebooks, or UI mockups complete or deployable.
 - Split parallel work only by disjoint owned paths.
 - Keep gate decisions, source authority, ID allocation, handoff freeze, public runner contracts, and final acceptance with the supervisor.
-- Validate the package and generated project artifacts with `scripts/validate_artifacts.py --profile core`.
+- Validate generated project artifacts with `scripts/validate_artifacts.py --profile core --delivery web-complete`.
 
 ## Tooling
 

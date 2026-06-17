@@ -180,6 +180,53 @@ def api_export_json():
         return jsonify({"status": "error", "message": str(e)}), 400
 
 
+@bp.route("/api/batch/run", methods=["POST"])
+def api_batch_run():
+    """Run a JSON batch through the official book runner, one case at a time."""
+    try:
+        payload = request.get_json(force=True) or {}
+        cases = payload.get("cases")
+        if cases is None and "project" in payload:
+            cases = [payload]
+        if not isinstance(cases, list) or not cases:
+            return jsonify({
+                "status": "error",
+                "message": "Batch payload must contain a non-empty cases list.",
+            }), 400
+
+        from pkg.books.book_name.book_runner import run_book
+
+        results = []
+        for index, case_data in enumerate(cases, start=1):
+            if not isinstance(case_data, dict):
+                return jsonify({
+                    "status": "error",
+                    "message": f"Case {index} must be a JSON object.",
+                }), 400
+
+            book_input = build_case_input_from_form(case_data)
+            result = run_book(book_input)
+            results.append({
+                "case_index": index,
+                "project_id": book_input.project.project_id,
+                "case_id": book_input.project.case_id,
+                "status": "ok",
+                "result": case_result_to_ui(result, book_input),
+            })
+
+        return jsonify({
+            "status": "ok",
+            "count": len(results),
+            "results": results,
+        })
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e) if cfg.DEBUG else "Batch run failed.",
+        }), 400
+
+
 # ---------------------------------------------------------------------------
 # Error handlers
 # ---------------------------------------------------------------------------

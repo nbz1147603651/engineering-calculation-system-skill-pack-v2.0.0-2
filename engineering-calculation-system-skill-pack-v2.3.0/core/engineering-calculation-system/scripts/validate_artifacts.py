@@ -15,6 +15,7 @@ FRONTMATTER_RE = re.compile(r"^---\n(?P<body>.*?)\n---\n", re.DOTALL)
 YAML_KEY_RE = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*):")
 
 PROFILE_CHOICES = {"core", "adapters-light", "qoder-addon", "singlefile"}
+DELIVERY_CHOICES = {"standard", "web-complete"}
 PRODUCTION_ALLOWED = "production_allowed"
 ANALYSIS_ALLOWED = "analysis_allowed"
 BLOCKING_COVERAGE_VALUES = {"", "not_covered", "partially_covered", "conflicting", "unknown"}
@@ -106,6 +107,71 @@ PRODUCTION_REQUIRED_PROJECT_ARTIFACTS = {
         "analysis/open_questions.csv",
     ],
 }
+WEB_COMPLETE_REQUIRED_PROJECT_PATHS = [
+    "webapp/app.py",
+    "webapp/routes.py",
+    "webapp/form_utils.py",
+    "webapp/templates/index.html",
+    "webapp/static/js/main.js",
+    "webapp/static/js/forms.js",
+    "webapp/static/js/results.js",
+    "webapp/static/css/style.css",
+    "deploy/env.example",
+    "deploy/Dockerfile",
+    "deploy/docker-compose.yml",
+    "deploy/systemd/engineering-calc.service",
+    "deploy/nginx/engineering-calc.conf",
+    "release/release_checklist.md",
+    "tests/smoke/test_web_routes.py",
+    "outputs/results_json/.gitkeep",
+    "outputs/normalized_inputs_json/.gitkeep",
+    "outputs/upload_packages/.gitkeep",
+    "outputs/batch_summaries/.gitkeep",
+    "outputs/reports_html/.gitkeep",
+    "outputs/logs/.gitkeep",
+]
+WEB_COMPLETE_TEXT_REQUIRED_PHRASES = {
+    "webapp/app.py": [
+        "def create_app",
+        "/health",
+    ],
+    "webapp/routes.py": [
+        "/api/calculate",
+        "/api/report/preview",
+        "/api/report/html",
+        "/api/import/json",
+        "/api/export/json",
+        "/api/batch/run",
+        "run_book",
+        "build_case_input_from_form",
+        "case_result_to_ui",
+    ],
+    "webapp/static/js/main.js": [
+        "/api/calculate",
+        "/api/report/preview",
+        "/api/report/html",
+        "/api/import/json",
+        "/api/export/json",
+    ],
+    "tests/smoke/test_web_routes.py": [
+        "/health",
+        "/api/calculate",
+        "/api/import/json",
+        "/api/export/json",
+        "/api/report/preview",
+        "/api/report/html",
+        "/api/batch/run",
+    ],
+    "release/release_checklist.md": [
+        "web-complete",
+        "/api/import/json",
+        "/api/export/json",
+        "/api/report/preview",
+        "/api/report/html",
+        "/api/batch/run",
+        "CLI runner",
+    ],
+}
 
 
 def read_text(path: Path) -> str:
@@ -116,6 +182,18 @@ def load_contract(package_root: Path) -> dict:
     path = package_root / "schemas" / "artifact_contracts.json"
     with path.open(encoding="utf-8") as handle:
         return json.load(handle)
+
+
+def manifest_version(package_root: Path) -> str | None:
+    path = package_root / "MANIFEST.yaml"
+    if not path.exists():
+        return None
+    pattern = re.compile(r"^version:\s*(.+)$")
+    for line in read_text(path).splitlines():
+        match = pattern.match(line)
+        if match:
+            return clean_scalar(match.group(1))
+    return None
 
 
 def check_exists(root: Path, rel_path: str, errors: list[str]) -> None:
@@ -433,12 +511,26 @@ def check_static_html_delivery_guard(project_root: Path, errors: list[str]) -> N
     missing = [rel_path for rel_path in runtime_paths if not (project_root / rel_path).exists()]
     if missing:
         errors.append(
-            "static HTML/report HTML alone is not a production-ready web calculation "
+            "report-only output is not a deployable web system; static HTML/report HTML "
+            "alone is not a production-ready web calculation "
             f"system; missing runtime artifacts: {', '.join(missing)}"
         )
 
 
-def check_skill_frontmatter(root: Path, rel_path: str, errors: list[str]) -> None:
+def check_web_complete_delivery(project_root: Path, errors: list[str]) -> None:
+    """Validate the strict web-complete delivery shape."""
+    for rel_path in WEB_COMPLETE_REQUIRED_PROJECT_PATHS:
+        check_exists(project_root, rel_path, errors)
+    check_text_required_phrases(project_root, WEB_COMPLETE_TEXT_REQUIRED_PHRASES, errors)
+
+
+def check_skill_frontmatter(
+    root: Path,
+    rel_path: str,
+    errors: list[str],
+    *,
+    expected_version: str | None = None,
+) -> None:
     path = root / rel_path
     if not path.exists():
         errors.append(f"missing skill file: {rel_path}")
@@ -453,14 +545,23 @@ def check_skill_frontmatter(root: Path, rel_path: str, errors: list[str]) -> Non
         errors.append(f"missing frontmatter name in {rel_path}")
     if not re.search(r"^description:\s*.+", body, re.MULTILINE):
         errors.append(f"missing frontmatter description in {rel_path}")
+    version_match = re.search(r"^version:\s*(.+)", body, re.MULTILINE)
+    if expected_version and version_match:
+        actual = clean_scalar(version_match.group(1))
+        if actual != expected_version:
+            errors.append(
+                f"frontmatter version mismatch in {rel_path}: "
+                f"expected {expected_version!r}, got {actual!r}"
+            )
 
 
 def validate_package(package_root: Path, contract: dict) -> list[str]:
     errors: list[str] = []
+    expected_version = clean_scalar(contract.get("version"))
     for rel_path in contract["package_required_paths"]:
         check_exists(package_root, rel_path, errors)
     for rel_path in contract["skill_files"]:
-        check_skill_frontmatter(package_root, rel_path, errors)
+        check_skill_frontmatter(package_root, rel_path, errors, expected_version=expected_version)
     check_csv_headers(package_root, contract["csv_headers"], errors)
     check_yaml_required_keys(package_root, contract["yaml_required_keys"], errors)
     check_text_required_phrases(package_root, contract.get("text_required_phrases", {}), errors)
@@ -477,6 +578,7 @@ def validate_core_profile(package_root: Path, contract: dict) -> list[str]:
 
 def validate_adapters_light_profile(package_root: Path) -> list[str]:
     errors: list[str] = []
+    expected_version = manifest_version(package_root)
     required = [
         "AGENTS.md",
         "adapters/agent-entrypoints.md",
@@ -488,6 +590,11 @@ def validate_adapters_light_profile(package_root: Path) -> list[str]:
     ]
     for rel_path in required:
         check_exists(package_root, rel_path, errors)
+    for rel_path in [
+        ".agents/skills/engineering-calc-system/SKILL.md",
+        ".opencode/skills/engineering-calc-system/SKILL.md",
+    ]:
+        check_skill_frontmatter(package_root, rel_path, errors, expected_version=expected_version)
     check_absent(package_root, ".qoder", errors)
     check_no_cache_artifacts(package_root, errors)
     return errors
@@ -495,6 +602,7 @@ def validate_adapters_light_profile(package_root: Path) -> list[str]:
 
 def validate_qoder_addon_profile(package_root: Path) -> list[str]:
     errors: list[str] = []
+    expected_version = manifest_version(package_root)
     required = [
         ".qoder/skills/engineering-calc-system/SKILL.md",
         ".qoder/skills/engineering-calc-system/reference.md",
@@ -504,6 +612,12 @@ def validate_qoder_addon_profile(package_root: Path) -> list[str]:
     ]
     for rel_path in required:
         check_exists(package_root, rel_path, errors)
+    check_skill_frontmatter(
+        package_root,
+        ".qoder/skills/engineering-calc-system/SKILL.md",
+        errors,
+        expected_version=expected_version,
+    )
     check_absent(package_root, "SKILL.md", errors)
     check_absent(package_root, "core", errors)
     check_no_cache_artifacts(package_root, errors)
@@ -524,6 +638,7 @@ def validate_singlefile_profile(package_root: Path) -> list[str]:
             "## SKILL.md",
             "## skills/00-engineering-calculation-router.skill.md",
             "## shared/multi-agent-orchestration.md",
+            "## shared/delivery-contract.md",
         ]:
             if phrase not in text:
                 errors.append(f"singlefile output missing phrase: {phrase!r}")
@@ -545,7 +660,7 @@ def validate_profile(package_root: Path, profile: str, contract: dict | None) ->
     return [f"unknown profile: {profile}"]
 
 
-def validate_project(project_root: Path, contract: dict) -> list[str]:
+def validate_project(project_root: Path, contract: dict, *, delivery: str = "standard") -> list[str]:
     errors: list[str] = []
     for rel_path in contract["project_required_paths"]:
         check_exists(project_root, rel_path, errors)
@@ -553,6 +668,8 @@ def validate_project(project_root: Path, contract: dict) -> list[str]:
     check_yaml_required_keys(project_root, contract.get("project_yaml_required_keys", {}), errors)
     check_text_required_phrases(project_root, contract.get("project_text_required_phrases", {}), errors)
     check_static_html_delivery_guard(project_root, errors)
+    if delivery == "web-complete":
+        check_web_complete_delivery(project_root, errors)
     check_project_semantic_gates(project_root, errors)
     return errors
 
@@ -562,6 +679,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--package-root", default=".", help="Skill pack root directory")
     parser.add_argument("--profile", default="core", choices=sorted(PROFILE_CHOICES), help="Release profile to validate")
     parser.add_argument("--project", help="Generated engineering calculation project root")
+    parser.add_argument(
+        "--delivery",
+        default="standard",
+        choices=sorted(DELIVERY_CHOICES),
+        help="Generated project delivery contract to validate",
+    )
     args = parser.parse_args(argv)
 
     package_root = Path(args.package_root).resolve()
@@ -572,7 +695,13 @@ def main(argv: list[str] | None = None) -> int:
         if contract is None:
             errors.append("--project validation requires schemas/artifact_contracts.json under --package-root")
         else:
-            errors.extend(validate_project(Path(args.project).resolve(), contract))
+            errors.extend(
+                validate_project(
+                    Path(args.project).resolve(),
+                    contract,
+                    delivery=args.delivery,
+                )
+            )
 
     if errors:
         print("Artifact validation failed:", file=sys.stderr)

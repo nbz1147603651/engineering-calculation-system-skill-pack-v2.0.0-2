@@ -28,7 +28,8 @@
     "QODER",
     "QODER Project",
     "TRAE",
-    "OpenCode"
+    "OpenCode",
+    "AGENTS Generic"
   ],
   "source_dev_includes": [
     "core",
@@ -44,6 +45,7 @@
     "parent/",
     "skills/",
     "shared/",
+    "shared/delivery-contract.md",
     "templates/",
     "schemas/",
     "scripts/validate_artifacts.py",
@@ -90,7 +92,9 @@
         }
       ],
       "notes": [
-        "This archive places SKILL.md at the zip root for QODER skill import compatibility."
+        "This archive places SKILL.md at the zip root for QODER skill import compatibility.",
+        "For web-complete generation, prefer the QODER Project package because it includes the core skill, templates, schemas, validator, project scaffold, and .qoder overlay.",
+        "If only this direct skill is installed, it is a lightweight entrypoint, not the complete project template."
       ]
     },
     {

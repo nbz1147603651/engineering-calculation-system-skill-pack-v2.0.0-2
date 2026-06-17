@@ -27,6 +27,20 @@ templates/orchestration/agent_result_packet.yaml
 templates/orchestration/merge_review.md
 ```
 
+For implementation or release work, also load:
+
+```text
+shared/delivery-contract.md
+```
+
+Before implementing, declare `core-only`, `report-only`, `prototype-web`, or
+`web-complete`. Default to `web-complete` unless the user explicitly requests a
+reduced scope. The default `web-complete` path is:
+
+```text
+08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14
+```
+
 The supervisor must keep gate decisions, source authority, ID allocation,
 handoff freeze, `run_book()` public contracts, and final acceptance serial.
 
@@ -35,6 +49,11 @@ If the target agent can only accept one instruction file, load:
 ```text
 dist/singlefile/engineering-calculation-system.all-in-one.md
 ```
+
+If an install lacks `skills/`, `shared/`, `templates/`, `schemas/`,
+`scripts/validate_artifacts.py`, or `project_template/`, treat it as a
+lightweight entrypoint and use the full project/root package or single-file
+fallback before claiming `web-complete`.
 
 ## Codex
 
@@ -77,15 +96,17 @@ Fallback:
 
 Preferred setup:
 
-1. Apply `dist/qoder-addon/` on top of the core package.
-2. Use `.qoder/skills/engineering-calc-system/SKILL.md` as the project skill.
-3. Use `.qoder/agents/engineering-calc-system.md` when the environment supports custom agents.
-4. Keep `.qoder/skills/engineering-calc-system/reference.md` and assets with the Qoder skill wrapper.
+1. For project-root installation, use `dist/release/engineering-calculation-system-QODER-Project-v2.4.0.zip`.
+2. Apply `dist/qoder-addon/` on top of the core package when composing manually.
+3. Use `.qoder/skills/engineering-calc-system/SKILL.md` as the project skill.
+4. Use `.qoder/agents/engineering-calc-system.md` when the environment supports custom agents.
+5. Keep `.qoder/skills/engineering-calc-system/reference.md` and assets with the Qoder skill wrapper.
 
 Behavior:
 
 - Qoder should still route to the package router rather than reading every child file.
 - Widget or custom UI features are optional. If unavailable, continue with text artifacts and validation scripts.
+- The direct QODER Skill zip is a lightweight entrypoint. For web-complete generation, prefer QODER Project because it includes the core skill, templates, schemas, validator, project scaffold, and `.qoder/` overlay.
 - Qoder custom agents should use the roles in `shared/multi-agent-orchestration.md`: supervisor, reference-acquirer, source-intake, logic-extractor, module-worker, interface-worker, and verification-worker.
 
 Fallback:
@@ -168,6 +189,10 @@ Start with SKILL.md and skills/00-engineering-calculation-router.skill.md.
 Do not load all child skills at once. Load only the parent and child skills selected by the router.
 During 02-reference-discovery-and-acquisition, use available internet search/browser tools actively for missing, insufficient, stale, or jurisdiction-specific references, and log meaningful searches in references/acquisition/search_log.csv.
 Use templates/ for output artifacts and scripts/validate_artifacts.py before considering the work complete.
+For implementation or release work, read shared/delivery-contract.md.
+Declare delivery mode before implementation: core-only, report-only, prototype-web, or web-complete. Default to web-complete.
+For web-complete, follow 08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14.
+Do not call CLI runners, static HTML, exported report HTML, notebooks, or UI mockups complete or deployable.
 For explicit multi-agent or parallel work, read shared/multi-agent-orchestration.md and use templates/orchestration/.
 Split work only by disjoint owned paths. Workers return agent_result_packet.yaml fields, and the supervisor accepts output only after merge_review.md checks.
 Do not invent engineering formulas, lookup rules, units, coefficients, branch logic, or pass/fail criteria.
@@ -175,6 +200,7 @@ Do not start production implementation unless handoff/implementation_handoff.yam
 Keep formulas out of UI, report templates, frontend JavaScript, review notebooks, batch scripts, and CSV/XLSX input files.
 Official calculations must flow through run_book(BookInput) -> BookResult.
 Do not delegate evidence gates, coding gates, source authority, ID allocation, handoff freeze, public runner contract changes, production labels, or release acceptance.
+Before claiming web-complete, run scripts/validate_artifacts.py --package-root . --profile core --project <project-root> --delivery web-complete.
 ```
 
 ## MCP Guidance

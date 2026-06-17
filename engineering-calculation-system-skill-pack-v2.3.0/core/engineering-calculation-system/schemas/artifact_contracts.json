@@ -8,6 +8,7 @@
     "parent/engineering-calculation-logic-architecture.skill.md",
     "parent/engineering-calculation-book.skill.md",
     "shared/multi-agent-orchestration.md",
+    "shared/delivery-contract.md",
     "shared/quality-gates.md",
     "templates/acquisition/open_reference_questions.md",
     "templates/acquisition/acquisition_notes.md",
@@ -314,6 +315,13 @@
       "report production decision recorded",
       "Release and deployment gate"
     ],
+    "shared/delivery-contract.md": [
+      "Delivery Mode Declaration",
+      "Web-Complete Minimum",
+      "Completion Guard",
+      "Installation Shape Check",
+      "--delivery web-complete"
+    ],
     "shared/multi-agent-orchestration.md": [
       "Supervisor Responsibilities",
       "Parallel-Friendly Work",
@@ -367,6 +375,8 @@
     "data/normalized/cases/.gitkeep",
     "data/packages/.gitkeep",
     "outputs/results_json/.gitkeep",
+    "outputs/normalized_inputs_json/.gitkeep",
+    "outputs/batch_summaries/.gitkeep",
     "outputs/reports_html/.gitkeep",
     "outputs/reports_pdf/.gitkeep",
     "outputs/reports_docx/.gitkeep",
@@ -421,6 +431,7 @@
     ],
     "webapp/routes.py": [
       "/api/calculate",
+      "/api/batch/run",
       "build_case_input_from_form",
       "run_book",
       "case_result_to_ui"
@@ -437,7 +448,12 @@
     ],
     "tests/smoke/test_web_routes.py": [
       "/health",
-      "/api/calculate"
+      "/api/calculate",
+      "/api/import/json",
+      "/api/export/json",
+      "/api/report/preview",
+      "/api/report/html",
+      "/api/batch/run"
     ],
     "release/release_checklist.md": [
       "Runtime stack is recorded",

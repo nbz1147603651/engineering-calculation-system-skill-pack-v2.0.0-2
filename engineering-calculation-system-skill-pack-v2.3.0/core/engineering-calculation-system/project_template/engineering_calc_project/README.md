@@ -22,6 +22,10 @@ Review/admin: Marimo when enabled
 
 The browser UI is a web application served by the Python backend. It is not a standalone static HTML deliverable, and it must not contain engineering formulas.
 
+Delivery mode: `web-complete` unless the user explicitly requests `core-only`,
+`report-only`, or `prototype-web`. A CLI runner, static HTML, exported report
+HTML, notebook demo, or UI mockup is not a deployable web calculation system.
+
 Operational quality and reviewer convenience take priority over minimal dependencies. Keep the implementation maintainable, but do not remove validation, traces, report preview, import/export, or review tooling when they make engineering work safer or faster.
 
 ## Validate
@@ -80,5 +84,5 @@ The Marimo admin app may publish declaration-based formulas only after validatio
 From the skill pack root:
 
 ```bash
-python3 scripts/validate_artifacts.py --package-root . --profile core --project project_template/engineering_calc_project
+python3 scripts/validate_artifacts.py --package-root . --profile core --project project_template/engineering_calc_project --delivery web-complete
 ```

@@ -41,6 +41,11 @@ The goal is operational quality and convenience, not minimalism for its own sake
 
 A final web calculation system is not complete when the deliverable is only a static `.html` file, exported report HTML, or UI mockup. Production delivery must include reusable calculation modules, the official runner, backend API/application entrypoint, frontend assets, tests, local run commands, and a Linux/cloud deployment path unless the user explicitly requests a static prototype.
 
+All entrypoints share `shared/delivery-contract.md`. Before implementation,
+declare one delivery mode: `core-only`, `report-only`, `prototype-web`, or
+`web-complete`. Default to `web-complete`; its default path is
+`08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14`.
+
 v2.2.0 splits the interface layer into a lightweight router plus three focused subskills:
 
 ```text
@@ -126,7 +131,7 @@ dist/adapters-light/   AGENTS.md, .agents, .opencode, .trae, and adapter guidanc
 dist/qoder-addon/      Qoder-specific files
 dist/singlefile/       generated all-in-one fallback
 dist/source-dev/       development/reference source bundle
-dist/release/          CODEX, MiniMaxCode, QODER Skill, QODER project, TRAE, and OpenCode release zips
+dist/release/          CODEX, MiniMaxCode, QODER Skill, QODER project, TRAE, OpenCode, and AGENTS Generic release zips
 ```
 
 For publishing or manual installation, use the package for the target tool:
@@ -138,6 +143,7 @@ dist/release/engineering-calculation-system-QODER-v2.4.0.zip
 dist/release/engineering-calculation-system-QODER-Project-v2.4.0.zip
 dist/release/engineering-calculation-system-TRAE-v2.4.0.zip
 dist/release/engineering-calculation-system-OpenCode-v2.4.0.zip
+dist/release/engineering-calculation-system-AGENTS-Generic-v2.4.0.zip
 ```
 
 Each package contains one install folder plus `INSTALL.md`:
@@ -145,13 +151,14 @@ Each package contains one install folder plus `INSTALL.md`:
 ```text
 CODEX:         engineering-calculation-system/
 MiniMaxCode:   engineering-calculation-system/
-QODER:         SKILL.md at zip root for direct QODER Skill upload
+QODER:         SKILL.md at zip root for direct QODER Skill upload (lightweight entrypoint)
 QODER Project: copy-to-project-root/
 TRAE:          copy-to-project-root/
 OpenCode:      copy-to-project-root/
+AGENTS Generic: copy-to-project-root/
 ```
 
-The MiniMaxCode package keeps the standard root `SKILL.md` skill layout for MiniMax Code import or auto-discovery. The QODER package is for direct QODER Skill upload. The QODER Project, TRAE, and OpenCode packages are already merged with the core runtime files, so users can copy the matching package contents directly. Use the raw core and overlay profiles only when debugging or repackaging.
+The MiniMaxCode package keeps the standard root `SKILL.md` skill layout for MiniMax Code import or auto-discovery. The QODER package is for direct QODER Skill upload and is intentionally lightweight. For QODER web-complete generation, prefer QODER Project because it includes the core runtime files, templates, schemas, validator, project scaffold, and `.qoder/` overlay. The QODER Project, TRAE, OpenCode, and AGENTS Generic packages are already merged with the core runtime files, so users can copy the matching package contents directly. Use the raw core and overlay profiles only when debugging or repackaging.
 
 Release metadata and classified install targets are maintained in:
 
@@ -226,7 +233,7 @@ python core/engineering-calculation-system/scripts/validate_artifacts.py --packa
 Validate the included scaffold:
 
 ```bash
-python core/engineering-calculation-system/scripts/validate_artifacts.py --package-root dist/core/engineering-calculation-system --profile core --project dist/core/engineering-calculation-system/project_template/engineering_calc_project
+python core/engineering-calculation-system/scripts/validate_artifacts.py --package-root dist/core/engineering-calculation-system --profile core --project dist/core/engineering-calculation-system/project_template/engineering_calc_project --delivery web-complete
 ```
 
 Run the scaffold smoke test:

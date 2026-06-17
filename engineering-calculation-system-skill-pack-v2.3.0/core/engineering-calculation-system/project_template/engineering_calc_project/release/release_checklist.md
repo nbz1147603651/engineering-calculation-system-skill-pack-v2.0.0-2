@@ -12,7 +12,11 @@
 - [ ] Cloud Linux deployment files are present under `deploy/`.
 - [ ] `/health` endpoint passes.
 - [ ] `POST /api/calculate` smoke test passes with known input.
-- [ ] Delivery is not only a static `.html` file, exported report HTML, or mockup unless explicitly labeled as a non-production prototype.
+- [ ] JSON import/export smoke tests pass: `/api/import/json` and `/api/export/json`.
+- [ ] Report preview/download smoke tests pass: `/api/report/preview` and `/api/report/html`.
+- [ ] Batch smoke test passes: `/api/batch/run` calls `run_book()` once per case and returns a batch summary.
+- [ ] `web-complete` validation passes with `--delivery web-complete`.
+- [ ] Delivery is not only a static `.html` file, exported report HTML, CLI runner, notebook demo, or mockup unless explicitly labeled as a non-production prototype.
 - [ ] Marimo admin review smoke test passes when enabled.
 - [ ] `ADMIN_REVIEW_TOKEN` is set outside source code.
 - [ ] `data/formula_registry/active_versions.yaml` is shared by web and Marimo services.

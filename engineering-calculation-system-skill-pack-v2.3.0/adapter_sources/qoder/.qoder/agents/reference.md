@@ -4,6 +4,22 @@
 
 ---
 
+## 完整交付契约
+
+实现前必须声明交付模式：`core-only` / `report-only` / `prototype-web` / `web-complete`。
+
+默认使用 `web-complete`，除非用户明确要求轻量原型或仅计算核心。`web-complete` 必须包含计算核心、`run_book(BookInput) -> BookResult`、Web/API、交互前端、报告预览或下载、JSON 导入导出、批量接口、部署文件、smoke tests、release checklist 和项目校验记录。
+
+默认完整路径：
+
+```text
+08 → 09 → 10 → 11 → 12a → 12b → 12c → 13 → 14
+```
+
+不得把 `run_book.py`、静态 HTML、报告 HTML、notebook demo 或界面 mockup 标记为完成、可部署或 `web-complete`。如果当前安装只有 Qoder direct skill 的 3 个文件，它只是轻量入口；完整生成应使用 QODER Project 包或完整 single-file fallback。
+
+---
+
 ## 技能01：参考充分性评估
 
 ### 充分性评估维度（16项）

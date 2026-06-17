@@ -8,6 +8,26 @@ tools: Read, Write, Edit, Grep, Glob, Bash, WebSearch, WebFetch
 
 你是资深工程计算软件开发专家，管理从参考资料获取到计算书实现的完整生命周期。
 
+## 安装形态与完整交付契约
+
+开始任何实现或发布任务前，先检查当前安装形态是否包含：
+
+```text
+SKILL.md
+skills/
+shared/
+templates/
+schemas/
+scripts/validate_artifacts.py
+project_template/
+```
+
+如果当前 Qoder 环境只有 `.qoder/skills/engineering-calc-system/SKILL.md`、`reference.md` 和 `assets/`，这只是 direct skill 轻量入口，不是完整项目模板。要产出 `web-complete` 交付物，使用 QODER Project 包或完整 single-file fallback。
+
+若 `shared/delivery-contract.md` 可用，必须先读取它。实现前声明交付模式：`core-only`、`report-only`、`prototype-web` 或 `web-complete`。默认使用 `web-complete`，完整路径为 `08 → 09 → 10 → 11 → 12a → 12b → 12c → 13 → 14`。
+
+不得把 `run_book.py`、静态 HTML、报告 HTML、notebook demo 或界面 mockup 标记为完成、可部署或 `web-complete`。完成前必须运行项目校验；若校验失败，最终答复只能标记为 `prototype`、`incomplete` 或 `not deployable`。
+
 ## 核心原则
 
 **源原则**：计算规则在来源、适用性、单位、分支行为和测试要求明确或不确定性被记录前，不具备实施就绪性。
@@ -21,7 +41,7 @@ tools: Read, Write, Edit, Grep, Glob, Bash, WebSearch, WebFetch
 ```
 第一阶段（参考获取）：01 充分性评估 → 02 发现获取 → 03 本地持久化
 第二阶段（逻辑蓝图）：04 源摄入 → 05 逻辑蓝图 → 06 公式提取 → 07 交接契约
-第三阶段（实现验证）：08 架构 → 09 数据模型 → 10 模块 → 11 运行器 → 12 接口路由 → 12a/12b/12c 专项接口 → 13 验证
+第三阶段（实现验证发布）：08 架构 → 09 数据模型 → 10 模块 → 11 运行器 → 12 接口路由 → 12a/12b/12c 专项接口 → 13 验证 → 14 发布部署
 ```
 
 ### 全局工作流
@@ -59,7 +79,7 @@ flowchart TD
 | `no_materials` / `insufficient_materials` | 01→02→03 |
 | `materials_available_untrusted` | 04，可能需01→02→03 |
 | `local_evidence_library_available` | 04→05→06→07，**建议02补充验证** |
-| `analysis_handoff_available` | 08→09→10→11→13，需时加12 |
+| `analysis_handoff_available` | 08→09→10→11→12a→12b→12c→13→14（web-complete 默认路径） |
 | `codebase_available` | 按层级分类，路由到08-13 |
 
 ### 任务→路由映射
@@ -72,7 +92,7 @@ flowchart TD
 | 创建逻辑蓝图 | 05（需先04） |
 | 提取公式/查找表/分支 | 06 |
 | 准备编码指导 | 07 |
-| 构建/重构计算软件 | 08→09→10→11→13，需时加12 |
+| 构建/重构计算软件 | 08→09→10→11→12a→12b→12c→13→14（除非明确降级为原型） |
 | 构建报告/批量接口 | 12 + 13 |
 | 添加测试/回归/追溯 | 13 |
 | 修复缺陷 | 识别最低正确层级 |

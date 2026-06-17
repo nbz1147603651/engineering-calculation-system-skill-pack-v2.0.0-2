@@ -24,17 +24,31 @@ templates/orchestration/agent_result_packet.yaml
 templates/orchestration/merge_review.md
 ```
 
+For implementation or release work, read:
+
+```text
+shared/delivery-contract.md
+```
+
+If the install lacks `skills/`, `shared/`, `templates/`, `schemas/`,
+`scripts/validate_artifacts.py`, or `project_template/`, treat it as a
+lightweight entrypoint and use the full project/root package or single-file
+fallback before claiming `web-complete`.
+
 ## Required Behavior
 
 - Do not invent engineering formulas, lookup rules, units, coefficients, branch logic, or pass/fail criteria.
 - Do not start production implementation unless `handoff/implementation_handoff.yaml` and `handoff/coding_go_no_go.md` allow it.
 - Keep formulas out of UI, report templates, frontend JavaScript, review notebooks, batch scripts, and CSV/XLSX input files.
 - Route official calculations through `run_book(BookInput) -> BookResult`.
+- Declare delivery mode before implementation: `core-only`, `report-only`, `prototype-web`, or `web-complete`.
+- Default to `web-complete`; its path is `08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14`.
+- Do not call CLI runners, static HTML, exported report HTML, notebooks, or UI mockups complete or deployable.
 - Use templates from `templates/` and shared contracts from `shared/` when generating artifacts.
 - Before parallel implementation, declare disjoint `owned_paths` for each worker and do not overwrite another worker's output.
 - Workers must return an agent result packet; a supervisor must run merge review before accepting worker output.
 - Do not delegate evidence gates, coding gates, source authority decisions, ID allocation, handoff freeze, `run_book()` contract changes, or final acceptance.
-- Run `python scripts/validate_artifacts.py --package-root . --profile core` before calling the package complete.
+- Run `python scripts/validate_artifacts.py --package-root . --profile core --project <project-root> --delivery web-complete` before calling a generated project complete.
 
 ## Platform Notes
 

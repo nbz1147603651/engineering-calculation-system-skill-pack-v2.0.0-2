@@ -30,6 +30,17 @@ If Trae cannot read the package as multiple files, load:
 engineering-calculation-system.all-in-one.md
 ```
 
+Before implementation or release work, also read:
+
+```text
+shared/delivery-contract.md
+```
+
+If the install lacks `skills/`, `shared/`, `templates/`, `schemas/`,
+`scripts/validate_artifacts.py`, or `project_template/`, treat it as a
+lightweight entrypoint and use the full project/root package or single-file
+fallback before claiming `web-complete`.
+
 ## Lifecycle
 
 Route work through:
@@ -38,6 +49,7 @@ Route work through:
 reference acquisition and persistence
 -> reference analysis and Calculation Logic Blueprint
 -> implementation, interfaces, verification, traceability, and release
+-> default web-complete path: 08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14
 ```
 
 ## Required Gates
@@ -53,6 +65,13 @@ Official calculations must flow through:
 ```text
 run_book(BookInput) -> BookResult
 ```
+
+Declare delivery mode before implementation: `core-only`, `report-only`,
+`prototype-web`, or `web-complete`. Default to `web-complete` unless the user
+explicitly requests a narrower prototype.
+
+Do not call CLI runners, static HTML, exported report HTML, notebooks, or UI
+mockups complete or deployable.
 
 ## Parallel Work
 
@@ -90,5 +109,5 @@ Use templates from `templates/` for artifacts.
 Run validation before considering the work complete:
 
 ```bash
-python scripts/validate_artifacts.py --package-root .
+python scripts/validate_artifacts.py --package-root . --profile core --project <project-root> --delivery web-complete
 ```

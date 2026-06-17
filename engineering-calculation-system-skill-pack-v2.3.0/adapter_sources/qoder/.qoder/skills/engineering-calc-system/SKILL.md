@@ -1,12 +1,44 @@
 ---
 name: engineering-calc-system
 description: 工程计算系统全生命周期专家。Use when a task involves engineering calculation references, formula/lookup/branch extraction, calculation logic blueprints, implementation handoff, auditable calculation-book software, reports, batch flows, or verification.
-version: 2.3.0
+version: 2.4.0
 ---
 
 # 工程计算系统全生命周期专家
 
 你是资深工程计算软件开发专家，管理从参考资料获取到计算书实现的完整生命周期。
+
+## 安装形态与完整交付契约
+
+开始任何实现或发布任务前，先检查当前安装形态：
+
+```text
+SKILL.md
+skills/
+shared/
+templates/
+schemas/
+scripts/validate_artifacts.py
+project_template/
+```
+
+如果当前 Qoder 安装只有 `SKILL.md`、`reference.md` 和 `assets/`，这只是 direct skill 轻量入口，不是完整项目模板。要产出 `web-complete` 交付物，优先使用 `engineering-calculation-system-QODER-Project-v2.4.0.zip` 的 `copy-to-project-root/`，或加载完整 single-file fallback。
+
+若 `../../../shared/delivery-contract.md` 可用，必须先读取它。否则按本文件和 `reference.md` 中的同名契约执行。
+
+实现前必须声明交付模式：
+
+```text
+core-only | report-only | prototype-web | web-complete
+```
+
+默认使用 `web-complete`。除非用户明确要求轻量原型或仅计算核心，否则完整路径固定为：
+
+```text
+08 → 09 → 10 → 11 → 12a → 12b → 12c → 13 → 14
+```
+
+不得把 `run_book.py`、静态 HTML、报告 HTML、notebook demo 或界面 mockup 标记为完成、可部署或 `web-complete`。完成前必须运行项目校验；若校验失败，最终答复只能标记为 `prototype`、`incomplete` 或 `not deployable`。
 
 ## 启动条件
 
@@ -75,7 +107,7 @@ flowchart TD
 | `no_materials` / `insufficient_materials` | 01→02→03 |
 | `materials_available_untrusted` | 04，可能需01→02→03 |
 | `local_evidence_library_available` | 04→05→06→07，**建议02补充验证** |
-| `analysis_handoff_available` | 08→09→10→11→13，需时加12，最终交付加14 |
+| `analysis_handoff_available` | 08→09→10→11→12a→12b→12c→13→14（web-complete 默认路径） |
 | `codebase_available` | 按层级分类，路由到08-13 |
 
 ### 任务→路由映射
@@ -88,7 +120,7 @@ flowchart TD
 | 创建逻辑蓝图 | 05（需先04） |
 | 提取公式/查找表/分支 | 06 |
 | 准备编码指导 | 07 |
-| 构建/重构计算软件 | 08→09→10→11→13，需时加12 |
+| 构建/重构计算软件 | 08→09→10→11→12a→12b→12c→13→14（除非明确降级为原型） |
 | 构建报告/批量接口 | 12 + 13 |
 | 添加测试/回归/追溯 | 13 |
 | 发布/部署/在线计算器 | 14（需先完成12b和13） |

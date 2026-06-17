@@ -34,6 +34,33 @@ Do not delegate lifecycle routing, evidence gate decisions, source authority
 ranking, ID namespace control, handoff freeze, `run_book()` public contract
 changes, or final acceptance.
 
+## Delivery Contract
+
+Read `shared/delivery-contract.md` before implementation or release work. Every
+adapter entrypoint uses the same completion rules.
+
+Before implementation starts, declare one delivery mode:
+
+```text
+core-only | report-only | prototype-web | web-complete
+```
+
+Default to `web-complete` for calculation systems, calculation-book software,
+web apps, online calculators, reusable software packages, batch workflows, and
+any request that does not explicitly ask for a narrower prototype.
+
+For `web-complete`, the default implementation path is:
+
+```text
+08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14
+```
+
+Do not call a delivery complete, production-ready, deployable, or web-complete
+when it is only a CLI runner, static HTML, exported report HTML, notebook demo,
+or UI mockup. If the package shape only contains a lightweight wrapper, use the
+full project/root package or the generated single-file fallback before claiming
+web-complete delivery.
+
 ## Non-Negotiable Gates
 
 Optimize for engineering operation quality and reviewer convenience first. Keep the stack as simple as possible only after the workflow is complete, clear, traceable, and pleasant to use.
@@ -84,7 +111,7 @@ python3 scripts/validate_artifacts.py --package-root . --profile core
 For generated engineering calculation projects, also run:
 
 ```bash
-python3 scripts/validate_artifacts.py --package-root <skill-pack-root> --profile core --project <project-root>
+python3 scripts/validate_artifacts.py --package-root <skill-pack-root> --profile core --project <project-root> --delivery web-complete
 ```
 
 Treat validation failures as blocking unless the user explicitly asks for a draft or prototype.
