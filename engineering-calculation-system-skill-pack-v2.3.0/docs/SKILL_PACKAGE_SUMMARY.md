@@ -144,6 +144,7 @@ dist/adapters-light/                         optional AGENTS/OpenCode/Trae/gener
 dist/qoder-addon/                            optional Qoder overlay
 dist/singlefile/                             generated all-in-one fallback
 dist/source-dev/                             development/reference bundle
+dist/release/                                publish-ready zip archives and checksums
 ```
 
 ## Best use

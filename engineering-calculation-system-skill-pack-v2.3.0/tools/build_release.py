@@ -6,7 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import shutil
-import sys
+import zipfile
 from pathlib import Path
 
 
@@ -15,6 +15,7 @@ CORE_SOURCE = REPO_ROOT / "core" / "engineering-calculation-system"
 LIGHT_ADAPTER_SOURCE = REPO_ROOT / "adapter_sources" / "light"
 QODER_ADAPTER_SOURCE = REPO_ROOT / "adapter_sources" / "qoder"
 DIST_ROOT = REPO_ROOT / "dist"
+RELEASE_ROOT = DIST_ROOT / "release"
 VERSION = "2.3.0"
 CREATED_AT = "2026-06-17"
 
@@ -63,10 +64,10 @@ SINGLEFILE_PREFIXES = (
 )
 
 
-def should_skip(path: Path) -> bool:
+def should_skip(path: Path, *, include_indexes: bool = False) -> bool:
     if any(part in EXCLUDED_DIR_NAMES for part in path.parts):
         return True
-    if path.name in EXCLUDED_FILE_NAMES:
+    if not include_indexes and path.name in EXCLUDED_FILE_NAMES:
         return True
     if path.suffix in FORBIDDEN_CACHE_SUFFIXES:
         return True
@@ -98,10 +99,10 @@ def copy_tree(src: Path, dst: Path) -> None:
         shutil.copy2(path, target)
 
 
-def iter_files(root: Path) -> list[Path]:
+def iter_files(root: Path, *, include_indexes: bool = False) -> list[Path]:
     files: list[Path] = []
     for path in root.rglob("*"):
-        if should_skip(path.relative_to(root)):
+        if should_skip(path.relative_to(root), include_indexes=include_indexes):
             continue
         if path.is_file():
             files.append(path)
@@ -140,10 +141,7 @@ def tree_lines(root: Path, files: list[Path]) -> list[str]:
 
 
 def write_indexes(profile_root: Path, package_name: str) -> None:
-    files = [
-        path for path in iter_files(profile_root)
-        if path.name not in {"MANIFEST.yaml", "CHECKSUMS.txt", "TREE.md"}
-    ]
+    files = iter_files(profile_root)
 
     manifest = [
         f"package: {package_name}",
@@ -251,25 +249,115 @@ def build_profile(profile: str) -> Path:
     return builders[profile]()
 
 
+def archive_name(profile: str) -> str:
+    return f"engineering-calculation-system-{profile}-v{VERSION}.zip"
+
+
+def write_zip(source_root: Path, archive_path: Path) -> None:
+    files = iter_files(source_root, include_indexes=True)
+    with zipfile.ZipFile(archive_path, "w") as archive:
+        for file in files:
+            rel = file.relative_to(source_root).as_posix()
+            info = zipfile.ZipInfo(rel, date_time=(2026, 6, 17, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info.external_attr = 0o644 << 16
+            archive.writestr(info, file.read_bytes())
+
+
+def write_release_index(archives: list[Path]) -> None:
+    lines = [
+        "# Engineering Calculation System Release Bundles",
+        "",
+        f"Version: {VERSION}",
+        f"Created at: {CREATED_AT}",
+        "",
+        "## Archives",
+        "",
+        "| Archive | Size KB | SHA256 |",
+        "| --- | ---: | --- |",
+    ]
+    for archive in archives:
+        size_kb = archive.stat().st_size / 1024
+        lines.append(f"| `{archive.name}` | {size_kb:.1f} | `{sha256(archive)}` |")
+
+    lines.extend(
+        [
+            "",
+            "## Install Order",
+            "",
+            "Use `engineering-calculation-system-core` as the default Codex-compatible skill package.",
+            "For Trae/OpenCode/AGENTS.md-compatible environments, install core first and then apply `adapters-light` as an overlay.",
+            "For Qoder, install core first, apply `adapters-light`, and then apply `qoder-addon`.",
+            "Use `singlefile` only for agents that cannot load a multi-file skill folder.",
+            "Use `source-dev` for repository review or downstream packaging, not as the default runtime skill.",
+            "",
+        ]
+    )
+    (RELEASE_ROOT / "RELEASE_INDEX.md").write_text("\n".join(lines), encoding="utf-8")
+
+
+def build_archives(built_profiles: dict[str, Path]) -> list[Path]:
+    clean_dir(RELEASE_ROOT)
+    archives: list[Path] = []
+    for profile, profile_root in built_profiles.items():
+        archive_path = RELEASE_ROOT / archive_name(profile)
+        write_zip(profile_root, archive_path)
+        archives.append(archive_path)
+
+    checksum_lines = [f"{sha256(path)}  {path.name}" for path in archives]
+    (RELEASE_ROOT / "CHECKSUMS.txt").write_text("\n".join(checksum_lines) + "\n", encoding="utf-8")
+    write_release_index(archives)
+    return archives
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--profile", choices=PROFILE_CHOICES, help="Release profile to build")
+    parser.add_argument(
+        "--profile",
+        choices=PROFILE_CHOICES,
+        action="append",
+        help="Release profile to build. May be passed more than once.",
+    )
     parser.add_argument("--all", action="store_true", help="Build every release profile")
+    parser.add_argument(
+        "--archives",
+        action="store_true",
+        help="Also create zip archives for the built profile(s) under dist/release",
+    )
+    parser.add_argument(
+        "--no-archives",
+        action="store_true",
+        help="Do not create release zip archives when building every profile",
+    )
     args = parser.parse_args(argv)
 
-    if not args.profile and not args.all:
-        parser.error("pass --profile <name> or --all")
+    if args.profile and args.all:
+        parser.error("use either --profile or --all, not both")
+    if args.archives and args.no_archives:
+        parser.error("use either --archives or --no-archives, not both")
 
-    profiles = DEFAULT_ALL_PROFILES if args.all else (args.profile,)
-    built: list[Path] = []
+    default_publish = not args.profile and not args.all
+    profiles = DEFAULT_ALL_PROFILES if args.all or default_publish else tuple(args.profile or ())
+    create_archives = args.archives or ((args.all or default_publish) and not args.no_archives)
+
+    if default_publish:
+        print("no profile specified; building all profiles and release archives")
+
+    built: dict[str, Path] = {}
     for profile in profiles:
-        assert profile is not None
-        built.append(build_profile(profile))
+        built[profile] = build_profile(profile)
 
-    for path in built:
+    for path in built.values():
         files = iter_files(path)
         total_kb = sum(file.stat().st_size for file in files) / 1024
         print(f"built {path.relative_to(REPO_ROOT).as_posix()} ({len(files)} files, {total_kb:.1f} KB)")
+
+    if create_archives:
+        archives = build_archives(built)
+        print(f"built {RELEASE_ROOT.relative_to(REPO_ROOT).as_posix()} ({len(archives)} archives)")
+        for archive in archives:
+            size_kb = archive.stat().st_size / 1024
+            print(f"  {archive.name} ({size_kb:.1f} KB)")
     return 0
 
 

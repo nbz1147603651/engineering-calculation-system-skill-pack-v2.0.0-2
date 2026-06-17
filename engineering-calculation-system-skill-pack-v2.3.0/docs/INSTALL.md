@@ -3,8 +3,10 @@
 Build releases from the source checkout:
 
 ```bash
-python tools/build_release.py --all
+python tools/build_release.py
 ```
+
+With no arguments, the build creates every release profile and publish-ready zip archives under `dist/release/`.
 
 The default runtime package is:
 
@@ -31,6 +33,18 @@ dist/singlefile/engineering-calculation-system.all-in-one.md
 
 dist/source-dev/
   Development/reference source bundle, not the default install target.
+
+dist/release/
+  Publish-ready zip archives, checksums, and RELEASE_INDEX.md.
+```
+
+To build only one layer during development:
+
+```bash
+python tools/build_release.py --profile core
+python tools/build_release.py --profile adapters-light
+python tools/build_release.py --profile qoder-addon
+python tools/build_release.py --profile singlefile
 ```
 
 ## Overlay Usage

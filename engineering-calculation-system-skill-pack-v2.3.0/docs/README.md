@@ -101,8 +101,10 @@ parent/engineering-calculation-book.skill.md
 Build release profiles from the source checkout:
 
 ```bash
-python tools/build_release.py --all
+python tools/build_release.py
 ```
+
+Running the command with no arguments builds every release profile and creates publish-ready zip archives in `dist/release/`. Use `--profile <name>` when you only need one layer during development.
 
 Default installation target:
 
@@ -117,6 +119,7 @@ dist/adapters-light/   AGENTS.md, .agents, .opencode, .trae, and adapter guidanc
 dist/qoder-addon/      Qoder-specific files
 dist/singlefile/       generated all-in-one fallback
 dist/source-dev/       development/reference source bundle
+dist/release/          publish-ready zip archives and checksums
 ```
 
 Install the core package first. Copy an overlay on top of the installed core folder only when the target agent requires those files.

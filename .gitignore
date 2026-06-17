@@ -1,0 +1,25 @@
+# Local indexes and generated release artifacts
+.codegraph/
+engineering-calculation-system-skill-pack-v*/dist/
+
+# Python/runtime caches
+__pycache__/
+.pytest_cache/
+.blocked_pytest_cache*/
+*.pyc
+*.pyo
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+
+# Guard against accidentally copying the generated core skill into repo root.
+/SKILL.md
+/agents/
+/parent/
+/project_template/
+/schemas/
+/scripts/
+/shared/
+/skills/
+/templates/

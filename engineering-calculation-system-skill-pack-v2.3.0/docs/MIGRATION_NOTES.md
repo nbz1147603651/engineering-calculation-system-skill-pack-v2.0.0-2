@@ -5,8 +5,10 @@
 The default install target is no longer the source checkout root. Build release profiles first:
 
 ```bash
-python tools/build_release.py --all
+python tools/build_release.py
 ```
+
+The no-argument build creates every release profile plus publish-ready zip archives in `dist/release/`.
 
 Install the core runtime skill from:
 
