@@ -13,6 +13,9 @@
 ## Required Gates
 
 - [ ] Source basis and implementation handoff are recorded.
+- [ ] Runtime stack is recorded: Python 3.9+ primary runtime unless an explicit adapter plan exists.
+- [ ] Frontend format is recorded: Jinja2 + Bootstrap 5 + vanilla JavaScript modules unless explicitly overridden.
+- [ ] Operator workflow quality is not reduced merely to minimize dependencies.
 - [ ] Calculation modules are decoupled and listed in `module_asset_registry.csv`.
 - [ ] Official calculation path is `run_book(BookInput) -> BookResult`.
 - [ ] Web/API/report/batch layers do not implement formulas or independent pass/fail logic.
@@ -22,9 +25,13 @@
 - [ ] Cloud Linux deployment files are present.
 - [ ] `/health` endpoint passes.
 - [ ] `POST /api/calculate` smoke test passes with known input.
+- [ ] Delivery is not only a static `.html` file, exported report HTML, or mockup unless explicitly labeled as a non-production prototype.
 - [ ] Production debug mode is disabled.
 - [ ] Secrets are environment-based and not committed.
 - [ ] Data and output persistence paths are documented.
+- [ ] Formula registry path is shared by web and Marimo services when admin review is enabled.
+- [ ] `/admin/review/` is protected by an environment token/password when enabled.
+- [ ] Formula publish failures do not change `active_versions.yaml`.
 
 ## Release Artifacts
 
@@ -35,6 +42,8 @@
 | Dockerfile | deploy/Dockerfile | Docker path | to_be_defined |
 | systemd service | deploy/systemd/*.service | systemd path | to_be_defined |
 | nginx site config | deploy/nginx/*.conf | public Linux path | to_be_defined |
+| Marimo admin app | apps/review/admin_formula_review.py | when admin review enabled | to_be_defined |
+| Formula registry | data/formula_registry/active_versions.yaml | when editable formulas enabled | to_be_defined |
 | Release runbook | release/runbook.md | when operational handoff needed | to_be_defined |
 | Acceptance checklist | verification/acceptance_checklist.md | true | to_be_defined |
 
@@ -46,6 +55,7 @@
 | Health | `curl -fsS http://127.0.0.1:5000/health` | to_be_defined |  |
 | Main page | `curl -fsS http://127.0.0.1:5000/` | to_be_defined |  |
 | Calculate API | `curl -fsS -X POST ... /api/calculate` | to_be_defined |  |
+| Marimo admin | `curl -fsS http://127.0.0.1:2718/` | to_be_defined |  |
 | Docker build | `docker build -f deploy/Dockerfile .` | to_be_defined |  |
 
 ## Remaining Assumptions

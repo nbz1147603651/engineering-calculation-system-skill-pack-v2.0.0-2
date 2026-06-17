@@ -41,3 +41,6 @@ class BookResult:
     intermediate_values: dict[str, Any] = field(default_factory=dict)
     warnings: list[str] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
+    formula_registry_version: str = "unversioned"
+    formula_hash: str | None = None
+    formula_published_at: str | None = None

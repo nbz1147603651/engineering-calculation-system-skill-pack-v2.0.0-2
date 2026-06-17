@@ -1,6 +1,9 @@
 # Release Checklist
 
 - [ ] Source basis and implementation handoff are recorded.
+- [ ] Runtime stack is recorded: Python 3.9+ primary runtime unless an explicit adapter plan exists.
+- [ ] Frontend format is recorded: Jinja2 + Bootstrap 5 + vanilla JavaScript modules unless explicitly overridden.
+- [ ] Operator workflow quality is not reduced merely to minimize dependencies.
 - [ ] Calculation modules are decoupled and listed in `implementation/02_modules/module_asset_registry.csv`.
 - [ ] Official calculation path is `run_book(BookInput) -> BookResult`.
 - [ ] Web/API/report/batch layers do not implement formulas.
@@ -9,6 +12,11 @@
 - [ ] Cloud Linux deployment files are present under `deploy/`.
 - [ ] `/health` endpoint passes.
 - [ ] `POST /api/calculate` smoke test passes with known input.
+- [ ] Delivery is not only a static `.html` file, exported report HTML, or mockup unless explicitly labeled as a non-production prototype.
+- [ ] Marimo admin review smoke test passes when enabled.
+- [ ] `ADMIN_REVIEW_TOKEN` is set outside source code.
+- [ ] `data/formula_registry/active_versions.yaml` is shared by web and Marimo services.
+- [ ] Formula publish failures do not change the active version.
 - [ ] Production debug mode is disabled.
 - [ ] Secrets are environment-based and not committed.
 - [ ] Data and output persistence paths are documented.

@@ -15,7 +15,24 @@ polished frontend with left-side inputs and right-side review results
 Marimo review pages for module-level inspection and draft edits
 managed data/report import and uploadable calculation packages
 runnable local web client and Linux-cloud deployable web service
+embedded Marimo admin review for declaration-based formula publishing
 ```
+
+A final web calculation system uses a Python-first stack by default:
+
+```text
+primary runtime: Python 3.9+
+calculation modules: src/<pkg>/libraries/
+official runner: run_book(BookInput) -> BookResult
+backend/API: Flask or FastAPI
+frontend format: browser web app served from webapp/
+default UI files: Jinja2 templates, Bootstrap 5 CSS, vanilla JavaScript modules
+review/admin: Marimo when Python-native review is needed
+```
+
+The goal is operational quality and convenience, not minimalism for its own sake. The default stack stays simple so projects remain maintainable, but features such as validation, trace review, report preview, import/export, charts, i18n, and Marimo review should be included when they make engineering work safer or faster.
+
+A final web calculation system is not complete when the deliverable is only a static `.html` file, exported report HTML, or UI mockup. Production delivery must include reusable calculation modules, the official runner, backend API/application entrypoint, frontend assets, tests, local run commands, and a Linux/cloud deployment path unless the user explicitly requests a static prototype.
 
 v2.2.0 splits the interface layer into a lightweight router plus three focused subskills:
 
@@ -103,6 +120,7 @@ handoff/implementation_handoff.yaml
 handoff/artifact_index.yaml
 handoff/coding_go_no_go.md
 implementation/02_modules/module_asset_registry.csv
+handoff calculation/backend/frontend/release contracts
 deploy/
 release/release_checklist.md
 ```

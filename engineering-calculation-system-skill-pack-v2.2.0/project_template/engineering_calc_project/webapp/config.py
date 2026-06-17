@@ -25,6 +25,7 @@ PORT = int(os.environ.get("APP_PORT", "5000"))
 # Persistent runtime paths
 DATA_DIR = Path(os.environ.get("DATA_DIR", DATA_DIR))
 OUTPUT_DIR = Path(os.environ.get("OUTPUT_DIR", OUTPUT_DIR))
+FORMULA_REGISTRY_DIR = Path(os.environ.get("FORMULA_REGISTRY_DIR", DATA_DIR / "formula_registry"))
 
 # Default calculation parameters — served on page load so the user
 # can calculate immediately without filling every field.

@@ -53,8 +53,15 @@ engineering-calculation-system-skill-pack-v2.2.0/
 │       │       └── .gitkeep
 │       ├── apps
 │       │   └── review
-│       │       └── .gitkeep
+│       │       ├── .gitkeep
+│       │       └── admin_formula_review.py
 │       ├── data
+│       │   ├── formula_registry
+│       │   │   ├── active_versions.yaml
+│       │   │   └── modules
+│       │   │       └── example_module
+│       │   │           └── versions
+│       │   │               └── example_v1.yaml
 │       │   ├── imported
 │       │   │   ├── references
 │       │   │   │   └── .gitkeep
@@ -153,6 +160,7 @@ engineering-calculation-system-skill-pack-v2.2.0/
 │       │       │   ├── __init__.py
 │       │       │   ├── checks.py
 │       │       │   ├── enums.py
+│       │       │   ├── formula_registry.py
 │       │       │   └── sanitize.py
 │       │       ├── interfaces
 │       │       │   ├── .gitkeep
@@ -176,9 +184,11 @@ engineering-calculation-system-skill-pack-v2.2.0/
 │       │   │   └── .gitkeep
 │       │   ├── smoke
 │       │   │   ├── .gitkeep
-│       │   │   └── example_input.json
+│       │   │   ├── example_input.json
+│       │   │   └── test_web_routes.py
 │       │   └── unit
-│       │       └── .gitkeep
+│       │       ├── .gitkeep
+│       │       └── test_formula_registry.py
 │       ├── verification
 │       │   └── .gitkeep
 │       └── webapp
@@ -283,6 +293,7 @@ engineering-calculation-system-skill-pack-v2.2.0/
 │   │   ├── implementation_handoff.yaml
 │   │   └── unresolved_items_before_coding.md
 │   ├── implementation
+│   │   ├── admin_marimo_review_spec.md
 │   │   ├── api_route_skeleton.md
 │   │   ├── batch_flow.md
 │   │   ├── chart_integration.md
@@ -292,6 +303,9 @@ engineering-calculation-system-skill-pack-v2.2.0/
 │   │   ├── dependency_rules.md
 │   │   ├── feature_classification.csv
 │   │   ├── form_mapping_spec.md
+│   │   ├── formula_publish_log.csv
+│   │   ├── formula_registry_spec.md
+│   │   ├── formula_rule_schema.yaml
 │   │   ├── formula_trace_spec.md
 │   │   ├── frontend_fields.csv
 │   │   ├── governing_summary_spec.md

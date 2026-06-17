@@ -18,6 +18,8 @@ marimo run apps/review/<book_name>_review.py
 
 Use `marimo edit` for authoring and engineering development. Use `marimo run` for a read-only review app.
 
+For deployed admin review under the main site, use `marimo run` with token protection and a base URL such as `/admin/review`. Do not expose `marimo edit` in production.
+
 ## Standard Review Page
 
 | Section | Required content |
@@ -41,6 +43,7 @@ Use `marimo edit` for authoring and engineering development. Use `marimo run` fo
 - Saving an edit must write a new draft input or review artifact; do not overwrite final input silently.
 - Module pages may call reusable modules directly for review, but official report generation must use `run_book()`.
 - The page must display warnings/errors and traceability before export.
+- If the page publishes declaration-based formula rules, publishing must validate the rule, run tests, write the publish log, and only then update `data/formula_registry/active_versions.yaml`.
 
 ## Suggested Widgets
 
@@ -66,4 +69,3 @@ outputs/logs/module_review_log.csv
 ```
 
 Do not use the review log as calculation input. It is an audit record.
-

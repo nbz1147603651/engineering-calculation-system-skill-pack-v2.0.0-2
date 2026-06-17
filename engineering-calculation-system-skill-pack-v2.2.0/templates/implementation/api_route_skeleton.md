@@ -6,24 +6,27 @@ Use this template to document the API endpoint architecture for engineering calc
 
 | Item | Selected value | Notes |
 | --- | --- | --- |
-| Framework | Flask / FastAPI | Flask with Blueprint pattern |
+| Primary runtime | Python >=3.9 | Default calculation and web runtime |
+| Framework | Flask / FastAPI | Default scaffold uses Flask with Blueprint pattern |
 | Server | gunicorn (production) / flask dev (development) | — |
 | Serialization | `flask.jsonify` | Structured JSON responses |
 | Error format | `{"status": "error", "message": "..."}` | Consistent error contract |
+| Frontend format | Jinja2 + Bootstrap 5 + vanilla JavaScript modules | Served from `webapp/templates` and `webapp/static` |
 
 ## Endpoint Registry
 
 | Method | Path | Purpose | Input | Output | Auth |
 | --- | --- | --- | --- | --- | --- |
 | GET | `/health` | Deployment health check | none | JSON `{status: "ok"}` | none |
-| GET | `/` | Serve main SPA page | — | HTML | none |
+| GET | `/` | Serve main web UI shell | — | HTML | none |
 | GET | `/api/defaults` | Return default parameters | — | JSON (form defaults) | none |
 | GET | `/api/i18n/<lang>` | Return i18n translations | lang: "en" or "zh" | JSON (key→text) | none |
 | POST | `/api/calculate` | Run calculation | JSON (form data) | JSON (result UI dict) | none |
 | POST | `/api/report/html` | Generate downloadable report | JSON (form data + lang) | HTML file download | none |
 | POST | `/api/report/preview` | Generate report for inline preview | JSON (form data + lang) | JSON `{status, html}` | none |
 | POST | `/api/import/json` | Import configuration | file upload or JSON body | JSON `{status, data}` | none |
-| GET | `/api/export/json` | Export configuration | JSON (form data) | JSON file download | none |
+| POST | `/api/export/json` | Export configuration | JSON (form data) | JSON file download | none |
+| GET | `/admin/review/` | Marimo formula review admin | browser session + token | HTML app | admin token |
 | POST | `/api/optimize` | Auto-optimize parameters | JSON (form data + lang) | JSON (optimal result) | none |
 
 ## Handler Pattern

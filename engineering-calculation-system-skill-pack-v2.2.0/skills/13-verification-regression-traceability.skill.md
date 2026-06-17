@@ -27,6 +27,7 @@ Marimo review smoke tests
 upload/import package manifest and hash tests
 batch smoke tests
 serialization and hash tests
+formula registry validation and publish-gate tests
 deployment smoke tests for local and Linux cloud release paths
 ```
 
@@ -104,6 +105,7 @@ report rendering smoke test exists when reports exist
 web app health and calculate API smoke tests exist when frontend/API exists
 deployment smoke tests or explicit deployment blockers are recorded when final delivery is expected
 traceability metadata exists for production outputs
+formula registry version/hash/published_at are exposed in BookResult when formula registry is used
 run commands are documented
 ```
 

@@ -19,6 +19,7 @@ I18N: dict[str, tuple[str, str]] = {
     "nav_language": ("Language", "语言"),
     "nav_preview": ("Preview Report", "预览报告"),
     "nav_download": ("Download Report", "下载报告"),
+    "nav_admin_review": ("Review Admin", "审查后台"),
 
     # ── Section titles ───────────────────────────────────────────────
     "section_project": ("Project Information", "工程信息"),

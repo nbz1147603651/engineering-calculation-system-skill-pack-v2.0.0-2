@@ -81,6 +81,30 @@ def check_text_required_phrases(root: Path, required: dict[str, list[str]], erro
                 errors.append(f"missing required phrase {phrase!r} in {rel_path}")
 
 
+def check_static_html_delivery_guard(project_root: Path, errors: list[str]) -> None:
+    """Catch static HTML/report-only projects before they are called web apps."""
+    html_files = [
+        path for path in project_root.rglob("*.html")
+        if ".pytest_cache" not in path.parts and "__pycache__" not in path.parts
+    ]
+    if not html_files:
+        return
+
+    runtime_paths = [
+        "webapp/app.py",
+        "webapp/routes.py",
+        "webapp/form_utils.py",
+        "src/pkg/books/book_name/book_runner.py",
+        "tests/smoke/test_web_routes.py",
+    ]
+    missing = [rel_path for rel_path in runtime_paths if not (project_root / rel_path).exists()]
+    if missing:
+        errors.append(
+            "static HTML/report HTML alone is not a production-ready web calculation "
+            f"system; missing runtime artifacts: {', '.join(missing)}"
+        )
+
+
 def check_skill_frontmatter(root: Path, rel_path: str, errors: list[str]) -> None:
     path = root / rel_path
     if not path.exists():
@@ -115,6 +139,9 @@ def validate_project(project_root: Path, contract: dict) -> list[str]:
     for rel_path in contract["project_required_paths"]:
         check_exists(project_root, rel_path, errors)
     check_csv_headers(project_root, contract["project_csv_headers"], errors)
+    check_yaml_required_keys(project_root, contract.get("project_yaml_required_keys", {}), errors)
+    check_text_required_phrases(project_root, contract.get("project_text_required_phrases", {}), errors)
+    check_static_html_delivery_guard(project_root, errors)
     return errors
 
 

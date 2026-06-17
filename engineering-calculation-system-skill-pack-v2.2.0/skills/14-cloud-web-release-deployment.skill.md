@@ -13,6 +13,14 @@ Produce a runnable, traceable, reviewable, modifiable, and Linux-deployable web 
 
 The release is not complete until a fresh operator can run the app locally, inspect traces and source basis, modify decoupled calculation modules, and deploy the same calculation path to a Linux server.
 
+Default release runtime is Python 3.9+ with a Flask or FastAPI application factory, gunicorn or equivalent WSGI/ASGI server, a `webapp/` browser frontend, and optional Marimo review service.
+
+## Static HTML Delivery Guard
+
+Do not package or describe a deliverable as complete, deployable, or production-ready if it is only a static `.html` file, exported report HTML, or a UI mockup.
+
+Final web delivery must include backend runtime files, API routes, frontend assets, calculation modules, the official `run_book()` path, tests, deployment files, and run commands. Static HTML can be included as a report/export artifact or explicit prototype only.
+
 ## Required Inputs
 
 ```text
@@ -52,6 +60,8 @@ non-debug production defaults
 structured error responses that preserve server logs
 ```
 
+When Marimo admin review is embedded in the main site, deploy it as a separate service and proxy it under `/admin/review/`. The release should include Docker Compose service definitions for the main web app and Marimo review app, a shared `data/formula_registry/` volume, an admin token environment variable, and nginx proxy rules for websocket or long-running review sessions.
+
 ## Deployment Package Contents
 
 Create or update:
@@ -61,6 +71,7 @@ deploy/env.example
 deploy/Dockerfile or deploy/systemd/*.service
 deploy/nginx/*.conf when reverse proxy is expected
 deploy/docker-compose.yml when Docker is used
+apps/review/admin_formula_review.py when embedded Marimo admin review is used
 release/release_checklist.md
 release/runbook.md when operational handoff is needed
 ```
@@ -117,6 +128,7 @@ GET /health
 GET /
 POST /api/calculate with a known input
 report preview or export when present
+Marimo admin route /admin/review/ when present
 Docker build/run or systemd command syntax when provided
 artifact validation script
 ```
@@ -134,6 +146,7 @@ cloud Linux deployment command
 deployment files created or updated
 module asset registry status
 traceability and review evidence
+static HTML delivery guard result
 smoke test results
 remaining deployment assumptions
 ```

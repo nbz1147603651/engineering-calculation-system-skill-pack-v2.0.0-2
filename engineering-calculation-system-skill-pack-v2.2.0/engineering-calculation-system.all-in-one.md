@@ -72,6 +72,20 @@ This skill builds engineering calculation books as reusable, auditable software 
 
 Correctness and traceability come first. Reuse comes second. Presentation comes third.
 
+Operational quality and reviewer convenience are part of correctness. Keep implementations maintainable, but do not underbuild validation, traceability, review surfaces, report preview, import/export, or deployment support just to keep the stack minimal.
+
+Default implementation is Python-first:
+
+```text
+calculation modules: Python package under src/<pkg>/libraries/
+book runner: Python run_book(BookInput) -> BookResult
+backend/API: Flask or FastAPI thin route layer
+frontend: browser web app under webapp/
+review/admin: Marimo for Python-native review when needed
+```
+
+If a project uses a non-Python calculation runtime, define the adapter boundary before implementation and do not promise Marimo-native module review unless Python wrappers exist.
+
 Never place engineering formulas in:
 
 ```text
@@ -90,6 +104,8 @@ All official calculation paths must call:
 def run_book(book_input: BookInput) -> BookResult:
     ...
 ```
+
+Do not treat a static `.html` file, exported report HTML, or visual mockup as a complete web calculation system. Final web delivery must include calculation modules, `run_book()`, backend/API runtime files, frontend assets, tests, and release/deployment artifacts unless the user explicitly requested a static prototype.
 
 Operational interfaces should use the shared layout pattern from Skill 12:
 
@@ -169,6 +185,7 @@ feature classification table
 project structure
 input schemas and typed models
 unit system and status semantics
+runtime stack decision
 reusable module interfaces
 module asset registry
 book runner design
@@ -181,6 +198,7 @@ data package import/export contract when needed
 test plan and skeletons
 run commands
 local and cloud Linux deployment commands when final delivery is expected
+proof that final web delivery is not static-HTML-only
 acceptance checklist
 ```
 
@@ -445,10 +463,262 @@ acquisition_handoff.yaml summary
 
 ---
 
+## project_template/engineering_calc_project/apps/review/.gitkeep
+
+review apps live here
+
+
+---
+
+## project_template/engineering_calc_project/apps/review/admin_formula_review.py
+
+from __future__ import annotations
+
+import marimo
+
+
+__generated_with = "0.8.0"
+app = marimo.App(width="full")
+
+
+@app.cell
+def __():
+    import json
+    import marimo as mo
+
+    from pkg.core.formula_registry import (
+        active_registry_metadata,
+        active_versions_path,
+        publish_formula_rule,
+        read_json_yaml,
+        registry_root,
+        validate_formula_rule,
+    )
+
+    return (
+        active_registry_metadata,
+        active_versions_path,
+        json,
+        mo,
+        publish_formula_rule,
+        read_json_yaml,
+        registry_root,
+        validate_formula_rule,
+    )
+
+
+@app.cell
+def __(active_registry_metadata, active_versions_path, mo, registry_root):
+    root = registry_root()
+    metadata = active_registry_metadata(root)
+    mo.md(
+        f"""
+        # Formula Review Admin
+
+        Edit declaration-based formula rules, validate them, and publish a tested
+        active version for the production web calculator.
+
+        **Registry root:** `{root}`
+
+        **Active registry:** `{active_versions_path(root)}`
+
+        **Current version:** `{metadata["formula_registry_version"]}`
+
+        **Current hash:** `{metadata["formula_hash"] or "untracked"}`
+        """
+    )
+    return metadata, root
+
+
+@app.cell
+def __(mo, read_json_yaml, root):
+    active_data = read_json_yaml(root / "active_versions.yaml")
+    active_modules = sorted((active_data.get("active") or {}).keys())
+    if not active_modules:
+        active_modules = ["example_module"]
+    module_select = mo.ui.dropdown(
+        options=active_modules,
+        value=active_modules[0],
+        label="Module",
+    )
+    module_select
+    return active_data, active_modules, module_select
+
+
+@app.cell
+def __(active_data, json, module_select, read_json_yaml, root):
+    module_id = module_select.value
+    module_ref = (active_data.get("active") or {}).get(module_id, {})
+    current_path = root / module_ref.get(
+        "path", f"modules/{module_id}/versions/example_v1.yaml"
+    )
+    current_rule = read_json_yaml(current_path)
+    current_text = json.dumps(current_rule, indent=2, ensure_ascii=False)
+    return current_path, current_rule, current_text, module_id
+
+
+@app.cell
+def __(current_path, mo, module_id):
+    mo.md(
+        f"""
+        ## Review `{module_id}`
+
+        Active rule file: `{current_path}`
+
+        The editor below accepts JSON-compatible YAML. Publishing creates a new
+        version file and updates `active_versions.yaml` only after validation passes.
+        """
+    )
+    return
+
+
+@app.cell
+def __(current_text, mo):
+    rule_editor = mo.ui.text_area(
+        value=current_text,
+        label="Formula rule declaration",
+        full_width=True,
+        rows=28,
+    )
+    rule_editor
+    return (rule_editor,)
+
+
+@app.cell
+def __(json, mo, rule_editor, validate_formula_rule):
+    try:
+        draft_rule = json.loads(rule_editor.value)
+        validation_errors = validate_formula_rule(draft_rule)
+    except Exception as exc:
+        draft_rule = {}
+        validation_errors = [str(exc)]
+
+    if validation_errors:
+        mo.callout(
+            "\n".join(f"- {item}" for item in validation_errors),
+            kind="danger",
+        )
+    else:
+        mo.callout("Draft formula rule is valid and ready to publish.", kind="success")
+    return draft_rule, validation_errors
+
+
+@app.cell
+def __(mo, validation_errors):
+    admin_name = mo.ui.text(value="admin", label="Admin name")
+    publish_notes = mo.ui.text_area(value="", label="Publish notes", rows=3)
+    publish_button = mo.ui.run_button(
+        label="Validate and publish active version",
+        disabled=bool(validation_errors),
+    )
+    mo.vstack([admin_name, publish_notes, publish_button])
+    return admin_name, publish_button, publish_notes
+
+
+@app.cell
+def __(admin_name, draft_rule, mo, publish_button, publish_formula_rule, publish_notes):
+    if publish_button.value:
+        result = publish_formula_rule(
+            draft_rule,
+            admin=admin_name.value or "admin",
+            notes=publish_notes.value or "",
+        )
+        if result["status"] == "published":
+            mo.callout(
+                f"Published `{result['path']}` with sha256 `{result['sha256']}`.",
+                kind="success",
+            )
+        else:
+            mo.callout("\n".join(result["errors"]), kind="danger")
+    else:
+        mo.md("Click publish after reviewing the declaration and validation result.")
+    return
+
+
+@app.cell
+def __(metadata, mo):
+    mo.md(
+        f"""
+        ## Production effect
+
+        After a successful publish, the next request to `/api/calculate` loads the
+        active formula registry version. The browser UI and report templates do not
+        contain engineering formulas.
+
+        Current active modules: `{", ".join(metadata["active_modules"]) or "none"}`
+        """
+    )
+    return
+
+
+if __name__ == "__main__":
+    app.run()
+
+
+---
+
+## project_template/engineering_calc_project/data/formula_registry/active_versions.yaml
+
+{
+  "schema_version": "1.0",
+  "registry_version": "example_v1",
+  "published_at": "2026-06-17T00:00:00+00:00",
+  "active": {
+    "example_module": {
+      "version_id": "example_v1",
+      "path": "modules/example_module/versions/example_v1.yaml",
+      "sha256": "b31a019b5cc468fd3f5a1fe6d0b292a3b5e8b0788cea9d0799e4533da7f17ebd",
+      "published_at": "2026-06-17T00:00:00+00:00"
+    }
+  }
+}
+
+
+---
+
+## project_template/engineering_calc_project/data/formula_registry/modules/example_module/versions/example_v1.yaml
+
+{
+  "schema_version": "1.0",
+  "module_id": "example_module",
+  "version_id": "example_v1",
+  "status": "published",
+  "published_at": "2026-06-17T00:00:00+00:00",
+  "published_by": "system",
+  "description": "Example declaration used by the scaffold to prove formula registry wiring.",
+  "formulas": [
+    {
+      "formula_id": "F-EXAMPLE-001",
+      "name": "Example utilization",
+      "expression": "demand / capacity",
+      "variables": [
+        {"name": "demand", "unit": "kN", "description": "Applied demand"},
+        {"name": "capacity", "unit": "kN", "description": "Available capacity"}
+      ],
+      "output": {"name": "utilization", "unit": "-"},
+      "source_refs": ["SCAFFOLD-EXAMPLE"],
+      "limits": [
+        {"condition": "capacity > 0", "behavior": "error_if_false"}
+      ],
+      "test_cases": [
+        {
+          "name": "half utilization",
+          "inputs": {"demand": 50, "capacity": 100},
+          "expected": 0.5,
+          "tolerance": 1e-09
+        }
+      ]
+    }
+  ]
+}
+
+
+---
+
 ## project_template/engineering_calc_project/deploy/docker-compose.yml
 
 services:
-  engineering-calc-web:
+  web:
     build:
       context: ..
       dockerfile: deploy/Dockerfile
@@ -456,6 +726,29 @@ services:
       - env.example
     ports:
       - "5000:5000"
+    volumes:
+      - ../data:/app/data
+      - ../outputs:/app/outputs
+    restart: unless-stopped
+
+  marimo-review:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    env_file:
+      - env.example
+    command: >
+      sh -c 'test -n "$${ADMIN_REVIEW_TOKEN}" ||
+      (echo "ADMIN_REVIEW_TOKEN is required" >&2; exit 1);
+      marimo run apps/review/admin_formula_review.py
+      --host 0.0.0.0
+      --port "$${MARIMO_PORT:-2718}"
+      --base-url "$${MARIMO_BASE_URL:-/admin/review}"
+      --headless
+      --token
+      --token-password "$${ADMIN_REVIEW_TOKEN}"'
+    ports:
+      - "2718:2718"
     volumes:
       - ../data:/app/data
       - ../outputs:/app/outputs
@@ -473,17 +766,24 @@ ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/app/src
 ENV APP_HOST=0.0.0.0
 ENV APP_PORT=5000
+ENV MARIMO_PORT=2718
+ENV MARIMO_BASE_URL=/admin/review
+ENV FORMULA_REGISTRY_DIR=/app/data/formula_registry
 ENV FLASK_DEBUG=0
 
 WORKDIR /app
 
 COPY pyproject.toml README.md ./
-RUN pip install --no-cache-dir "flask>=3.0" "gunicorn>=21.2"
+RUN pip install --no-cache-dir "flask>=3.0" "gunicorn>=21.2" "marimo>=0.8"
 
 COPY src ./src
 COPY webapp ./webapp
+COPY apps ./apps
+COPY data ./data
+RUN mkdir -p /app/outputs/logs
 
 EXPOSE 5000
+EXPOSE 2718
 
 CMD ["gunicorn", "webapp.app:create_app()", "--bind", "0.0.0.0:5000", "--workers", "2"]
 
@@ -496,8 +796,14 @@ APP_HOST=0.0.0.0
 APP_PORT=5000
 FLASK_DEBUG=0
 SECRET_KEY=change-me-on-server
-DATA_DIR=/var/lib/engineering-calc/data
-OUTPUT_DIR=/var/lib/engineering-calc/outputs
+DATA_DIR=/app/data
+OUTPUT_DIR=/app/outputs
+FORMULA_REGISTRY_DIR=/app/data/formula_registry
+FORMULA_PUBLISH_LOG=/app/outputs/logs/formula_publish_log.csv
+APP_BASE_URL=https://example.com
+MARIMO_BASE_URL=/admin/review
+MARIMO_PORT=2718
+ADMIN_REVIEW_TOKEN=change-this-admin-review-token
 
 
 ---
@@ -509,6 +815,22 @@ server {
     server_name example.com;
 
     client_max_body_size 25m;
+
+    # In production, terminate HTTPS here or in the platform load balancer.
+    # After certificates are installed, redirect HTTP to HTTPS:
+    # return 301 https://$host$request_uri;
+
+    location /admin/review/ {
+        proxy_pass http://127.0.0.1:2718/admin/review/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 3600;
+    }
 
     location / {
         proxy_pass http://127.0.0.1:5000;
@@ -562,6 +884,7 @@ requires-python = ">=3.9"
 web = [
     "flask>=3.0",
     "gunicorn>=21.2",
+    "marimo>=0.8",
 ]
 review = [
     "marimo>=0.8",
@@ -590,6 +913,22 @@ references -> analysis -> handoff -> implementation -> src -> tests -> deploy ->
 
 Start with `references/acquisition/` when materials are missing or insufficient.
 
+## Default Stack
+
+```text
+Primary runtime: Python 3.9+
+Calculation modules: Python package under src/pkg/libraries/
+Official runner: src/pkg/books/book_name/book_runner.py::run_book
+Backend/API: Flask application factory at webapp.app:create_app()
+Frontend format: Jinja2 templates + Bootstrap 5 + vanilla JavaScript modules
+Frontend files: webapp/templates/ and webapp/static/
+Review/admin: Marimo when enabled
+```
+
+The browser UI is a web application served by the Python backend. It is not a standalone static HTML deliverable, and it must not contain engineering formulas.
+
+Operational quality and reviewer convenience take priority over minimal dependencies. Keep the implementation maintainable, but do not remove validation, traces, report preview, import/export, or review tooling when they make engineering work safer or faster.
+
 ## Validate
 
 From this directory:
@@ -601,7 +940,7 @@ python3 -m pytest -q
 ## Run Locally
 
 ```bash
-python3 -m pip install "flask>=3.0" "gunicorn>=21.2"
+python3 -m pip install "flask>=3.0" "gunicorn>=21.2" "marimo>=0.8"
 python3 -m webapp.app
 ```
 
@@ -613,17 +952,35 @@ curl -fsS http://127.0.0.1:5000/health
 
 ## Deploy on Linux
 
-Docker path:
+Docker Compose path:
 
 ```bash
-docker compose -f deploy/docker-compose.yml up --build
+cd deploy
+# edit SECRET_KEY and ADMIN_REVIEW_TOKEN before production use
+docker compose up -d --build
 ```
+
+Main app: `http://127.0.0.1:5000/`
+
+Marimo admin review: `http://127.0.0.1:2718/`
+
+Behind nginx, expose the admin page at `https://example.com/admin/review/`.
 
 systemd/gunicorn path:
 
 ```bash
 gunicorn "webapp.app:create_app()" --bind 127.0.0.1:5000 --workers 2
 ```
+
+Formula registry:
+
+```text
+data/formula_registry/active_versions.yaml
+data/formula_registry/modules/<module_id>/versions/<version_id>.yaml
+outputs/logs/formula_publish_log.csv
+```
+
+The Marimo admin app may publish declaration-based formulas only after validation passes. The browser UI and report templates must not contain engineering formulas.
 
 From the skill pack root:
 
@@ -639,6 +996,9 @@ python3 scripts/validate_artifacts.py --package-root . --project project_templat
 # Release Checklist
 
 - [ ] Source basis and implementation handoff are recorded.
+- [ ] Runtime stack is recorded: Python 3.9+ primary runtime unless an explicit adapter plan exists.
+- [ ] Frontend format is recorded: Jinja2 + Bootstrap 5 + vanilla JavaScript modules unless explicitly overridden.
+- [ ] Operator workflow quality is not reduced merely to minimize dependencies.
 - [ ] Calculation modules are decoupled and listed in `implementation/02_modules/module_asset_registry.csv`.
 - [ ] Official calculation path is `run_book(BookInput) -> BookResult`.
 - [ ] Web/API/report/batch layers do not implement formulas.
@@ -647,6 +1007,11 @@ python3 scripts/validate_artifacts.py --package-root . --project project_templat
 - [ ] Cloud Linux deployment files are present under `deploy/`.
 - [ ] `/health` endpoint passes.
 - [ ] `POST /api/calculate` smoke test passes with known input.
+- [ ] Delivery is not only a static `.html` file, exported report HTML, or mockup unless explicitly labeled as a non-production prototype.
+- [ ] Marimo admin review smoke test passes when enabled.
+- [ ] `ADMIN_REVIEW_TOKEN` is set outside source code.
+- [ ] `data/formula_registry/active_versions.yaml` is shared by web and Marimo services.
+- [ ] Formula publish failures do not change the active version.
 - [ ] Production debug mode is disabled.
 - [ ] Secrets are environment-based and not committed.
 - [ ] Data and output persistence paths are documented.
@@ -724,6 +1089,9 @@ class BookResult:
     intermediate_values: dict[str, Any] = field(default_factory=dict)
     warnings: list[str] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
+    formula_registry_version: str = "unversioned"
+    formula_hash: str | None = None
+    formula_published_at: str | None = None
 
 
 ---
@@ -734,17 +1102,26 @@ from __future__ import annotations
 
 from .book_models import BookInput, BookResult, GoverningSummary
 from pkg.core.enums import Status
+from pkg.core.formula_registry import active_registry_metadata
 
 
 def run_book(book_input: BookInput) -> BookResult:
     """Official calculation entry point. Interfaces, reports, and batch must call this."""
+    formula_metadata = active_registry_metadata()
     checks = []
     governing = GoverningSummary(
         overall_status=Status.NOT_EVALUATED,
         warnings_count=0,
         errors_count=0,
     )
-    return BookResult(project=book_input.project, governing=governing, checks=checks)
+    return BookResult(
+        project=book_input.project,
+        governing=governing,
+        checks=checks,
+        formula_registry_version=formula_metadata["formula_registry_version"],
+        formula_hash=formula_metadata["formula_hash"],
+        formula_published_at=formula_metadata["formula_published_at"],
+    )
 
 
 ---
@@ -843,6 +1220,256 @@ class Status(str, Enum):
     NOT_APPLICABLE = "NOT_APPLICABLE"
     NEEDS_CONFIRMATION = "NEEDS_CONFIRMATION"
     NOT_EVALUATED = "NOT_EVALUATED"
+
+
+---
+
+## project_template/engineering_calc_project/src/pkg/core/formula_registry.py
+
+from __future__ import annotations
+
+import ast
+import csv
+import hashlib
+import json
+import math
+import os
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+DEFAULT_REGISTRY_DIR = PROJECT_ROOT / "data" / "formula_registry"
+PUBLISH_LOG_DEFAULT = PROJECT_ROOT / "outputs" / "logs" / "formula_publish_log.csv"
+
+SAFE_FUNCTIONS = {
+    "abs": abs,
+    "max": max,
+    "min": min,
+    "pow": pow,
+    "round": round,
+    "sqrt": math.sqrt,
+    "sin": math.sin,
+    "cos": math.cos,
+    "tan": math.tan,
+    "log": math.log,
+    "log10": math.log10,
+    "exp": math.exp,
+}
+SAFE_CONSTANTS = {"pi": math.pi, "e": math.e}
+ALLOWED_AST_NODES = (
+    ast.Expression,
+    ast.BinOp,
+    ast.UnaryOp,
+    ast.Add,
+    ast.Sub,
+    ast.Mult,
+    ast.Div,
+    ast.Pow,
+    ast.Mod,
+    ast.USub,
+    ast.UAdd,
+    ast.Load,
+    ast.Name,
+    ast.Constant,
+    ast.Call,
+)
+
+
+def utc_now() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+
+
+def registry_root() -> Path:
+    return Path(os.environ.get("FORMULA_REGISTRY_DIR", DEFAULT_REGISTRY_DIR)).resolve()
+
+
+def read_json_yaml(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        return {}
+    text = path.read_text(encoding="utf-8").strip()
+    if not text:
+        return {}
+    return json.loads(text)
+
+
+def write_json_yaml(path: Path, data: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def sha256_text(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def safe_eval_expression(expression: str, variables: dict[str, float]) -> float:
+    tree = ast.parse(expression, mode="eval")
+    names = set(variables) | set(SAFE_CONSTANTS) | set(SAFE_FUNCTIONS)
+    for node in ast.walk(tree):
+        if not isinstance(node, ALLOWED_AST_NODES):
+            raise ValueError(f"Unsupported expression element: {type(node).__name__}")
+        if isinstance(node, ast.Name) and node.id not in names:
+            raise ValueError(f"Unknown variable or function: {node.id}")
+        if isinstance(node, ast.Call):
+            if not isinstance(node.func, ast.Name) or node.func.id not in SAFE_FUNCTIONS:
+                raise ValueError("Only whitelisted math functions may be called")
+    scope = dict(SAFE_CONSTANTS)
+    scope.update(SAFE_FUNCTIONS)
+    scope.update(variables)
+    return float(eval(compile(tree, "<formula>", "eval"), {"__builtins__": {}}, scope))
+
+
+def validate_formula_rule(rule: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    required = ["module_id", "version_id", "formulas"]
+    for key in required:
+        if not rule.get(key):
+            errors.append(f"missing required field: {key}")
+
+    formulas = rule.get("formulas")
+    if not isinstance(formulas, list) or not formulas:
+        errors.append("formulas must be a non-empty list")
+        return errors
+
+    for index, formula in enumerate(formulas):
+        prefix = f"formulas[{index}]"
+        expression = formula.get("expression")
+        if not expression:
+            errors.append(f"{prefix}.expression is required")
+            continue
+        variables = formula.get("variables") or []
+        variable_names = [item.get("name") for item in variables if isinstance(item, dict)]
+        if not all(variable_names):
+            errors.append(f"{prefix}.variables must define names")
+            continue
+        sample_values = {name: 1.0 for name in variable_names}
+        try:
+            safe_eval_expression(expression, sample_values)
+        except Exception as exc:
+            errors.append(f"{prefix}.expression is invalid: {exc}")
+
+        for case_index, case in enumerate(formula.get("test_cases", []) or []):
+            inputs = case.get("inputs") or {}
+            expected = case.get("expected")
+            tolerance = float(case.get("tolerance", 1e-9))
+            if expected is None:
+                errors.append(f"{prefix}.test_cases[{case_index}].expected is required")
+                continue
+            try:
+                actual = safe_eval_expression(expression, {k: float(v) for k, v in inputs.items()})
+            except Exception as exc:
+                errors.append(f"{prefix}.test_cases[{case_index}] failed to run: {exc}")
+                continue
+            if abs(actual - float(expected)) > tolerance:
+                errors.append(
+                    f"{prefix}.test_cases[{case_index}] expected {expected}, got {actual}"
+                )
+    return errors
+
+
+def active_versions_path(root: Path | None = None) -> Path:
+    return (root or registry_root()) / "active_versions.yaml"
+
+
+def load_active_versions(root: Path | None = None) -> dict[str, Any]:
+    return read_json_yaml(active_versions_path(root))
+
+
+def get_active_module(root: Path | None, module_id: str) -> dict[str, Any] | None:
+    active = load_active_versions(root).get("active", {})
+    module_ref = active.get(module_id)
+    if not module_ref:
+        return None
+    path = (root or registry_root()) / module_ref["path"]
+    rule = read_json_yaml(path)
+    rule["_registry_path"] = str(path)
+    rule["_registry_sha256"] = sha256_file(path)
+    return rule
+
+
+def active_registry_metadata(root: Path | None = None) -> dict[str, Any]:
+    data = load_active_versions(root)
+    active = data.get("active", {})
+    digest_source = json.dumps(active, sort_keys=True, ensure_ascii=False)
+    return {
+        "formula_registry_version": data.get("registry_version", "unversioned"),
+        "formula_hash": sha256_text(digest_source) if active else None,
+        "formula_published_at": data.get("published_at"),
+        "active_modules": sorted(active),
+    }
+
+
+def publish_formula_rule(
+    rule: dict[str, Any],
+    *,
+    root: Path | None = None,
+    admin: str = "admin",
+    notes: str = "",
+) -> dict[str, Any]:
+    root = root or registry_root()
+    errors = validate_formula_rule(rule)
+    status = "failed" if errors else "published"
+    module_id = str(rule.get("module_id", "unknown"))
+    version_id = str(rule.get("version_id", datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")))
+    rule = dict(rule)
+    rule["module_id"] = module_id
+    rule["version_id"] = version_id
+    rule["published_at"] = utc_now()
+    rule["published_by"] = admin
+    rule["status"] = status
+    rule["validation_errors"] = errors
+
+    version_rel = Path("modules") / module_id / "versions" / f"{version_id}.yaml"
+    version_path = root / version_rel
+    write_json_yaml(version_path, rule)
+    digest = sha256_file(version_path)
+
+    if not errors:
+        active_path = active_versions_path(root)
+        active = read_json_yaml(active_path) or {"schema_version": "1.0", "active": {}}
+        active["registry_version"] = version_id
+        active["published_at"] = rule["published_at"]
+        active.setdefault("active", {})[module_id] = {
+            "version_id": version_id,
+            "path": version_rel.as_posix(),
+            "sha256": digest,
+            "published_at": rule["published_at"],
+        }
+        write_json_yaml(active_path, active)
+
+    append_publish_log(
+        {
+            "timestamp": rule["published_at"],
+            "admin": admin,
+            "module_id": module_id,
+            "version_id": version_id,
+            "status": status,
+            "sha256": digest,
+            "notes": notes or "; ".join(errors),
+        }
+    )
+    return {"status": status, "errors": errors, "path": str(version_path), "sha256": digest}
+
+
+def append_publish_log(row: dict[str, Any], path: Path | None = None) -> None:
+    path = path or Path(os.environ.get("FORMULA_PUBLISH_LOG", PUBLISH_LOG_DEFAULT))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    exists = path.exists()
+    fieldnames = ["timestamp", "admin", "module_id", "version_id", "status", "sha256", "notes"]
+    with path.open("a", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        if not exists:
+            writer.writeheader()
+        writer.writerow({key: row.get(key, "") for key in fieldnames})
 
 
 ---
@@ -1035,9 +1662,99 @@ def test_run_book_returns_result():
 
 ---
 
+## project_template/engineering_calc_project/tests/smoke/test_web_routes.py
+
+from webapp.app import create_app
+
+
+def test_health_and_calculate_routes():
+    client = create_app().test_client()
+
+    assert client.get("/health").status_code == 200
+    response = client.post(
+        "/api/calculate",
+        json={"project": {"project_id": "P001", "case_id": "C001", "title": "Example"}},
+    )
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert payload["formula_registry"]["version"]
+
+
+def test_export_json_accepts_posted_form_data():
+    client = create_app().test_client()
+
+    response = client.post(
+        "/api/export/json",
+        json={"project": {"project_id": "P002", "case_id": "C002", "title": "Export"}},
+    )
+    assert response.status_code == 200
+    assert response.headers["Content-Type"].startswith("application/json")
+
+
+---
+
 ## project_template/engineering_calc_project/tests/unit/.gitkeep
 
 
+
+
+---
+
+## project_template/engineering_calc_project/tests/unit/test_formula_registry.py
+
+from pkg.core.formula_registry import (
+    active_registry_metadata,
+    publish_formula_rule,
+    safe_eval_expression,
+    validate_formula_rule,
+)
+
+
+def _rule(version_id: str = "v1"):
+    return {
+        "module_id": "bearing",
+        "version_id": version_id,
+        "formulas": [
+            {
+                "formula_id": "F001",
+                "name": "utilization",
+                "expression": "demand / capacity",
+                "variables": [
+                    {"name": "demand", "unit": "kN"},
+                    {"name": "capacity", "unit": "kN"},
+                ],
+                "test_cases": [
+                    {
+                        "inputs": {"demand": 25, "capacity": 100},
+                        "expected": 0.25,
+                        "tolerance": 1e-9,
+                    }
+                ],
+            }
+        ],
+    }
+
+
+def test_safe_eval_rejects_unknown_functions():
+    try:
+        safe_eval_expression("__import__('os').system('echo unsafe')", {})
+    except ValueError:
+        return
+    raise AssertionError("unsafe expression should be rejected")
+
+
+def test_validate_formula_rule_runs_declared_test_cases():
+    assert validate_formula_rule(_rule()) == []
+
+
+def test_publish_formula_rule_updates_active_registry(tmp_path, monkeypatch):
+    monkeypatch.setenv("FORMULA_PUBLISH_LOG", str(tmp_path / "publish_log.csv"))
+    result = publish_formula_rule(_rule("v2"), root=tmp_path, admin="tester")
+    assert result["status"] == "published"
+
+    metadata = active_registry_metadata(tmp_path)
+    assert metadata["formula_registry_version"] == "v2"
+    assert metadata["formula_hash"]
 
 
 ---
@@ -1128,6 +1845,7 @@ PORT = int(os.environ.get("APP_PORT", "5000"))
 # Persistent runtime paths
 DATA_DIR = Path(os.environ.get("DATA_DIR", DATA_DIR))
 OUTPUT_DIR = Path(os.environ.get("OUTPUT_DIR", OUTPUT_DIR))
+FORMULA_REGISTRY_DIR = Path(os.environ.get("FORMULA_REGISTRY_DIR", DATA_DIR / "formula_registry"))
 
 # Default calculation parameters — served on page load so the user
 # can calculate immediately without filling every field.
@@ -1246,7 +1964,7 @@ def build_case_input_from_form(data: dict) -> BookInput:
     project = ProjectInfo(
         project_id=proj.get("project_id", "UNKNOWN"),
         case_id=proj.get("case_id", "CASE_001"),
-        title=proj.get("title", "Untitled Project"),
+        title=proj.get("title") or proj.get("project_name", "Untitled Project"),
     )
 
     # Scaffold: add book-specific input groups here.
@@ -1274,6 +1992,7 @@ def book_input_to_form(bi: BookInput) -> dict:
         "project": {
             "project_id": bi.project.project_id,
             "case_id": bi.project.case_id,
+            "project_name": bi.project.title,
             "title": bi.project.title,
         },
         "design_options": bi.design_options,
@@ -1331,6 +2050,11 @@ def case_result_to_ui(r: BookResult, bi: BookInput) -> dict:
     # Warnings and errors
     out["warnings"] = r.warnings
     out["errors"] = r.errors
+    out["formula_registry"] = {
+        "version": r.formula_registry_version,
+        "hash": r.formula_hash,
+        "published_at": r.formula_published_at,
+    }
 
     # Sanitize non-finite floats
     sanitized, sanitize_warnings = _sanitize_json(out)
@@ -1369,6 +2093,7 @@ I18N: dict[str, tuple[str, str]] = {
     "nav_language": ("Language", "语言"),
     "nav_preview": ("Preview Report", "预览报告"),
     "nav_download": ("Download Report", "下载报告"),
+    "nav_admin_review": ("Review Admin", "审查后台"),
 
     # ── Section titles ───────────────────────────────────────────────
     "section_project": ("Project Information", "工程信息"),
@@ -1600,7 +2325,7 @@ def api_import_json():
         }), 400
 
 
-@bp.route("/api/export/json")
+@bp.route("/api/export/json", methods=["GET", "POST"])
 def api_export_json():
     """Export current configuration as JSON file."""
     try:
@@ -1704,6 +2429,18 @@ def server_error(e):
 .util-bar-fill.safe   { background-color: #198754; }
 .util-bar-fill.caution { background-color: #ffc107; }
 .util-bar-fill.fail   { background-color: #dc3545; }
+
+.status-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    background-color: #f8f9fa;
+    color: #495057;
+    font-size: 0.875rem;
+}
 
 /* ── Chart containers ─────────────────────────────────────────────── */
 .chart-container {
@@ -2081,6 +2818,7 @@ function renderResults(data) {
 
     // Governing summary
     renderGoverning(data.governing);
+    renderFormulaRegistry(data.formula_registry);
 
     // Warnings banner
     if (data.warnings && data.warnings.length > 0) {
@@ -2155,6 +2893,8 @@ function clearResults() {
     showPlaceholder();
     const box = document.getElementById("governingBox");
     if (box) box.classList.add("d-none");
+    const strip = document.getElementById("formulaRegistryStrip");
+    if (strip) strip.classList.add("d-none");
     const btnPreview = document.getElementById("btnPreviewReport");
     if (btnPreview) btnPreview.disabled = true;
     hideWarnings();
@@ -2193,6 +2933,20 @@ function showError(message) {
         box.classList.add("alert-danger");
         box.innerHTML = `<strong>Error:</strong> ${message}`;
     }
+}
+
+function renderFormulaRegistry(registry) {
+    const strip = document.getElementById("formulaRegistryStrip");
+    if (!strip || !registry) return;
+
+    const hash = registry.hash ? registry.hash.substring(0, 12) : "untracked";
+    const published = registry.published_at || "not published";
+    strip.classList.remove("d-none");
+    strip.innerHTML = `
+        <span><strong>Formula version:</strong> ${registry.version || "unversioned"}</span>
+        <span><strong>Hash:</strong> ${hash}</span>
+        <span><strong>Published:</strong> ${published}</span>
+    `;
 }
 
 
@@ -2238,6 +2992,12 @@ function showError(message) {
                         <button class="btn btn-outline-light btn-sm me-2 mt-1" id="btnExportJson" data-i18n="nav_export">
                             Export JSON
                         </button>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-outline-warning btn-sm me-2 mt-1" href="/admin/review/" target="_blank" rel="noopener">
+                            <i class="bi bi-shield-lock me-1"></i>
+                            <span data-i18n="nav_admin_review">Review Admin</span>
+                        </a>
                     </li>
                 </ul>
                 <div class="d-flex align-items-center gap-2">
@@ -2357,6 +3117,7 @@ function showError(message) {
 
             <!-- Governing status box (hidden until calculated) -->
             <div id="governingBox" class="alert d-none mb-3" role="alert"></div>
+            <div id="formulaRegistryStrip" class="status-strip d-none mb-3"></div>
 
             <!-- Scaffold: add book-specific result cards here -->
             <!-- Each card follows the pattern:
@@ -2400,7 +3161,24 @@ polished frontend with left-side inputs and right-side review results
 Marimo review pages for module-level inspection and draft edits
 managed data/report import and uploadable calculation packages
 runnable local web client and Linux-cloud deployable web service
+embedded Marimo admin review for declaration-based formula publishing
 ```
+
+A final web calculation system uses a Python-first stack by default:
+
+```text
+primary runtime: Python 3.9+
+calculation modules: src/<pkg>/libraries/
+official runner: run_book(BookInput) -> BookResult
+backend/API: Flask or FastAPI
+frontend format: browser web app served from webapp/
+default UI files: Jinja2 templates, Bootstrap 5 CSS, vanilla JavaScript modules
+review/admin: Marimo when Python-native review is needed
+```
+
+The goal is operational quality and convenience, not minimalism for its own sake. The default stack stays simple so projects remain maintainable, but features such as validation, trace review, report preview, import/export, charts, i18n, and Marimo review should be included when they make engineering work safer or faster.
+
+A final web calculation system is not complete when the deliverable is only a static `.html` file, exported report HTML, or UI mockup. Production delivery must include reusable calculation modules, the official runner, backend API/application entrypoint, frontend assets, tests, local run commands, and a Linux/cloud deployment path unless the user explicitly requests a static prototype.
 
 v2.2.0 splits the interface layer into a lightweight router plus three focused subskills:
 
@@ -2488,6 +3266,7 @@ handoff/implementation_handoff.yaml
 handoff/artifact_index.yaml
 handoff/coding_go_no_go.md
 implementation/02_modules/module_asset_registry.csv
+handoff calculation/backend/frontend/release contracts
 deploy/
 release/release_checklist.md
 ```
@@ -2524,179 +3303,172 @@ python3 -m pytest -q
 
 # 工程计算系统技能包 v2.2.0
 
-本包把工程计算软件工作流升级为三段式闭环：
+本技能包把工程计算软件开发组织成完整交付生命周期：
 
 ```text
-资料获取与本地持久化
-→ 资料分析与计算逻辑蓝图
-→ 编程实现与验证追溯
+资料获取与本地证据库
+-> 资料分析与计算逻辑蓝图
+-> 编程实现、报告、批量计算、验证、追溯、发布与 Linux 云部署
 ```
 
-适用场景：
+实现阶段默认采用可审查、可复用、可部署的工程计算系统，而不是一次性页面或脚本。
+
+## 默认技术栈
+
+本技能包默认采用 Python-first 技术栈：
 
 ```text
-没有资料，但用户想建立工程计算程序
-资料不足，无法安全抽取公式/分支/查表
-已有资料，需要分析成 Calculation Logic Blueprint
-已有 Blueprint / handoff，需要架构编程
-已有代码，需要重构、测试、报告、批量计算
+主运行时: Python 3.9+
+计算模块: src/<pkg>/libraries/ 下的 Python package
+官方计算入口: run_book(BookInput) -> BookResult
+后端/API: Flask 或 FastAPI 的薄路由层
+前端格式: webapp/ 下的浏览器网页应用
+默认网页文件: Jinja2 模板 + Bootstrap 5 + vanilla JavaScript modules
+审查/后台: 需要 Python 原生模块审查或公式发布时使用 Marimo
 ```
 
-## v2.0 的核心变化
+如果用户明确要求非 Python 计算核心，handoff 必须补充适配方案。Marimo 是 Python 原生工具，不能直接深入审查非 Python 模块，除非提供 Python wrapper、CLI 或 API adapter。
 
-v1.0 已经解决了：
+## 质量优先原则
+
+不要为了轻量而轻量。优先保证工程师和审查人的操作质量、便捷性、可追溯性和发布可靠性。
+
+默认技术栈保持简单，是为了降低维护成本；但如果输入校验、导入导出、报告预览、图表、i18n、公式/来源追踪、Marimo 审查后台能显著提升工程质量，就应纳入交付范围，而不是为了少依赖而删除。
+
+## 核心原则
 
 ```text
-资料分析
-→ Calculation Logic Blueprint
-→ Implementation Handoff Contract
-→ Calculation Book Implementation
+正确性和可追溯性优先
+计算模块复用性其次
+前端、报告和展示层最后
 ```
 
-v2.0 新增前置层：
+正式计算必须流经：
+
+```python
+run_book(BookInput) -> BookResult
+```
+
+公式、查表、分支判断、荷载组合和独立通过/失败逻辑不得放在：
 
 ```text
-Reference Adequacy Assessment
-→ Reference Discovery and Acquisition
-→ Reference Persistence and Local Evidence Library
+UI / 前端 JavaScript
+HTML 模板
+报告模板
+批处理脚本
+CSV / Excel 输入文件
+仅用于展示的代码
 ```
 
-这意味着当没有资料或资料不足时，模型不应该直接编造公式，也不应该勉强编码，而应该先：
+## 交付边界
+
+最终 Web 工程计算系统不能只交付一个 `.html` 文件、导出的 HTML 报告或静态界面 mockup。
+
+除非用户明确只要静态原型，否则生产交付必须包含：
 
 ```text
-判断资料缺口
-制定检索计划
-充分调用可用的上网搜索 / 浏览 / 检索工具寻找权威资料
-筛选候选来源
-把可保存内容、来源卡片、摘录、检索日志、覆盖矩阵持久化到本地
-再进入资料分析
+可复用计算模块
+官方 book runner
+后端应用入口 create_app()
+薄 API 路由
+前端模板和静态资源
+表单到 BookInput 的映射
+BookResult 到 UI 的映射
+单元、集成和 smoke 测试
+本地运行命令
+Linux / 云部署路径
+release checklist
 ```
 
-## 推荐主流程
+HTML 报告属于输出产物，不等同于应用本身。
+
+## 主流程
 
 ```text
-00-router
-→ 01-reference-adequacy-and-gap-assessment
-→ 02-reference-discovery-and-acquisition
-→ 03-reference-persistence-and-local-library
-→ 04-source-intake-and-authority
-→ 05-engineering-logic-blueprint
-→ 06-formula-lookup-branch-extraction
-→ 07-implementation-handoff-contract
-→ 08-calculation-book-architecture
-→ 09-core-and-data-models
-→ 10-reusable-calculation-modules
-→ 11-book-runner-and-governing-summary
-→ 12-report-review-batch-interfaces（接口层路由）
-→ 12a-report-context-and-rendering（报告上下文与渲染）
-→ 12b-frontend-and-review-interfaces（前端与审查界面）
-→ 12c-batch-import-export-packages（批量、导入导出、上传包）
-→ 13-verification-regression-traceability
+00 router
+01 reference adequacy and gap assessment
+02 reference discovery and acquisition
+03 reference persistence and local library
+04 source intake and authority
+05 engineering logic blueprint
+06 formula lookup branch extraction
+07 implementation handoff contract
+08 calculation book architecture
+09 core and data models
+10 reusable calculation modules
+11 book runner and governing summary
+12 report review batch interface router
+12a report context and rendering
+12b frontend and review interfaces
+12c batch import/export packages
+13 verification regression traceability
+14 cloud web release deployment
 ```
 
-## 三个父级编排技能
+## v2.2.0 接口层拆分
 
 ```text
-parent/engineering-calculation-reference-acquisition.skill.md
-parent/engineering-calculation-logic-architecture.skill.md
-parent/engineering-calculation-book.skill.md
+12  接口路由：报告、前端、审查、批量和发布范围判断
+12a 报告上下文、渲染、报告状态和模板边界
+12b 生产前端、API、表单映射、i18n、图表、数值清洗和 Marimo 审查
+12c 数据区、上传包、导入导出、哈希、清单和批量运行
+14  本地可运行 Web 客户端、Linux 云部署和发布 smoke test
 ```
 
-父级技能只负责编排，子技能负责具体任务。这样既避免两个巨型技能过重，也避免碎片化失控。
-
-## Agent 入口
-
-Codex 兼容环境优先使用根目录：
-
-```text
-SKILL.md
-```
-
-Qoder / Trae / opencode 等环境可参考：
-
-```text
-adapters/agent-entrypoints.md
-```
-
-其中 Qoder 适配文件位于 `.qoder/`，Trae 项目规则入口位于 `.trae/rules/engineering-calc-system.md`。
-
-如果目标环境不适合加载多个文件，使用单文件版本：
-
-```text
-engineering-calculation-system.all-in-one.md
-```
-
-## 最关键的接口文件
+## 关键 handoff 产物
 
 ```text
 references/acquisition/acquisition_handoff.yaml
 references/source_registry.yaml
 analysis/02_logic_blueprint/calculation_blueprint.md
 analysis/03_logic_details/formula_inventory.csv
+analysis/03_logic_details/lookup_inventory.csv
+analysis/03_logic_details/branch_inventory.csv
 handoff/implementation_handoff.yaml
 handoff/artifact_index.yaml
 handoff/coding_go_no_go.md
+implementation/02_modules/module_asset_registry.csv
+verification/acceptance_checklist.md
+release/release_checklist.md
 ```
 
-其中：
+`implementation_handoff.yaml` 现在应明确区分：
 
 ```text
-acquisition_handoff.yaml
+calculation_module_contract
+book_runner_contract
+backend_api_contract
+frontend_contract
+release_contract
 ```
 
-连接“找资料”与“分析资料”；
+这样下游实现者能知道哪些内容属于计算核心，哪些属于后端 API，哪些属于前端界面，哪些属于最终发布。
 
-```text
-implementation_handoff.yaml
-```
+## 入口文件
 
-连接“分析资料”与“架构编程”。
-
-## 本地持久化原则
-
-```text
-用户上传或授权保存的原始资料 → references/raw/
-公开可下载且允许保存的资料 → references/raw/
-不能或不应完整保存的资料 → references/source_cards/ + references/extracted/notes/
-检索过程 → references/acquisition/search_log.csv
-候选资料 → references/acquisition/candidate_sources.csv
-资料覆盖情况 → references/acquisition/source_coverage_matrix.csv
-资料注册表 → references/source_registry.yaml
-```
-
-不要绕过付费墙、登录限制、版权限制或访问控制。对于标准、规范、教材、论文等受版权保护内容，应优先保存来源卡片、短摘录、条款编号、页码、摘要和引用信息，而不是保存大段原文。
-
-## 安装建议
-
-复制以下目录到你的技能环境：
+Codex 兼容环境优先从根目录加载：
 
 ```text
 SKILL.md
-agents/
-adapters/
-parent/
-skills/
-shared/
-templates/
-schemas/
-scripts/
 ```
 
-跨 Agent 可选目录：
+其他 Agent 可参考：
 
 ```text
-.qoder/
-.trae/
-project_template/
-examples/
-workflow_diagrams/
+adapters/agent-entrypoints.md
 ```
 
-如果你的环境不适合加载多个技能，可以使用：
+如果目标环境不适合加载多个文件，可使用：
 
 ```text
 engineering-calculation-system.all-in-one.md
 ```
+
+## 版权和访问规则
+
+不要绕过付费墙、登录限制、许可限制或访问控制。只有在用户提供、明确授权，或公开可下载且允许合理使用时，才保存完整原始资料。
+
+对于受版权保护的规范、标准、手册、论文和教材，优先保存来源卡片、引用信息、条款号、页码、短摘录和改写摘要，而不是保存大段原文。
 
 ## 校验
 
@@ -2706,13 +3478,13 @@ engineering-calculation-system.all-in-one.md
 python3 scripts/validate_artifacts.py --package-root .
 ```
 
-校验内置工程骨架：
+校验内置工程模板：
 
 ```bash
 python3 scripts/validate_artifacts.py --package-root . --project project_template/engineering_calc_project
 ```
 
-运行骨架最小测试：
+运行模板测试：
 
 ```bash
 cd project_template/engineering_calc_project
@@ -2755,12 +3527,16 @@ status: complete_packaged_release
     "templates/implementation/status_semantics.md",
     "templates/implementation/unit_system.md",
     "templates/implementation/formula_trace_spec.md",
+    "templates/implementation/formula_registry_spec.md",
+    "templates/implementation/formula_rule_schema.yaml",
+    "templates/implementation/formula_publish_log.csv",
     "templates/implementation/lookup_module_spec.md",
     "templates/implementation/governing_summary_spec.md",
     "templates/implementation/input_mapping_spec.md",
     "templates/implementation/ui_layout_spec.md",
     "templates/implementation/import_export_contract.md",
     "templates/implementation/marimo_review_spec.md",
+    "templates/implementation/admin_marimo_review_spec.md",
     "templates/implementation/review_readability_checklist.md",
     "templates/implementation/module_asset_registry.csv",
     "templates/implementation/data_package_manifest.yaml",
@@ -2818,6 +3594,7 @@ status: complete_packaged_release
     "templates/implementation/feature_classification.csv": "feature,layer,existing_module,new_module_needed,reusable,location,notes",
     "templates/implementation/frontend_fields.csv": "field_path,label,unit,group,editable,source,notes",
     "templates/implementation/module_review_log.csv": "module_review_id,module_id,review_scope,input_source,edited_fields,runner_or_function,result_status,decision,output_path,notes",
+    "templates/implementation/formula_publish_log.csv": "timestamp,admin,module_id,version_id,status,sha256,notes",
     "templates/implementation/module_asset_registry.csv": "module_id,domain,category,module_name,public_function,input_model,options_model,result_model,source_references,formula_trace_path,unit_tests,regression_tests,reuse_status,asset_owner,notes",
     "templates/implementation/result_path_registry.csv": "result_path,meaning,unit,source_module,report_visibility,regression_check",
     "templates/implementation/review_schema.csv": "field_path,label,unit,input_type,required,validation,help_text",
@@ -2853,8 +3630,15 @@ status: complete_packaged_release
       "status",
       "source_basis",
       "calculation_scope",
+      "runtime_stack",
       "runner_sequence",
       "module_candidates",
+      "calculation_module_contract",
+      "book_runner_contract",
+      "backend_api_contract",
+      "frontend_contract",
+      "operator_workflow_contract",
+      "release_contract",
       "coding_gate"
     ],
     "templates/handoff/artifact_index.yaml": [
@@ -2893,8 +3677,11 @@ status: complete_packaged_release
       "Template Boundaries"
     ],
     "skills/12b-frontend-and-review-interfaces.skill.md": [
+      "Primary Frontend Format",
+      "Prioritize operator quality and convenience",
       "Unified Frontend Layout",
       "Form and API Contract",
+      "Static HTML Delivery Guard",
       "Marimo Review Apps"
     ],
     "skills/12c-batch-import-export-packages.skill.md": [
@@ -2905,13 +3692,35 @@ status: complete_packaged_release
     "skills/14-cloud-web-release-deployment.skill.md": [
       "Release Targets",
       "Production Web Minimum",
+      "Static HTML Delivery Guard",
       "Linux Deployment Rules"
+    ],
+    "skills/07-implementation-handoff-contract.skill.md": [
+      "Delivery Contract Rule",
+      "runtime_stack",
+      "backend_api_contract",
+      "frontend_contract",
+      "operator_workflow_contract",
+      "release_contract"
+    ],
+    "skills/10-reusable-calculation-modules.skill.md": [
+      "Primary Runtime",
+      "Python 3.9+",
+      "Python wrapper"
     ],
     "templates/implementation/ui_layout_spec.md": [
       "Standard Page Zones",
       "Left input panel",
       "Right review workbench",
+      "Operator Convenience Decisions",
+      "Frontend File Layout",
+      "Jinja2 + Bootstrap 5 + vanilla JavaScript modules",
       "Deployment Entry"
+    ],
+    "templates/implementation/api_route_skeleton.md": [
+      "Primary runtime",
+      "Frontend format",
+      "Serve main web UI shell"
     ],
     "templates/implementation/import_export_contract.md": [
       "Upload Package Flow",
@@ -2922,6 +3731,16 @@ status: complete_packaged_release
       "marimo edit",
       "marimo run",
       "Module Review Rules"
+    ],
+    "templates/implementation/admin_marimo_review_spec.md": [
+      "Deployment Shape",
+      "ADMIN_REVIEW_TOKEN",
+      "Publish Rule"
+    ],
+    "templates/implementation/formula_registry_spec.md": [
+      "Registry Layout",
+      "Safety Rules",
+      "Production Metadata"
     ],
     "templates/implementation/review_readability_checklist.md": [
       "Governing result is visible",
@@ -2945,6 +3764,9 @@ status: complete_packaged_release
       "Template Boundaries"
     ],
     "templates/verification/acceptance_checklist.md": [
+      "Runtime stack is recorded",
+      "Frontend format is recorded",
+      "Operator workflow decisions",
       "Report production decision is recorded",
       "Report status is explicit",
       "module_asset_registry.csv",
@@ -2960,6 +3782,7 @@ status: complete_packaged_release
     "README.md",
     "pyproject.toml",
     "tests/conftest.py",
+    "handoff/implementation_handoff.yaml",
     "implementation/02_modules/module_asset_registry.csv",
     "deploy/env.example",
     "deploy/Dockerfile",
@@ -2968,8 +3791,22 @@ status: complete_packaged_release
     "deploy/nginx/engineering-calc.conf",
     "release/release_checklist.md",
     "tests/smoke/example_input.json",
+    "apps/review/admin_formula_review.py",
+    "data/formula_registry/active_versions.yaml",
+    "data/formula_registry/modules/example_module/versions/example_v1.yaml",
     "webapp/__init__.py",
     "webapp/app.py",
+    "webapp/config.py",
+    "webapp/routes.py",
+    "webapp/form_utils.py",
+    "webapp/i18n.py",
+    "webapp/templates/base.html",
+    "webapp/templates/index.html",
+    "webapp/static/js/main.js",
+    "webapp/static/js/forms.js",
+    "webapp/static/js/results.js",
+    "webapp/static/js/i18n.js",
+    "webapp/static/css/style.css",
     "webapp/.gitkeep",
     "apps/review/.gitkeep",
     "data/input/.gitkeep",
@@ -2986,6 +3823,7 @@ status: complete_packaged_release
     "outputs/logs/.gitkeep",
     "src/pkg/__init__.py",
     "src/pkg/core/__init__.py",
+    "src/pkg/core/formula_registry.py",
     "src/pkg/books/__init__.py",
     "src/pkg/books/book_name/__init__.py",
     "src/pkg/books/book_name/book_runner.py",
@@ -2993,13 +3831,70 @@ status: complete_packaged_release
     "src/pkg/books/book_name/report_context.py",
     "src/pkg/interfaces/__init__.py",
     "src/pkg/report/__init__.py",
-    "tests/integration/test_book_runner.py"
+    "tests/integration/test_book_runner.py",
+    "tests/unit/test_formula_registry.py",
+    "tests/smoke/test_web_routes.py"
   ],
   "project_csv_headers": {
     "implementation/02_modules/module_asset_registry.csv": "module_id,domain,category,module_name,public_function,input_model,options_model,result_model,source_references,formula_trace_path,unit_tests,regression_tests,reuse_status,asset_owner,notes",
     "references/acquisition/candidate_sources.csv": "candidate_id,title,publisher,source_type,version_or_date,jurisdiction,url_or_location,access_date,authority_level,relevance_score,gaps_covered,recommended_action,limitations,license_or_access_notes",
     "references/acquisition/search_log.csv": "search_id,gap_id,query,tool_or_location,date,results_reviewed,candidates_selected,notes",
     "references/acquisition/source_coverage_matrix.csv": "requirement_id,requirement,importance,covered,current_source_id,gap,needed_source_type,blocks_analysis,blocks_coding"
+  },
+  "project_yaml_required_keys": {
+    "handoff/implementation_handoff.yaml": [
+      "handoff_id",
+      "book_name",
+      "status",
+      "source_basis",
+      "calculation_scope",
+      "runtime_stack",
+      "calculation_module_contract",
+      "book_runner_contract",
+      "backend_api_contract",
+      "frontend_contract",
+      "release_contract",
+      "operator_workflow_contract",
+      "coding_gate"
+    ]
+  },
+  "project_text_required_phrases": {
+    "README.md": [
+      "Primary runtime: Python 3.9+",
+      "Frontend format: Jinja2 templates + Bootstrap 5 + vanilla JavaScript modules",
+      "Operational quality and reviewer convenience"
+    ],
+    "webapp/app.py": [
+      "def create_app",
+      "/health"
+    ],
+    "webapp/routes.py": [
+      "/api/calculate",
+      "build_case_input_from_form",
+      "run_book",
+      "case_result_to_ui"
+    ],
+    "webapp/form_utils.py": [
+      "build_case_input_from_form",
+      "book_input_to_form",
+      "case_result_to_ui"
+    ],
+    "src/pkg/books/book_name/book_runner.py": [
+      "def run_book",
+      "BookInput",
+      "BookResult"
+    ],
+    "tests/smoke/test_web_routes.py": [
+      "/health",
+      "/api/calculate"
+    ],
+    "release/release_checklist.md": [
+      "Runtime stack is recorded",
+      "Frontend format is recorded",
+      "Operator workflow quality",
+      "static `.html` file",
+      "POST /api/calculate"
+    ]
   }
 }
 
@@ -3091,6 +3986,30 @@ def check_text_required_phrases(root: Path, required: dict[str, list[str]], erro
                 errors.append(f"missing required phrase {phrase!r} in {rel_path}")
 
 
+def check_static_html_delivery_guard(project_root: Path, errors: list[str]) -> None:
+    """Catch static HTML/report-only projects before they are called web apps."""
+    html_files = [
+        path for path in project_root.rglob("*.html")
+        if ".pytest_cache" not in path.parts and "__pycache__" not in path.parts
+    ]
+    if not html_files:
+        return
+
+    runtime_paths = [
+        "webapp/app.py",
+        "webapp/routes.py",
+        "webapp/form_utils.py",
+        "src/pkg/books/book_name/book_runner.py",
+        "tests/smoke/test_web_routes.py",
+    ]
+    missing = [rel_path for rel_path in runtime_paths if not (project_root / rel_path).exists()]
+    if missing:
+        errors.append(
+            "static HTML/report HTML alone is not a production-ready web calculation "
+            f"system; missing runtime artifacts: {', '.join(missing)}"
+        )
+
+
 def check_skill_frontmatter(root: Path, rel_path: str, errors: list[str]) -> None:
     path = root / rel_path
     if not path.exists():
@@ -3125,6 +4044,9 @@ def validate_project(project_root: Path, contract: dict) -> list[str]:
     for rel_path in contract["project_required_paths"]:
         check_exists(project_root, rel_path, errors)
     check_csv_headers(project_root, contract["project_csv_headers"], errors)
+    check_yaml_required_keys(project_root, contract.get("project_yaml_required_keys", {}), errors)
+    check_text_required_phrases(project_root, contract.get("project_text_required_phrases", {}), errors)
+    check_static_html_delivery_guard(project_root, errors)
     return errors
 
 
@@ -3370,6 +4292,17 @@ calculation_scope:
     - bearing_capacity
     - settlement
 
+runtime_stack:
+  primary_language: python
+  python_version: ">=3.9"
+  calculation_runtime: python_package
+  calculation_package_root: src/pkg
+  backend_runtime: flask # flask | fastapi
+  frontend_format: jinja2_bootstrap5_vanilla_js
+  frontend_root: webapp
+  review_runtime: marimo_optional
+  non_python_adapter_required: false
+
 input_model_groups:
   - ProjectInfo
   - DesignBasis
@@ -3399,6 +4332,112 @@ module_candidates:
     source_nodes: [N001]
     formulas: [F001]
     lookups: []
+
+calculation_module_contract:
+  required_paths:
+    - implementation/02_modules/module_interface_spec.md
+    - implementation/02_modules/module_asset_registry.csv
+    - src/pkg/libraries/<domain>/<category>/
+    - tests/unit/test_<module>.py
+  required_properties:
+    - typed_input_model
+    - typed_result_model
+    - stable_public_function
+    - source_backed_formula_traces
+    - independent_unit_tests
+  forbidden_dependencies:
+    - webapp
+    - report_templates
+    - batch_scripts
+    - deployment_files
+    - browser_state
+
+book_runner_contract:
+  entrypoint: src/pkg/books/<book_name>/book_runner.py::run_book
+  required_paths:
+    - src/pkg/books/<book_name>/book_models.py
+    - src/pkg/books/<book_name>/book_runner.py
+    - tests/integration/test_<book_name>_runner.py
+  official_flow: BookInput -> reusable_modules -> BookResult
+  forbidden_responsibilities:
+    - rendering_reports
+    - reading_frontend_state
+    - implementing_template_logic
+
+backend_api_contract:
+  runtime: flask
+  required_paths:
+    - webapp/app.py
+    - webapp/routes.py
+    - webapp/form_utils.py
+    - webapp/config.py
+  required_entrypoints:
+    - webapp.app:create_app()
+    - GET /health
+    - GET /
+    - POST /api/calculate
+  required_mapping_functions:
+    - form_to_model_or_build_case_input_from_form
+    - model_to_form_or_book_input_to_form
+    - result_to_ui_or_case_result_to_ui
+  rule: thin routes parse input, build BookInput, call run_book, convert BookResult, and return JSON or report output
+
+frontend_contract:
+  format: jinja2_bootstrap5_vanilla_js
+  page_type: server_rendered_shell_with_api_driven_interactions
+  frontend_root: webapp
+  required_paths:
+    - webapp/templates/base.html
+    - webapp/templates/index.html
+    - webapp/static/js/main.js
+    - webapp/static/js/forms.js
+    - webapp/static/js/results.js
+    - webapp/static/css/style.css
+  required_behavior:
+    - grouped BookInput forms
+    - API-driven calculation call
+    - governing summary and warnings/errors display
+    - source/formula trace display when available
+    - import/export and report preview when in scope
+  forbidden_behavior:
+    - engineering_formula_calculation_in_javascript
+    - independent_pass_fail_logic_in_templates
+
+operator_workflow_contract:
+  quality_priority: operation_quality_and_reviewer_convenience_before_minimal_dependencies
+  repeated_use_features:
+    - defaults
+    - field_validation
+    - import_export_json
+  review_features:
+    - governing_summary
+    - warnings_errors
+    - source_traces
+    - formula_traces
+  reporting_features:
+    - report_preview
+    - report_download
+    - explicit_report_status
+  upgrade_frontend_when:
+    - complex_dynamic_forms
+    - multi-case_comparison
+    - heavy_review_state
+    - workflow_quality_requires_component_state_management
+
+release_contract:
+  delivery_type: runnable_web_calculation_system
+  static_html_only_allowed: false
+  report_html_is_output_not_application: true
+  required_paths_when_final_delivery_expected:
+    - README.md
+    - deploy/env.example
+    - deploy/Dockerfile or deploy/systemd/*.service
+    - release/release_checklist.md
+    - tests/smoke/test_web_routes.py
+  required_smoke_tests:
+    - python -m webapp.app
+    - GET /health
+    - POST /api/calculate with known input
 
 formula_inventory_refs:
   - F001
@@ -3649,6 +4688,7 @@ cloud Linux deployment path documented
 web app exposes a health endpoint
 production server entrypoint exists
 environment variables control secrets, debug mode, host, port, data, and output paths
+delivery is not only a static HTML file, exported report HTML, or mockup unless explicitly labeled as a non-production prototype
 Dockerfile or systemd service exists when cloud deployment is required
 nginx or platform proxy guidance exists when the app is internet-facing
 calculation modules remain independent from web, report, batch, and deployment layers
@@ -3864,6 +4904,23 @@ For environments that cannot load multiple files reliably, use `engineering-calc
 
 ## Non-Negotiable Gates
 
+Optimize for engineering operation quality and reviewer convenience first. Keep the stack as simple as possible only after the workflow is complete, clear, traceable, and pleasant to use.
+
+Default implementation stack is Python-first:
+
+```text
+primary runtime: Python 3.9+
+calculation modules: Python package under src/<pkg>/libraries/
+official runner: Python run_book(BookInput) -> BookResult
+backend/API: Flask or FastAPI thin route layer
+frontend: browser web app served from webapp/
+review/admin: Marimo when Python-native module review or formula publishing is needed
+```
+
+Use another calculation runtime only when the user explicitly requests it and the handoff defines an adapter plan. Marimo review is Python-native and cannot directly inspect non-Python modules without a Python wrapper, CLI, or API adapter.
+
+Do not remove useful interface capabilities just to reduce dependencies. Input validation, import/export, report preview, trace review, formula/source visibility, status clarity, and repeatable deployment are part of the product quality bar.
+
 Do not invent engineering formulas, lookup rules, units, coefficients, or branch logic when the source basis is missing.
 
 Do not start production implementation unless `handoff/implementation_handoff.yaml` and `handoff/coding_go_no_go.md` allow it.
@@ -3873,6 +4930,10 @@ Keep formulas out of UI, report templates, CSV/Excel inputs, batch scripts, and 
 Do not label a system complete unless reusable calculation modules are decoupled, traceable, independently testable, and recorded for future reuse.
 
 Do not label a web calculation system production-ready unless it has local run instructions, a Linux cloud deployment path, environment-based configuration, smoke tests, and release artifacts.
+
+Do not label a web calculation system complete when the deliverable is only a static `.html` file, exported report HTML, or visual mockup. Production web delivery must include the calculation modules, official runner, backend API/application entrypoint, frontend assets, tests, and deployment path unless the user explicitly requests a static prototype.
+
+When formula rules must be reviewed or changed after deployment, use a declaration-based formula registry plus a token-protected Marimo admin review app under `/admin/review/`; publish changes only after validation and smoke tests pass.
 
 ## Artifact Validation
 
@@ -5038,10 +6099,17 @@ status
 source_basis
 evidence_library_status
 calculation_scope
+runtime_stack
 input_model_groups
 result_model_groups
 runner_sequence
 module_candidates
+calculation_module_contract
+book_runner_contract
+backend_api_contract
+frontend_contract
+operator_workflow_contract
+release_contract
 formula_inventory_refs
 lookup_inventory_refs
 branch_inventory_refs
@@ -5052,6 +6120,27 @@ traceability_requirements
 open_questions
 coding_gate
 ```
+
+## Delivery Contract Rule
+
+The handoff must distinguish calculation code, backend/API code, frontend assets, report outputs, and release artifacts.
+
+The handoff must declare the runtime stack. The default is Python-first:
+
+```text
+primary_language: python
+python_version: ">=3.9"
+calculation_runtime: python_package
+backend_runtime: flask_or_fastapi
+frontend_format: jinja2_bootstrap5_vanilla_js
+review_runtime: marimo_optional
+```
+
+If any item differs from the default, record why and define the adapter boundary before implementation.
+
+For runnable web calculation systems, a single static `.html` file, exported report HTML, or screenshot-style mockup is never a complete implementation contract. If the user requests only a static prototype, set the coding gate or release status to `prototype_allowed`, `not_production_ready`, or an equivalent non-final status.
+
+The handoff must also record operation-quality decisions: what makes the tool convenient for repeated engineering use, review, report production, batch work, and later formula maintenance.
 
 ## Coding Gate
 
@@ -5086,6 +6175,12 @@ what implementation must not start
 required modules
 runner sequence
 model groups
+runtime stack
+calculation module contract
+backend API contract
+frontend contract
+operator workflow contract
+release contract
 report sections
 test requirements
 remaining blockers
@@ -5368,6 +6463,20 @@ Build reusable, independently testable engineering modules.
 
 Treat each module as an accumulating engineering asset that can be reused by later books, web apps, batch jobs, and reports through the same public interface.
 
+## Primary Runtime
+
+Reusable calculation modules are Python modules by default.
+
+```text
+language: Python 3.9+
+location: src/<pkg>/libraries/<domain>/<category>/
+public API: typed Python input/options/result models plus one stable public function
+tests: pytest unit/regression tests
+review: Marimo can inspect Python modules directly when review apps are enabled
+```
+
+Use a non-Python calculation module only when explicitly requested and when the handoff defines a Python wrapper, CLI adapter, or API adapter for `run_book()` and review workflows.
+
 ## Module Rules
 
 Every reusable module must:
@@ -5387,6 +6496,8 @@ return warnings instead of silently clipping values
 be independently testable
 be recorded in module_asset_registry.csv
 ```
+
+When administrator-editable formulas are required, expose formulas through a declaration-based formula registry instead of editable Python code. The reusable module should load only the active, validated registry version and preserve registry version/hash metadata in results.
 
 ## Forbidden
 
@@ -5426,6 +6537,9 @@ implementation/02_modules/module_interface_spec.md
 implementation/02_modules/module_asset_registry.csv
 implementation/02_modules/formula_trace_spec.md
 implementation/02_modules/lookup_module_spec.md
+implementation/02_modules/formula_registry_spec.md
+data/formula_registry/active_versions.yaml
+data/formula_registry/modules/<module_id>/versions/<version_id>.yaml
 src/<pkg>/libraries/<domain>/<category>/
 tests/unit/test_<module>.py
 tests/regression/test_<module>_<reference>.py
@@ -5440,6 +6554,7 @@ module location
 input/options/result models
 public function signatures
 formula and source references
+active formula registry version and hash when used
 intermediate values returned
 warning/error behavior
 unit tests
@@ -5848,6 +6963,21 @@ Use this skill when the user needs an operational UI, API, review notebook, or m
 
 Create interfaces that make engineering review efficient while remaining thin over trusted calculation modules.
 
+Prioritize operator quality and convenience:
+
+```text
+clear input grouping and validation
+fast calculation feedback
+visible governing status, warnings, and errors
+source and formula trace review
+report preview and export
+import/export packages for repeatable work
+charts only when they improve engineering judgment
+Marimo review when module-level inspection or formula publishing is valuable
+```
+
+Do not strip useful workflow features just to keep the frontend small. Keep formulas out of the UI, but make the UI comfortable and complete for repeated engineering use.
+
 Recommended interface families:
 
 ```text
@@ -5855,6 +6985,20 @@ production frontend: browser UI for inputs, calculation, report preview, import/
 Marimo review app: Python-native module inspection, draft edits, traces, and what-if review
 API route layer: thin parse -> model -> run_book -> UI/result conversion endpoints
 ```
+
+## Primary Frontend Format
+
+The default frontend is a browser web app served from `webapp/`:
+
+```text
+page shell: Jinja2 templates in webapp/templates/
+styling: Bootstrap 5 plus webapp/static/css/style.css
+JavaScript: vanilla modules in webapp/static/js/
+API style: JSON endpoints under /api/
+interaction model: server-rendered shell with API-driven calculation/review interactions
+```
+
+Use this default format for most calculation books. Use React, Vue, a separate SPA build, or another frontend format when interaction complexity, maintainability, or operator convenience justifies it and the handoff records the build, routing, API, testing, and deployment consequences.
 
 ## Deployment-Ready Web App Minimum
 
@@ -5868,6 +7012,14 @@ environment-based host, port, secret, debug, data, and output paths
 local run command such as python -m webapp.app
 production run command such as gunicorn "webapp.app:create_app()"
 ```
+
+## Static HTML Delivery Guard
+
+A single `.html` file, exported report HTML, or static mockup is not a production web calculation system. It may be delivered only when the user explicitly asks for a static prototype, and then it must be labeled `prototype`, `draft`, or `not_production_ready`.
+
+For production frontend work, the browser page must be backed by the same backend/API path used in tests and deployment: form data maps to `BookInput`, API routes call `run_book()`, and the frontend renders returned `BookResult`/UI data.
+
+Report HTML belongs under report/export outputs. It must not be treated as the application runtime.
 
 ## Unified Frontend Layout
 
@@ -5981,18 +7133,44 @@ Label exploratory edits as `draft`, `review`, or `prototype` until saved, rerun 
 
 Use `templates/implementation/marimo_review_spec.md`.
 
+## Embedded Admin Review
+
+When Marimo is embedded in the main deployed site, use this production shape:
+
+```text
+main web app at /
+Marimo admin review at /admin/review/
+Marimo runs as a separate service behind nginx or the platform proxy
+shared formula registry at data/formula_registry/
+```
+
+Run Marimo with `marimo run`, not `marimo edit`, in production. Protect it with an environment-provided admin token/password and HTTPS. The admin page may edit declaration-based formula rules, but it must not provide arbitrary Python source editing. Publishing may update production only after validation and smoke tests pass.
+
+Use:
+
+```text
+templates/implementation/admin_marimo_review_spec.md
+templates/implementation/formula_registry_spec.md
+templates/implementation/formula_rule_schema.yaml
+templates/implementation/formula_publish_log.csv
+```
+
 ## Required Final Response
 
 Provide:
 
 ```text
 layout summary
+operator convenience and review-quality decisions
 mapping module and functions
 API route table
 frontend module breakdown
+frontend format and file layout
 i18n/sanitization/chart decisions
 Marimo review scope if used
+embedded admin review route and token strategy if used
 proof that UI and review layers do not calculate
+proof that the delivery is not static-HTML-only when production delivery is expected
 smoke test
 run command
 deployment-ready entrypoint when final delivery is expected
@@ -6171,6 +7349,7 @@ Marimo review smoke tests
 upload/import package manifest and hash tests
 batch smoke tests
 serialization and hash tests
+formula registry validation and publish-gate tests
 deployment smoke tests for local and Linux cloud release paths
 ```
 
@@ -6248,6 +7427,7 @@ report rendering smoke test exists when reports exist
 web app health and calculate API smoke tests exist when frontend/API exists
 deployment smoke tests or explicit deployment blockers are recorded when final delivery is expected
 traceability metadata exists for production outputs
+formula registry version/hash/published_at are exposed in BookResult when formula registry is used
 run commands are documented
 ```
 
@@ -6283,6 +7463,14 @@ Use this skill as the final delivery stage for engineering calculation software.
 Produce a runnable, traceable, reviewable, modifiable, and Linux-deployable web calculation program.
 
 The release is not complete until a fresh operator can run the app locally, inspect traces and source basis, modify decoupled calculation modules, and deploy the same calculation path to a Linux server.
+
+Default release runtime is Python 3.9+ with a Flask or FastAPI application factory, gunicorn or equivalent WSGI/ASGI server, a `webapp/` browser frontend, and optional Marimo review service.
+
+## Static HTML Delivery Guard
+
+Do not package or describe a deliverable as complete, deployable, or production-ready if it is only a static `.html` file, exported report HTML, or a UI mockup.
+
+Final web delivery must include backend runtime files, API routes, frontend assets, calculation modules, the official `run_book()` path, tests, deployment files, and run commands. Static HTML can be included as a report/export artifact or explicit prototype only.
 
 ## Required Inputs
 
@@ -6323,6 +7511,8 @@ non-debug production defaults
 structured error responses that preserve server logs
 ```
 
+When Marimo admin review is embedded in the main site, deploy it as a separate service and proxy it under `/admin/review/`. The release should include Docker Compose service definitions for the main web app and Marimo review app, a shared `data/formula_registry/` volume, an admin token environment variable, and nginx proxy rules for websocket or long-running review sessions.
+
 ## Deployment Package Contents
 
 Create or update:
@@ -6332,6 +7522,7 @@ deploy/env.example
 deploy/Dockerfile or deploy/systemd/*.service
 deploy/nginx/*.conf when reverse proxy is expected
 deploy/docker-compose.yml when Docker is used
+apps/review/admin_formula_review.py when embedded Marimo admin review is used
 release/release_checklist.md
 release/runbook.md when operational handoff is needed
 ```
@@ -6388,6 +7579,7 @@ GET /health
 GET /
 POST /api/calculate with a known input
 report preview or export when present
+Marimo admin route /admin/review/ when present
 Docker build/run or systemd command syntax when provided
 artifact validation script
 ```
@@ -6405,6 +7597,7 @@ cloud Linux deployment command
 deployment files created or updated
 module asset registry status
 traceability and review evidence
+static HTML delivery guard result
 smoke test results
 remaining deployment assumptions
 ```
@@ -6904,11 +8097,14 @@ Use this template for production deployment of an engineering calculation web ap
 
 | Item | Selected Value | Notes |
 | --- | --- | --- |
+| Primary runtime | Python >=3.9 | Default calculation and web runtime. |
 | Application entrypoint | `webapp.app:create_app()` | Must call the same `run_book()` path as local/API/batch. |
 | Server | gunicorn / uvicorn / platform WSGI-ASGI server | Use production server, not Flask debug server. |
+| Frontend format | Jinja2 + Bootstrap 5 + vanilla JavaScript modules | Served from `webapp/templates` and `webapp/static`. |
 | Reverse proxy | nginx / platform proxy / none | Required when exposing to public internet. |
 | Host binding | `127.0.0.1` behind proxy or `0.0.0.0` in container | Avoid unintended exposure. |
 | Port | to_be_defined | Record firewall and proxy routing. |
+| Marimo review | `/admin/review/` | Separate service behind the same domain when admin review is enabled. |
 | OS | Linux | Record distro/version when known. |
 
 ## Required Files
@@ -6931,6 +8127,11 @@ release/release_checklist.md
 | `SECRET_KEY` | true | server secret | Never commit real production secret. |
 | `DATA_DIR` | false | `/var/lib/engineering-calc/data` | Persistent inputs/imports. |
 | `OUTPUT_DIR` | false | `/var/lib/engineering-calc/outputs` | Persistent results/reports/packages. |
+| `FORMULA_REGISTRY_DIR` | when formula registry used | `/app/data/formula_registry` | Shared active formula versions. |
+| `FORMULA_PUBLISH_LOG` | when formula registry used | `/app/outputs/logs/formula_publish_log.csv` | Admin publish audit log. |
+| `MARIMO_BASE_URL` | when Marimo admin used | `/admin/review` | Reverse-proxied admin route. |
+| `MARIMO_PORT` | when Marimo admin used | `2718` | Marimo service port. |
+| `ADMIN_REVIEW_TOKEN` | when Marimo admin used | server secret | Token/password for admin review. |
 
 ## Deployment Sequence
 
@@ -6941,9 +8142,11 @@ create virtualenv or build container image
 install dependencies
 configure environment variables
 start gunicorn service
+start marimo run admin review service when enabled
 configure nginx or platform proxy when public
 run health check
 run known POST /api/calculate smoke case
+run /admin/review/ smoke check when Marimo admin is enabled
 record release status
 ```
 
@@ -6955,6 +8158,7 @@ curl -fsS http://127.0.0.1:5000/
 curl -fsS -X POST http://127.0.0.1:5000/api/calculate \
   -H "Content-Type: application/json" \
   --data @tests/smoke/example_input.json
+curl -fsS http://127.0.0.1:2718/ # or proxied /admin/review/ when Marimo admin is enabled
 ```
 
 ## Production Rules
@@ -6964,6 +8168,8 @@ debug mode disabled
 secrets not committed
 logs routed to journald, container logs, or configured log path
 generated outputs written to configured persistent directory
+formula registry shared between web and Marimo services when admin review is enabled
+Marimo admin protected by environment token and HTTPS reverse proxy
 calculation modules remain independent from web/deploy layers
 deployment smoke test result recorded in release/release_checklist.md
 ```
@@ -6988,6 +8194,9 @@ deployment smoke test result recorded in release/release_checklist.md
 ## Required Gates
 
 - [ ] Source basis and implementation handoff are recorded.
+- [ ] Runtime stack is recorded: Python 3.9+ primary runtime unless an explicit adapter plan exists.
+- [ ] Frontend format is recorded: Jinja2 + Bootstrap 5 + vanilla JavaScript modules unless explicitly overridden.
+- [ ] Operator workflow quality is not reduced merely to minimize dependencies.
 - [ ] Calculation modules are decoupled and listed in `module_asset_registry.csv`.
 - [ ] Official calculation path is `run_book(BookInput) -> BookResult`.
 - [ ] Web/API/report/batch layers do not implement formulas or independent pass/fail logic.
@@ -6997,9 +8206,13 @@ deployment smoke test result recorded in release/release_checklist.md
 - [ ] Cloud Linux deployment files are present.
 - [ ] `/health` endpoint passes.
 - [ ] `POST /api/calculate` smoke test passes with known input.
+- [ ] Delivery is not only a static `.html` file, exported report HTML, or mockup unless explicitly labeled as a non-production prototype.
 - [ ] Production debug mode is disabled.
 - [ ] Secrets are environment-based and not committed.
 - [ ] Data and output persistence paths are documented.
+- [ ] Formula registry path is shared by web and Marimo services when admin review is enabled.
+- [ ] `/admin/review/` is protected by an environment token/password when enabled.
+- [ ] Formula publish failures do not change `active_versions.yaml`.
 
 ## Release Artifacts
 
@@ -7010,6 +8223,8 @@ deployment smoke test result recorded in release/release_checklist.md
 | Dockerfile | deploy/Dockerfile | Docker path | to_be_defined |
 | systemd service | deploy/systemd/*.service | systemd path | to_be_defined |
 | nginx site config | deploy/nginx/*.conf | public Linux path | to_be_defined |
+| Marimo admin app | apps/review/admin_formula_review.py | when admin review enabled | to_be_defined |
+| Formula registry | data/formula_registry/active_versions.yaml | when editable formulas enabled | to_be_defined |
 | Release runbook | release/runbook.md | when operational handoff needed | to_be_defined |
 | Acceptance checklist | verification/acceptance_checklist.md | true | to_be_defined |
 
@@ -7021,6 +8236,7 @@ deployment smoke test result recorded in release/release_checklist.md
 | Health | `curl -fsS http://127.0.0.1:5000/health` | to_be_defined |  |
 | Main page | `curl -fsS http://127.0.0.1:5000/` | to_be_defined |  |
 | Calculate API | `curl -fsS -X POST ... /api/calculate` | to_be_defined |  |
+| Marimo admin | `curl -fsS http://127.0.0.1:2718/` | to_be_defined |  |
 | Docker build | `docker build -f deploy/Dockerfile .` | to_be_defined |  |
 
 ## Remaining Assumptions
@@ -7041,8 +8257,14 @@ APP_HOST=0.0.0.0
 APP_PORT=5000
 FLASK_DEBUG=0
 SECRET_KEY=change-me-on-server
-DATA_DIR=/var/lib/engineering-calc/data
-OUTPUT_DIR=/var/lib/engineering-calc/outputs
+DATA_DIR=/app/data
+OUTPUT_DIR=/app/outputs
+FORMULA_REGISTRY_DIR=/app/data/formula_registry
+FORMULA_PUBLISH_LOG=/app/outputs/logs/formula_publish_log.csv
+APP_BASE_URL=https://example.com
+MARIMO_BASE_URL=/admin/review
+MARIMO_PORT=2718
+ADMIN_REVIEW_TOKEN=change-this-admin-review-token
 
 
 ---
@@ -7134,6 +8356,10 @@ List governing, example, background, and assumption sources by stable source ID.
 
 State included checks, excluded checks, applicability limits, and major assumptions.
 
+## Runtime Stack
+
+Record the primary implementation stack. The default is Python 3.9+, Python calculation modules, Flask/FastAPI backend routes, a `webapp/` browser frontend, and optional Marimo review. If a non-Python calculation runtime is used, record the wrapper, CLI, or API adapter required for Python-based review and deployment.
+
 ## Model Groups
 
 Summarize input model groups, result model groups, validation rules, and result paths.
@@ -7141,6 +8367,26 @@ Summarize input model groups, result model groups, validation rules, and result 
 ## Module And Runner Plan
 
 Summarize module candidates, formula references, lookup references, branch references, and runner sequence.
+
+## Calculation Module Contract
+
+List the reusable calculation module paths, public functions, typed input/result models, source trace requirements, tests, and forbidden dependencies.
+
+## Backend API Contract
+
+List the application factory, health endpoint, calculate endpoint, route files, form/model mapping functions, and the rule that API routes call `run_book()` instead of calculating.
+
+## Frontend Contract
+
+List required templates/static assets, expected BookInput form behavior, result display behavior, trace/review behavior, and the rule that frontend JavaScript and templates do not calculate engineering results. The default frontend format is a browser web app under `webapp/` using Jinja2 templates, Bootstrap 5, and vanilla JavaScript modules.
+
+## Operator Workflow Contract
+
+Record the decisions that make the tool convenient and reliable for repeated engineering use: field defaults, validation, import/export, governing summaries, warnings/errors, traces, report preview, batch comparison, and any justified frontend stack upgrade.
+
+## Release Contract
+
+State whether final delivery is expected. If it is, record local run commands, Linux/cloud deployment files, smoke tests, and explicitly confirm that a static `.html` file or exported report HTML is not the application deliverable.
 
 ## Verification Requirements
 
@@ -7185,6 +8431,17 @@ calculation_scope:
     - bearing_capacity
     - settlement
 
+runtime_stack:
+  primary_language: python
+  python_version: ">=3.9"
+  calculation_runtime: python_package
+  calculation_package_root: src/pkg
+  backend_runtime: flask # flask | fastapi
+  frontend_format: jinja2_bootstrap5_vanilla_js
+  frontend_root: webapp
+  review_runtime: marimo_optional
+  non_python_adapter_required: false
+
 input_model_groups:
   - ProjectInfo
   - DesignBasis
@@ -7214,6 +8471,112 @@ module_candidates:
     source_nodes: [N001]
     formulas: [F001]
     lookups: []
+
+calculation_module_contract:
+  required_paths:
+    - implementation/02_modules/module_interface_spec.md
+    - implementation/02_modules/module_asset_registry.csv
+    - src/pkg/libraries/<domain>/<category>/
+    - tests/unit/test_<module>.py
+  required_properties:
+    - typed_input_model
+    - typed_result_model
+    - stable_public_function
+    - source_backed_formula_traces
+    - independent_unit_tests
+  forbidden_dependencies:
+    - webapp
+    - report_templates
+    - batch_scripts
+    - deployment_files
+    - browser_state
+
+book_runner_contract:
+  entrypoint: src/pkg/books/<book_name>/book_runner.py::run_book
+  required_paths:
+    - src/pkg/books/<book_name>/book_models.py
+    - src/pkg/books/<book_name>/book_runner.py
+    - tests/integration/test_<book_name>_runner.py
+  official_flow: BookInput -> reusable_modules -> BookResult
+  forbidden_responsibilities:
+    - rendering_reports
+    - reading_frontend_state
+    - implementing_template_logic
+
+backend_api_contract:
+  runtime: flask
+  required_paths:
+    - webapp/app.py
+    - webapp/routes.py
+    - webapp/form_utils.py
+    - webapp/config.py
+  required_entrypoints:
+    - webapp.app:create_app()
+    - GET /health
+    - GET /
+    - POST /api/calculate
+  required_mapping_functions:
+    - form_to_model_or_build_case_input_from_form
+    - model_to_form_or_book_input_to_form
+    - result_to_ui_or_case_result_to_ui
+  rule: thin routes parse input, build BookInput, call run_book, convert BookResult, and return JSON or report output
+
+frontend_contract:
+  format: jinja2_bootstrap5_vanilla_js
+  page_type: server_rendered_shell_with_api_driven_interactions
+  frontend_root: webapp
+  required_paths:
+    - webapp/templates/base.html
+    - webapp/templates/index.html
+    - webapp/static/js/main.js
+    - webapp/static/js/forms.js
+    - webapp/static/js/results.js
+    - webapp/static/css/style.css
+  required_behavior:
+    - grouped BookInput forms
+    - API-driven calculation call
+    - governing summary and warnings/errors display
+    - source/formula trace display when available
+    - import/export and report preview when in scope
+  forbidden_behavior:
+    - engineering_formula_calculation_in_javascript
+    - independent_pass_fail_logic_in_templates
+
+operator_workflow_contract:
+  quality_priority: operation_quality_and_reviewer_convenience_before_minimal_dependencies
+  repeated_use_features:
+    - defaults
+    - field_validation
+    - import_export_json
+  review_features:
+    - governing_summary
+    - warnings_errors
+    - source_traces
+    - formula_traces
+  reporting_features:
+    - report_preview
+    - report_download
+    - explicit_report_status
+  upgrade_frontend_when:
+    - complex_dynamic_forms
+    - multi-case_comparison
+    - heavy_review_state
+    - workflow_quality_requires_component_state_management
+
+release_contract:
+  delivery_type: runnable_web_calculation_system
+  static_html_only_allowed: false
+  report_html_is_output_not_application: true
+  required_paths_when_final_delivery_expected:
+    - README.md
+    - deploy/env.example
+    - deploy/Dockerfile or deploy/systemd/*.service
+    - release/release_checklist.md
+    - tests/smoke/test_web_routes.py
+  required_smoke_tests:
+    - python -m webapp.app
+    - GET /health
+    - POST /api/calculate with known input
 
 formula_inventory_refs:
   - F001
@@ -7273,6 +8636,60 @@ coding_gate:
 
 ---
 
+## templates/implementation/admin_marimo_review_spec.md
+
+# Admin Marimo Review Specification
+
+Use this template for an embedded-admin Marimo review surface deployed behind the main site.
+
+## Deployment Shape
+
+```text
+web app: /
+Marimo admin app: /admin/review/
+shared registry: data/formula_registry/
+publish log: outputs/logs/formula_publish_log.csv
+```
+
+Run production review apps with `marimo run`, not `marimo edit`.
+
+## Required Controls
+
+The admin page should provide:
+
+```text
+module selector
+active formula version display
+declaration editor
+validation result
+publish notes
+publish button disabled until validation passes
+production effect notice
+```
+
+Protect access with:
+
+```text
+ADMIN_REVIEW_TOKEN
+nginx HTTPS
+optional internal network or VPN restriction
+```
+
+## Publish Rule
+
+Saving a draft must not affect production. Publishing may update production only after:
+
+```text
+formula declaration validates
+test cases pass
+run_book smoke test passes
+publish log row is written
+active_versions.yaml is updated
+```
+
+
+---
+
 ## templates/implementation/api_route_skeleton.md
 
 # API Route Skeleton
@@ -7283,24 +8700,27 @@ Use this template to document the API endpoint architecture for engineering calc
 
 | Item | Selected value | Notes |
 | --- | --- | --- |
-| Framework | Flask / FastAPI | Flask with Blueprint pattern |
+| Primary runtime | Python >=3.9 | Default calculation and web runtime |
+| Framework | Flask / FastAPI | Default scaffold uses Flask with Blueprint pattern |
 | Server | gunicorn (production) / flask dev (development) | — |
 | Serialization | `flask.jsonify` | Structured JSON responses |
 | Error format | `{"status": "error", "message": "..."}` | Consistent error contract |
+| Frontend format | Jinja2 + Bootstrap 5 + vanilla JavaScript modules | Served from `webapp/templates` and `webapp/static` |
 
 ## Endpoint Registry
 
 | Method | Path | Purpose | Input | Output | Auth |
 | --- | --- | --- | --- | --- | --- |
 | GET | `/health` | Deployment health check | none | JSON `{status: "ok"}` | none |
-| GET | `/` | Serve main SPA page | — | HTML | none |
+| GET | `/` | Serve main web UI shell | — | HTML | none |
 | GET | `/api/defaults` | Return default parameters | — | JSON (form defaults) | none |
 | GET | `/api/i18n/<lang>` | Return i18n translations | lang: "en" or "zh" | JSON (key→text) | none |
 | POST | `/api/calculate` | Run calculation | JSON (form data) | JSON (result UI dict) | none |
 | POST | `/api/report/html` | Generate downloadable report | JSON (form data + lang) | HTML file download | none |
 | POST | `/api/report/preview` | Generate report for inline preview | JSON (form data + lang) | JSON `{status, html}` | none |
 | POST | `/api/import/json` | Import configuration | file upload or JSON body | JSON `{status, data}` | none |
-| GET | `/api/export/json` | Export configuration | JSON (form data) | JSON file download | none |
+| POST | `/api/export/json` | Export configuration | JSON (form data) | JSON file download | none |
+| GET | `/admin/review/` | Marimo formula review admin | browser session + token | HTML app | admin token |
 | POST | `/api/optimize` | Auto-optimize parameters | JSON (form data + lang) | JSON (optimal result) | none |
 
 ## Handler Pattern
@@ -7695,6 +9115,126 @@ cross-field: validate Fz sign matches limit_state (positive for compression)
 
 ---
 
+## templates/implementation/formula_publish_log.csv
+
+timestamp,admin,module_id,version_id,status,sha256,notes
+
+
+---
+
+## templates/implementation/formula_registry_spec.md
+
+# Formula Registry Specification
+
+Use this template when a calculation book supports admin-reviewed declaration-based formula rules.
+
+## Registry Layout
+
+```text
+data/formula_registry/
+  active_versions.yaml
+  modules/<module_id>/versions/<version_id>.yaml
+outputs/logs/formula_publish_log.csv
+```
+
+`active_versions.yaml` is the only production switch. Update it atomically only after validation passes.
+
+## Rule Requirements
+
+Each version file must record:
+
+```text
+schema_version
+module_id
+version_id
+status
+published_at
+published_by
+formulas
+```
+
+Each formula must record:
+
+```text
+formula_id
+name
+expression
+variables
+output
+source_refs
+limits
+test_cases
+```
+
+## Safety Rules
+
+Use declaration-based expressions only. Do not allow arbitrary Python execution from the admin UI.
+
+Validate before publishing:
+
+```text
+required fields
+safe expression AST
+allowed math functions only
+unit fields present
+declared test cases pass
+run_book smoke test passes
+```
+
+## Production Metadata
+
+Every `BookResult` should expose:
+
+```text
+formula_registry_version
+formula_hash
+formula_published_at
+```
+
+Reports and frontends may display this metadata, but must not calculate formulas.
+
+
+---
+
+## templates/implementation/formula_rule_schema.yaml
+
+{
+  "schema_version": "1.0",
+  "module_id": "to_be_defined",
+  "version_id": "to_be_defined",
+  "status": "draft",
+  "published_at": "to_be_defined",
+  "published_by": "to_be_defined",
+  "description": "to_be_defined",
+  "formulas": [
+    {
+      "formula_id": "F001",
+      "name": "to_be_defined",
+      "expression": "demand / capacity",
+      "variables": [
+        {"name": "demand", "unit": "kN", "description": "to_be_defined"},
+        {"name": "capacity", "unit": "kN", "description": "to_be_defined"}
+      ],
+      "output": {"name": "utilization", "unit": "-"},
+      "source_refs": ["S01"],
+      "limits": [
+        {"condition": "capacity > 0", "behavior": "error_if_false"}
+      ],
+      "test_cases": [
+        {
+          "name": "reference example",
+          "inputs": {"demand": 50, "capacity": 100},
+          "expected": 0.5,
+          "tolerance": 1e-09
+        }
+      ]
+    }
+  ]
+}
+
+
+---
+
 ## templates/implementation/formula_trace_spec.md
 
 # Formula Trace Specification
@@ -7990,6 +9530,8 @@ marimo run apps/review/<book_name>_review.py
 
 Use `marimo edit` for authoring and engineering development. Use `marimo run` for a read-only review app.
 
+For deployed admin review under the main site, use `marimo run` with token protection and a base URL such as `/admin/review`. Do not expose `marimo edit` in production.
+
 ## Standard Review Page
 
 | Section | Required content |
@@ -8013,6 +9555,7 @@ Use `marimo edit` for authoring and engineering development. Use `marimo run` fo
 - Saving an edit must write a new draft input or review artifact; do not overwrite final input silently.
 - Module pages may call reusable modules directly for review, but official report generation must use `run_book()`.
 - The page must display warnings/errors and traceability before export.
+- If the page publishes declaration-based formula rules, publishing must validate the rule, run tests, write the publish log, and only then update `data/formula_registry/active_versions.yaml`.
 
 ## Suggested Widgets
 
@@ -8111,7 +9654,7 @@ module_review_id,module_id,review_scope,input_source,edited_fields,runner_or_fun
 | src/<pkg>/books/<book_name>/ | book runner | official orchestration and BookResult | core, libraries | UI pages |
 | src/<pkg>/interfaces/ | interface layer | CLI/API/batch adapters | books | formulas |
 | src/<pkg>/report/ | report layer | render from ReportContext | books or report context | formulas |
-| webapp/ or src/<pkg>/interfaces/webapp/ | production frontend | unified left-input/right-review UI, import/export, report preview | books/API/report context | formulas |
+| webapp/ or src/<pkg>/interfaces/webapp/ | production frontend | Jinja2 + Bootstrap 5 + vanilla JS web UI, import/export, report preview | books/API/report context | formulas |
 | apps/review/ | Marimo review apps | module review, editable draft inputs, traces, what-if exploration | books, libraries, report context | formulas not already in trusted modules |
 | data/ | managed input area | input, imported reports, references, staging, normalized cases, packages | none | generated results |
 | outputs/ | generated output area | BookResult JSON, reports, packages, logs | none | source inputs |
@@ -8168,7 +9711,7 @@ engineering_calc_project/
 
 Record where each feature class belongs and which files own formulas, runner orchestration, reports, interfaces, and tests.
 
-Use `webapp/` or `src/<pkg>/interfaces/webapp/` for the unified production frontend. Use `apps/review/` for Marimo review apps. Use `data/` for user-provided, imported, staging, normalized, and package-managed data. Use `outputs/` only for generated artifacts. Use `deploy/` for Linux/cloud runtime files and `release/` for final delivery checklists or runbooks.
+Use `webapp/` or `src/<pkg>/interfaces/webapp/` for the unified production frontend. The default web format is Jinja2 templates, Bootstrap 5, and vanilla JavaScript modules served by the Python backend. Use `apps/review/` for Marimo review apps. Use `data/` for user-provided, imported, staging, normalized, and package-managed data. Use `outputs/` only for generated artifacts. Use `deploy/` for Linux/cloud runtime files and `release/` for final delivery checklists or runbooks.
 
 Reusable calculation assets belong under `src/<pkg>/libraries/` and must be registered in `implementation/02_modules/module_asset_registry.csv`.
 
@@ -8427,16 +9970,45 @@ Use this template for production frontend, review UI, or app-like engineering ca
 - Use tables for comparable engineering checks and compact metric boxes for headline values.
 - Provide chart containers only when figures improve engineering review.
 
+## Operator Convenience Decisions
+
+| Workflow Need | Required Decision | Notes |
+| --- | --- | --- |
+| repeated data entry | keyboard-friendly forms / defaults / copy case / import package | optimize for engineers running many cases |
+| review and approval | trace drawers / formula references / source references / comments | make checking faster and less error-prone |
+| report production | preview / export / status labels / saved final input | prevent accidental finalization from draft data |
+| batch or comparison work | import/export package / diff / saved BookResult JSON | keep results reproducible |
+| complex interactions | keep default Jinja2 stack or upgrade to SPA | choose based on workflow quality, not minimalism |
+
 ## Frontend Stack Decision
 
 | Item | Selected value | Reason |
 | --- | --- | --- |
-| Template engine | Jinja2 / React / Vue | to_be_defined | server-rendered vs SPA |
-| CSS framework | Bootstrap 5 / Tailwind / custom | to_be_defined | rapid prototyping |
-| JS architecture | vanilla modules / React hooks | to_be_defined | see `api_route_skeleton.md` |
-| i18n strategy | data-i18n + API endpoint | to_be_defined | see `i18n_pattern.md` |
+| Frontend format | Jinja2 + Bootstrap 5 + vanilla JavaScript modules | Default web format for this skill pack |
+| Page model | server-rendered shell with API-driven interactions | Good default for maintainable engineering tools |
+| Template engine | Jinja2 | Default; React/Vue is allowed when workflow complexity justifies it |
+| CSS framework | Bootstrap 5 + `webapp/static/css/style.css` | Standard project scaffold |
+| JS architecture | vanilla modules: `i18n.js`, `forms.js`, `results.js`, `main.js` | see `api_route_skeleton.md` |
+| i18n strategy | data-i18n + `/api/i18n/<lang>` endpoint | see `i18n_pattern.md` |
 | Chart library | matplotlib SVG / plotly / D3 | to_be_defined | see `chart_integration.md` |
 | Formula rendering | KaTeX / MathJax / none | to_be_defined | for report preview |
+
+## Frontend File Layout
+
+```text
+webapp/
+  templates/
+    base.html
+    index.html
+  static/
+    css/style.css
+    js/i18n.js
+    js/forms.js
+    js/results.js
+    js/main.js
+```
+
+Do not introduce a separate SPA build directory, Node build step, or component framework by habit. Do introduce one when it clearly improves operator convenience, complex state handling, maintainability, or review quality, and record the decision in `frontend_format`.
 
 ## Deployment Entry
 
@@ -8491,6 +10063,9 @@ Document accepted input units, output units, and where conversion functions live
 - [ ] Source basis recorded
 - [ ] Acquisition handoff exists when sources were searched
 - [ ] Implementation handoff exists
+- [ ] Runtime stack is recorded and defaults to Python 3.9+ unless an explicit adapter plan exists
+- [ ] Frontend format is recorded and defaults to Jinja2 + Bootstrap 5 + vanilla JavaScript modules unless explicitly overridden
+- [ ] Operator workflow decisions preserve input quality, review convenience, traceability, report preview, and import/export usability
 - [ ] Report production decision is recorded when a report/export is produced
 - [ ] Report status is explicit and matches evidence/coding gate state
 - [ ] Formulas are only in calculation modules/books
@@ -8501,6 +10076,9 @@ Document accepted input units, output units, and where conversion functions live
 - [ ] Report/UI/batch do not calculate
 - [ ] UI follows the unified layout when a frontend exists
 - [ ] Marimo review pages do not calculate outside trusted modules or run_book
+- [ ] Formula registry version/hash/published_at are exposed in BookResult when editable formulas are enabled
+- [ ] Formula publish failures do not update active_versions.yaml
+- [ ] Formula publish log is written when Marimo admin review is enabled
 - [ ] Upload/import packages have manifests and hashes when present
 - [ ] Imported reports are labeled as review/reference artifacts
 - [ ] Reports are generated from saved final input or trusted BookResult
@@ -8512,6 +10090,7 @@ Document accepted input units, output units, and where conversion functions live
 - [ ] Web app exposes /health when frontend/API exists
 - [ ] Local run command is documented and smoke-tested when frontend/API exists
 - [ ] Cloud Linux deployment path is documented when final delivery is expected
+- [ ] Final web delivery is not only a static `.html` file, exported report HTML, or mockup
 - [ ] Release checklist records deployment smoke tests and remaining assumptions when final delivery is expected
 - [ ] Report renderer/export path has a documented run command
 - [ ] Traceability metadata exists for production outputs

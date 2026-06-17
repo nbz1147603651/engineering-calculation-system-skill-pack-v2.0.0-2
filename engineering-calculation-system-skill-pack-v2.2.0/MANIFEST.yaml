@@ -1,7 +1,7 @@
 package: engineering-calculation-system-skill-pack
 version: 2.2.0
 created_at: 2026-06-16
-file_count_excluding_manifest_and_checksums: 224
+file_count_excluding_manifest_and_checksums: 234
 lifecycle:
   - reference_acquisition_and_persistence
   - reference_analysis_and_logic_blueprint
@@ -57,8 +57,8 @@ files:
     size_bytes: 31528
     sha256: ef3c6a3841abc0609b50ced85977b36210d1e7409c8cb0bd25a778b5fe41f210
   - path: parent/engineering-calculation-book.skill.md
-    size_bytes: 4523
-    sha256: ca34db5c707198b276e83b481436b2fa5a55637555cc8219e93b5c3a2936b459
+    size_bytes: 5674
+    sha256: e6f4f5fa5daa6b2d39fb8ebb86761a014759ef69dc3cf7f6d4a4c422703fa794
   - path: parent/engineering-calculation-logic-architecture.skill.md
     size_bytes: 4102
     sha256: e0d940a304ae5f063c68b17774ac3743d082ecd2b3a797d018a9bf1cd60a3234
@@ -83,6 +83,15 @@ files:
   - path: project_template/engineering_calc_project/apps/review/.gitkeep
     size_bytes: 22
     sha256: 645f3d59a5462135bf502f73c1956a31766bb368638282fc3ec9cdd771631e43
+  - path: project_template/engineering_calc_project/apps/review/admin_formula_review.py
+    size_bytes: 4898
+    sha256: 8f6e159fb2dea79bd917d3217b3c111fbbd370a9c675afeb166e8f35c41fa1e8
+  - path: project_template/engineering_calc_project/data/formula_registry/active_versions.yaml
+    size_bytes: 395
+    sha256: 5d33c396e4a84dab0aa016a21343062b97f43b34b9b64b91e6a59d078df3f758
+  - path: project_template/engineering_calc_project/data/formula_registry/modules/example_module/versions/example_v1.yaml
+    size_bytes: 1010
+    sha256: b31a019b5cc468fd3f5a1fe6d0b292a3b5e8b0788cea9d0799e4533da7f17ebd
   - path: project_template/engineering_calc_project/data/imported/references/.gitkeep
     size_bytes: 30
     sha256: 635ec6b39f925d8c79a9ecd72f077421f10fae4acaf790e4d7ba32cafb70081b
@@ -102,17 +111,17 @@ files:
     size_bytes: 33
     sha256: 3b950bcabdaf49583c04ad59e396129b2017dd4cb05c82c29eb8f00bff2184ac
   - path: project_template/engineering_calc_project/deploy/docker-compose.yml
-    size_bytes: 263
-    sha256: ccb4b504b915ba394339a97784169998f80050d07e3ff969b27d4f5cac07a6e4
+    size_bytes: 861
+    sha256: 4a81c93ac7e49d37ef2ca3f1a69036fe4cff3f09cdea1d7d0c38fb6fbcfa0e3b
   - path: project_template/engineering_calc_project/deploy/Dockerfile
-    size_bytes: 405
-    sha256: 7d8b38c74a99f07bae515b89be988cecc4c82ac6af7534a13f55b5c41136968d
+    size_bytes: 603
+    sha256: bece7cc38e7024915ceb8f4f8068a8fa54f3b31f6a91e73011f7e8561d7c994c
   - path: project_template/engineering_calc_project/deploy/env.example
-    size_bytes: 161
-    sha256: 182063e1feb20c49139cb02d3dc9bb8e091e347c4505523640ca509aeac4d0e7
-  - path: project_template/engineering_calc_project/deploy/nginx/engineering-calc.conf
     size_bytes: 359
-    sha256: d40d580bdd3105ed9a266b230ff43d7d52bde42ec63e6cfef22190b9edd54064
+    sha256: 3cefd112814a79d007cc4db928384186c367a9e0c04da423feaa020208097acf
+  - path: project_template/engineering_calc_project/deploy/nginx/engineering-calc.conf
+    size_bytes: 1004
+    sha256: 8b00045b87fed9804997f0b4c38ff2e95e63bf2430525360212bf6ad8e5f9381
   - path: project_template/engineering_calc_project/deploy/systemd/engineering-calc.service
     size_bytes: 429
     sha256: 96a906a09d02561a90cd9b870b692b246a6f9f753902e1ab055a205781b689b7
@@ -123,8 +132,8 @@ files:
     size_bytes: 1490
     sha256: ff86a6f1c666262d004789d40b68c4462075948d27e2a9e5f643fbe90398c5d3
   - path: project_template/engineering_calc_project/handoff/implementation_handoff.yaml
-    size_bytes: 2158
-    sha256: d30580673da4c8a3d556d1634d5f4becaf1f227efa82a80243f902fefca91f10
+    size_bytes: 5758
+    sha256: 38132917942ae199973724c4061a54ea6c284fd6bd7f7a40e2e202d2de94c79b
   - path: project_template/engineering_calc_project/implementation/00_architecture/.gitkeep
     size_bytes: 0
     sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
@@ -174,11 +183,11 @@ files:
     size_bytes: 35
     sha256: a1e5303d7ef1eb0da360e96656557acbfb277cf71ebb498ec1b56454c996c211
   - path: project_template/engineering_calc_project/pyproject.toml
-    size_bytes: 403
-    sha256: 607bde39530b2264a52e1474bbe4430fd519d79ccbb33c46262e796e339da24a
+    size_bytes: 422
+    sha256: 3abb57b3258ada0357c7c43a22439ac3f8dcf11d3c5929489b64e074f7e7644f
   - path: project_template/engineering_calc_project/README.md
-    size_bytes: 869
-    sha256: 1cf5c5163bd15df6a050283e9c7e3b89716e0b54ba57ddb227fda47ff2f0bc92
+    size_bytes: 2284
+    sha256: a784f49f766c7715f6b16d29e4744ae5c13def2adcfba95bbdc4e10803d38044
   - path: project_template/engineering_calc_project/references/acquisition/.gitkeep
     size_bytes: 0
     sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
@@ -216,8 +225,8 @@ files:
     size_bytes: 488
     sha256: 793a5c1f8020e04833b9f425fee34fa7a208968114a021a9061de59043198a87
   - path: project_template/engineering_calc_project/release/release_checklist.md
-    size_bytes: 790
-    sha256: 9da1e185c12d4d46a29fae626a1ed3f274d405a55ed256e5cdbd70919bd60b5d
+    size_bytes: 1492
+    sha256: c8966e10f08f8f53559a1b55e180419984e712ff95961894328c791c3fa5d5e7
   - path: project_template/engineering_calc_project/src/pkg/__init__.py
     size_bytes: 49
     sha256: c41d7b6182188afa7243f729a6e391469c727df6ea4801e100ffc5721f38fe94
@@ -228,11 +237,11 @@ files:
     size_bytes: 101
     sha256: 23fce82101c1285841984dc41d5c21defc93ebc1ba9bf4a85d4f34afc5bb3f76
   - path: project_template/engineering_calc_project/src/pkg/books/book_name/book_models.py
-    size_bytes: 1141
-    sha256: ca5f60e26b8fe38389816d90b97d9e5f504da216e82809029f20a5634f2f2a5c
+    size_bytes: 1271
+    sha256: 98b33ab575bb2adb1cd08ffae0b2a52167dca0614abf5d2b0990930d4b78cf70
   - path: project_template/engineering_calc_project/src/pkg/books/book_name/book_runner.py
-    size_bytes: 516
-    sha256: c09aedef636a34803b71deb2112350e2f2d4d12dde2520caad862745e62c43bd
+    size_bytes: 865
+    sha256: bb63b9ae28bb7b1f723e4461ac9d31a5a6f04c264cb1cd07f0dc69a6859b560c
   - path: project_template/engineering_calc_project/src/pkg/books/book_name/report_context.py
     size_bytes: 415
     sha256: af44f33e693abb501612b5dd5eff331b20be27ecdf3d00616b414f77e2fc476e
@@ -251,6 +260,9 @@ files:
   - path: project_template/engineering_calc_project/src/pkg/core/enums.py
     size_bytes: 249
     sha256: a5019fc6b6ea92a8097e35f8af6059f5a077a95261b3a13927e9d9bec2444385
+  - path: project_template/engineering_calc_project/src/pkg/core/formula_registry.py
+    size_bytes: 8413
+    sha256: b4b24bd45fdc3302ecc13d80cb6f3735ab3a2001f89a62f92e82a956dba92169
   - path: project_template/engineering_calc_project/src/pkg/core/sanitize.py
     size_bytes: 2041
     sha256: 8495b725ee62d5e8e757d9cb0fe794495f6997474c8dc1df77dd67a14060dba5
@@ -296,9 +308,15 @@ files:
   - path: project_template/engineering_calc_project/tests/smoke/example_input.json
     size_bytes: 147
     sha256: 6b8acfa72285075d5e2d91072e18966185789a8c6a2a57d17223d72ce790468b
+  - path: project_template/engineering_calc_project/tests/smoke/test_web_routes.py
+    size_bytes: 797
+    sha256: 90468b59db99e09aef73262850c26c27306f259d2afa36f21daf0e2453610352
   - path: project_template/engineering_calc_project/tests/unit/.gitkeep
     size_bytes: 0
     sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/tests/unit/test_formula_registry.py
+    size_bytes: 1640
+    sha256: 77321310e9fe70c2afa9ea6878897617013c72b3b3ab2d9a64a0e1489ba35525
   - path: project_template/engineering_calc_project/verification/.gitkeep
     size_bytes: 0
     sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
@@ -312,20 +330,20 @@ files:
     size_bytes: 829
     sha256: 867fb6e6ccfe7d4cd6fb25507ed0f74434ba7b7b8b594df42e77a3ceea7d55e7
   - path: project_template/engineering_calc_project/webapp/config.py
-    size_bytes: 1567
-    sha256: a35e83329b64a359f9544e73fe133b34e5f9fe9f19ae73d2de34bdf74e8a4101
+    size_bytes: 1666
+    sha256: 8519f8f53e00173da43b723145b1cfd8bac16b3dbe6eef76899748610ff0945a
   - path: project_template/engineering_calc_project/webapp/form_utils.py
-    size_bytes: 6343
-    sha256: 5639ffe29d1f94c6c112dc6f50587dbe2f47c59b281e5add19f2ffa8ae34aaff
+    size_bytes: 6572
+    sha256: f08f3488625fedb9e841efa556132cbdcc70d3ce684b060ca621c17dbd8675d3
   - path: project_template/engineering_calc_project/webapp/i18n.py
-    size_bytes: 5385
-    sha256: 4a8b6858d803dc95e1970044a31d6e14bb4964d39890a3d4e9384a654e469663
+    size_bytes: 5440
+    sha256: bce9443b4f4431303f1c8c5baa8a55473ba981088872e25aa5f78f5f86c9468e
   - path: project_template/engineering_calc_project/webapp/routes.py
-    size_bytes: 6232
-    sha256: 2a23ad9e763c1393437ebfbebca254bf2008cccd1375be6091b096820e034794
+    size_bytes: 6251
+    sha256: a85e0cef2fb35a41f597c20ee6212ab201bf068c6760c37213fe5b325866b882
   - path: project_template/engineering_calc_project/webapp/static/css/style.css
-    size_bytes: 3194
-    sha256: 73b74a26ab0fbf3ba5070e27635cdf418c3215e793437d0f961a5a5bd4c7bd6a
+    size_bytes: 3437
+    sha256: 9c60e7a93042d49befc456a4a7b6baae74e8bd1fdfcaf22356cb1562c5603410
   - path: project_template/engineering_calc_project/webapp/static/js/forms.js
     size_bytes: 2026
     sha256: b97b0a1fbedca584011a6d061f1449992a8c7c38db5a0dbe2df1ba0a8739f5ef
@@ -336,29 +354,29 @@ files:
     size_bytes: 7368
     sha256: ea37249f55cdccb852e381c6f7f30b4fe53ecab558e6eb0e1fafdc9d8ad80a27
   - path: project_template/engineering_calc_project/webapp/static/js/results.js
-    size_bytes: 3975
-    sha256: 653ccaebac339ebe5c691195b90537df39cbe8ff4bd7ebef2794d09d50ad0758
+    size_bytes: 4702
+    sha256: 97cbe25a782c1d6c1ce5acf88e21f9e4e9a170ac1346a4fa3659332fd6d137ad
   - path: project_template/engineering_calc_project/webapp/templates/base.html
-    size_bytes: 5455
-    sha256: 3947b1f1ff6c89f2d548feb15d81ab209e02bf23c35f056a73908b8201a162a7
+    size_bytes: 5826
+    sha256: 2cad19c3437dbbbc892c2ddda18fba21b62b9ef23e871195641e30019bb90915
   - path: project_template/engineering_calc_project/webapp/templates/index.html
-    size_bytes: 3645
-    sha256: 02be028fd3da8c5d679b1319fcb8077e61ec0388798ed7eca12c37f40b9a26f8
+    size_bytes: 3724
+    sha256: 020593ce4d48de7f85175826bf5b6c32aa17bd215e3efd4fcf176bc316ec4975
   - path: README.md
-    size_bytes: 4003
-    sha256: 96cdb95a2e9ff3da9e01a722d57ac0e1eb74822f039e1672d52f9255bb2e174d
+    size_bytes: 5268
+    sha256: 255fc743710ad2e84e6e316424c9a90cdccb00a3415440b652ff63ef0db021c8
   - path: README.zh-CN.md
-    size_bytes: 4881
-    sha256: c91c562779708aebc141ae64138a05a72675f4ae7b05558046e2847100f03a38
+    size_bytes: 5475
+    sha256: 464e8e40d878f96491e7156fa66064484fa62608dbe82750e9c34a5625f3b6f9
   - path: schemas/artifact_contracts.json
-    size_bytes: 13013
-    sha256: 6016bec71de6d2e8aeddc6050ac7204037477cfb44ad5946daae874953efea7d
+    size_bytes: 16847
+    sha256: 8a7c3e0b2120810af1ffa03146b7c9839792c9e3863b70b6421b0f40ce680305
   - path: scripts/build_package_index.py
-    size_bytes: 5134
-    sha256: 2099d190c034a83c6e2662e39073d3a5f45eebc45d95cdca4abbd6a43e1ce9fb
+    size_bytes: 5261
+    sha256: 932fe564926c2224735244678f36462d789d5b557d07844bb99ffc71d95bb7cf
   - path: scripts/validate_artifacts.py
-    size_bytes: 5061
-    sha256: 826df348df4e92bd5d50908f123c526b545c571a4579610a2c8f70c97209e026
+    size_bytes: 6201
+    sha256: 20ae96933215119a13a818a2f78accb4c584b5d2e7d27aba1d23dc2dfce59200
   - path: shared/artifact-index-template.yaml
     size_bytes: 1490
     sha256: ff86a6f1c666262d004789d40b68c4462075948d27e2a9e5f643fbe90398c5d3
@@ -372,8 +390,8 @@ files:
     size_bytes: 677
     sha256: 2efac39215a1c9c1fc4e38069c542794f08c171f7b85a7ab1e0e8ce875143546
   - path: shared/handoff-contract-template.yaml
-    size_bytes: 2158
-    sha256: d30580673da4c8a3d556d1634d5f4becaf1f227efa82a80243f902fefca91f10
+    size_bytes: 5758
+    sha256: 38132917942ae199973724c4061a54ea6c284fd6bd7f7a40e2e202d2de94c79b
   - path: shared/id-convention.md
     size_bytes: 915
     sha256: f2ab2faa30d822531c4c5038237a3acf48b95964f5fa6c2c562ea9470924a971
@@ -381,8 +399,8 @@ files:
     size_bytes: 1215
     sha256: 859e2f8c7a5a0b38598b4f0828e276ed95041fb0e44dda02f60c328510f2d6c6
   - path: shared/quality-gates.md
-    size_bytes: 2817
-    sha256: 2fe0e74b1d80b53b5217bfcf96284e5f908fc3c7e9320186b957ecc918345196
+    size_bytes: 2946
+    sha256: 6f5d9ece190db5f477580936a0d232cd651da5b39e36dc2325d8562b819b3613
   - path: shared/result-path-convention.md
     size_bytes: 373
     sha256: b850a304f7f90a9b4b19a56557a25e9a80e9d0195cb4a4517fe244556e814ec9
@@ -396,11 +414,11 @@ files:
     size_bytes: 489
     sha256: b62347805d8782f1da28174d60d77e8f83f43edab5f1613e3ed25e25e43ba65f
   - path: SKILL.md
-    size_bytes: 2624
-    sha256: ea93c1cfb81379d600d56821016af1c17554b83f899b8327a91f10153082d2aa
+    size_bytes: 4279
+    sha256: 95cfb5f014920a42a8b79f446eabbdccfee7d8fb791d6a4117516c5a027237ce
   - path: SKILL_PACKAGE_SUMMARY.md
-    size_bytes: 4018
-    sha256: 2320bd3951992730374125853000687f1dcf13b21f64ea7ea37a7089ef3fd9ed
+    size_bytes: 5213
+    sha256: ab7561b908ee298e55fd3eadffb3198be82020bfd55bc56035083668e481034e
   - path: skills/00-engineering-calculation-router.skill.md
     size_bytes: 4931
     sha256: 4f842627cb6a48d78babda7530476d47c3cb14ed851baa1b8ae652f5a8df9b46
@@ -423,8 +441,8 @@ files:
     size_bytes: 2908
     sha256: 26addec818300c27d963c618b743f3db7c1117f32c75932c6a8b46aee96e46b8
   - path: skills/07-implementation-handoff-contract.skill.md
-    size_bytes: 2525
-    sha256: f5ffb58fc2ff378b172ff2146b4da9494318c2c428f91123ae00d05681a89d69
+    size_bytes: 3854
+    sha256: 7546cb3ad5f904c145a90635e6ac9aa2085977ab0f505f1ed1e5f31733298c9d
   - path: skills/08-calculation-book-architecture.skill.md
     size_bytes: 2864
     sha256: a97546c07c7e5c276439c57f2b21088d50c18865c1f3a6941a40763b27af2530
@@ -432,8 +450,8 @@ files:
     size_bytes: 1893
     sha256: b65544f5b2eb11c6ac1ac6dea23d2c52a22eaab2a7755a002af45c3455a66985
   - path: skills/10-reusable-calculation-modules.skill.md
-    size_bytes: 2459
-    sha256: 7cdd12c089aeb71b396219650570ee70aac5430766b947f85a10c9d267a8d139
+    size_bytes: 3501
+    sha256: e825f14f4a3aabda9b645d0c07bcd18c63acb14662b876cdbef16e1e1fe6f03e
   - path: skills/11-book-runner-and-governing-summary.skill.md
     size_bytes: 1826
     sha256: 11c69dc3b308796167967d51b86bf2ae00e12499fec1a93d67b75f5a9aed018a
@@ -444,17 +462,17 @@ files:
     size_bytes: 3442
     sha256: 92adc5e0a4c2846ffebf03e9f1494f1357c819f425055d6aee51d9a5b6539fec
   - path: skills/12b-frontend-and-review-interfaces.skill.md
-    size_bytes: 4752
-    sha256: 716666175945b3f59aad38a1b4392bc2eefc32dc7e9196d8c30624e92ea11e02
+    size_bytes: 7694
+    sha256: d80bf9f4c42c430b5b2ae19b57489489feb75da66ad1227d9bd48b456931478e
   - path: skills/12c-batch-import-export-packages.skill.md
     size_bytes: 3659
     sha256: 7c0662a3f83e366d9721ecdf5a633e7a814a94900f5288ab73ef8aecdd7dd194
   - path: skills/13-verification-regression-traceability.skill.md
-    size_bytes: 3284
-    sha256: be213dfc53c5e2f8fbf3d70d03d5612320c4bd903d639135dbe9f49d7c148b46
+    size_bytes: 3434
+    sha256: fbbaed3f63b7878217dbb450981a215878b4ba5443b4c2903d22f91bbd7742b3
   - path: skills/14-cloud-web-release-deployment.skill.md
-    size_bytes: 4497
-    sha256: d491f0858e15279f53a1a4cfb7b7bf8e8dae1c887abc24ff6e0bd278cf9c95c6
+    size_bytes: 5685
+    sha256: dca9ecb9e679ba13a572ba27b3b5b072237a9aaaa37936c8e78200a16f41e7ea
   - path: templates/acquisition/acquisition_handoff.yaml
     size_bytes: 982
     sha256: fb248794ed9958955fc37d37983bee6a11c48ec4d4256d9d0c445c2312933b0a
@@ -552,14 +570,14 @@ files:
     size_bytes: 855
     sha256: ae439944e1b41590d102efe4d9f79c5d58adcea65431bde025cd830bd55e77b7
   - path: templates/deployment/cloud_linux_deployment.md
-    size_bytes: 2426
-    sha256: fb90204a85a7f9700a015657f5512a9a1e6a7a94e334d6c1ef88659a786a9673
+    size_bytes: 3610
+    sha256: 003d1433c331d53ed16081cf584c84f601e60a39c601016e66beb5ac3b987533
   - path: templates/deployment/release_checklist.md
-    size_bytes: 2422
-    sha256: 5a38c88175a6c497289a5f4f88016b54d647c9ce7e013e20ba22be9df0d6f26a
+    size_bytes: 3395
+    sha256: e668d7775fc63ab4085ded8cf84a5003b2db6c2e43b69da8d8a85fa09dc1cbdb
   - path: templates/deployment/runtime_env.example
-    size_bytes: 262
-    sha256: a2d3ebab7cf024e57781259e700990c724fa8219f93d7f67051c043abc2b66a8
+    size_bytes: 460
+    sha256: e379a13420d0e6316197378ccaef0c4acd32c06055179796f93db94485ecbc2a
   - path: templates/handoff/artifact_index.yaml
     size_bytes: 1490
     sha256: ff86a6f1c666262d004789d40b68c4462075948d27e2a9e5f643fbe90398c5d3
@@ -567,17 +585,20 @@ files:
     size_bytes: 368
     sha256: 2404f47ef1237f3cdb7b9a69e6aa916ee518b01cc6022b1b537070d95eb89cb8
   - path: templates/handoff/implementation_handoff.md
-    size_bytes: 776
-    sha256: fca9c2896e58c195e75d1d61fc1da04f8a7c021be4b6fb94068bbcb0d7f42ed6
+    size_bytes: 2417
+    sha256: 987f731aeb8cd331fb37f6db07d876bcd344015a8ee5128103264779860bba3e
   - path: templates/handoff/implementation_handoff.yaml
-    size_bytes: 2158
-    sha256: d30580673da4c8a3d556d1634d5f4becaf1f227efa82a80243f902fefca91f10
+    size_bytes: 5758
+    sha256: 38132917942ae199973724c4061a54ea6c284fd6bd7f7a40e2e202d2de94c79b
   - path: templates/handoff/unresolved_items_before_coding.md
     size_bytes: 131
     sha256: 60237b3f43525167aca9b2793870cbaf3c3da5aa08a4bab5f8c1bedc3960468a
+  - path: templates/implementation/admin_marimo_review_spec.md
+    size_bytes: 964
+    sha256: 16458192b828997250e3b9405fc3c3082fa3cb910ca228916d82b9f399749d0f
   - path: templates/implementation/api_route_skeleton.md
-    size_bytes: 3869
-    sha256: 100102d676d1bce21d95a61d46e36caedb5e8ca5ce6abeb460e7e26f690fc3fd
+    size_bytes: 4194
+    sha256: b82836efe81ad125aca8879f3e4d93234d4a5b4e4ada3d4caacfebfeb1aed72b
   - path: templates/implementation/batch_flow.md
     size_bytes: 123
     sha256: 680a8f2bc4f4f879b7dac9c2e4c4e9eba326632a6dc4a18d0d36ed705c938d1c
@@ -602,6 +623,15 @@ files:
   - path: templates/implementation/form_mapping_spec.md
     size_bytes: 3150
     sha256: da5883480de3e560123e6bac67448f8bfcae0eafe6a8da47c5fc7465679c3f80
+  - path: templates/implementation/formula_publish_log.csv
+    size_bytes: 57
+    sha256: 0810638e04ad2eead280ed93479f16fb3a8ce2dceb54c3519c642dd122432d0c
+  - path: templates/implementation/formula_registry_spec.md
+    size_bytes: 1172
+    sha256: 7f72e41b5d4ce84b1279c1524c240f19d005d96c118f97e9ddc7b82054352b0b
+  - path: templates/implementation/formula_rule_schema.yaml
+    size_bytes: 909
+    sha256: 98c827e7a261639faea03dc1f2ae593fe254d87e7368d3f5dd19110f2a6e37c7
   - path: templates/implementation/formula_trace_spec.md
     size_bytes: 543
     sha256: 906a9391cb8e3fc01b256f2767d35c79dd8d333f2b259b6b5c6f40835b6fad51
@@ -624,8 +654,8 @@ files:
     size_bytes: 487
     sha256: a1bedbfd893f0c9da763b75fa302c4b16b4d143f77499bf3fd00b100b15bfa47
   - path: templates/implementation/marimo_review_spec.md
-    size_bytes: 2460
-    sha256: 623f4a18d38fded3f065c619a275a1f43019fe4bfc6d1d460aa9d388f7ace96d
+    size_bytes: 2822
+    sha256: 8c2a8e55ebbf2b3666bf879490aebe6e6aff0797c081e118361496c37a941639
   - path: templates/implementation/module_asset_registry.csv
     size_bytes: 189
     sha256: 9709f816c3469d8603533f4e24450f1a71a9f9fdb11b68b115c4fe5f4a717d49
@@ -636,11 +666,11 @@ files:
     size_bytes: 127
     sha256: a84da6cfed0b99d75f369e8ebcc04ec0b7ad60dbd26e1a92dfed1d52ce7e20e3
   - path: templates/implementation/package_layout.md
-    size_bytes: 1524
-    sha256: 69db8a8a6aa569292af107f499e63a486bf908e12094616b83bb43d52104a946
+    size_bytes: 1530
+    sha256: 68413f888715fe2fa96a573c2ddd6832790c9857046fdba089f75829ebb43201
   - path: templates/implementation/project_structure.md
-    size_bytes: 1193
-    sha256: 76a6c5d1a979f31799291e112d9c04bd36136ce68a294bbb5ec56d4815d37448
+    size_bytes: 1311
+    sha256: 5c7b7d76fc16a3151968dd6e515c48ce61b74b2aaa8b2c0e34cd5a4d359dd30c
   - path: templates/implementation/report_context_spec.md
     size_bytes: 5486
     sha256: 58dcc5898cbddd5ef426f3ad0188748139b6469a3f6d02f5d3a4f697bacf22c9
@@ -660,14 +690,14 @@ files:
     size_bytes: 618
     sha256: cc7175421565a74b80a3c5dbc31c76513a20461c87049bde8fc96b975b40119b
   - path: templates/implementation/ui_layout_spec.md
-    size_bytes: 4447
-    sha256: 3d19e2d97b40ba5a9a42cbc0fbfcb623ef13b945dc0b8d38129139a2c3243393
+    size_bytes: 5897
+    sha256: 0ef8e49277e6d429d5694c15b3650617937aac6078dcea936f98485e1e81111d
   - path: templates/implementation/unit_system.md
     size_bytes: 423
     sha256: 736508752ae5602e33c57599c3d8c9228a9931930f6128cccfd93cf7ad64075c
   - path: templates/verification/acceptance_checklist.md
-    size_bytes: 1636
-    sha256: bd32f73d2deb8a0162055516d3b6444605026318acbf33de0472f4692241a29d
+    size_bytes: 2341
+    sha256: a4e3cadfff37b4bf8dd82a6ca4f2244d067505fa896654924ed25e6439eae91e
   - path: templates/verification/regression_references.md
     size_bytes: 114
     sha256: 37aec825c9615e10add13558cb81cbe0f1c03d43c789a82910d1bbe498b78e81

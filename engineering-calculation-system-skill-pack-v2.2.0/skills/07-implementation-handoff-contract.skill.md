@@ -51,10 +51,17 @@ status
 source_basis
 evidence_library_status
 calculation_scope
+runtime_stack
 input_model_groups
 result_model_groups
 runner_sequence
 module_candidates
+calculation_module_contract
+book_runner_contract
+backend_api_contract
+frontend_contract
+operator_workflow_contract
+release_contract
 formula_inventory_refs
 lookup_inventory_refs
 branch_inventory_refs
@@ -65,6 +72,27 @@ traceability_requirements
 open_questions
 coding_gate
 ```
+
+## Delivery Contract Rule
+
+The handoff must distinguish calculation code, backend/API code, frontend assets, report outputs, and release artifacts.
+
+The handoff must declare the runtime stack. The default is Python-first:
+
+```text
+primary_language: python
+python_version: ">=3.9"
+calculation_runtime: python_package
+backend_runtime: flask_or_fastapi
+frontend_format: jinja2_bootstrap5_vanilla_js
+review_runtime: marimo_optional
+```
+
+If any item differs from the default, record why and define the adapter boundary before implementation.
+
+For runnable web calculation systems, a single static `.html` file, exported report HTML, or screenshot-style mockup is never a complete implementation contract. If the user requests only a static prototype, set the coding gate or release status to `prototype_allowed`, `not_production_ready`, or an equivalent non-final status.
+
+The handoff must also record operation-quality decisions: what makes the tool convenient for repeated engineering use, review, report production, batch work, and later formula maintenance.
 
 ## Coding Gate
 
@@ -99,6 +127,12 @@ what implementation must not start
 required modules
 runner sequence
 model groups
+runtime stack
+calculation module contract
+backend API contract
+frontend contract
+operator workflow contract
+release contract
 report sections
 test requirements
 remaining blockers

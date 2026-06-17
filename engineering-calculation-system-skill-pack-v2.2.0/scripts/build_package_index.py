@@ -41,6 +41,8 @@ ALL_IN_ONE_PREFIXES = (
     "project_template/engineering_calc_project/pyproject.toml",
     "project_template/engineering_calc_project/implementation/02_modules/module_asset_registry.csv",
     "project_template/engineering_calc_project/webapp/",
+    "project_template/engineering_calc_project/apps/",
+    "project_template/engineering_calc_project/data/formula_registry/",
     "project_template/engineering_calc_project/deploy/",
     "project_template/engineering_calc_project/release/",
     "project_template/engineering_calc_project/src/",

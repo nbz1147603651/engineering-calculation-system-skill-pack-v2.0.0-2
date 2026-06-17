@@ -61,6 +61,27 @@ release_checklist.md
 test_matrix.csv
 ```
 
+## Default runtime and frontend
+
+```text
+Primary runtime: Python 3.9+
+Calculation modules: Python packages under src/<pkg>/libraries/
+Official runner: run_book(BookInput) -> BookResult
+Backend/API: Flask or FastAPI thin routes
+Default frontend: browser web app under webapp/
+Default web format: Jinja2 templates + Bootstrap 5 + vanilla JavaScript modules
+Review/admin: Marimo when Python-native review or formula publishing is needed
+```
+
+## Stack principle
+
+```text
+Optimize for engineering operation quality and reviewer convenience first.
+Use the simplest stack that still provides complete validation, traceability, review, reporting, import/export, and deployment workflows.
+Do not remove useful workflow capability merely to reduce dependencies.
+Upgrade the frontend or review stack when the handoff shows clear usability, maintainability, or safety value.
+```
+
 ## v2.1 hardening
 
 ```text
@@ -100,6 +121,8 @@ data/report imports should be staged, classified, hashed, and normalized before 
 upload/export packages should include manifest, inputs, trusted results, reports, hashes, and versions
 final web programs should include local run commands, Linux cloud deployment files, health checks, and release smoke records
 calculation modules should be decoupled reusable assets recorded in module_asset_registry.csv
+administrator formula edits should use declaration-based formula registry publishing through a protected Marimo review app, not arbitrary Python source editing
+static HTML files and exported report HTML are outputs or prototypes, not complete production web calculation systems
 ```
 
 ## v2.2.0 interface split
@@ -122,4 +145,4 @@ Skill 14 handles local runnable web clients, Linux cloud deployment, release che
 6. Implement formulas only inside reusable calculation modules and book runners.
 7. Use Skill 12 to select report, frontend/review, or batch/package subskills when interfaces are needed.
 8. Verify with unit, branch, lookup, regression, integration, interface, package, and smoke tests.
-9. Package final web systems with local run instructions, Linux deployment files, release checklist, and deployment smoke evidence.
+9. Package final web systems with local run instructions, Linux deployment files, release checklist, deployment smoke evidence, and proof that the delivery is not static-HTML-only.

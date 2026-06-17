@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "module_id": "to_be_defined",
+  "version_id": "to_be_defined",
+  "status": "draft",
+  "published_at": "to_be_defined",
+  "published_by": "to_be_defined",
+  "description": "to_be_defined",
+  "formulas": [
+    {
+      "formula_id": "F001",
+      "name": "to_be_defined",
+      "expression": "demand / capacity",
+      "variables": [
+        {"name": "demand", "unit": "kN", "description": "to_be_defined"},
+        {"name": "capacity", "unit": "kN", "description": "to_be_defined"}
+      ],
+      "output": {"name": "utilization", "unit": "-"},
+      "source_refs": ["S01"],
+      "limits": [
+        {"condition": "capacity > 0", "behavior": "error_if_false"}
+      ],
+      "test_cases": [
+        {
+          "name": "reference example",
+          "inputs": {"demand": 50, "capacity": 100},
+          "expected": 0.5,
+          "tolerance": 1e-09
+        }
+      ]
+    }
+  ]
+}

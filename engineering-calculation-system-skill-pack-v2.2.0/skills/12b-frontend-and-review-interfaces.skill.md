@@ -11,6 +11,21 @@ Use this skill when the user needs an operational UI, API, review notebook, or m
 
 Create interfaces that make engineering review efficient while remaining thin over trusted calculation modules.
 
+Prioritize operator quality and convenience:
+
+```text
+clear input grouping and validation
+fast calculation feedback
+visible governing status, warnings, and errors
+source and formula trace review
+report preview and export
+import/export packages for repeatable work
+charts only when they improve engineering judgment
+Marimo review when module-level inspection or formula publishing is valuable
+```
+
+Do not strip useful workflow features just to keep the frontend small. Keep formulas out of the UI, but make the UI comfortable and complete for repeated engineering use.
+
 Recommended interface families:
 
 ```text
@@ -18,6 +33,20 @@ production frontend: browser UI for inputs, calculation, report preview, import/
 Marimo review app: Python-native module inspection, draft edits, traces, and what-if review
 API route layer: thin parse -> model -> run_book -> UI/result conversion endpoints
 ```
+
+## Primary Frontend Format
+
+The default frontend is a browser web app served from `webapp/`:
+
+```text
+page shell: Jinja2 templates in webapp/templates/
+styling: Bootstrap 5 plus webapp/static/css/style.css
+JavaScript: vanilla modules in webapp/static/js/
+API style: JSON endpoints under /api/
+interaction model: server-rendered shell with API-driven calculation/review interactions
+```
+
+Use this default format for most calculation books. Use React, Vue, a separate SPA build, or another frontend format when interaction complexity, maintainability, or operator convenience justifies it and the handoff records the build, routing, API, testing, and deployment consequences.
 
 ## Deployment-Ready Web App Minimum
 
@@ -31,6 +60,14 @@ environment-based host, port, secret, debug, data, and output paths
 local run command such as python -m webapp.app
 production run command such as gunicorn "webapp.app:create_app()"
 ```
+
+## Static HTML Delivery Guard
+
+A single `.html` file, exported report HTML, or static mockup is not a production web calculation system. It may be delivered only when the user explicitly asks for a static prototype, and then it must be labeled `prototype`, `draft`, or `not_production_ready`.
+
+For production frontend work, the browser page must be backed by the same backend/API path used in tests and deployment: form data maps to `BookInput`, API routes call `run_book()`, and the frontend renders returned `BookResult`/UI data.
+
+Report HTML belongs under report/export outputs. It must not be treated as the application runtime.
 
 ## Unified Frontend Layout
 
@@ -144,18 +181,44 @@ Label exploratory edits as `draft`, `review`, or `prototype` until saved, rerun 
 
 Use `templates/implementation/marimo_review_spec.md`.
 
+## Embedded Admin Review
+
+When Marimo is embedded in the main deployed site, use this production shape:
+
+```text
+main web app at /
+Marimo admin review at /admin/review/
+Marimo runs as a separate service behind nginx or the platform proxy
+shared formula registry at data/formula_registry/
+```
+
+Run Marimo with `marimo run`, not `marimo edit`, in production. Protect it with an environment-provided admin token/password and HTTPS. The admin page may edit declaration-based formula rules, but it must not provide arbitrary Python source editing. Publishing may update production only after validation and smoke tests pass.
+
+Use:
+
+```text
+templates/implementation/admin_marimo_review_spec.md
+templates/implementation/formula_registry_spec.md
+templates/implementation/formula_rule_schema.yaml
+templates/implementation/formula_publish_log.csv
+```
+
 ## Required Final Response
 
 Provide:
 
 ```text
 layout summary
+operator convenience and review-quality decisions
 mapping module and functions
 API route table
 frontend module breakdown
+frontend format and file layout
 i18n/sanitization/chart decisions
 Marimo review scope if used
+embedded admin review route and token strategy if used
 proof that UI and review layers do not calculate
+proof that the delivery is not static-HTML-only when production delivery is expected
 smoke test
 run command
 deployment-ready entrypoint when final delivery is expected

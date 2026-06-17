@@ -13,6 +13,20 @@ This skill builds engineering calculation books as reusable, auditable software 
 
 Correctness and traceability come first. Reuse comes second. Presentation comes third.
 
+Operational quality and reviewer convenience are part of correctness. Keep implementations maintainable, but do not underbuild validation, traceability, review surfaces, report preview, import/export, or deployment support just to keep the stack minimal.
+
+Default implementation is Python-first:
+
+```text
+calculation modules: Python package under src/<pkg>/libraries/
+book runner: Python run_book(BookInput) -> BookResult
+backend/API: Flask or FastAPI thin route layer
+frontend: browser web app under webapp/
+review/admin: Marimo for Python-native review when needed
+```
+
+If a project uses a non-Python calculation runtime, define the adapter boundary before implementation and do not promise Marimo-native module review unless Python wrappers exist.
+
 Never place engineering formulas in:
 
 ```text
@@ -31,6 +45,8 @@ All official calculation paths must call:
 def run_book(book_input: BookInput) -> BookResult:
     ...
 ```
+
+Do not treat a static `.html` file, exported report HTML, or visual mockup as a complete web calculation system. Final web delivery must include calculation modules, `run_book()`, backend/API runtime files, frontend assets, tests, and release/deployment artifacts unless the user explicitly requested a static prototype.
 
 Operational interfaces should use the shared layout pattern from Skill 12:
 
@@ -110,6 +126,7 @@ feature classification table
 project structure
 input schemas and typed models
 unit system and status semantics
+runtime stack decision
 reusable module interfaces
 module asset registry
 book runner design
@@ -122,5 +139,6 @@ data package import/export contract when needed
 test plan and skeletons
 run commands
 local and cloud Linux deployment commands when final delivery is expected
+proof that final web delivery is not static-HTML-only
 acceptance checklist
 ```

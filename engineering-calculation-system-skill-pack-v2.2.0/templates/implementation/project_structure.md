@@ -43,6 +43,6 @@ engineering_calc_project/
 
 Record where each feature class belongs and which files own formulas, runner orchestration, reports, interfaces, and tests.
 
-Use `webapp/` or `src/<pkg>/interfaces/webapp/` for the unified production frontend. Use `apps/review/` for Marimo review apps. Use `data/` for user-provided, imported, staging, normalized, and package-managed data. Use `outputs/` only for generated artifacts. Use `deploy/` for Linux/cloud runtime files and `release/` for final delivery checklists or runbooks.
+Use `webapp/` or `src/<pkg>/interfaces/webapp/` for the unified production frontend. The default web format is Jinja2 templates, Bootstrap 5, and vanilla JavaScript modules served by the Python backend. Use `apps/review/` for Marimo review apps. Use `data/` for user-provided, imported, staging, normalized, and package-managed data. Use `outputs/` only for generated artifacts. Use `deploy/` for Linux/cloud runtime files and `release/` for final delivery checklists or runbooks.
 
 Reusable calculation assets belong under `src/<pkg>/libraries/` and must be registered in `implementation/02_modules/module_asset_registry.csv`.

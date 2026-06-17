@@ -17,6 +17,7 @@ function renderResults(data) {
 
     // Governing summary
     renderGoverning(data.governing);
+    renderFormulaRegistry(data.formula_registry);
 
     // Warnings banner
     if (data.warnings && data.warnings.length > 0) {
@@ -91,6 +92,8 @@ function clearResults() {
     showPlaceholder();
     const box = document.getElementById("governingBox");
     if (box) box.classList.add("d-none");
+    const strip = document.getElementById("formulaRegistryStrip");
+    if (strip) strip.classList.add("d-none");
     const btnPreview = document.getElementById("btnPreviewReport");
     if (btnPreview) btnPreview.disabled = true;
     hideWarnings();
@@ -129,4 +132,18 @@ function showError(message) {
         box.classList.add("alert-danger");
         box.innerHTML = `<strong>Error:</strong> ${message}`;
     }
+}
+
+function renderFormulaRegistry(registry) {
+    const strip = document.getElementById("formulaRegistryStrip");
+    if (!strip || !registry) return;
+
+    const hash = registry.hash ? registry.hash.substring(0, 12) : "untracked";
+    const published = registry.published_at || "not published";
+    strip.classList.remove("d-none");
+    strip.innerHTML = `
+        <span><strong>Formula version:</strong> ${registry.version || "unversioned"}</span>
+        <span><strong>Hash:</strong> ${hash}</span>
+        <span><strong>Published:</strong> ${published}</span>
+    `;
 }

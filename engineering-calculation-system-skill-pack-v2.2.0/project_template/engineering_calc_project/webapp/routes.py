@@ -154,7 +154,7 @@ def api_import_json():
         }), 400
 
 
-@bp.route("/api/export/json")
+@bp.route("/api/export/json", methods=["GET", "POST"])
 def api_export_json():
     """Export current configuration as JSON file."""
     try:

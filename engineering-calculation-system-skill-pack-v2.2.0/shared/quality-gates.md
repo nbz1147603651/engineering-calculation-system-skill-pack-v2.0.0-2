@@ -86,6 +86,7 @@ cloud Linux deployment path documented
 web app exposes a health endpoint
 production server entrypoint exists
 environment variables control secrets, debug mode, host, port, data, and output paths
+delivery is not only a static HTML file, exported report HTML, or mockup unless explicitly labeled as a non-production prototype
 Dockerfile or systemd service exists when cloud deployment is required
 nginx or platform proxy guidance exists when the app is internet-facing
 calculation modules remain independent from web, report, batch, and deployment layers

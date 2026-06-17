@@ -8,6 +8,7 @@ requires-python = ">=3.9"
 web = [
     "flask>=3.0",
     "gunicorn>=21.2",
+    "marimo>=0.8",
 ]
 review = [
     "marimo>=0.8",

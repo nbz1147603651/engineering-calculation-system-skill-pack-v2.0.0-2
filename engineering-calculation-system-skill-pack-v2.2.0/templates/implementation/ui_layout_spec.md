@@ -56,16 +56,45 @@ Use this template for production frontend, review UI, or app-like engineering ca
 - Use tables for comparable engineering checks and compact metric boxes for headline values.
 - Provide chart containers only when figures improve engineering review.
 
+## Operator Convenience Decisions
+
+| Workflow Need | Required Decision | Notes |
+| --- | --- | --- |
+| repeated data entry | keyboard-friendly forms / defaults / copy case / import package | optimize for engineers running many cases |
+| review and approval | trace drawers / formula references / source references / comments | make checking faster and less error-prone |
+| report production | preview / export / status labels / saved final input | prevent accidental finalization from draft data |
+| batch or comparison work | import/export package / diff / saved BookResult JSON | keep results reproducible |
+| complex interactions | keep default Jinja2 stack or upgrade to SPA | choose based on workflow quality, not minimalism |
+
 ## Frontend Stack Decision
 
 | Item | Selected value | Reason |
 | --- | --- | --- |
-| Template engine | Jinja2 / React / Vue | to_be_defined | server-rendered vs SPA |
-| CSS framework | Bootstrap 5 / Tailwind / custom | to_be_defined | rapid prototyping |
-| JS architecture | vanilla modules / React hooks | to_be_defined | see `api_route_skeleton.md` |
-| i18n strategy | data-i18n + API endpoint | to_be_defined | see `i18n_pattern.md` |
+| Frontend format | Jinja2 + Bootstrap 5 + vanilla JavaScript modules | Default web format for this skill pack |
+| Page model | server-rendered shell with API-driven interactions | Good default for maintainable engineering tools |
+| Template engine | Jinja2 | Default; React/Vue is allowed when workflow complexity justifies it |
+| CSS framework | Bootstrap 5 + `webapp/static/css/style.css` | Standard project scaffold |
+| JS architecture | vanilla modules: `i18n.js`, `forms.js`, `results.js`, `main.js` | see `api_route_skeleton.md` |
+| i18n strategy | data-i18n + `/api/i18n/<lang>` endpoint | see `i18n_pattern.md` |
 | Chart library | matplotlib SVG / plotly / D3 | to_be_defined | see `chart_integration.md` |
 | Formula rendering | KaTeX / MathJax / none | to_be_defined | for report preview |
+
+## Frontend File Layout
+
+```text
+webapp/
+  templates/
+    base.html
+    index.html
+  static/
+    css/style.css
+    js/i18n.js
+    js/forms.js
+    js/results.js
+    js/main.js
+```
+
+Do not introduce a separate SPA build directory, Node build step, or component framework by habit. Do introduce one when it clearly improves operator convenience, complex state handling, maintainability, or review quality, and record the decision in `frontend_format`.
 
 ## Deployment Entry
 

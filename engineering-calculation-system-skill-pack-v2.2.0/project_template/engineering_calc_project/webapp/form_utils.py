@@ -87,7 +87,7 @@ def build_case_input_from_form(data: dict) -> BookInput:
     project = ProjectInfo(
         project_id=proj.get("project_id", "UNKNOWN"),
         case_id=proj.get("case_id", "CASE_001"),
-        title=proj.get("title", "Untitled Project"),
+        title=proj.get("title") or proj.get("project_name", "Untitled Project"),
     )
 
     # Scaffold: add book-specific input groups here.
@@ -115,6 +115,7 @@ def book_input_to_form(bi: BookInput) -> dict:
         "project": {
             "project_id": bi.project.project_id,
             "case_id": bi.project.case_id,
+            "project_name": bi.project.title,
             "title": bi.project.title,
         },
         "design_options": bi.design_options,
@@ -172,6 +173,11 @@ def case_result_to_ui(r: BookResult, bi: BookInput) -> dict:
     # Warnings and errors
     out["warnings"] = r.warnings
     out["errors"] = r.errors
+    out["formula_registry"] = {
+        "version": r.formula_registry_version,
+        "hash": r.formula_hash,
+        "published_at": r.formula_published_at,
+    }
 
     # Sanitize non-finite floats
     sanitized, sanitize_warnings = _sanitize_json(out)

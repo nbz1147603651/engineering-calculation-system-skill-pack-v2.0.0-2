@@ -21,12 +21,16 @@
     "templates/implementation/status_semantics.md",
     "templates/implementation/unit_system.md",
     "templates/implementation/formula_trace_spec.md",
+    "templates/implementation/formula_registry_spec.md",
+    "templates/implementation/formula_rule_schema.yaml",
+    "templates/implementation/formula_publish_log.csv",
     "templates/implementation/lookup_module_spec.md",
     "templates/implementation/governing_summary_spec.md",
     "templates/implementation/input_mapping_spec.md",
     "templates/implementation/ui_layout_spec.md",
     "templates/implementation/import_export_contract.md",
     "templates/implementation/marimo_review_spec.md",
+    "templates/implementation/admin_marimo_review_spec.md",
     "templates/implementation/review_readability_checklist.md",
     "templates/implementation/module_asset_registry.csv",
     "templates/implementation/data_package_manifest.yaml",
@@ -84,6 +88,7 @@
     "templates/implementation/feature_classification.csv": "feature,layer,existing_module,new_module_needed,reusable,location,notes",
     "templates/implementation/frontend_fields.csv": "field_path,label,unit,group,editable,source,notes",
     "templates/implementation/module_review_log.csv": "module_review_id,module_id,review_scope,input_source,edited_fields,runner_or_function,result_status,decision,output_path,notes",
+    "templates/implementation/formula_publish_log.csv": "timestamp,admin,module_id,version_id,status,sha256,notes",
     "templates/implementation/module_asset_registry.csv": "module_id,domain,category,module_name,public_function,input_model,options_model,result_model,source_references,formula_trace_path,unit_tests,regression_tests,reuse_status,asset_owner,notes",
     "templates/implementation/result_path_registry.csv": "result_path,meaning,unit,source_module,report_visibility,regression_check",
     "templates/implementation/review_schema.csv": "field_path,label,unit,input_type,required,validation,help_text",
@@ -119,8 +124,15 @@
       "status",
       "source_basis",
       "calculation_scope",
+      "runtime_stack",
       "runner_sequence",
       "module_candidates",
+      "calculation_module_contract",
+      "book_runner_contract",
+      "backend_api_contract",
+      "frontend_contract",
+      "operator_workflow_contract",
+      "release_contract",
       "coding_gate"
     ],
     "templates/handoff/artifact_index.yaml": [
@@ -159,8 +171,11 @@
       "Template Boundaries"
     ],
     "skills/12b-frontend-and-review-interfaces.skill.md": [
+      "Primary Frontend Format",
+      "Prioritize operator quality and convenience",
       "Unified Frontend Layout",
       "Form and API Contract",
+      "Static HTML Delivery Guard",
       "Marimo Review Apps"
     ],
     "skills/12c-batch-import-export-packages.skill.md": [
@@ -171,13 +186,35 @@
     "skills/14-cloud-web-release-deployment.skill.md": [
       "Release Targets",
       "Production Web Minimum",
+      "Static HTML Delivery Guard",
       "Linux Deployment Rules"
+    ],
+    "skills/07-implementation-handoff-contract.skill.md": [
+      "Delivery Contract Rule",
+      "runtime_stack",
+      "backend_api_contract",
+      "frontend_contract",
+      "operator_workflow_contract",
+      "release_contract"
+    ],
+    "skills/10-reusable-calculation-modules.skill.md": [
+      "Primary Runtime",
+      "Python 3.9+",
+      "Python wrapper"
     ],
     "templates/implementation/ui_layout_spec.md": [
       "Standard Page Zones",
       "Left input panel",
       "Right review workbench",
+      "Operator Convenience Decisions",
+      "Frontend File Layout",
+      "Jinja2 + Bootstrap 5 + vanilla JavaScript modules",
       "Deployment Entry"
+    ],
+    "templates/implementation/api_route_skeleton.md": [
+      "Primary runtime",
+      "Frontend format",
+      "Serve main web UI shell"
     ],
     "templates/implementation/import_export_contract.md": [
       "Upload Package Flow",
@@ -188,6 +225,16 @@
       "marimo edit",
       "marimo run",
       "Module Review Rules"
+    ],
+    "templates/implementation/admin_marimo_review_spec.md": [
+      "Deployment Shape",
+      "ADMIN_REVIEW_TOKEN",
+      "Publish Rule"
+    ],
+    "templates/implementation/formula_registry_spec.md": [
+      "Registry Layout",
+      "Safety Rules",
+      "Production Metadata"
     ],
     "templates/implementation/review_readability_checklist.md": [
       "Governing result is visible",
@@ -211,6 +258,9 @@
       "Template Boundaries"
     ],
     "templates/verification/acceptance_checklist.md": [
+      "Runtime stack is recorded",
+      "Frontend format is recorded",
+      "Operator workflow decisions",
       "Report production decision is recorded",
       "Report status is explicit",
       "module_asset_registry.csv",
@@ -226,6 +276,7 @@
     "README.md",
     "pyproject.toml",
     "tests/conftest.py",
+    "handoff/implementation_handoff.yaml",
     "implementation/02_modules/module_asset_registry.csv",
     "deploy/env.example",
     "deploy/Dockerfile",
@@ -234,8 +285,22 @@
     "deploy/nginx/engineering-calc.conf",
     "release/release_checklist.md",
     "tests/smoke/example_input.json",
+    "apps/review/admin_formula_review.py",
+    "data/formula_registry/active_versions.yaml",
+    "data/formula_registry/modules/example_module/versions/example_v1.yaml",
     "webapp/__init__.py",
     "webapp/app.py",
+    "webapp/config.py",
+    "webapp/routes.py",
+    "webapp/form_utils.py",
+    "webapp/i18n.py",
+    "webapp/templates/base.html",
+    "webapp/templates/index.html",
+    "webapp/static/js/main.js",
+    "webapp/static/js/forms.js",
+    "webapp/static/js/results.js",
+    "webapp/static/js/i18n.js",
+    "webapp/static/css/style.css",
     "webapp/.gitkeep",
     "apps/review/.gitkeep",
     "data/input/.gitkeep",
@@ -252,6 +317,7 @@
     "outputs/logs/.gitkeep",
     "src/pkg/__init__.py",
     "src/pkg/core/__init__.py",
+    "src/pkg/core/formula_registry.py",
     "src/pkg/books/__init__.py",
     "src/pkg/books/book_name/__init__.py",
     "src/pkg/books/book_name/book_runner.py",
@@ -259,12 +325,69 @@
     "src/pkg/books/book_name/report_context.py",
     "src/pkg/interfaces/__init__.py",
     "src/pkg/report/__init__.py",
-    "tests/integration/test_book_runner.py"
+    "tests/integration/test_book_runner.py",
+    "tests/unit/test_formula_registry.py",
+    "tests/smoke/test_web_routes.py"
   ],
   "project_csv_headers": {
     "implementation/02_modules/module_asset_registry.csv": "module_id,domain,category,module_name,public_function,input_model,options_model,result_model,source_references,formula_trace_path,unit_tests,regression_tests,reuse_status,asset_owner,notes",
     "references/acquisition/candidate_sources.csv": "candidate_id,title,publisher,source_type,version_or_date,jurisdiction,url_or_location,access_date,authority_level,relevance_score,gaps_covered,recommended_action,limitations,license_or_access_notes",
     "references/acquisition/search_log.csv": "search_id,gap_id,query,tool_or_location,date,results_reviewed,candidates_selected,notes",
     "references/acquisition/source_coverage_matrix.csv": "requirement_id,requirement,importance,covered,current_source_id,gap,needed_source_type,blocks_analysis,blocks_coding"
+  },
+  "project_yaml_required_keys": {
+    "handoff/implementation_handoff.yaml": [
+      "handoff_id",
+      "book_name",
+      "status",
+      "source_basis",
+      "calculation_scope",
+      "runtime_stack",
+      "calculation_module_contract",
+      "book_runner_contract",
+      "backend_api_contract",
+      "frontend_contract",
+      "release_contract",
+      "operator_workflow_contract",
+      "coding_gate"
+    ]
+  },
+  "project_text_required_phrases": {
+    "README.md": [
+      "Primary runtime: Python 3.9+",
+      "Frontend format: Jinja2 templates + Bootstrap 5 + vanilla JavaScript modules",
+      "Operational quality and reviewer convenience"
+    ],
+    "webapp/app.py": [
+      "def create_app",
+      "/health"
+    ],
+    "webapp/routes.py": [
+      "/api/calculate",
+      "build_case_input_from_form",
+      "run_book",
+      "case_result_to_ui"
+    ],
+    "webapp/form_utils.py": [
+      "build_case_input_from_form",
+      "book_input_to_form",
+      "case_result_to_ui"
+    ],
+    "src/pkg/books/book_name/book_runner.py": [
+      "def run_book",
+      "BookInput",
+      "BookResult"
+    ],
+    "tests/smoke/test_web_routes.py": [
+      "/health",
+      "/api/calculate"
+    ],
+    "release/release_checklist.md": [
+      "Runtime stack is recorded",
+      "Frontend format is recorded",
+      "Operator workflow quality",
+      "static `.html` file",
+      "POST /api/calculate"
+    ]
   }
 }
