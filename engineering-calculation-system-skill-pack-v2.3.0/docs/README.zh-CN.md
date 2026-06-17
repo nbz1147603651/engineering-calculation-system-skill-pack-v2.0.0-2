@@ -151,7 +151,7 @@ Codex 兼容环境优先从根目录加载：
 dist/core/engineering-calculation-system/SKILL.md
 ```
 
-默认安装 `dist/core/engineering-calculation-system/`。QODER 直接上传 Skill 时使用 `dist/release/engineering-calculation-system-QODER-v2.4.0.zip`；需要复制到 QODER 项目根时使用 `dist/release/engineering-calculation-system-QODER-Project-v2.4.0.zip`。Qoder 原始入口位于 `dist/qoder-addon/`，OpenCode、AGENTS.md 和 TRAE 兼容入口位于 `dist/adapters-light/`。
+默认安装 `dist/core/engineering-calculation-system/`。MiniMax Code 标准技能导入或自动发现时使用 `dist/release/engineering-calculation-system-MiniMaxCode-v2.4.0.zip`。QODER 直接上传 Skill 时使用 `dist/release/engineering-calculation-system-QODER-v2.4.0.zip`；需要复制到 QODER 项目根时使用 `dist/release/engineering-calculation-system-QODER-Project-v2.4.0.zip`。Qoder 原始入口位于 `dist/qoder-addon/`，OpenCode、AGENTS.md 和 TRAE 兼容入口位于 `dist/adapters-light/`。
 
 各 Agent 的加载方式可参考：
 

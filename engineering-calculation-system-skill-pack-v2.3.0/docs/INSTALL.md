@@ -6,7 +6,7 @@ Build releases from the source checkout:
 python tools/build_release.py
 ```
 
-With no arguments, the build creates every release profile plus five publish-ready platform zips under `dist/release/`.
+With no arguments, the build creates every release profile plus six publish-ready platform zips under `dist/release/`.
 
 The default runtime package is:
 
@@ -35,13 +35,14 @@ dist/source-dev/
   Development/reference source bundle, not the default install target.
 
 dist/release/
-  CODEX, QODER Skill, QODER project, TRAE, and OpenCode release zips, checksums, and RELEASE_INDEX.md.
+  CODEX, MiniMaxCode, QODER Skill, QODER project, TRAE, and OpenCode release zips, checksums, and RELEASE_INDEX.md.
 ```
 
 Publish files:
 
 ```text
 dist/release/engineering-calculation-system-CODEX-v2.4.0.zip
+dist/release/engineering-calculation-system-MiniMaxCode-v2.4.0.zip
 dist/release/engineering-calculation-system-QODER-v2.4.0.zip
 dist/release/engineering-calculation-system-QODER-Project-v2.4.0.zip
 dist/release/engineering-calculation-system-TRAE-v2.4.0.zip
@@ -52,6 +53,7 @@ Each zip contains one install folder plus `INSTALL.md`:
 
 ```text
 CODEX zip:         copy engineering-calculation-system/ to the Codex skills directory
+MiniMaxCode zip:   copy engineering-calculation-system/ to a MiniMax Code-discovered skills directory
 QODER zip:         upload the zip directly in QODER Skills / Install Skill
 QODER Project zip: copy copy-to-project-root/ contents to the QODER project root
 TRAE zip:          copy copy-to-project-root/ contents to the TRAE project root
@@ -79,7 +81,7 @@ Update that file first when changing the package version, release date, publish 
 
 ## Overlay Usage
 
-The platform release zips are the recommended install path. Use the QODER zip for direct QODER Skill upload; use the QODER Project, TRAE, and OpenCode packages when copying an overlay into a project root. Use raw overlays only when developing or debugging a release profile:
+The platform release zips are the recommended install path. Use the MiniMaxCode zip for MiniMax Code standard skill import or discovery. Use the QODER zip for direct QODER Skill upload; use the QODER Project, TRAE, and OpenCode packages when copying an overlay into a project root. Use raw overlays only when developing or debugging a release profile:
 
 ```text
 core install root: dist/core/engineering-calculation-system/

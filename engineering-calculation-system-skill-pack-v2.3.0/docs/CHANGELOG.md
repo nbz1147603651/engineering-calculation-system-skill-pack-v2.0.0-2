@@ -9,6 +9,7 @@
 - Updated the router and parent orchestrators with explicit parallel suitability guidance while keeping lifecycle gates serial.
 - Updated Codex, Qoder, OpenCode, Trae, AGENTS-compatible, and single-file entrypoints to reference the shared orchestration contract.
 - Updated validation contracts so orchestration files are required package artifacts in the core profile.
+- Added a MiniMaxCode publish target that packages the standard root `SKILL.md` skill layout for MiniMax Code import or auto-discovery.
 
 ## v2.3.0 release layering - 2026-06-17
 

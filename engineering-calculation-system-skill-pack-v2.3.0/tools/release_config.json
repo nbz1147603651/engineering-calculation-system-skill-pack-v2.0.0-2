@@ -24,6 +24,7 @@
   ],
   "publish_targets": [
     "CODEX",
+    "MiniMaxCode",
     "QODER",
     "QODER Project",
     "TRAE",
@@ -64,6 +65,14 @@
       "install_text": "Copy this folder into your Codex skills directory.",
       "notes": [
         "Typical Windows target: `%USERPROFILE%/.codex/skills/engineering-calculation-system/`."
+      ]
+    },
+    {
+      "name": "MiniMaxCode",
+      "path": "MiniMaxCode/engineering-calculation-system",
+      "install_text": "Copy this folder into a MiniMax Code-discovered skills directory, or import it as a standard SKILL.md skill folder.",
+      "notes": [
+        "MiniMax Code can auto-discover standard SKILL.md skills from supported coding tools; this package keeps the root `SKILL.md` layout intact."
       ]
     },
     {

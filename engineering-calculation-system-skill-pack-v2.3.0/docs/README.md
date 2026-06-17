@@ -111,7 +111,7 @@ Build release profiles from the source checkout:
 python tools/build_release.py
 ```
 
-Running the command with no arguments builds every release profile and creates five publish-ready platform zips in `dist/release/`. Use `--profile <name>` when you only need one layer during development.
+Running the command with no arguments builds every release profile and creates six publish-ready platform zips in `dist/release/`. Use `--profile <name>` when you only need one layer during development.
 
 Default installation target:
 
@@ -126,13 +126,14 @@ dist/adapters-light/   AGENTS.md, .agents, .opencode, .trae, and adapter guidanc
 dist/qoder-addon/      Qoder-specific files
 dist/singlefile/       generated all-in-one fallback
 dist/source-dev/       development/reference source bundle
-dist/release/          CODEX, QODER Skill, QODER project, TRAE, and OpenCode release zips
+dist/release/          CODEX, MiniMaxCode, QODER Skill, QODER project, TRAE, and OpenCode release zips
 ```
 
 For publishing or manual installation, use the package for the target tool:
 
 ```text
 dist/release/engineering-calculation-system-CODEX-v2.4.0.zip
+dist/release/engineering-calculation-system-MiniMaxCode-v2.4.0.zip
 dist/release/engineering-calculation-system-QODER-v2.4.0.zip
 dist/release/engineering-calculation-system-QODER-Project-v2.4.0.zip
 dist/release/engineering-calculation-system-TRAE-v2.4.0.zip
@@ -143,13 +144,14 @@ Each package contains one install folder plus `INSTALL.md`:
 
 ```text
 CODEX:         engineering-calculation-system/
+MiniMaxCode:   engineering-calculation-system/
 QODER:         SKILL.md at zip root for direct QODER Skill upload
 QODER Project: copy-to-project-root/
 TRAE:          copy-to-project-root/
 OpenCode:      copy-to-project-root/
 ```
 
-The QODER package is for direct QODER Skill upload. The QODER Project, TRAE, and OpenCode packages are already merged with the core runtime files, so users can copy the matching package contents directly. Use the raw core and overlay profiles only when debugging or repackaging.
+The MiniMaxCode package keeps the standard root `SKILL.md` skill layout for MiniMax Code import or auto-discovery. The QODER package is for direct QODER Skill upload. The QODER Project, TRAE, and OpenCode packages are already merged with the core runtime files, so users can copy the matching package contents directly. Use the raw core and overlay profiles only when debugging or repackaging.
 
 Release metadata and classified install targets are maintained in:
 
@@ -161,7 +163,7 @@ Change that file when updating the version, release date, publish targets, singl
 
 ## Agent entrypoints
 
-Use `dist/core/engineering-calculation-system/SKILL.md` as the root skill entrypoint for Codex-compatible environments. Qoder-compatible files are distributed through `dist/qoder-addon/`. OpenCode, AGENTS.md-compatible, and Trae-compatible entries are distributed through `dist/adapters-light/`.
+Use `dist/core/engineering-calculation-system/SKILL.md` as the root skill entrypoint for Codex-compatible and MiniMax Code standard-skill environments. Qoder-compatible files are distributed through `dist/qoder-addon/`. OpenCode, AGENTS.md-compatible, and Trae-compatible entries are distributed through `dist/adapters-light/`.
 
 For adapter details, see:
 

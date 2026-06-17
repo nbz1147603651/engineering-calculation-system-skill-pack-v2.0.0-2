@@ -23,6 +23,7 @@ The no-argument build creates v2.4.0 platform packages:
 
 ```text
 dist/release/engineering-calculation-system-CODEX-v2.4.0.zip
+dist/release/engineering-calculation-system-MiniMaxCode-v2.4.0.zip
 dist/release/engineering-calculation-system-QODER-v2.4.0.zip
 dist/release/engineering-calculation-system-QODER-Project-v2.4.0.zip
 dist/release/engineering-calculation-system-TRAE-v2.4.0.zip

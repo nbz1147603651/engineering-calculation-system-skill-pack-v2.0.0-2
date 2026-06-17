@@ -40,6 +40,7 @@ templates/orchestration/merge_review.md
 
 - OpenCode should discover the wrapper skill at `.opencode/skills/engineering-calc-system/SKILL.md`.
 - Cross-tool skill clients may use `.agents/skills/engineering-calc-system/SKILL.md`.
+- MiniMax Code can use the `MiniMaxCode` release zip or the standard root `SKILL.md` package.
 - Qoder-specific files come from the separate `dist/qoder-addon/` overlay.
 - Trae-compatible rules live under `.trae/`.
 - Agent-specific loading notes live in `adapters/agent-entrypoints.md`.

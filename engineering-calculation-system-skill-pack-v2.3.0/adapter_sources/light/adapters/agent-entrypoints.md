@@ -55,6 +55,24 @@ Multi-agent note:
 - Do not delegate lifecycle routing, gate decisions, ID control, handoff freeze, runner contract changes, or final acceptance.
 - Have each worker return an agent result packet and merge through supervisor review.
 
+## MiniMaxCode
+
+Preferred setup:
+
+1. Use `dist/release/engineering-calculation-system-MiniMaxCode-v2.4.0.zip`, or expose `dist/core/engineering-calculation-system/` as a standard `SKILL.md` skill folder.
+2. Let MiniMax Code import or auto-discover the root `SKILL.md`.
+3. Start with `SKILL.md` and `skills/00-engineering-calculation-router.skill.md`.
+
+Behavior:
+
+- Use the same lifecycle routing, evidence gates, handoff gates, and validation rules as the Codex/core package.
+- Do not require a MiniMaxCode-specific hidden project folder unless the target installation explicitly provides one.
+- For explicit multi-agent work, use `shared/multi-agent-orchestration.md` and keep supervisor-owned gate decisions serial.
+
+Fallback:
+
+- Use `dist/singlefile/engineering-calculation-system.all-in-one.md` when the environment cannot traverse the multi-file skill package.
+
 ## Qoder
 
 Preferred setup:

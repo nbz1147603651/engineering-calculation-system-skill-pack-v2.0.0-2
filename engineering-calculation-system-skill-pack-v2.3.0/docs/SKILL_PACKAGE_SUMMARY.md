@@ -160,6 +160,7 @@ dist/singlefile/                             generated all-in-one fallback
 dist/source-dev/                             development/reference bundle
 dist/release/                                platform release zips and checksums
   engineering-calculation-system-CODEX-v2.4.0.zip
+  engineering-calculation-system-MiniMaxCode-v2.4.0.zip
   engineering-calculation-system-QODER-v2.4.0.zip
   engineering-calculation-system-QODER-Project-v2.4.0.zip
   engineering-calculation-system-TRAE-v2.4.0.zip
@@ -168,7 +169,7 @@ dist/release/                                platform release zips and checksums
 tools/release_config.json                    release metadata and platform publish target config
 ```
 
-`engineering-calculation-system-QODER-v2.4.0.zip` is a direct QODER Skill upload package with `SKILL.md` at the zip root. `engineering-calculation-system-QODER-Project-v2.4.0.zip` is the QODER project-root overlay package.
+`engineering-calculation-system-MiniMaxCode-v2.4.0.zip` keeps the standard root `SKILL.md` layout for MiniMax Code import or auto-discovery. `engineering-calculation-system-QODER-v2.4.0.zip` is a direct QODER Skill upload package with `SKILL.md` at the zip root. `engineering-calculation-system-QODER-Project-v2.4.0.zip` is the QODER project-root overlay package.
 
 ## Best use
 
