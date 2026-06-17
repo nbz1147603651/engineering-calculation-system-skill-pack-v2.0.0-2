@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<style>
+  :root {
+    --p1: #3b82f6; --p2: #8b5cf6; --p3: #10b981;
+    --gate-nogo: #ef4444; --gate-search: #f97316;
+    --gate-proto: #f59e0b; --gate-prod: #10b981;
+    --surface: var(--color-surface, #1e1e2e);
+    --surface2: var(--color-surface-2, #282840);
+    --border: var(--color-border, #3a3a50);
+    --text: var(--color-text, #e4e4f0);
+    --text-muted: var(--color-text-muted, #9ca3af);
+    --accent: var(--color-accent, #6366f1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: var(--surface); color: var(--text); padding: 1rem 1.25rem; font-size: 13px; }
+
+  /* Header */
+  .hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+  .hdr h1 { font-size: 16px; font-weight: 700; background: linear-gradient(135deg, var(--p1), var(--p2), var(--p3)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hdr-badge { font-size: 10px; padding: 3px 8px; border-radius: 12px; background: rgba(99,102,241,0.15); color: var(--accent); font-weight: 600; }
+
+  /* Summary Bar */
+  .sum-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; margin-bottom: 1rem; }
+  .sum-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem 0.8rem; text-align: center; }
+  .sum-val { font-size: 20px; font-weight: 700; line-height: 1.2; }
+  .sum-lbl { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 2px; margin-bottom: 1rem; background: var(--surface2); border-radius: 8px; padding: 2px; }
+  .tab { flex: 1; padding: 7px 8px; border: none; background: transparent; color: var(--text-muted); font-size: 11px; font-weight: 600; cursor: pointer; border-radius: 6px; transition: all 0.15s; }
+  .tab:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+  .tab.active { background: var(--accent); color: #fff; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* Phase Groups */
+  .phase-grp { margin-bottom: 0.9rem; }
+  .phase-hdr { display: flex; align-items: center; gap: 6px; margin-bottom: 0.5rem; }
+  .phase-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .phase-title { font-size: 12px; font-weight: 600; }
+  .phase-sub { font-size: 10px; color: var(--text-muted); }
+  .stage-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 6px; }
+
+  /* Stage Cards */
+  .stg { background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; padding: 8px 10px; cursor: pointer; transition: all 0.15s; position: relative; overflow: hidden; }
+  .stg::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2.5px; }
+  .stg.p1::before { background: var(--p1); } .stg.p2::before { background: var(--p2); } .stg.p3::before { background: var(--p3); }
+  .stg:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .stg.done { border-color: var(--gate-prod); }
+  .stg.done::after { content: '✓'; position: absolute; top: 4px; right: 6px; font-size: 11px; color: var(--gate-prod); font-weight: 700; }
+  .stg.cur { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .stg-num { font-size: 10px; font-weight: 700; color: var(--text-muted); }
+  .stg.cur .stg-num { color: var(--accent); }
+  .stg-name { font-size: 11px; font-weight: 500; margin-top: 1px; }
+  .stg-desc { font-size: 9px; color: var(--text-muted); margin-top: 2px; line-height: 1.3; }
+
+  /* Routing Panel */
+  .route-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .r-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem; }
+  .r-card h3 { font-size: 12px; font-weight: 600; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 6px; }
+  .r-opt { display: flex; align-items: flex-start; gap: 7px; padding: 6px 8px; border-radius: 5px; cursor: pointer; transition: background 0.12s; margin-bottom: 3px; border: 1px solid transparent; }
+  .r-opt:hover { background: rgba(255,255,255,0.04); }
+  .r-opt.sel { background: rgba(99,102,241,0.1); border-color: var(--accent); }
+  .r-radio { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--text-muted); flex-shrink: 0; margin-top: 2px; position: relative; }
+  .r-opt.sel .r-radio { border-color: var(--accent); }
+  .r-opt.sel .r-radio::after { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); position: absolute; top: 1.5px; left: 1.5px; }
+  .r-lbl { font-size: 11px; font-weight: 500; }
+  .r-desc { font-size: 9px; color: var(--text-muted); margin-top: 1px; }
+
+  /* Route Result */
+  .route-res { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem; margin-top: 0.75rem; }
+  .route-res h3 { font-size: 12px; font-weight: 600; margin-bottom: 0.5rem; }
+  .r-path { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; margin-bottom: 0.5rem; }
+  .r-node { padding: 3px 8px; border-radius: 5px; font-size: 10px; font-weight: 700; background: rgba(99,102,241,0.15); color: var(--accent); }
+  .r-arrow { color: var(--text-muted); font-size: 11px; }
+  .r-note { font-size: 10px; color: var(--text-muted); line-height: 1.4; }
+
+  /* Quality Gates */
+  .gate-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem; margin-bottom: 0.6rem; }
+  .gate-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
+  .gate-title { font-size: 12px; font-weight: 600; }
+  .gate-badge { padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; }
+  .gate-badge.nogo { background: rgba(239,68,68,0.15); color: var(--gate-nogo); }
+  .gate-badge.search { background: rgba(249,115,22,0.15); color: var(--gate-search); }
+  .gate-badge.partial { background: rgba(245,158,11,0.15); color: var(--gate-proto); }
+  .gate-badge.allowed { background: rgba(16,185,129,0.15); color: var(--gate-prod); }
+  .gate-bar { display: flex; gap: 3px; margin-bottom: 0.4rem; }
+  .gate-seg { flex: 1; height: 5px; border-radius: 3px; background: rgba(255,255,255,0.06); }
+  .gate-seg.f1 { background: var(--gate-nogo); } .gate-seg.f2 { background: var(--gate-search); }
+  .gate-seg.f3 { background: var(--gate-proto); } .gate-seg.f4 { background: var(--gate-prod); }
+  .gate-rules { list-style: none; }
+  .gate-rule { display: flex; align-items: center; gap: 5px; padding: 3px 0; font-size: 10px; color: var(--text-muted); }
+  .rule-ico { width: 13px; height: 13px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; flex-shrink: 0; }
+  .rule-ico.pass { background: rgba(16,185,129,0.2); color: var(--gate-prod); }
+  .rule-ico.fail { background: rgba(239,68,68,0.2); color: var(--gate-nogo); }
+  .rule-ico.pend { background: rgba(255,255,255,0.06); color: var(--text-muted); }
+
+  /* Task Board */
+  .task-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
+  .t-col { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem; }
+  .t-col-hdr { display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.4rem; border-bottom: 1px solid var(--border); margin-bottom: 0.5rem; }
+  .t-col-title { font-size: 11px; font-weight: 600; }
+  .t-col-cnt { font-size: 9px; padding: 2px 5px; border-radius: 8px; background: rgba(255,255,255,0.06); color: var(--text-muted); }
+  .t-item { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; margin-bottom: 5px; cursor: pointer; transition: border-color 0.12s; }
+  .t-item:hover { border-color: var(--accent); }
+  .t-item-title { font-size: 10px; font-weight: 500; margin-bottom: 3px; }
+  .t-tag { font-size: 8px; padding: 1px 5px; border-radius: 3px; font-weight: 600; display: inline-block; }
+  .t-tag.tp1 { background: rgba(59,130,246,0.15); color: var(--p1); }
+  .t-tag.tp2 { background: rgba(139,92,246,0.15); color: var(--p2); }
+  .t-tag.tp3 { background: rgba(16,185,129,0.15); color: var(--p3); }
+
+  /* Buttons */
+  .btn-row { display: flex; gap: 6px; margin-top: 0.8rem; justify-content: flex-end; }
+  .btn { padding: 6px 14px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; transition: all 0.12s; }
+  .btn-p { background: var(--accent); color: #fff; }
+  .btn-p:hover { opacity: 0.9; }
+  .btn-s { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-s:hover { border-color: var(--accent); }
+
+  /* Import Panel */
+  .import-zone { background: var(--surface2); border: 2px dashed var(--border); border-radius: 10px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 0.75rem; }
+  .import-zone:hover, .import-zone.dragover { border-color: var(--accent); background: rgba(99,102,241,0.05); }
+  .import-zone .iz-icon { font-size: 28px; margin-bottom: 0.4rem; }
+  .import-zone .iz-text { font-size: 12px; color: var(--text-muted); }
+  .import-zone .iz-text strong { color: var(--accent); }
+  .import-zone .iz-hint { font-size: 10px; color: var(--text-muted); margin-top: 0.3rem; }
+
+  .import-formats { display: flex; gap: 6px; justify-content: center; margin-bottom: 0.75rem; flex-wrap: wrap; }
+  .fmt-chip { padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: 600; background: rgba(99,102,241,0.1); color: var(--accent); border: 1px solid transparent; cursor: pointer; }
+  .fmt-chip.active { border-color: var(--accent); background: rgba(99,102,241,0.2); }
+
+  .paste-area { width: 100%; min-height: 100px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; color: var(--text); font-size: 11px; font-family: 'Consolas', 'SF Mono', monospace; resize: vertical; margin-bottom: 0.75rem; }
+  .paste-area:focus { outline: none; border-color: var(--accent); }
+
+  .preview-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem; margin-bottom: 0.75rem; }
+  .preview-card h3 { font-size: 12px; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 6px; }
+  .preview-row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 10px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .preview-row:last-child { border-bottom: none; }
+  .preview-key { color: var(--text-muted); }
+  .preview-val { color: var(--text); font-weight: 500; }
+  .preview-val.ok { color: var(--gate-prod); }
+  .preview-val.warn { color: var(--gate-proto); }
+  .preview-val.err { color: var(--gate-nogo); }
+
+  .batch-ops { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 6px; margin-bottom: 0.75rem; }
+  .batch-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; padding: 8px 10px; cursor: pointer; transition: all 0.15s; text-align: left; }
+  .batch-btn:hover { border-color: var(--accent); }
+  .batch-btn .bb-title { font-size: 11px; font-weight: 600; color: var(--text); }
+  .batch-btn .bb-desc { font-size: 9px; color: var(--text-muted); margin-top: 2px; }
+
+  .import-log { max-height: 120px; overflow-y: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; margin-top: 0.5rem; }
+  .log-line { font-size: 10px; padding: 2px 0; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+  .log-line .log-ok { color: var(--gate-prod); } .log-line .log-warn { color: var(--gate-proto); } .log-line .log-err { color: var(--gate-nogo); }
+
+  .toast-msg { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); padding: 8px 16px; border-radius: 8px; font-size: 11px; font-weight: 600; z-index: 200; animation: toastIn 0.3s ease-out; }
+  .toast-msg.success { background: rgba(16,185,129,0.9); color: #fff; }
+  .toast-msg.error { background: rgba(239,68,68,0.9); color: #fff; }
+  .toast-msg.info { background: rgba(99,102,241,0.9); color: #fff; }
+  @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(-10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+  /* Detail Modal */
+  .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: center; justify-content: center; }
+  .modal-bg.show { display: flex; }
+  .modal-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem; max-width: 420px; width: 90%; max-height: 80vh; overflow-y: auto; }
+  .modal-box h3 { font-size: 14px; font-weight: 600; margin-bottom: 0.75rem; }
+  .modal-field { margin-bottom: 0.5rem; }
+  .modal-field label { display: block; font-size: 10px; color: var(--text-muted); margin-bottom: 2px; font-weight: 500; }
+  .modal-field input, .modal-field select { width: 100%; padding: 5px 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 5px; color: var(--text); font-size: 11px; }
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <h1 id="projTitle">工程计算系统 · 全生命周期控制台</h1>
+  <div style="display:flex;align-items:center;gap:6px">
+    <button class="btn btn-s" onclick="swTab('im')" style="font-size:10px;padding:4px 10px"><span style="margin-right:4px">⬆</span>导入数据</button>
+    <span class="hdr-badge" id="verBadge">v2.2.0</span>
+  </div>
+</div>
+
+<div class="sum-bar">
+  <div class="sum-item"><div class="sum-val" id="sStg" style="color:var(--accent)">--</div><div class="sum-lbl">当前阶段</div></div>
+  <div class="sum-item"><div class="sum-val" id="sProg" style="color:var(--gate-prod)">0/13</div><div class="sum-lbl">完成进度</div></div>
+  <div class="sum-item"><div class="sum-val" id="sGate" style="color:var(--gate-search)">--</div><div class="sum-lbl">证据门禁</div></div>
+  <div class="sum-item"><div class="sum-val" id="sHand" style="color:var(--gate-proto)">--</div><div class="sum-lbl">交接门禁</div></div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="swTab('lc')">生命周期</button>
+  <button class="tab" onclick="swTab('rt')">路由决策</button>
+  <button class="tab" onclick="swTab('gt')">质量门禁</button>
+  <button class="tab" onclick="swTab('tk')">任务看板</button>
+  <button class="tab" onclick="swTab('im')">数据导入</button>
+</div>
+
+<!-- Panel: Lifecycle -->
+<div class="panel active" id="p-lc">
+  <div class="phase-grp">
+    <div class="phase-hdr"><div class="phase-dot" style="background:var(--p1)"></div><span class="phase-title">第一阶段：参考获取</span><span class="phase-sub">— 评估 · 搜索 · 持久化</span></div>
+    <div class="stage-grid" id="g1"></div>
+  </div>
+  <div class="phase-grp">
+    <div class="phase-hdr"><div class="phase-dot" style="background:var(--p2)"></div><span class="phase-title">第二阶段：逻辑蓝图</span><span class="phase-sub">— 摄入 · 蓝图 · 提取 · 交接</span></div>
+    <div class="stage-grid" id="g2"></div>
+  </div>
+  <div class="phase-grp">
+    <div class="phase-hdr"><div class="phase-dot" style="background:var(--p3)"></div><span class="phase-title">第三阶段：实现验证</span><span class="phase-sub">— 架构 · 模型 · 模块 · 运行器 · 接口 · 验证</span></div>
+    <div class="stage-grid" id="g3"></div>
+  </div>
+</div>
+
+<!-- Panel: Routing -->
+<div class="panel" id="p-rt">
+  <div class="route-layout">
+    <div class="r-card">
+      <h3><i style="color:var(--p1)">◆</i> 资料状态分类</h3>
+      <div id="stateOpts"></div>
+    </div>
+    <div class="r-card">
+      <h3><i style="color:var(--p2)">◆</i> 推荐路由</h3>
+      <div id="routeInfo" class="r-note">请选择左侧资料状态以查看推荐路由。</div>
+    </div>
+  </div>
+  <div class="route-res" id="routeRes" style="display:none">
+    <h3>执行路径</h3>
+    <div class="r-path" id="routePath"></div>
+    <div class="r-note" id="routeNote"></div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-s" onclick="swTab('lc')">返回生命周期</button>
+    <button class="btn btn-p" onclick="confirmRoute()">确认并执行</button>
+  </div>
+</div>
+
+<!-- Panel: Gates -->
+<div class="panel" id="p-gt">
+  <div id="gateContainer"></div>
+</div>
+
+<!-- Panel: Tasks -->
+<div class="panel" id="p-tk">
+  <div class="task-cols" id="taskBoard"></div>
+</div>
+
+<!-- Panel: Import -->
+<div class="panel" id="p-im">
+  <h3 style="font-size:13px;font-weight:600;margin-bottom:0.75rem">批量数据导入</h3>
+
+  <!-- Format Chips -->
+  <div class="import-formats">
+    <span class="fmt-chip active" onclick="setFmt(this,'json')">JSON</span>
+    <span class="fmt-chip" onclick="setFmt(this,'yaml')">YAML</span>
+    <span class="fmt-chip" onclick="setFmt(this,'csv')">CSV</span>
+    <span class="fmt-chip" onclick="setFmt(this,'template')">模板示例</span>
+  </div>
+
+  <!-- Drop Zone -->
+  <div class="import-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+    <div class="iz-icon">📂</div>
+    <div class="iz-text">拖放文件到此处，或 <strong>点击选择文件</strong></div>
+    <div class="iz-hint">支持 .json / .yaml / .csv（最大 5MB）</div>
+  </div>
+  <input type="file" id="fileInput" accept=".json,.yaml,.yml,.csv" style="display:none" onchange="handleFile(this.files[0])">
+
+  <!-- Paste Area -->
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+    <span style="font-size:11px;font-weight:600">或直接粘贴数据：</span>
+  </div>
+  <textarea class="paste-area" id="pasteArea" placeholder='粘贴 JSON / YAML / CSV 数据...
+
+示例 JSON:
+{
+  "project_name": "我的项目",
+  "completed_stages": ["01","02"],
+  "current_stage": "03",
+  "gate_status": {"evidence":"analysis_allowed"},
+  "tasks": [{"id":"T1","title":"评估","status":"done","phase":1}]
+}'></textarea>
+
+  <div class="btn-row" style="margin-bottom:1rem">
+    <button class="btn btn-s" onclick="loadTemplate()">加载模板</button>
+    <button class="btn btn-s" onclick="exportCurrent()">导出当前状态</button>
+    <button class="btn btn-p" onclick="parseAndPreview()">解析并预览</button>
+  </div>
+
+  <!-- Batch Quick Ops -->
+  <h3 style="font-size:13px;font-weight:600;margin-bottom:0.5rem">快捷批量操作</h3>
+  <div class="batch-ops">
+    <div class="batch-btn" onclick="batchOp('mark_done')">
+      <div class="bb-title">✅ 标记阶段完成</div>
+      <div class="bb-desc">批量将指定阶段标记为已完成</div>
+    </div>
+    <div class="batch-btn" onclick="batchOp('bulk_tasks')">
+      <div class="bb-title">📋 批量添加任务</div>
+      <div class="bb-desc">一次添加多个任务到看板</div>
+    </div>
+    <div class="batch-btn" onclick="batchOp('reset_gates')">
+      <div class="bb-title">🔄 重置门禁状态</div>
+      <div class="bb-desc">将所有门禁重置为初始状态</div>
+    </div>
+    <div class="batch-btn" onclick="batchOp('full_reset')">
+      <div class="bb-title">🗑️ 完全重置</div>
+      <div class="bb-desc">清除所有进度、任务和门禁</div>
+    </div>
+  </div>
+
+  <!-- Preview Card (hidden until parsed) -->
+  <div id="previewSection" style="display:none">
+    <div class="preview-card">
+      <h3><span style="color:var(--accent)">◆</span> 数据预览</h3>
+      <div id="previewBody"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-s" onclick="cancelImport()">取消</button>
+      <button class="btn btn-p" onclick="applyImport()">确认导入</button>
+    </div>
+    <div class="import-log" id="importLog" style="display:none"></div>
+  </div>
+</div>
+
+<!-- Stage Detail Modal -->
+<div class="modal-bg" id="stageModal">
+  <div class="modal-box">
+    <h3 id="modalTitle">阶段详情</h3>
+    <div id="modalBody"></div>
+    <div class="btn-row">
+      <button class="btn btn-s" onclick="closeModal()">关闭</button>
+      <button class="btn btn-p" onclick="startStage()">开始执行</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const D = window.__WIDGET_DATA__ || {};
+
+// ── Stage Definitions ──
+const STAGES = [
+  {id:'01',name:'充分性评估',desc:'评估16维度覆盖矩阵',phase:1,inputs:'用户资料',outputs:'覆盖矩阵、获取计划',gate:'evidence'},
+  {id:'02',name:'发现与获取',desc:'按源优先级联网搜索',phase:1,inputs:'获取计划',outputs:'搜索日志、候选源',gate:'evidence'},
+  {id:'03',name:'本地持久化',desc:'稳定源ID+源卡片+哈希',phase:1,inputs:'候选源',outputs:'源卡片、清单',gate:'evidence'},
+  {id:'04',name:'源摄入与权威',desc:'分配权威等级+冲突检查',phase:2,inputs:'源卡片、清单',outputs:'源摄入笔记、权威表',gate:'handoff'},
+  {id:'05',name:'逻辑蓝图',desc:'14种节点模型+Mermaid图',phase:2,inputs:'源摄入笔记',outputs:'蓝图、节点清单',gate:'handoff'},
+  {id:'06',name:'公式提取',desc:'公式/查找表/分支清单',phase:2,inputs:'蓝图',outputs:'公式清单、分支清单',gate:'handoff'},
+  {id:'07',name:'交接契约',desc:'汇总分析→编码门控',phase:2,inputs:'全部分析产物',outputs:'交接YAML、门控判定',gate:'handoff'},
+  {id:'08',name:'架构设计',desc:'依赖方向+模块划分',phase:3,inputs:'交接契约',outputs:'架构文档',gate:'impl'},
+  {id:'09',name:'数据模型',desc:'Input/Result模型定义',phase:3,inputs:'架构文档',outputs:'模型代码',gate:'impl'},
+  {id:'10',name:'可复用模块',desc:'公式隔离+纯计算',phase:3,inputs:'公式清单',outputs:'模块代码',gate:'impl'},
+  {id:'11',name:'运行器',desc:'run_book序列编排',phase:3,inputs:'模块+模型',outputs:'BookResult',gate:'impl'},
+  {id:'12',name:'接口层',desc:'报告/审查/批量/API',phase:3,inputs:'BookResult',outputs:'UI/报告',gate:'impl'},
+  {id:'13',name:'验证追溯',desc:'10类测试+回归+哈希',phase:3,inputs:'全部代码',outputs:'测试报告',gate:'impl'}
+];
+
+// ── Material States ──
+const STATES = [
+  {id:'no_materials',label:'无资料',desc:'用户未提供任何参考资料',route:['01','02','03'],note:'必须从第一阶段开始，优先联网搜索获取规范标准。'},
+  {id:'insufficient',label:'资料不足',desc:'有资料但覆盖不全或权威性不足',route:['01','02','03'],note:'执行充分性评估后，针对缺口联网搜索补充。'},
+  {id:'untrusted',label:'有资料但不可信',desc:'来源不明或非官方渠道',route:['04'],note:'先验证权威性，可能需要01→02→03补充官方来源。'},
+  {id:'evidence_ok',label:'证据库可用',desc:'已有本地持久化的可信来源',route:['04','05','06','07'],note:'建议02联网补充验证：勘误检查、公式完整性、最新修订。'},
+  {id:'analysis_ok',label:'分析交接可用',desc:'已完成逻辑蓝图和交接契约',route:['08','09','10','11','13'],note:'直接进入实现阶段，需时加12接口。'},
+  {id:'codebase_ok',label:'代码库可用',desc:'已有计算书代码',route:['08','13'],note:'按层级分类路由到08-13，优先验证。'}
+];
+
+// ── Gate Definitions ──
+const GATES = [
+  {id:'evidence',name:'证据门禁',desc:'参考资料充分性',levels:['no_go','search_required','partial_analysis','analysis_allowed'],rules:[
+    {text:'管控来源已识别并持久化',key:'source'},
+    {text:'搜索日志完整记录',key:'search_log'},
+    {text:'源卡片含19项必填字段',key:'source_card'},
+    {text:'覆盖矩阵无关键缺口',key:'coverage'}
+  ]},
+  {id:'handoff',name:'交接门禁',desc:'分析→实施就绪性',levels:['no_go','prototype','production'],rules:[
+    {text:'公式清单完整且已追溯',key:'formula'},
+    {text:'分支逻辑已记录',key:'branch'},
+    {text:'单位约定已统一',key:'unit'},
+    {text:'风险与问题已登记',key:'risk'}
+  ]},
+  {id:'coding',name:'编码门控',desc:'是否允许开始编码',levels:['no_go','prototype','production'],rules:[
+    {text:'交接契约已签署',key:'handoff'},
+    {text:'模块候选已映射',key:'module'},
+    {text:'测试要求已定义',key:'test'}
+  ]},
+  {id:'production',name:'生产门禁',desc:'报告可发布性',levels:['no_go','draft','review','production'],rules:[
+    {text:'BookResult完整生成',key:'result'},
+    {text:'报告模板不含公式',key:'no_formula'},
+    {text:'冒烟测试通过',key:'smoke'},
+    {text:'来源允许生产发布',key:'license'}
+  ]}
+];
+
+let selectedState = null;
+let stageStatus = {}; // id -> 'done'|'current'|'pending'
+let currentFmt = 'json';
+let parsedData = null;
+
+function init() {
+  // Load data
+  const completed = D.completed_stages || [];
+  const current = D.current_stage || null;
+  const gateStatus = D.gate_status || {};
+  const tasks = D.tasks || [];
+
+  STAGES.forEach(s => {
+    if (completed.includes(s.id)) stageStatus[s.id] = 'done';
+    else if (s.id === current) stageStatus[s.id] = 'current';
+    else stageStatus[s.id] = 'pending';
+  });
+
+  renderSummary(completed.length, current, gateStatus);
+  renderLifecycle();
+  renderRouting();
+  renderGates(gateStatus);
+  renderTasks(tasks);
+}
+
+function renderSummary(doneCount, current, gateStatus) {
+  document.getElementById('sProg').textContent = doneCount + '/13';
+  const pct = Math.round(doneCount / 13 * 100);
+  document.getElementById('sProg').textContent = pct + '%';
+  if (current) {
+    const s = STAGES.find(x => x.id === current);
+    document.getElementById('sStg').textContent = s ? s.id + ' ' + s.name : current;
+  }
+  const evLabel = {no_go:'NO-GO',search_required:'搜索中',partial_analysis:'部分',analysis_allowed:'通过'};
+  const hoLabel = {no_go:'NO-GO',prototype:'原型',production:'生产'};
+  document.getElementById('sGate').textContent = evLabel[gateStatus.evidence] || '--';
+  document.getElementById('sHand').textContent = hoLabel[gateStatus.handoff] || '--';
+}
+
+function renderLifecycle() {
+  [1,2,3].forEach(ph => {
+    const grid = document.getElementById('g' + ph);
+    grid.innerHTML = '';
+    STAGES.filter(s => s.phase === ph).forEach(s => {
+      const st = stageStatus[s.id] || 'pending';
+      const cls = 'stg p' + ph + (st === 'done' ? ' done' : st === 'current' ? ' cur' : '');
+      grid.innerHTML += `<div class="${cls}" onclick="showStageDetail('${s.id}')">
+        <div class="stg-num">${s.id}</div><div class="stg-name">${s.name}</div><div class="stg-desc">${s.desc}</div></div>`;
+    });
+  });
+}
+
+function renderRouting() {
+  const cont = document.getElementById('stateOpts');
+  cont.innerHTML = '';
+  STATES.forEach(st => {
+    cont.innerHTML += `<div class="r-opt" id="ro-${st.id}" onclick="selectState('${st.id}')">
+      <div class="r-radio"></div><div><div class="r-lbl">${st.label}</div><div class="r-desc">${st.desc}</div></div></div>`;
+  });
+}
+
+function selectState(id) {
+  document.querySelectorAll('.r-opt').forEach(e => e.classList.remove('sel'));
+  document.getElementById('ro-' + id).classList.add('sel');
+  selectedState = STATES.find(s => s.id === id);
+  const info = document.getElementById('routeInfo');
+  info.innerHTML = `<div style="margin-bottom:6px"><strong>推荐路径：</strong></div>`;
+  selectedState.route.forEach(sid => {
+    const s = STAGES.find(x => x.id === sid);
+    info.innerHTML += `<div style="font-size:10px;padding:2px 0;color:var(--text-muted)">• <strong style="color:var(--text)">${s.id} ${s.name}</strong> — ${s.desc}</div>`;
+  });
+  const res = document.getElementById('routeRes');
+  res.style.display = 'block';
+  const path = document.getElementById('routePath');
+  path.innerHTML = selectedState.route.map(sid =>
+    `<span class="r-node">${sid}</span>`
+  ).join('<span class="r-arrow">→</span>');
+  document.getElementById('routeNote').textContent = selectedState.note;
+}
+
+function confirmRoute() {
+  if (!selectedState) { alert('请先选择资料状态'); return; }
+  sendToAgent({ action: 'route_confirmed', state: selectedState.id, route: selectedState.route, note: selectedState.note });
+}
+
+function renderGates(gateStatus) {
+  const cont = document.getElementById('gateContainer');
+  cont.innerHTML = '';
+  GATES.forEach(g => {
+    const status = gateStatus[g.id] || 'no_go';
+    const lvlIdx = g.levels.indexOf(status);
+    const badgeCls = status === 'no_go' ? 'nogo' : status === 'search_required' ? 'search' : status === 'partial_analysis' || status === 'prototype' || status === 'draft' ? 'partial' : 'allowed';
+    const badgeLabel = status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    let barHtml = g.levels.map((_, i) => {
+      if (i <= lvlIdx) {
+        const fc = lvlIdx === 0 ? 'f1' : lvlIdx === 1 ? 'f2' : lvlIdx === 2 ? 'f3' : 'f4';
+        return `<div class="gate-seg ${fc}"></div>`;
+      }
+      return `<div class="gate-seg"></div>`;
+    }).join('');
+    let rulesHtml = g.rules.map(r => {
+      const pass = gateStatus[g.id + '_' + r.key];
+      const ico = pass === true ? 'pass' : pass === false ? 'fail' : 'pend';
+      const sym = pass === true ? '✓' : pass === false ? '✗' : '·';
+      return `<li class="gate-rule"><span class="rule-ico ${ico}">${sym}</span>${r.text}</li>`;
+    }).join('');
+    cont.innerHTML += `<div class="gate-card">
+      <div class="gate-hdr"><span class="gate-title">${g.name} <span style="font-weight:400;color:var(--text-muted);font-size:10px">— ${g.desc}</span></span>
+      <span class="gate-badge ${badgeCls}">${badgeLabel}</span></div>
+      <div class="gate-bar">${barHtml}</div>
+      <ul class="gate-rules">${rulesHtml}</ul></div>`;
+  });
+}
+
+function renderTasks(tasks) {
+  const board = document.getElementById('taskBoard');
+  const cols = {pending: {title: '待办', items: []}, in_progress: {title: '进行中', items: []}, done: {title: '已完成', items: []}};
+  if (tasks.length > 0) {
+    tasks.forEach(t => { if (cols[t.status]) cols[t.status].items.push(t); });
+  } else {
+    // Default demo tasks
+    cols.pending.items = [{id:'T1',title:'评估参考资料充分性',phase:1},{id:'T2',title:'联网搜索补充验证',phase:1}];
+    cols.in_progress.items = [{id:'T3',title:'确认当前资料状态',phase:0}];
+    cols.done.items = [{id:'T4',title:'初始化项目结构',phase:0}];
+  }
+  board.innerHTML = '';
+  Object.entries(cols).forEach(([key, col]) => {
+    let itemsHtml = col.items.map(t => {
+      const phCls = t.phase <= 1 ? 'tp1' : t.phase === 2 ? 'tp2' : 'tp3';
+      const phLbl = t.phase <= 1 ? 'P1' : t.phase === 2 ? 'P2' : 'P3';
+      return `<div class="t-item" onclick="sendToAgent({action:'select_task',task_id:'${t.id}',title:'${t.title}'})">
+        <div class="t-item-title">${t.title}</div><span class="t-tag ${phCls}">${phLbl}</span></div>`;
+    }).join('');
+    board.innerHTML += `<div class="t-col"><div class="t-col-hdr"><span class="t-col-title">${col.title}</span><span class="t-col-cnt">${col.items.length}</span></div>${itemsHtml}</div>`;
+  });
+}
+
+function showStageDetail(id) {
+  const s = STAGES.find(x => x.id === id);
+  if (!s) return;
+  document.getElementById('modalTitle').textContent = `技能${s.id}：${s.name}`;
+  const st = stageStatus[id] || 'pending';
+  const stLabel = st === 'done' ? '✓ 已完成' : st === 'current' ? '▶ 当前执行' : '○ 待执行';
+  const stColor = st === 'done' ? 'var(--gate-prod)' : st === 'current' ? 'var(--accent)' : 'var(--text-muted)';
+  document.getElementById('modalBody').innerHTML = `
+    <div style="margin-bottom:8px"><span style="color:${stColor};font-weight:600;font-size:11px">${stLabel}</span></div>
+    <div class="modal-field"><label>描述</label><div style="font-size:11px">${s.desc}</div></div>
+    <div class="modal-field"><label>阶段</label><div style="font-size:11px">第${s.phase}阶段</div></div>
+    <div class="modal-field"><label>输入</label><div style="font-size:11px">${s.inputs}</div></div>
+    <div class="modal-field"><label>输出</label><div style="font-size:11px">${s.outputs}</div></div>
+    <div class="modal-field"><label>关联门禁</label><div style="font-size:11px">${s.gate}</div></div>`;
+  document.getElementById('stageModal').classList.add('show');
+  document.getElementById('stageModal').dataset.stageId = id;
+}
+
+function closeModal() { document.getElementById('stageModal').classList.remove('show'); }
+function startStage() {
+  const id = document.getElementById('stageModal').dataset.stageId;
+  closeModal();
+  sendToAgent({ action: 'start_stage', stage_id: id });
+}
+
+function swTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('p-' + name).classList.add('active');
+}
+
+// ── Import Functions ──
+function setFmt(el, fmt) {
+  document.querySelectorAll('.fmt-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  currentFmt = fmt;
+  if (fmt === 'template') loadTemplate();
+}
+
+function loadTemplate() {
+  const tpl = {
+    project_name: "示例工程项目",
+    version: "2.2.0",
+    completed_stages: ["01"],
+    current_stage: "02",
+    gate_status: {
+      evidence: "search_required",
+      handoff: "no_go",
+      coding: "no_go",
+      production: "no_go"
+    },
+    tasks: [
+      {id:"T1",title:"评估参考资料充分性",status:"done",phase:1},
+      {id:"T2",title:"联网搜索补充规范标准",status:"in_progress",phase:1},
+      {id:"T3",title:"源卡片持久化",status:"pending",phase:1},
+      {id:"T4",title:"源摄入与权威评估",status:"pending",phase:2},
+      {id:"T5",title:"构建逻辑蓝图",status:"pending",phase:2}
+    ]
+  };
+  document.getElementById('pasteArea').value = JSON.stringify(tpl, null, 2);
+  currentFmt = 'json';
+  document.querySelectorAll('.fmt-chip').forEach(c => c.classList.remove('active'));
+  document.querySelector('.fmt-chip').classList.add('active');
+  toast('已加载模板示例', 'info');
+}
+
+function exportCurrent() {
+  const data = {
+    project_name: D.project_name || '未命名项目',
+    version: D.version || '2.2.0',
+    completed_stages: STAGES.filter(s => stageStatus[s.id] === 'done').map(s => s.id),
+    current_stage: STAGES.find(s => stageStatus[s.id] === 'current')?.id || null,
+    gate_status: D.gate_status || {},
+    tasks: D.tasks || []
+  };
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'calc_project_state.json'; a.click();
+  URL.revokeObjectURL(url);
+  toast('已导出当前状态', 'success');
+}
+
+// Drag & Drop
+const dz = document.getElementById('dropZone');
+if (dz) {
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('dragover'); if(e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]); });
+}
+
+function handleFile(file) {
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { toast('文件超过5MB限制', 'error'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('pasteArea').value = e.target.result;
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (ext === 'json') currentFmt = 'json';
+    else if (ext === 'yaml' || ext === 'yml') currentFmt = 'yaml';
+    else if (ext === 'csv') currentFmt = 'csv';
+    document.querySelectorAll('.fmt-chip').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.fmt-chip').forEach(c => { if(c.textContent.toLowerCase() === currentFmt) c.classList.add('active'); });
+    toast('已加载文件: ' + file.name, 'info');
+    parseAndPreview();
+  };
+  reader.readAsText(file);
+}
+
+function parseYamlSimple(text) {
+  // Simple YAML-to-JSON for flat/nested structures (basic support)
+  try {
+    const lines = text.split('\n');
+    const result = {};
+    let stack = [{obj: result, indent: -1}];
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (!line.trim() || line.trim().startsWith('#')) continue;
+      const indent = line.search(/\S/);
+      const match = line.match(/^(\s*)([\w_]+)\s*:\s*(.*)$/);
+      if (!match) continue;
+      const key = match[2], val = match[3].trim();
+      while (stack.length > 1 && stack[stack.length-1].indent >= indent) stack.pop();
+      const parent = stack[stack.length-1].obj;
+      if (val === '') {
+        parent[key] = {};
+        stack.push({obj: parent[key], indent: indent});
+      } else if (val.startsWith('[') && val.endsWith(']')) {
+        try { parent[key] = JSON.parse(val); } catch(e) { parent[key] = val; }
+      } else if (val === 'true') parent[key] = true;
+      else if (val === 'false') parent[key] = false;
+      else if (!isNaN(val) && val !== '') parent[key] = Number(val);
+      else parent[key] = val.replace(/^["']|["']$/g, '');
+    }
+    return result;
+  } catch(e) { return null; }
+}
+
+function parseCsvTasks(text) {
+  try {
+    const lines = text.trim().split('\n');
+    if (lines.length < 2) return {tasks:[]};
+    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g,''));
+    const tasks = [];
+    for (let i = 1; i < lines.length; i++) {
+      const vals = lines[i].split(',').map(v => v.trim().replace(/"/g,''));
+      const task = {};
+      headers.forEach((h, idx) => { task[h] = vals[idx] || ''; });
+      if (task.phase) task.phase = parseInt(task.phase) || 1;
+      tasks.push(task);
+    }
+    return {tasks: tasks};
+  } catch(e) { return {tasks:[]}; }
+}
+
+function parseAndPreview() {
+  const raw = document.getElementById('pasteArea').value.trim();
+  if (!raw) { toast('请先粘贴或导入数据', 'error'); return; }
+
+  let data = null;
+  try {
+    if (currentFmt === 'json') {
+      data = JSON.parse(raw);
+    } else if (currentFmt === 'yaml') {
+      data = parseYamlSimple(raw);
+      if (!data) throw new Error('YAML解析失败');
+    } else if (currentFmt === 'csv') {
+      data = parseCsvTasks(raw);
+    }
+  } catch(e) {
+    toast('解析失败: ' + e.message, 'error'); return;
+  }
+
+  parsedData = data;
+  const sec = document.getElementById('previewSection');
+  sec.style.display = 'block';
+  const body = document.getElementById('previewBody');
+  body.innerHTML = '';
+
+  // Summary preview
+  const fields = [];
+  if (data.project_name) fields.push(['项目名称', data.project_name, 'ok']);
+  if (data.version) fields.push(['版本号', data.version, 'ok']);
+  if (data.completed_stages) fields.push(['已完成阶段', Array.isArray(data.completed_stages) ? data.completed_stages.join(', ') : data.completed_stages, data.completed_stages.length > 0 ? 'ok' : 'warn']);
+  if (data.current_stage) fields.push(['当前阶段', data.current_stage, 'ok']);
+  if (data.gate_status) fields.push(['门禁状态', Object.keys(data.gate_status).length + ' 项', Object.keys(data.gate_status).length > 0 ? 'ok' : 'warn']);
+  if (data.tasks) fields.push(['任务数量', Array.isArray(data.tasks) ? data.tasks.length + ' 个' : data.tasks, Array.isArray(data.tasks) && data.tasks.length > 0 ? 'ok' : 'warn']);
+  if (data.material_state) fields.push(['资料状态', data.material_state, 'ok']);
+
+  // Validation
+  const warnings = [];
+  if (data.completed_stages && Array.isArray(data.completed_stages)) {
+    data.completed_stages.forEach(id => {
+      if (!STAGES.find(s => s.id === id)) warnings.push('未知阶段ID: ' + id);
+    });
+  }
+  if (data.current_stage && !STAGES.find(s => s.id === data.current_stage)) warnings.push('当前阶段ID无效: ' + data.current_stage);
+
+  fields.forEach(([k, v, cls]) => {
+    body.innerHTML += `<div class="preview-row"><span class="preview-key">${k}</span><span class="preview-val ${cls}">${v}</span></div>`;
+  });
+  warnings.forEach(w => {
+    body.innerHTML += `<div class="preview-row"><span class="preview-key">⚠ 警告</span><span class="preview-val warn">${w}</span></div>`;
+  });
+  if (fields.length === 0) {
+    body.innerHTML = '<div class="preview-row"><span class="preview-val err">未识别到有效字段</span></div>';
+  }
+}
+
+function applyImport() {
+  if (!parsedData) { toast('无数据可导入', 'error'); return; }
+  const log = document.getElementById('importLog');
+  log.style.display = 'block';
+  log.innerHTML = '';
+  const lines = [];
+
+  // Apply project name
+  if (parsedData.project_name) {
+    document.getElementById('projTitle').textContent = parsedData.project_name + ' · 控制台';
+    lines.push(['ok', '项目名称 → ' + parsedData.project_name]);
+  }
+  if (parsedData.version) {
+    document.getElementById('verBadge').textContent = 'v' + parsedData.version;
+    lines.push(['ok', '版本号 → ' + parsedData.version]);
+  }
+
+  // Apply stage status
+  if (parsedData.completed_stages && Array.isArray(parsedData.completed_stages)) {
+    parsedData.completed_stages.forEach(id => { stageStatus[id] = 'done'; });
+    lines.push(['ok', '已完成阶段: ' + parsedData.completed_stages.join(', ')]);
+  }
+  if (parsedData.current_stage) {
+    stageStatus[parsedData.current_stage] = 'current';
+    lines.push(['ok', '当前阶段 → ' + parsedData.current_stage]);
+  }
+
+  // Re-render lifecycle
+  renderLifecycle();
+  const doneCount = Object.values(stageStatus).filter(v => v === 'done').length;
+  const curStage = STAGES.find(s => stageStatus[s.id] === 'current');
+  renderSummary(doneCount, curStage?.id || null, parsedData.gate_status || D.gate_status || {});
+
+  // Apply gate status
+  if (parsedData.gate_status) {
+    renderGates(parsedData.gate_status);
+    lines.push(['ok', '门禁状态已更新: ' + Object.keys(parsedData.gate_status).length + ' 项']);
+  }
+
+  // Apply tasks
+  if (parsedData.tasks && Array.isArray(parsedData.tasks) && parsedData.tasks.length > 0) {
+    renderTasks(parsedData.tasks);
+    lines.push(['ok', '任务已导入: ' + parsedData.tasks.length + ' 个']);
+  }
+
+  // Apply material state → auto-route
+  if (parsedData.material_state) {
+    const st = STATES.find(s => s.id === parsedData.material_state);
+    if (st) {
+      lines.push(['ok', '资料状态 → ' + st.label]);
+    } else {
+      lines.push(['warn', '未知资料状态: ' + parsedData.material_state]);
+    }
+  }
+
+  lines.forEach(([cls, text]) => {
+    const sym = cls === 'ok' ? '✓' : cls === 'warn' ? '⚠' : '✗';
+    log.innerHTML += `<div class="log-line"><span class="log-${cls}">${sym}</span> ${text}</div>`;
+  });
+
+  toast('导入完成: ' + lines.length + ' 项已应用', 'success');
+
+  // Send to agent
+  sendToAgent({
+    action: 'batch_import',
+    data: parsedData,
+    applied_count: lines.length
+  });
+}
+
+function cancelImport() {
+  document.getElementById('previewSection').style.display = 'none';
+  document.getElementById('importLog').style.display = 'none';
+  parsedData = null;
+}
+
+function batchOp(op) {
+  let data = {};
+  if (op === 'mark_done') {
+    const done = STAGES.filter(s => stageStatus[s.id] === 'done').map(s => s.id);
+    const pending = STAGES.filter(s => stageStatus[s.id] !== 'done').map(s => ({id: s.id, name: s.name}));
+    if (pending.length === 0) { toast('所有阶段已完成', 'info'); return; }
+    const ids = prompt('输入要标记为完成的阶段ID（逗号分隔）:\n\n待完成: ' + pending.map(p => p.id + ' ' + p.name).join(', '));
+    if (!ids) return;
+    data = {action: 'batch_mark_done', stage_ids: ids.split(',').map(s => s.trim())};
+  } else if (op === 'bulk_tasks') {
+    const raw = prompt('输入任务列表（JSON数组）:\n\n格式: [{"title":"任务名","phase":1}, ...]');
+    if (!raw) return;
+    try {
+      const tasks = JSON.parse(raw);
+      data = {action: 'batch_add_tasks', tasks: tasks};
+    } catch(e) { toast('JSON格式错误', 'error'); return; }
+  } else if (op === 'reset_gates') {
+    if (!confirm('确认重置所有门禁状态？')) return;
+    data = {action: 'batch_reset_gates'};
+  } else if (op === 'full_reset') {
+    if (!confirm('确认完全重置？所有进度和任务将被清除。')) return;
+    data = {action: 'batch_full_reset'};
+  }
+  if (Object.keys(data).length > 0) sendToAgent(data);
+}
+
+function toast(msg, type) {
+  const el = document.createElement('div');
+  el.className = 'toast-msg ' + (type || 'info');
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2500);
+}
+
+// Close modal on background click
+document.getElementById('stageModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+if (D.project_name) document.getElementById('projTitle').textContent = D.project_name + ' · 控制台';
+if (D.version) document.getElementById('verBadge').textContent = 'v' + D.version;
+init();
+</script>
+</body>
+</html>

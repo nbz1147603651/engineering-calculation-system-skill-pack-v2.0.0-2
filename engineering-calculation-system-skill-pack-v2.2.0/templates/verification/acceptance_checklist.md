@@ -1,0 +1,29 @@
+# Acceptance Checklist
+
+- [ ] Source basis recorded
+- [ ] Acquisition handoff exists when sources were searched
+- [ ] Implementation handoff exists
+- [ ] Report production decision is recorded when a report/export is produced
+- [ ] Report status is explicit and matches evidence/coding gate state
+- [ ] Formulas are only in calculation modules/books
+- [ ] Reusable calculation modules are decoupled and registered in module_asset_registry.csv
+- [ ] One official run_book() exists
+- [ ] Typed BookInput and BookResult exist
+- [ ] Unit policy is explicit
+- [ ] Report/UI/batch do not calculate
+- [ ] UI follows the unified layout when a frontend exists
+- [ ] Marimo review pages do not calculate outside trusted modules or run_book
+- [ ] Upload/import packages have manifests and hashes when present
+- [ ] Imported reports are labeled as review/reference artifacts
+- [ ] Reports are generated from saved final input or trusted BookResult
+- [ ] ReportContext preserves source basis, limitations, warnings/errors, and traceability metadata
+- [ ] Unit tests exist
+- [ ] Regression tests exist when references exist
+- [ ] Integration test exists
+- [ ] Smoke tests exist for reports/interfaces
+- [ ] Web app exposes /health when frontend/API exists
+- [ ] Local run command is documented and smoke-tested when frontend/API exists
+- [ ] Cloud Linux deployment path is documented when final delivery is expected
+- [ ] Release checklist records deployment smoke tests and remaining assumptions when final delivery is expected
+- [ ] Report renderer/export path has a documented run command
+- [ ] Traceability metadata exists for production outputs

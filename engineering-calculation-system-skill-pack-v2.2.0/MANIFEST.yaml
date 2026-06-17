@@ -1,0 +1,682 @@
+package: engineering-calculation-system-skill-pack
+version: 2.2.0
+created_at: 2026-06-16
+file_count_excluding_manifest_and_checksums: 224
+lifecycle:
+  - reference_acquisition_and_persistence
+  - reference_analysis_and_logic_blueprint
+  - implementation_and_verification
+  - release_and_linux_cloud_deployment
+files:
+  - path: .qoder/agents/engineering-calc-system.md
+    size_bytes: 12683
+    sha256: 2f4b95bec2f8cb9fa95ecaf64972a3d1b5053d6e984a4989e8622991df6a95b9
+  - path: .qoder/agents/reference.md
+    size_bytes: 23690
+    sha256: f115b908403886785df55e1f76edefd48f15a6501cf410874779e86a202f799d
+  - path: .qoder/skills/engineering-calc-system/assets/lifecycle-console.html
+    size_bytes: 45914
+    sha256: 2f1078b3140845e9d5867278028ea0f04a5fc17175e0c3dc5d28ef41da5285ef
+  - path: .qoder/skills/engineering-calc-system/reference.md
+    size_bytes: 23690
+    sha256: f115b908403886785df55e1f76edefd48f15a6501cf410874779e86a202f799d
+  - path: .qoder/skills/engineering-calc-system/SKILL.md
+    size_bytes: 15635
+    sha256: cfc0731f12a388073c86d7e40046ecc51d804ebd3994fd853bcbaddc73ef6c83
+  - path: .trae/rules/engineering-calc-system.md
+    size_bytes: 1870
+    sha256: 993112e610bf5f4a54fe67a02019ef1bb950c9678e548dfb4bf45e307877c4a2
+  - path: adapters/agent-entrypoints.md
+    size_bytes: 1652
+    sha256: c33ebc601628761ae5b3463bb6306b21db451fa7ec7ffa0de96197c8460c0c4c
+  - path: agents/openai.yaml
+    size_bytes: 335
+    sha256: d9f631379fa4f83713a16dea3b4ebc89118aa2567682d8795d99c312fc5d9b4a
+  - path: CHANGELOG.md
+    size_bytes: 7131
+    sha256: 85cc726b26d0f5622d82dbf8ee03a70fb32ebfc2184cfecbf80ae5b2072b0f12
+  - path: examples/example_acquisition_handoff.yaml
+    size_bytes: 1186
+    sha256: e4f8c1933d1a894507f1a6a5e5cb00a291332836f9e30312f806d32a99439de8
+  - path: examples/example_artifact_index.yaml
+    size_bytes: 1490
+    sha256: ff86a6f1c666262d004789d40b68c4462075948d27e2a9e5f643fbe90398c5d3
+  - path: examples/example_source_card.md
+    size_bytes: 598
+    sha256: d882011addf88c49ad2485ceb5fc308e936f77a507e9f9529b8360e530a7885a
+  - path: INSTALL.md
+    size_bytes: 1386
+    sha256: 814eb3fec6716f5fd88fd803412f8d76e566eb56ee461a7c8cc47cf9ce0025c8
+  - path: MIGRATION_NOTES.md
+    size_bytes: 2680
+    sha256: 4f0438658529ee1ffcdda0961d79beeeca9f19acb489a6206469adc8ee4ef6c5
+  - path: original_sources/engineering-calculation-book.original.skill.md
+    size_bytes: 22620
+    sha256: 236e8f92e548c90bac7c9c981b8895eed40f5a9ec9b9e8e79b9c4250440a96f9
+  - path: original_sources/engineering-calculation-logic-architecture.original.skill.md
+    size_bytes: 31528
+    sha256: ef3c6a3841abc0609b50ced85977b36210d1e7409c8cb0bd25a778b5fe41f210
+  - path: parent/engineering-calculation-book.skill.md
+    size_bytes: 4523
+    sha256: ca34db5c707198b276e83b481436b2fa5a55637555cc8219e93b5c3a2936b459
+  - path: parent/engineering-calculation-logic-architecture.skill.md
+    size_bytes: 4102
+    sha256: e0d940a304ae5f063c68b17774ac3743d082ecd2b3a797d018a9bf1cd60a3234
+  - path: parent/engineering-calculation-reference-acquisition.skill.md
+    size_bytes: 4052
+    sha256: 7ec936f10e6a1686a0300de3858802186bc6078db6645eb69497a2ee5133724e
+  - path: project_template/engineering_calc_project/analysis/01_source_inventory/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/analysis/02_logic_blueprint/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/analysis/03_logic_details/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/analysis/04_diagrams/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/analysis/05_risks_and_questions/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/apps/review/.gitkeep
+    size_bytes: 22
+    sha256: 645f3d59a5462135bf502f73c1956a31766bb368638282fc3ec9cdd771631e43
+  - path: project_template/engineering_calc_project/data/imported/references/.gitkeep
+    size_bytes: 30
+    sha256: 635ec6b39f925d8c79a9ecd72f077421f10fae4acaf790e4d7ba32cafb70081b
+  - path: project_template/engineering_calc_project/data/imported/reports/.gitkeep
+    size_bytes: 27
+    sha256: ec68710a8654c019e89e7fab385af9c7650d59717525b8ca54108977486b968e
+  - path: project_template/engineering_calc_project/data/input/.gitkeep
+    size_bytes: 1
+    sha256: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
+  - path: project_template/engineering_calc_project/data/normalized/cases/.gitkeep
+    size_bytes: 37
+    sha256: e96ee434e4e7ae04eb442c7882d29620b654729197b5263d7b4c417d2b557198
+  - path: project_template/engineering_calc_project/data/packages/.gitkeep
+    size_bytes: 33
+    sha256: 368c5fbfd9d74e3d41ecc238427ab2b41f6f7addef4af69c841b3579a6521ec7
+  - path: project_template/engineering_calc_project/data/staging/.gitkeep
+    size_bytes: 33
+    sha256: 3b950bcabdaf49583c04ad59e396129b2017dd4cb05c82c29eb8f00bff2184ac
+  - path: project_template/engineering_calc_project/deploy/docker-compose.yml
+    size_bytes: 263
+    sha256: ccb4b504b915ba394339a97784169998f80050d07e3ff969b27d4f5cac07a6e4
+  - path: project_template/engineering_calc_project/deploy/Dockerfile
+    size_bytes: 405
+    sha256: 7d8b38c74a99f07bae515b89be988cecc4c82ac6af7534a13f55b5c41136968d
+  - path: project_template/engineering_calc_project/deploy/env.example
+    size_bytes: 161
+    sha256: 182063e1feb20c49139cb02d3dc9bb8e091e347c4505523640ca509aeac4d0e7
+  - path: project_template/engineering_calc_project/deploy/nginx/engineering-calc.conf
+    size_bytes: 359
+    sha256: d40d580bdd3105ed9a266b230ff43d7d52bde42ec63e6cfef22190b9edd54064
+  - path: project_template/engineering_calc_project/deploy/systemd/engineering-calc.service
+    size_bytes: 429
+    sha256: 96a906a09d02561a90cd9b870b692b246a6f9f753902e1ab055a205781b689b7
+  - path: project_template/engineering_calc_project/handoff/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/handoff/artifact_index.yaml
+    size_bytes: 1490
+    sha256: ff86a6f1c666262d004789d40b68c4462075948d27e2a9e5f643fbe90398c5d3
+  - path: project_template/engineering_calc_project/handoff/implementation_handoff.yaml
+    size_bytes: 2158
+    sha256: d30580673da4c8a3d556d1634d5f4becaf1f227efa82a80243f902fefca91f10
+  - path: project_template/engineering_calc_project/implementation/00_architecture/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/implementation/01_core_models/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/implementation/02_modules/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/implementation/02_modules/module_asset_registry.csv
+    size_bytes: 189
+    sha256: 9709f816c3469d8603533f4e24450f1a71a9f9fdb11b68b115c4fe5f4a717d49
+  - path: project_template/engineering_calc_project/implementation/03_book_runner/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/implementation/04_interfaces/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/implementation/05_acceptance/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/logs/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/outputs/batch_summaries/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/outputs/logs/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/outputs/normalized_inputs_json/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/outputs/reports_docx/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/outputs/reports_html/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/outputs/reports_pdf/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/outputs/results_json/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/outputs/upload_packages/.gitkeep
+    size_bytes: 35
+    sha256: a1e5303d7ef1eb0da360e96656557acbfb277cf71ebb498ec1b56454c996c211
+  - path: project_template/engineering_calc_project/pyproject.toml
+    size_bytes: 403
+    sha256: 607bde39530b2264a52e1474bbe4430fd519d79ccbb33c46262e796e339da24a
+  - path: project_template/engineering_calc_project/README.md
+    size_bytes: 869
+    sha256: 1cf5c5163bd15df6a050283e9c7e3b89716e0b54ba57ddb227fda47ff2f0bc92
+  - path: project_template/engineering_calc_project/references/acquisition/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/references/acquisition/acquisition_handoff.yaml
+    size_bytes: 982
+    sha256: fb248794ed9958955fc37d37983bee6a11c48ec4d4256d9d0c445c2312933b0a
+  - path: project_template/engineering_calc_project/references/acquisition/acquisition_plan.yaml
+    size_bytes: 720
+    sha256: 614995e71f77215518868dd6f7f424d9db92915716006556526c4952a0d0c48e
+  - path: project_template/engineering_calc_project/references/acquisition/candidate_sources.csv
+    size_bytes: 198
+    sha256: 342e59f976a8a3b32e5a3e43d5043cd3083dcc48758629886d616e3a4d5e8f1d
+  - path: project_template/engineering_calc_project/references/acquisition/search_log.csv
+    size_bytes: 88
+    sha256: 026a9eacd3bcceaa24d4e07e737029317a4f9f55e2f01bf19bc648f12a227a7b
+  - path: project_template/engineering_calc_project/references/acquisition/source_coverage_matrix.csv
+    size_bytes: 117
+    sha256: b7e69753bffd29da70c5c54222f5c1768d589af7e58d0a7afe5924c624104fb3
+  - path: project_template/engineering_calc_project/references/evidence_library_manifest.yaml
+    size_bytes: 350
+    sha256: 3d049d6fd379f0c84e8e994ba99b2fa5c73b311cfd2d977ad199d91fe1b8b9fc
+  - path: project_template/engineering_calc_project/references/extracted/notes/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/references/raw/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/references/snapshots/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/references/source_cards/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/references/source_registry.yaml
+    size_bytes: 488
+    sha256: 793a5c1f8020e04833b9f425fee34fa7a208968114a021a9061de59043198a87
+  - path: project_template/engineering_calc_project/release/release_checklist.md
+    size_bytes: 790
+    sha256: 9da1e185c12d4d46a29fae626a1ed3f274d405a55ed256e5cdbd70919bd60b5d
+  - path: project_template/engineering_calc_project/src/pkg/__init__.py
+    size_bytes: 49
+    sha256: c41d7b6182188afa7243f729a6e391469c727df6ea4801e100ffc5721f38fe94
+  - path: project_template/engineering_calc_project/src/pkg/books/__init__.py
+    size_bytes: 34
+    sha256: 32ccaa1c71e3aaa3300c393ee62373becefbc218d1c5034391c284ab8ba353b6
+  - path: project_template/engineering_calc_project/src/pkg/books/book_name/__init__.py
+    size_bytes: 101
+    sha256: 23fce82101c1285841984dc41d5c21defc93ebc1ba9bf4a85d4f34afc5bb3f76
+  - path: project_template/engineering_calc_project/src/pkg/books/book_name/book_models.py
+    size_bytes: 1141
+    sha256: ca5f60e26b8fe38389816d90b97d9e5f504da216e82809029f20a5634f2f2a5c
+  - path: project_template/engineering_calc_project/src/pkg/books/book_name/book_runner.py
+    size_bytes: 516
+    sha256: c09aedef636a34803b71deb2112350e2f2d4d12dde2520caad862745e62c43bd
+  - path: project_template/engineering_calc_project/src/pkg/books/book_name/report_context.py
+    size_bytes: 415
+    sha256: af44f33e693abb501612b5dd5eff331b20be27ecdf3d00616b414f77e2fc476e
+  - path: project_template/engineering_calc_project/src/pkg/books/book_name/templates/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/src/pkg/core/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/src/pkg/core/__init__.py
+    size_bytes: 68
+    sha256: 7099227f3d3058fd339ecb49ede19d2c926cca8013fc7a925b0f7ead28b178cf
+  - path: project_template/engineering_calc_project/src/pkg/core/checks.py
+    size_bytes: 859
+    sha256: ae805986cd1b7664c536afce3d2e849b57165a35998a4e90cb3400b5e9983075
+  - path: project_template/engineering_calc_project/src/pkg/core/enums.py
+    size_bytes: 249
+    sha256: a5019fc6b6ea92a8097e35f8af6059f5a077a95261b3a13927e9d9bec2444385
+  - path: project_template/engineering_calc_project/src/pkg/core/sanitize.py
+    size_bytes: 2041
+    sha256: 8495b725ee62d5e8e757d9cb0fe794495f6997474c8dc1df77dd67a14060dba5
+  - path: project_template/engineering_calc_project/src/pkg/interfaces/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/src/pkg/interfaces/__init__.py
+    size_bytes: 62
+    sha256: cc158608cf4f36a8ec9a350ee94a1bed5ce9e29428f023bca7fa77377a621570
+  - path: project_template/engineering_calc_project/src/pkg/libraries/__init__.py
+    size_bytes: 51
+    sha256: d5e1c071b6333c1cc34a4e1bbd6d425ff71cd5aff134ea97669ef366048a4161
+  - path: project_template/engineering_calc_project/src/pkg/libraries/geotech/__init__.py
+    size_bytes: 43
+    sha256: 287d7530979f98dd07b76a37cd90899dce3398eb1fc9f2e04c16681d97448819
+  - path: project_template/engineering_calc_project/src/pkg/libraries/geotech/shallow_foundation/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/src/pkg/libraries/geotech/shallow_foundation/__init__.py
+    size_bytes: 53
+    sha256: 850cf8599c036ad0af610c727183b86ba420620b6bb69b5bbe6f224edfb53921
+  - path: project_template/engineering_calc_project/src/pkg/report/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/src/pkg/report/__init__.py
+    size_bytes: 74
+    sha256: 6db3b83bfeba07ab6585fc715ee95d59251341a974a73ad3c48cef3769f1823f
+  - path: project_template/engineering_calc_project/tests/conftest.py
+    size_bytes: 151
+    sha256: 72562768bfa6a1a0ced0f3a5210d1c4d5e6542bf74eac8d585dfbb120b2e67b1
+  - path: project_template/engineering_calc_project/tests/integration/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/tests/integration/test_book_runner.py
+    size_bytes: 376
+    sha256: 431823f77f5286aeaef7519f6ac78ade901647011041481a11692d0c021ee46b
+  - path: project_template/engineering_calc_project/tests/regression/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/tests/smoke/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/tests/smoke/example_input.json
+    size_bytes: 147
+    sha256: 6b8acfa72285075d5e2d91072e18966185789a8c6a2a57d17223d72ce790468b
+  - path: project_template/engineering_calc_project/tests/unit/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/verification/.gitkeep
+    size_bytes: 0
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - path: project_template/engineering_calc_project/webapp/.gitkeep
+    size_bytes: 39
+    sha256: 31617e0eced47fceef641d04d904b5ba89d0033bf8bb349036871133b5fd5da8
+  - path: project_template/engineering_calc_project/webapp/__init__.py
+    size_bytes: 55
+    sha256: 252689c79177ce858f8b5e8e6a43d2b542cfe5cb330f3aea9e7707615f1a9fc8
+  - path: project_template/engineering_calc_project/webapp/app.py
+    size_bytes: 829
+    sha256: 867fb6e6ccfe7d4cd6fb25507ed0f74434ba7b7b8b594df42e77a3ceea7d55e7
+  - path: project_template/engineering_calc_project/webapp/config.py
+    size_bytes: 1567
+    sha256: a35e83329b64a359f9544e73fe133b34e5f9fe9f19ae73d2de34bdf74e8a4101
+  - path: project_template/engineering_calc_project/webapp/form_utils.py
+    size_bytes: 6343
+    sha256: 5639ffe29d1f94c6c112dc6f50587dbe2f47c59b281e5add19f2ffa8ae34aaff
+  - path: project_template/engineering_calc_project/webapp/i18n.py
+    size_bytes: 5385
+    sha256: 4a8b6858d803dc95e1970044a31d6e14bb4964d39890a3d4e9384a654e469663
+  - path: project_template/engineering_calc_project/webapp/routes.py
+    size_bytes: 6232
+    sha256: 2a23ad9e763c1393437ebfbebca254bf2008cccd1375be6091b096820e034794
+  - path: project_template/engineering_calc_project/webapp/static/css/style.css
+    size_bytes: 3194
+    sha256: 73b74a26ab0fbf3ba5070e27635cdf418c3215e793437d0f961a5a5bd4c7bd6a
+  - path: project_template/engineering_calc_project/webapp/static/js/forms.js
+    size_bytes: 2026
+    sha256: b97b0a1fbedca584011a6d061f1449992a8c7c38db5a0dbe2df1ba0a8739f5ef
+  - path: project_template/engineering_calc_project/webapp/static/js/i18n.js
+    size_bytes: 1963
+    sha256: ff0acbcbb89469240a8ae13617bef8c328ceaa16b281f63df98150b75ff8d779
+  - path: project_template/engineering_calc_project/webapp/static/js/main.js
+    size_bytes: 7368
+    sha256: ea37249f55cdccb852e381c6f7f30b4fe53ecab558e6eb0e1fafdc9d8ad80a27
+  - path: project_template/engineering_calc_project/webapp/static/js/results.js
+    size_bytes: 3975
+    sha256: 653ccaebac339ebe5c691195b90537df39cbe8ff4bd7ebef2794d09d50ad0758
+  - path: project_template/engineering_calc_project/webapp/templates/base.html
+    size_bytes: 5455
+    sha256: 3947b1f1ff6c89f2d548feb15d81ab209e02bf23c35f056a73908b8201a162a7
+  - path: project_template/engineering_calc_project/webapp/templates/index.html
+    size_bytes: 3645
+    sha256: 02be028fd3da8c5d679b1319fcb8077e61ec0388798ed7eca12c37f40b9a26f8
+  - path: README.md
+    size_bytes: 4003
+    sha256: 96cdb95a2e9ff3da9e01a722d57ac0e1eb74822f039e1672d52f9255bb2e174d
+  - path: README.zh-CN.md
+    size_bytes: 4881
+    sha256: c91c562779708aebc141ae64138a05a72675f4ae7b05558046e2847100f03a38
+  - path: schemas/artifact_contracts.json
+    size_bytes: 13013
+    sha256: 6016bec71de6d2e8aeddc6050ac7204037477cfb44ad5946daae874953efea7d
+  - path: scripts/build_package_index.py
+    size_bytes: 5134
+    sha256: 2099d190c034a83c6e2662e39073d3a5f45eebc45d95cdca4abbd6a43e1ce9fb
+  - path: scripts/validate_artifacts.py
+    size_bytes: 5061
+    sha256: 826df348df4e92bd5d50908f123c526b545c571a4579610a2c8f70c97209e026
+  - path: shared/artifact-index-template.yaml
+    size_bytes: 1490
+    sha256: ff86a6f1c666262d004789d40b68c4462075948d27e2a9e5f643fbe90398c5d3
+  - path: shared/contracts.md
+    size_bytes: 1122
+    sha256: cfc1bf11a5056b843913ea6e4b038c7c8361a7ad23701546cc7050a2c60890e4
+  - path: shared/copyright-and-access-policy.md
+    size_bytes: 881
+    sha256: 8de162930ae78f4f3058f3674be216073cc704ec60a8dffbfe8d990c8a554dc7
+  - path: shared/file-naming-convention.md
+    size_bytes: 677
+    sha256: 2efac39215a1c9c1fc4e38069c542794f08c171f7b85a7ab1e0e8ce875143546
+  - path: shared/handoff-contract-template.yaml
+    size_bytes: 2158
+    sha256: d30580673da4c8a3d556d1634d5f4becaf1f227efa82a80243f902fefca91f10
+  - path: shared/id-convention.md
+    size_bytes: 915
+    sha256: f2ab2faa30d822531c4c5038237a3acf48b95964f5fa6c2c562ea9470924a971
+  - path: shared/local-persistence-contract.md
+    size_bytes: 1215
+    sha256: 859e2f8c7a5a0b38598b4f0828e276ed95041fb0e44dda02f60c328510f2d6c6
+  - path: shared/quality-gates.md
+    size_bytes: 2817
+    sha256: 2fe0e74b1d80b53b5217bfcf96284e5f908fc3c7e9320186b957ecc918345196
+  - path: shared/result-path-convention.md
+    size_bytes: 373
+    sha256: b850a304f7f90a9b4b19a56557a25e9a80e9d0195cb4a4517fe244556e814ec9
+  - path: shared/source-acquisition-contract.md
+    size_bytes: 1685
+    sha256: 22ab89a5597621d1c4ec3ab7d2a7fc5ea6c25c69631f659a7137604a3ea46246
+  - path: shared/status-semantics.md
+    size_bytes: 494
+    sha256: a667d69c66a4dbe5008ee0f4b59b83bbb11aafd2253ad158a105d145c151af31
+  - path: shared/unit-convention.md
+    size_bytes: 489
+    sha256: b62347805d8782f1da28174d60d77e8f83f43edab5f1613e3ed25e25e43ba65f
+  - path: SKILL.md
+    size_bytes: 2624
+    sha256: ea93c1cfb81379d600d56821016af1c17554b83f899b8327a91f10153082d2aa
+  - path: SKILL_PACKAGE_SUMMARY.md
+    size_bytes: 4018
+    sha256: 2320bd3951992730374125853000687f1dcf13b21f64ea7ea37a7089ef3fd9ed
+  - path: skills/00-engineering-calculation-router.skill.md
+    size_bytes: 4931
+    sha256: 4f842627cb6a48d78babda7530476d47c3cb14ed851baa1b8ae652f5a8df9b46
+  - path: skills/01-reference-adequacy-and-gap-assessment.skill.md
+    size_bytes: 3623
+    sha256: bee689152598d21d768fabac6028a47b8dda5db835b38c5358f22ceb293801b6
+  - path: skills/02-reference-discovery-and-acquisition.skill.md
+    size_bytes: 5295
+    sha256: 685ba6bea47d24206dd1b383f628a532e3891b6d587aebec0389abca0fd636d0
+  - path: skills/03-reference-persistence-and-local-library.skill.md
+    size_bytes: 3878
+    sha256: b3bde48722a6d0d406f0d5b5841e11fbe7df0568a4f060b7d291b4db51cf2e02
+  - path: skills/04-source-intake-and-authority.skill.md
+    size_bytes: 2839
+    sha256: a9a17fd768e6c7b668cf131838adbc1aad8a001ebd1d2cf021c94287b72d17ea
+  - path: skills/05-engineering-logic-blueprint.skill.md
+    size_bytes: 2735
+    sha256: 6899f4bbbbfb121c12c59915cfdc0b47a5de5535a0e043efee5036ebda919011
+  - path: skills/06-formula-lookup-branch-extraction.skill.md
+    size_bytes: 2908
+    sha256: 26addec818300c27d963c618b743f3db7c1117f32c75932c6a8b46aee96e46b8
+  - path: skills/07-implementation-handoff-contract.skill.md
+    size_bytes: 2525
+    sha256: f5ffb58fc2ff378b172ff2146b4da9494318c2c428f91123ae00d05681a89d69
+  - path: skills/08-calculation-book-architecture.skill.md
+    size_bytes: 2864
+    sha256: a97546c07c7e5c276439c57f2b21088d50c18865c1f3a6941a40763b27af2530
+  - path: skills/09-core-and-data-models.skill.md
+    size_bytes: 1893
+    sha256: b65544f5b2eb11c6ac1ac6dea23d2c52a22eaab2a7755a002af45c3455a66985
+  - path: skills/10-reusable-calculation-modules.skill.md
+    size_bytes: 2459
+    sha256: 7cdd12c089aeb71b396219650570ee70aac5430766b947f85a10c9d267a8d139
+  - path: skills/11-book-runner-and-governing-summary.skill.md
+    size_bytes: 1826
+    sha256: 11c69dc3b308796167967d51b86bf2ae00e12499fec1a93d67b75f5a9aed018a
+  - path: skills/12-report-review-batch-interfaces.skill.md
+    size_bytes: 4261
+    sha256: 12ebfbfa15a92f0ab120794d478fe597b255524bb74993293b868f5cc0233987
+  - path: skills/12a-report-context-and-rendering.skill.md
+    size_bytes: 3442
+    sha256: 92adc5e0a4c2846ffebf03e9f1494f1357c819f425055d6aee51d9a5b6539fec
+  - path: skills/12b-frontend-and-review-interfaces.skill.md
+    size_bytes: 4752
+    sha256: 716666175945b3f59aad38a1b4392bc2eefc32dc7e9196d8c30624e92ea11e02
+  - path: skills/12c-batch-import-export-packages.skill.md
+    size_bytes: 3659
+    sha256: 7c0662a3f83e366d9721ecdf5a633e7a814a94900f5288ab73ef8aecdd7dd194
+  - path: skills/13-verification-regression-traceability.skill.md
+    size_bytes: 3284
+    sha256: be213dfc53c5e2f8fbf3d70d03d5612320c4bd903d639135dbe9f49d7c148b46
+  - path: skills/14-cloud-web-release-deployment.skill.md
+    size_bytes: 4497
+    sha256: d491f0858e15279f53a1a4cfb7b7bf8e8dae1c887abc24ff6e0bd278cf9c95c6
+  - path: templates/acquisition/acquisition_handoff.yaml
+    size_bytes: 982
+    sha256: fb248794ed9958955fc37d37983bee6a11c48ec4d4256d9d0c445c2312933b0a
+  - path: templates/acquisition/acquisition_notes.md
+    size_bytes: 716
+    sha256: 610d526f11e7d96096be5c79ad8f956233bb8c9f935710504eca169bb8489ccf
+  - path: templates/acquisition/acquisition_plan.yaml
+    size_bytes: 720
+    sha256: 614995e71f77215518868dd6f7f424d9db92915716006556526c4952a0d0c48e
+  - path: templates/acquisition/candidate_sources.csv
+    size_bytes: 198
+    sha256: 342e59f976a8a3b32e5a3e43d5043cd3083dcc48758629886d616e3a4d5e8f1d
+  - path: templates/acquisition/evidence_library_manifest.yaml
+    size_bytes: 350
+    sha256: 3d049d6fd379f0c84e8e994ba99b2fa5c73b311cfd2d977ad199d91fe1b8b9fc
+  - path: templates/acquisition/local_persistence_log.csv
+    size_bytes: 58
+    sha256: f49e396390755b28f399021f328f31a881d7a3cc02140d3a98f51e74f1c38f4f
+  - path: templates/acquisition/open_reference_questions.md
+    size_bytes: 307
+    sha256: 701d087b15b3e389ac013d34dd5133cdb88de812d3770ddb9e70e1375844e739
+  - path: templates/acquisition/reference_gap_assessment.md
+    size_bytes: 644
+    sha256: 88b794c180b6302172b4aea703a4c0e9d61067962b7e565f0f57aa94478c4899
+  - path: templates/acquisition/retrieval_decisions.csv
+    size_bytes: 117
+    sha256: b13990f49671391f54184128763e60e37e7e27a3183adfecf5e59563190bda42
+  - path: templates/acquisition/search_log.csv
+    size_bytes: 88
+    sha256: 026a9eacd3bcceaa24d4e07e737029317a4f9f55e2f01bf19bc648f12a227a7b
+  - path: templates/acquisition/source_card_template.md
+    size_bytes: 598
+    sha256: d882011addf88c49ad2485ceb5fc308e936f77a507e9f9529b8360e530a7885a
+  - path: templates/acquisition/source_coverage_matrix.csv
+    size_bytes: 117
+    sha256: b7e69753bffd29da70c5c54222f5c1768d589af7e58d0a7afe5924c624104fb3
+  - path: templates/acquisition/source_registry.yaml
+    size_bytes: 488
+    sha256: 793a5c1f8020e04833b9f425fee34fa7a208968114a021a9061de59043198a87
+  - path: templates/analysis/applicability_limits.csv
+    size_bytes: 85
+    sha256: 835774ac7d7e9f03e0bcb88e929d4ae3e6aa9500e283d92d89e59f1bbdb99df5
+  - path: templates/analysis/assumption_register.csv
+    size_bytes: 84
+    sha256: fdc460ba785a78b6073b4d0ab1dbc8dc2793512bd3c4bb3d75c9aef9dd8cb31c
+  - path: templates/analysis/branch_inventory.csv
+    size_bytes: 157
+    sha256: 6e1ae79176046a6f3673d0088ab2abc8462105c5c81a7d3e480baedbefd5abe8
+  - path: templates/analysis/calculation_blueprint.md
+    size_bytes: 437
+    sha256: 1a82d42cb87afcc6de08d2031a390a0b9260218d4f21630bd2f5ebb4f04177ae
+  - path: templates/analysis/calculation_nodes.csv
+    size_bytes: 228
+    sha256: 299431f481f73e7336a65a97bd000dd2d4855922abc6cdf136f6ed5e2f44f72d
+  - path: templates/analysis/concept_map.csv
+    size_bytes: 52
+    sha256: c4e80c5a8328df5afb0b3364a5b494b9874c1f1d17283a7c1c19fcddbec5a0f1
+  - path: templates/analysis/formula_inventory.csv
+    size_bytes: 164
+    sha256: 72eb21a4b74103b52132b1c386929ae27bd61f296dfc461ecd833f55e4f300c0
+  - path: templates/analysis/global_flowchart.mmd
+    size_bytes: 254
+    sha256: 0b15885e9129f7d85b54dc1db79c9c1e89a6b838c95f66e726fa1c02c42ce84e
+  - path: templates/analysis/input_inventory.csv
+    size_bytes: 68
+    sha256: 3339120b0c51a696b5b7e563f8a16cdf9c03092b26b3c83fd67a42934bf39025
+  - path: templates/analysis/intermediate_inventory.csv
+    size_bytes: 58
+    sha256: d0026f1c15b6a607c05bc811b9388cd14638593587f6208f803558098ecc0ae9
+  - path: templates/analysis/lookup_inventory.csv
+    size_bytes: 136
+    sha256: 461fa04a8f04672f5a809ca6f41d29943b004569b47b2ad5a8769b923a17962f
+  - path: templates/analysis/open_questions.csv
+    size_bytes: 101
+    sha256: 57643fb2d01da57745e4dba8a45a1e74b165c40c4277a8954edef206dd8fa62b
+  - path: templates/analysis/output_inventory.csv
+    size_bytes: 55
+    sha256: f43a14624d05139364aa3a5ea9152222609a70407e66e4ae8c76975f16a17564
+  - path: templates/analysis/risk_register.csv
+    size_bytes: 50
+    sha256: 2f20f5960e8dd16663015dd6cc1d1e80c08b28811e3bf4e38ec430c5310e8b6d
+  - path: templates/analysis/source_authority_table.csv
+    size_bytes: 81
+    sha256: 0f08ff3344687d94a7a7b449f2d0506114850726e90c5c2ac422cfd03b3149e4
+  - path: templates/analysis/source_conflicts.csv
+    size_bytes: 153
+    sha256: 47494c5c07ede36cbb4d595dadaf6459b7eb15de1ff66e0938d938b11db7f036
+  - path: templates/analysis/source_intake_notes.md
+    size_bytes: 505
+    sha256: 498a5fe484b224a5a5fa3e5040b3c205ac03a0a7e56990a1b88186b2c3131ae1
+  - path: templates/analysis/source_inventory.yaml
+    size_bytes: 400
+    sha256: 88ab0b410e158f6dfad2926e8bd902547cb8e2ebf8ac3270676b5385217ccd24
+  - path: templates/analysis/unit_and_sign_conventions.md
+    size_bytes: 855
+    sha256: ae439944e1b41590d102efe4d9f79c5d58adcea65431bde025cd830bd55e77b7
+  - path: templates/deployment/cloud_linux_deployment.md
+    size_bytes: 2426
+    sha256: fb90204a85a7f9700a015657f5512a9a1e6a7a94e334d6c1ef88659a786a9673
+  - path: templates/deployment/release_checklist.md
+    size_bytes: 2422
+    sha256: 5a38c88175a6c497289a5f4f88016b54d647c9ce7e013e20ba22be9df0d6f26a
+  - path: templates/deployment/runtime_env.example
+    size_bytes: 262
+    sha256: a2d3ebab7cf024e57781259e700990c724fa8219f93d7f67051c043abc2b66a8
+  - path: templates/handoff/artifact_index.yaml
+    size_bytes: 1490
+    sha256: ff86a6f1c666262d004789d40b68c4462075948d27e2a9e5f643fbe90398c5d3
+  - path: templates/handoff/coding_go_no_go.md
+    size_bytes: 368
+    sha256: 2404f47ef1237f3cdb7b9a69e6aa916ee518b01cc6022b1b537070d95eb89cb8
+  - path: templates/handoff/implementation_handoff.md
+    size_bytes: 776
+    sha256: fca9c2896e58c195e75d1d61fc1da04f8a7c021be4b6fb94068bbcb0d7f42ed6
+  - path: templates/handoff/implementation_handoff.yaml
+    size_bytes: 2158
+    sha256: d30580673da4c8a3d556d1634d5f4becaf1f227efa82a80243f902fefca91f10
+  - path: templates/handoff/unresolved_items_before_coding.md
+    size_bytes: 131
+    sha256: 60237b3f43525167aca9b2793870cbaf3c3da5aa08a4bab5f8c1bedc3960468a
+  - path: templates/implementation/api_route_skeleton.md
+    size_bytes: 3869
+    sha256: 100102d676d1bce21d95a61d46e36caedb5e8ca5ce6abeb460e7e26f690fc3fd
+  - path: templates/implementation/batch_flow.md
+    size_bytes: 123
+    sha256: 680a8f2bc4f4f879b7dac9c2e4c4e9eba326632a6dc4a18d0d36ed705c938d1c
+  - path: templates/implementation/chart_integration.md
+    size_bytes: 3728
+    sha256: f6a3c12ba8414de51539d5f4940a7afc409fdc0b01e7c498a18607cc2c8d4a1b
+  - path: templates/implementation/core_model_plan.md
+    size_bytes: 603
+    sha256: b6760bae11ba1e2c4456d9dd6dbb4c89fcf5554f0994b7a0163fd741c657fafd
+  - path: templates/implementation/data_model_spec.md
+    size_bytes: 100
+    sha256: 58c15c73c8280ac12eeed9253a13ad23b6e626c1ca44646cea42d73f849dc4c0
+  - path: templates/implementation/data_package_manifest.yaml
+    size_bytes: 1172
+    sha256: 251882ac6348306e473b95cffd4c51e1512c50f7b3686974c25db922bae13e5d
+  - path: templates/implementation/dependency_rules.md
+    size_bytes: 802
+    sha256: 2e8bee8ee8a8262975dc1ec8add038a9d162de8f67e61819965b46f722db0aa4
+  - path: templates/implementation/feature_classification.csv
+    size_bytes: 72
+    sha256: f8b2a1a7017cbe523df14e712c1386c1a0afdd0029d583dbdd891c7f45b48893
+  - path: templates/implementation/form_mapping_spec.md
+    size_bytes: 3150
+    sha256: da5883480de3e560123e6bac67448f8bfcae0eafe6a8da47c5fc7465679c3f80
+  - path: templates/implementation/formula_trace_spec.md
+    size_bytes: 543
+    sha256: 906a9391cb8e3fc01b256f2767d35c79dd8d333f2b259b6b5c6f40835b6fad51
+  - path: templates/implementation/frontend_fields.csv
+    size_bytes: 540
+    sha256: 202972e7c97791439c743c20e521f923b0897c93d2b3ccac8d0a9df7f39ab334
+  - path: templates/implementation/governing_summary_spec.md
+    size_bytes: 670
+    sha256: 9b036246a36481fef5896ed9397d309a391eeb04d24bc9b4e32db4ac79140ad1
+  - path: templates/implementation/i18n_pattern.md
+    size_bytes: 3223
+    sha256: 2a4e0d03e5bc309c54007906f9864fca19a542508669405ae8b4e1a659e26945
+  - path: templates/implementation/import_export_contract.md
+    size_bytes: 3039
+    sha256: a7d2c6c59c16dddb515ec6204afc6fb289dbc476bb1e8a2a9ebbdc7aee154565
+  - path: templates/implementation/input_mapping_spec.md
+    size_bytes: 420
+    sha256: 66fea3d0d5630ae2d84c46763209abbb4a1947737d7dde1288f52e39583ede86
+  - path: templates/implementation/lookup_module_spec.md
+    size_bytes: 487
+    sha256: a1bedbfd893f0c9da763b75fa302c4b16b4d143f77499bf3fd00b100b15bfa47
+  - path: templates/implementation/marimo_review_spec.md
+    size_bytes: 2460
+    sha256: 623f4a18d38fded3f065c619a275a1f43019fe4bfc6d1d460aa9d388f7ace96d
+  - path: templates/implementation/module_asset_registry.csv
+    size_bytes: 189
+    sha256: 9709f816c3469d8603533f4e24450f1a71a9f9fdb11b68b115c4fe5f4a717d49
+  - path: templates/implementation/module_interface_spec.md
+    size_bytes: 728
+    sha256: 77e5ba8ff0fd7ae08a96e013acb25c491f5dc7005a20e8d0dc14c965fc1bc25a
+  - path: templates/implementation/module_review_log.csv
+    size_bytes: 127
+    sha256: a84da6cfed0b99d75f369e8ebcc04ec0b7ad60dbd26e1a92dfed1d52ce7e20e3
+  - path: templates/implementation/package_layout.md
+    size_bytes: 1524
+    sha256: 69db8a8a6aa569292af107f499e63a486bf908e12094616b83bb43d52104a946
+  - path: templates/implementation/project_structure.md
+    size_bytes: 1193
+    sha256: 76a6c5d1a979f31799291e112d9c04bd36136ce68a294bbb5ec56d4815d37448
+  - path: templates/implementation/report_context_spec.md
+    size_bytes: 5486
+    sha256: 58dcc5898cbddd5ef426f3ad0188748139b6469a3f6d02f5d3a4f697bacf22c9
+  - path: templates/implementation/result_path_registry.csv
+    size_bytes: 74
+    sha256: 743d1c5dad3a8eb0d13e8d19a316f0a1767c29e82f1dce5f4ca3525809fd877c
+  - path: templates/implementation/review_readability_checklist.md
+    size_bytes: 1106
+    sha256: 87b4e8b804422ab6b3cffb712fabe2d89c19af150de9acde1f150c8685f26441
+  - path: templates/implementation/review_schema.csv
+    size_bytes: 63
+    sha256: a877696152366a669afdfeda2beceb7abc6ac4c8d8797958d5b90a2ac41223bc
+  - path: templates/implementation/runner_sequence.md
+    size_bytes: 125
+    sha256: 06bd90e63e0508247090c630a58d1888134f69223a968253f4f6ff0e36ddf51c
+  - path: templates/implementation/status_semantics.md
+    size_bytes: 618
+    sha256: cc7175421565a74b80a3c5dbc31c76513a20461c87049bde8fc96b975b40119b
+  - path: templates/implementation/ui_layout_spec.md
+    size_bytes: 4447
+    sha256: 3d19e2d97b40ba5a9a42cbc0fbfcb623ef13b945dc0b8d38129139a2c3243393
+  - path: templates/implementation/unit_system.md
+    size_bytes: 423
+    sha256: 736508752ae5602e33c57599c3d8c9228a9931930f6128cccfd93cf7ad64075c
+  - path: templates/verification/acceptance_checklist.md
+    size_bytes: 1636
+    sha256: bd32f73d2deb8a0162055516d3b6444605026318acbf33de0472f4692241a29d
+  - path: templates/verification/regression_references.md
+    size_bytes: 114
+    sha256: 37aec825c9615e10add13558cb81cbe0f1c03d43c789a82910d1bbe498b78e81
+  - path: templates/verification/test_matrix.csv
+    size_bytes: 88
+    sha256: 83961c3b6dbc62715761260275a385ed025babb29092595ef360ce0268395fec
+  - path: templates/verification/tolerance_policy.md
+    size_bytes: 101
+    sha256: 2e6933396d8ab92a8c04eb36ca7aab6d94169e07a43ac7c1e6ac6c1547737575
+  - path: workflow_diagrams/full_lifecycle.mmd
+    size_bytes: 954
+    sha256: 5adffacad31f17e04b24396b5e80a6a9e8b5d15998ee2a2621f16c856c86eeb4

@@ -1,0 +1,22 @@
+flowchart TD
+    A[User request] --> B{Materials available?}
+    B -- No or insufficient --> C[01 Reference adequacy assessment]
+    C --> D[02 Reference discovery and acquisition]
+    D --> E[03 Local evidence library persistence]
+    E --> F[04 Source intake and authority]
+    B -- Yes --> F
+    F --> G[05 Calculation Logic Blueprint]
+    G --> H[06 Formula / lookup / branch extraction]
+    H --> I[07 Implementation handoff contract]
+    I --> J{Coding gate}
+    J -- no_go --> K[Resolve source or logic gaps]
+    K --> C
+    J -- prototype_allowed or production_allowed --> L[08 Architecture]
+    L --> M[09 Core and data models]
+    M --> N[10 Reusable calculation modules]
+    N --> O[11 Book runner and governing summary]
+    O --> P[12 Report / review / batch interfaces]
+    O --> Q[13 Verification / regression / traceability]
+    P --> Q
+    Q --> R[14 Cloud web release and deployment]
+    R --> S[Runnable online web calculation program]
