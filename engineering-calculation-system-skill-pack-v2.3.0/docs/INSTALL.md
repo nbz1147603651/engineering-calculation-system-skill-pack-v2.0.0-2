@@ -6,7 +6,7 @@ Build releases from the source checkout:
 python tools/build_release.py
 ```
 
-With no arguments, the build creates every release profile and publish-ready zip archives under `dist/release/`.
+With no arguments, the build creates every release profile plus one publish-ready classified release zip under `dist/release/`.
 
 The default runtime package is:
 
@@ -35,7 +35,25 @@ dist/source-dev/
   Development/reference source bundle, not the default install target.
 
 dist/release/
-  Publish-ready zip archives, checksums, and RELEASE_INDEX.md.
+  One classified release zip, checksums, and RELEASE_INDEX.md.
+```
+
+The publish file is:
+
+```text
+dist/release/engineering-calculation-system-release-v2.3.0.zip
+```
+
+Inside the zip, install from the directory matching the target tool:
+
+```text
+CODEX/engineering-calculation-system/      copy this folder to the Codex skills directory
+Qoder/copy-to-project-root/                copy contents to the Qoder project root
+TRAE/copy-to-project-root/                 copy contents to the TRAE project root
+OpenCode/copy-to-project-root/             copy contents to the OpenCode project root
+AGENTS-generic/copy-to-project-root/       copy contents to an AGENTS.md-compatible project root
+Singlefile/                                all-in-one fallback
+SourceDev/source-dev/                      source/development bundle
 ```
 
 To build only one layer during development:
@@ -47,9 +65,19 @@ python tools/build_release.py --profile qoder-addon
 python tools/build_release.py --profile singlefile
 ```
 
+## Maintenance
+
+Release metadata and classified install targets are configured in:
+
+```text
+tools/release_config.json
+```
+
+Update that file first when changing the package version, release date, single-file inclusion rules, source-dev contents, or adding a target such as another agent environment. The build script validates this configuration before creating the release zip.
+
 ## Overlay Usage
 
-Install core first. If the target agent needs adapter entrypoints, copy the chosen overlay on top of the installed core folder:
+The classified release bundle is the recommended install path because Qoder, TRAE, OpenCode, and AGENTS-generic folders are already merged with the required core files. Use raw overlays only when developing or debugging a release profile:
 
 ```text
 core install root: dist/core/engineering-calculation-system/

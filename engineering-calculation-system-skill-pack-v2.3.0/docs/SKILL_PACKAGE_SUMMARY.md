@@ -144,7 +144,17 @@ dist/adapters-light/                         optional AGENTS/OpenCode/Trae/gener
 dist/qoder-addon/                            optional Qoder overlay
 dist/singlefile/                             generated all-in-one fallback
 dist/source-dev/                             development/reference bundle
-dist/release/                                publish-ready zip archives and checksums
+dist/release/                                one classified release zip and checksums
+  engineering-calculation-system-release-v2.3.0.zip
+    CODEX/
+    Qoder/
+    TRAE/
+    OpenCode/
+    AGENTS-generic/
+    Singlefile/
+    SourceDev/
+
+tools/release_config.json                    release metadata and classified install target config
 ```
 
 ## Best use

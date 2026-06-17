@@ -8,7 +8,21 @@ The default install target is no longer the source checkout root. Build release 
 python tools/build_release.py
 ```
 
-The no-argument build creates every release profile plus publish-ready zip archives in `dist/release/`.
+The no-argument build creates every release profile plus one publish-ready classified zip in `dist/release/`:
+
+```text
+dist/release/engineering-calculation-system-release-v2.3.0.zip
+```
+
+Inside that zip, install from the directory matching the target tool: `CODEX/`, `Qoder/`, `TRAE/`, `OpenCode/`, `AGENTS-generic/`, `Singlefile/`, or `SourceDev/`.
+
+Release metadata and classified install targets now live in:
+
+```text
+tools/release_config.json
+```
+
+Use that file as the first edit point for future version bumps or target-agent additions.
 
 Install the core runtime skill from:
 

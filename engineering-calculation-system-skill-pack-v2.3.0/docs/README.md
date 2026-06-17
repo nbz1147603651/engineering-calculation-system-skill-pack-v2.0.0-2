@@ -104,7 +104,7 @@ Build release profiles from the source checkout:
 python tools/build_release.py
 ```
 
-Running the command with no arguments builds every release profile and creates publish-ready zip archives in `dist/release/`. Use `--profile <name>` when you only need one layer during development.
+Running the command with no arguments builds every release profile and creates one publish-ready classified release zip in `dist/release/`. Use `--profile <name>` when you only need one layer during development.
 
 Default installation target:
 
@@ -119,10 +119,36 @@ dist/adapters-light/   AGENTS.md, .agents, .opencode, .trae, and adapter guidanc
 dist/qoder-addon/      Qoder-specific files
 dist/singlefile/       generated all-in-one fallback
 dist/source-dev/       development/reference source bundle
-dist/release/          publish-ready zip archives and checksums
+dist/release/          classified release zip, checksums, and release index
 ```
 
-Install the core package first. Copy an overlay on top of the installed core folder only when the target agent requires those files.
+For publishing or manual installation, use:
+
+```text
+dist/release/engineering-calculation-system-release-v2.3.0.zip
+```
+
+The zip is organized by target tool:
+
+```text
+CODEX/engineering-calculation-system/
+Qoder/copy-to-project-root/
+TRAE/copy-to-project-root/
+OpenCode/copy-to-project-root/
+AGENTS-generic/copy-to-project-root/
+Singlefile/
+SourceDev/source-dev/
+```
+
+The Qoder, TRAE, OpenCode, and AGENTS-generic directories are already merged with the core runtime files, so users can copy the matching directory contents directly into their project root. Use the raw core and overlay profiles only when debugging or repackaging.
+
+Release metadata and classified install targets are maintained in:
+
+```text
+tools/release_config.json
+```
+
+Change that file when updating the version, release date, single-file contents, source-dev contents, or target-agent folders.
 
 ## Agent entrypoints
 
