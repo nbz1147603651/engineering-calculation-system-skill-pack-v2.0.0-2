@@ -1,0 +1,42 @@
+{
+  "name": "engineering-calculation-system-opencode-plugin",
+  "version": "0.2.0",
+  "description": "OpenCode plugin and project templates for the Engineering Calculation System skill pack.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "templates",
+    "docs",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "install-project": "node scripts/install-project.mjs",
+    "smoke": "node scripts/smoke-test.mjs"
+  },
+  "keywords": [
+    "opencode",
+    "plugin",
+    "engineering-calculation",
+    "agent-skills"
+  ],
+  "license": "UNLICENSED",
+  "skillPack": {
+    "name": "engineering-calculation-system",
+    "schemaVersion": "2.4.0",
+    "pluginCompatibility": "opencode"
+  },
+  "dependencies": {
+    "@opencode-ai/plugin": "^1.17.7"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.8.0"
+  }
+}

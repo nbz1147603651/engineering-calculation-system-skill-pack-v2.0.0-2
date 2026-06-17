@@ -1,5 +1,34 @@
 # Migration Notes from v1.0 to v2.0.0
 
+## v2.3.0 to v2.4.0 multi-agent orchestration
+
+v2.4.0 adds optional multi-agent orchestration without changing the core
+lifecycle numbering. Existing v2.3 projects remain valid.
+
+New core files:
+
+```text
+shared/multi-agent-orchestration.md
+templates/orchestration/parallel_work_plan.yaml
+templates/orchestration/agent_result_packet.yaml
+templates/orchestration/merge_review.md
+```
+
+Use these files only when the user explicitly asks for multi-agent, subagent,
+delegated, or parallel work. Gate decisions, source authority, ID allocation,
+handoff freeze, `run_book()` public contracts, and final acceptance remain
+supervisor-owned serial decisions.
+
+The no-argument build creates v2.4.0 platform packages:
+
+```text
+dist/release/engineering-calculation-system-CODEX-v2.4.0.zip
+dist/release/engineering-calculation-system-QODER-v2.4.0.zip
+dist/release/engineering-calculation-system-QODER-Project-v2.4.0.zip
+dist/release/engineering-calculation-system-TRAE-v2.4.0.zip
+dist/release/engineering-calculation-system-OpenCode-v2.4.0.zip
+```
+
 ## v2.2.0 to v2.3.0 release layering
 
 The default install target is no longer the source checkout root. Build release profiles first:

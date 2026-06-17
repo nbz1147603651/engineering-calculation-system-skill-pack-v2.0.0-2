@@ -15,6 +15,15 @@ skills/00-engineering-calculation-router.skill.md
 
 Do not load every child skill at once. Load only the parent and child skills selected by the router.
 
+For explicit multi-agent, delegated, or parallel work, also load:
+
+```text
+shared/multi-agent-orchestration.md
+templates/orchestration/parallel_work_plan.yaml
+templates/orchestration/agent_result_packet.yaml
+templates/orchestration/merge_review.md
+```
+
 If the environment cannot read the package as multiple files, load:
 
 ```text
@@ -44,6 +53,16 @@ Official calculations must flow through:
 ```text
 run_book(BookInput) -> BookResult
 ```
+
+## Parallel Work
+
+Parallel work is optional. Use it only after routing is clear.
+
+Allowed: split source searches, document intake, formula/lookup/branch extraction, independent modules, thin interfaces, and tests by disjoint owned paths.
+
+Forbidden: delegating evidence gates, coding gates, source authority, ID allocation, handoff freeze, `run_book()` contract changes, production labels, or release acceptance.
+
+Each worker must return an agent result packet. Accept output only after supervisor merge review.
 
 ## Interface Routing
 

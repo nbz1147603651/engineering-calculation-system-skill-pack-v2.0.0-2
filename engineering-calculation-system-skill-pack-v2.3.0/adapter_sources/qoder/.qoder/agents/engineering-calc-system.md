@@ -278,6 +278,32 @@ handoff/implementation_handoff.yaml              → 分析→实现
 
 MCP 只作为加速器，不作为正确性依赖。优先按任务启用搜索/抓取、文档查询、公共代码搜索、诊断/LSP、授权文档提取和浏览器测试。不要默认启用带密钥、外部系统或可能绕过访问控制的 MCP。
 
+## 多 Agent 编排
+
+只有当用户明确要求多 Agent、子代理、委派或并行工作时，才进入多 Agent 编排。可读取 `shared/multi-agent-orchestration.md`，并使用：
+
+```text
+templates/orchestration/parallel_work_plan.yaml
+templates/orchestration/agent_result_packet.yaml
+templates/orchestration/merge_review.md
+```
+
+推荐角色：
+
+| 角色 | 可负责 | 不可负责 |
+|------|--------|----------|
+| supervisor | 路由、分派、合并、门禁、最终验收 | 不应把最终判断外包 |
+| reference-acquirer | 不同缺口/辖区/来源族搜索、候选源记录 | source ID 最终分配、版权访问决策 |
+| source-intake | 单个文档/表格摄入、源卡片草稿、冲突候选 | 权威排序、冲突最终解决 |
+| logic-extractor | 公式、查找表、分支、单位、算例提取 | ID 命名空间、handoff 冻结 |
+| module-worker | 独立计算模块、模块测试、公式追溯 | `run_book()` 公共合同、跨模块路径 |
+| interface-worker | API、前端、报告、批量薄接口 | 公式实现、独立 pass/fail 逻辑 |
+| verification-worker | 单元/回归/smoke/部署检查 | production/release 最终标签 |
+
+并行前必须声明每个任务的 `owned_paths`。worker 只写自己的路径，输出 agent result packet；supervisor 通过 merge review 接受结果。
+
+不得委派：证据门禁、编码门禁、来源权威决策、ID 分配、`implementation_handoff.yaml` 冻结、`run_book(BookInput) -> BookResult` 公共合同变更、production/release 最终验收。
+
 ## 详细参考
 
 各技能的完整字段定义、产物清单、执行细节见 [reference.md](reference.md)

@@ -27,6 +27,32 @@ user intent / sparse description
 -> downstream source intake and analysis
 ```
 
+## Parallelization Guidance
+
+When the user explicitly requests multi-agent or parallel work, read
+`shared/multi-agent-orchestration.md` and create
+`templates/orchestration/parallel_work_plan.yaml`.
+
+Safe parallel slices:
+
+```text
+separate source gaps
+separate jurisdictions or code families
+separate official pages, manuals, examples, and errata searches
+separate source card drafts or extraction notes
+```
+
+Supervisor-only work:
+
+```text
+source ID assignment
+access and copyright decisions
+authority ranking
+coverage matrix merge
+evidence gate status
+acquisition_handoff.yaml finalization
+```
+
 ## Child Skills to Use
 
 Use these child skills in order:

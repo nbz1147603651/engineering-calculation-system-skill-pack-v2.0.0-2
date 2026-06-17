@@ -15,6 +15,15 @@ skills/00-engineering-calculation-router.skill.md
 
 Do not load every child skill at once. Load only the parent and child skills selected by the router.
 
+For explicit multi-agent, delegated, or parallel work, also load:
+
+```text
+shared/multi-agent-orchestration.md
+templates/orchestration/parallel_work_plan.yaml
+templates/orchestration/agent_result_packet.yaml
+templates/orchestration/merge_review.md
+```
+
 If Trae cannot read the package as multiple files, load:
 
 ```text
@@ -44,6 +53,15 @@ Official calculations must flow through:
 ```text
 run_book(BookInput) -> BookResult
 ```
+
+## Parallel Work
+
+Parallel work is optional and must use disjoint owned paths.
+
+Do not delegate evidence gates, coding gates, source authority, ID allocation,
+handoff freeze, `run_book()` contract changes, production labels, or release
+acceptance. Workers return agent result packets; the supervisor accepts output
+only after merge review.
 
 ## Search and Evidence
 

@@ -17,6 +17,12 @@ Do not analyze references again when a valid source-backed `implementation_hando
 
 Do not put formulas in report, UI, frontend, batch, or CSV/Excel input work.
 
+If the user explicitly asks for multi-agent, subagent, delegated, or parallel
+work, read `shared/multi-agent-orchestration.md` after this router. Do not use
+parallel work to bypass evidence gates, coding gates, source authority review,
+ID allocation, handoff freeze, `run_book()` contract control, or final release
+acceptance.
+
 ## Source State Classification
 
 Classify the material state first:
@@ -50,6 +56,35 @@ Classify the material state first:
 | Add tests, regression, traceability, hash, quality gates | 13 |
 | Package, release, run locally, deploy to cloud/Linux, Docker, systemd, nginx, online web calculator | 14, after 12b and 13 when web UI/API exists |
 | Fix bug | Identify lowest correct layer, then route there |
+
+## Parallel Suitability
+
+Parallel work is useful only after the lifecycle phase is known and write
+ownership can be separated. Use `templates/orchestration/parallel_work_plan.yaml`
+for explicit parallel plans.
+
+Good parallel slices:
+
+```text
+01-03: search different gaps, jurisdictions, or source families
+04: intake separate documents or tables
+05-06: extract formulas, lookups, branches, units, examples, or inventories
+08-12: implement disjoint core/model/module/interface/report/batch paths
+13-14: prepare unit, regression, smoke, deployment, and release checks
+```
+
+Keep these serial:
+
+```text
+routing decision
+evidence gate
+source authority and conflicts
+ID namespace allocation
+implementation handoff freeze
+coding gate
+run_book(BookInput) -> BookResult public contract
+production and release readiness
+```
 
 ## Gate Statuses
 
@@ -87,6 +122,8 @@ Does the final output need to be a runnable online web calculation program?
 Does deployment target Linux, Docker, systemd, nginx, or another cloud runtime?
 Do calculation modules need to become reusable assets for later projects?
 Are there source conflicts or missing design-code bases?
+Did the user explicitly request multi-agent or parallel work?
+Can write ownership be split into disjoint paths?
 ```
 
 ## Output
@@ -101,4 +138,5 @@ Required input artifacts:
 Expected output artifacts:
 Gate status:
 Immediate next action:
+Parallel suitability: none | optional | recommended
 ```

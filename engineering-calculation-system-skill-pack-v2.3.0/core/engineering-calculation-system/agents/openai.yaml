@@ -1,7 +1,7 @@
 interface:
   display_name: "Engineering Calculation System"
-  short_description: "Source-backed, deployable engineering calculation web apps"
-  default_prompt: "Use $engineering-calculation-system to build, verify, package, or deploy a source-backed engineering calculation web application."
+  short_description: "Source-backed, parallel-safe engineering calculation web apps"
+  default_prompt: "Use $engineering-calculation-system to build, verify, package, deploy, or parallelize a source-backed engineering calculation web application with safe orchestration."
 
 policy:
   allow_implicit_invocation: true

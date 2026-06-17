@@ -18,6 +18,18 @@ skills/00-engineering-calculation-router.skill.md
 
 Do not load all child skills at once. Let the router select one parent orchestrator and only the child skills needed for the task.
 
+For explicit multi-agent, subagent, delegated, or parallel work, also load:
+
+```text
+shared/multi-agent-orchestration.md
+templates/orchestration/parallel_work_plan.yaml
+templates/orchestration/agent_result_packet.yaml
+templates/orchestration/merge_review.md
+```
+
+The supervisor must keep gate decisions, source authority, ID allocation,
+handoff freeze, `run_book()` public contracts, and final acceptance serial.
+
 If the target agent can only accept one instruction file, load:
 
 ```text
@@ -37,6 +49,12 @@ Fallback:
 - Paste or attach `dist/singlefile/engineering-calculation-system.all-in-one.md` when file-by-file progressive disclosure is unavailable.
 - If only repository rules are available, use `AGENTS.md` plus the root `SKILL.md`.
 
+Multi-agent note:
+
+- Use Codex subagents only for bounded sidecar tasks with disjoint write paths.
+- Do not delegate lifecycle routing, gate decisions, ID control, handoff freeze, runner contract changes, or final acceptance.
+- Have each worker return an agent result packet and merge through supervisor review.
+
 ## Qoder
 
 Preferred setup:
@@ -50,6 +68,7 @@ Behavior:
 
 - Qoder should still route to the package router rather than reading every child file.
 - Widget or custom UI features are optional. If unavailable, continue with text artifacts and validation scripts.
+- Qoder custom agents should use the roles in `shared/multi-agent-orchestration.md`: supervisor, reference-acquirer, source-intake, logic-extractor, module-worker, interface-worker, and verification-worker.
 
 Fallback:
 
@@ -69,6 +88,7 @@ Behavior:
 - `AGENTS.md` gives repository-level guardrails.
 - The OpenCode skill wrapper gives a discoverable tool-style skill.
 - Optional MCPs should be configured outside the skill pack or copied from examples after review.
+- Parallel workers must declare `owned_paths`, return result packets, and wait for supervisor merge review.
 
 Fallback:
 
@@ -87,6 +107,7 @@ Fallback:
 
 - Paste the routing prompt below into Trae manual instructions.
 - Use `dist/singlefile/engineering-calculation-system.all-in-one.md` when only one file can be loaded.
+- Keep Trae rules concise: use the shared orchestration file for detailed parallel ownership, packet, and merge requirements.
 
 ## Generic Rules Agents
 
@@ -129,10 +150,13 @@ Start with SKILL.md and skills/00-engineering-calculation-router.skill.md.
 Do not load all child skills at once. Load only the parent and child skills selected by the router.
 During 02-reference-discovery-and-acquisition, use available internet search/browser tools actively for missing, insufficient, stale, or jurisdiction-specific references, and log meaningful searches in references/acquisition/search_log.csv.
 Use templates/ for output artifacts and scripts/validate_artifacts.py before considering the work complete.
+For explicit multi-agent or parallel work, read shared/multi-agent-orchestration.md and use templates/orchestration/.
+Split work only by disjoint owned paths. Workers return agent_result_packet.yaml fields, and the supervisor accepts output only after merge_review.md checks.
 Do not invent engineering formulas, lookup rules, units, coefficients, branch logic, or pass/fail criteria.
 Do not start production implementation unless handoff/implementation_handoff.yaml and handoff/coding_go_no_go.md allow it.
 Keep formulas out of UI, report templates, frontend JavaScript, review notebooks, batch scripts, and CSV/XLSX input files.
 Official calculations must flow through run_book(BookInput) -> BookResult.
+Do not delegate evidence gates, coding gates, source authority, ID allocation, handoff freeze, public runner contract changes, production labels, or release acceptance.
 ```
 
 ## MCP Guidance

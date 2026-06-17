@@ -15,6 +15,15 @@ skills/00-engineering-calculation-router.skill.md
 
 Do not load every child skill at startup. Read the router first, then load only the parent and child skill files selected by the router.
 
+For explicit multi-agent, subagent, delegated, or parallel work, also read:
+
+```text
+shared/multi-agent-orchestration.md
+templates/orchestration/parallel_work_plan.yaml
+templates/orchestration/agent_result_packet.yaml
+templates/orchestration/merge_review.md
+```
+
 ## Required Behavior
 
 - Do not invent engineering formulas, lookup rules, units, coefficients, branch logic, or pass/fail criteria.
@@ -22,6 +31,9 @@ Do not load every child skill at startup. Read the router first, then load only 
 - Keep formulas out of UI, report templates, frontend JavaScript, review notebooks, batch scripts, and CSV/XLSX input files.
 - Route official calculations through `run_book(BookInput) -> BookResult`.
 - Use templates from `templates/` and shared contracts from `shared/` when generating artifacts.
+- Before parallel implementation, declare disjoint `owned_paths` for each worker and do not overwrite another worker's output.
+- Workers must return an agent result packet; a supervisor must run merge review before accepting worker output.
+- Do not delegate evidence gates, coding gates, source authority decisions, ID allocation, handoff freeze, `run_book()` contract changes, or final acceptance.
 - Run `python scripts/validate_artifacts.py --package-root . --profile core` before calling the package complete.
 
 ## Platform Notes

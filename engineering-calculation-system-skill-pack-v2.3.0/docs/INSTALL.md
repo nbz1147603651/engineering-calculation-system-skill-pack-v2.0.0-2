@@ -41,11 +41,11 @@ dist/release/
 Publish files:
 
 ```text
-dist/release/engineering-calculation-system-CODEX-v2.3.0.zip
-dist/release/engineering-calculation-system-QODER-v2.3.0.zip
-dist/release/engineering-calculation-system-QODER-Project-v2.3.0.zip
-dist/release/engineering-calculation-system-TRAE-v2.3.0.zip
-dist/release/engineering-calculation-system-OpenCode-v2.3.0.zip
+dist/release/engineering-calculation-system-CODEX-v2.4.0.zip
+dist/release/engineering-calculation-system-QODER-v2.4.0.zip
+dist/release/engineering-calculation-system-QODER-Project-v2.4.0.zip
+dist/release/engineering-calculation-system-TRAE-v2.4.0.zip
+dist/release/engineering-calculation-system-OpenCode-v2.4.0.zip
 ```
 
 Each zip contains one install folder plus `INSTALL.md`:
@@ -103,6 +103,20 @@ The Qoder addon provides:
 ```
 
 Do not merge Qoder files into the default core package unless the target environment specifically needs them.
+
+## Optional Multi-Agent Orchestration
+
+v2.4 includes optional orchestration guidance for explicit multi-agent,
+delegated, or parallel work:
+
+```text
+shared/multi-agent-orchestration.md
+templates/orchestration/
+```
+
+Use these files only when a platform supports worker agents or the user asks to
+split work. Workers must have disjoint owned paths and return result packets;
+the supervisor performs merge review and keeps all gate decisions serial.
 
 ## Validate
 

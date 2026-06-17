@@ -1,4 +1,4 @@
-# Engineering Calculation System Skill Pack v2.3.0
+# Engineering Calculation System Skill Pack v2.4.0
 
 This package organizes engineering calculation software development into a full delivery lifecycle:
 
@@ -17,6 +17,13 @@ managed data/report import and uploadable calculation packages
 runnable local web client and Linux-cloud deployable web service
 embedded Marimo admin review for declaration-based formula publishing
 ```
+
+v2.4 adds optional multi-agent orchestration for platforms that support
+subagents, custom agents, or parallel work. The supervisor keeps routing,
+source authority, ID allocation, handoff freeze, `run_book()` public contracts,
+and final gate decisions serial while workers handle bounded, disjoint slices.
+Use `shared/multi-agent-orchestration.md` and `templates/orchestration/` only
+when parallel work is explicitly requested.
 
 A final web calculation system uses a Python-first stack by default:
 
@@ -125,11 +132,11 @@ dist/release/          CODEX, QODER Skill, QODER project, TRAE, and OpenCode rel
 For publishing or manual installation, use the package for the target tool:
 
 ```text
-dist/release/engineering-calculation-system-CODEX-v2.3.0.zip
-dist/release/engineering-calculation-system-QODER-v2.3.0.zip
-dist/release/engineering-calculation-system-QODER-Project-v2.3.0.zip
-dist/release/engineering-calculation-system-TRAE-v2.3.0.zip
-dist/release/engineering-calculation-system-OpenCode-v2.3.0.zip
+dist/release/engineering-calculation-system-CODEX-v2.4.0.zip
+dist/release/engineering-calculation-system-QODER-v2.4.0.zip
+dist/release/engineering-calculation-system-QODER-Project-v2.4.0.zip
+dist/release/engineering-calculation-system-TRAE-v2.4.0.zip
+dist/release/engineering-calculation-system-OpenCode-v2.4.0.zip
 ```
 
 Each package contains one install folder plus `INSTALL.md`:
@@ -169,6 +176,17 @@ dist/adapters-light/adapters/mcp-recommendations.md
 ```
 
 MCP servers are optional accelerators. Enable only task-scoped MCPs for search/fetch, documentation lookup, public code search, diagnostics, authorized document extraction, or browser testing. Do not make MCPs mandatory for correctness or use them to bypass access controls.
+
+Optional multi-agent orchestration guidance is included in:
+
+```text
+dist/core/engineering-calculation-system/shared/multi-agent-orchestration.md
+dist/core/engineering-calculation-system/templates/orchestration/
+```
+
+Use it only for explicit multi-agent, delegated, or parallel work. Workers must
+declare disjoint owned paths and return result packets; the supervisor merges
+through `merge_review.md`.
 
 If the target environment cannot coordinate multiple files, load:
 

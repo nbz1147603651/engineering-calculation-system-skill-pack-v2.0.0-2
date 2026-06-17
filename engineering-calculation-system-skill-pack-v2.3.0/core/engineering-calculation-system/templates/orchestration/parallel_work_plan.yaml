@@ -1,0 +1,52 @@
+plan_id: PWP-001
+project_or_book: example_book
+created_at: 2026-06-17
+status: draft # draft | active | merging | complete | blocked
+supervisor:
+  owner: supervisor
+  responsibilities:
+    - route lifecycle phase
+    - assign disjoint owned paths
+    - preserve IDs and public contracts
+    - merge worker outputs
+    - run validation
+phase: implementation # acquisition | analysis | implementation | verification | release
+gate_context:
+  evidence_gate: to_be_defined
+  coding_gate: to_be_defined
+  handoff_status: to_be_defined
+read_only_inputs:
+  - handoff/implementation_handoff.yaml
+shared_outputs:
+  - templates/orchestration/merge_review.md
+agent_roles:
+  - role: supervisor
+    may_delegate: true
+    owns_gate_decisions: true
+  - role: module-worker
+    may_delegate: false
+    owns_gate_decisions: false
+tasks:
+  - task_id: TASK-001
+    role: module-worker
+    objective: implement or review one bounded calculation module
+    read_only_inputs:
+      - handoff/implementation_handoff.yaml
+      - analysis/03_logic_details/formula_inventory.csv
+    owned_paths:
+      - src/pkg/libraries/example_domain/example_module/
+      - tests/unit/test_example_module.py
+    expected_artifacts:
+      - formula trace
+      - unit tests
+    blocked_by: []
+    merge_point: merge_review
+    validation_commands:
+      - pytest tests/unit/test_example_module.py
+merge_points:
+  - merge_id: merge_review
+    reviewer: supervisor
+    checklist: templates/orchestration/merge_review.md
+validation_commands:
+  - python scripts/validate_artifacts.py --package-root . --profile core
+notes: []

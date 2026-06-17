@@ -1,4 +1,4 @@
-# 工程计算系统技能包 v2.3.0
+# 工程计算系统技能包 v2.4.0
 
 本技能包把工程计算软件开发组织成完整交付生命周期：
 
@@ -31,6 +31,8 @@
 不要为了轻量而轻量。优先保证工程师和审查人的操作质量、便捷性、可追溯性和发布可靠性。
 
 默认技术栈保持简单，是为了降低维护成本；但如果输入校验、导入导出、报告预览、图表、i18n、公式/来源追踪、Marimo 审查后台能显著提升工程质量，就应纳入交付范围，而不是为了少依赖而删除。
+
+v2.4 新增可选多 Agent 编排能力。只有当用户明确要求多 Agent、子代理、委派或并行工作时，才读取 `shared/multi-agent-orchestration.md` 并使用 `templates/orchestration/`。supervisor 保留路由、来源权威、ID 分配、handoff 冻结、`run_book()` 公共合同和最终门禁判断；worker 只处理边界清晰、路径互不重叠的任务。
 
 ## 核心原则
 
@@ -149,7 +151,7 @@ Codex 兼容环境优先从根目录加载：
 dist/core/engineering-calculation-system/SKILL.md
 ```
 
-默认安装 `dist/core/engineering-calculation-system/`。QODER 直接上传 Skill 时使用 `dist/release/engineering-calculation-system-QODER-v2.3.0.zip`；需要复制到 QODER 项目根时使用 `dist/release/engineering-calculation-system-QODER-Project-v2.3.0.zip`。Qoder 原始入口位于 `dist/qoder-addon/`，OpenCode、AGENTS.md 和 TRAE 兼容入口位于 `dist/adapters-light/`。
+默认安装 `dist/core/engineering-calculation-system/`。QODER 直接上传 Skill 时使用 `dist/release/engineering-calculation-system-QODER-v2.4.0.zip`；需要复制到 QODER 项目根时使用 `dist/release/engineering-calculation-system-QODER-Project-v2.4.0.zip`。Qoder 原始入口位于 `dist/qoder-addon/`，OpenCode、AGENTS.md 和 TRAE 兼容入口位于 `dist/adapters-light/`。
 
 各 Agent 的加载方式可参考：
 
@@ -164,6 +166,13 @@ dist/adapters-light/adapters/mcp-recommendations.md
 ```
 
 MCP 只作为加速器，不作为正确性依赖。建议只按任务启用搜索/抓取、文档查询、公共代码搜索、诊断/LSP、授权文档提取、浏览器测试等 MCP；不要默认启用带密钥、外部系统或可能绕过访问控制的 MCP。
+
+可选多 Agent 编排说明位于：
+
+```text
+dist/core/engineering-calculation-system/shared/multi-agent-orchestration.md
+dist/core/engineering-calculation-system/templates/orchestration/
+```
 
 如果目标环境不适合加载多个文件，可使用：
 
@@ -201,7 +210,7 @@ python -m pytest -q
 ## 版本
 
 ```text
-version: 2.3.0
+version: 2.4.0
 created_at: 2026-06-17
 status: complete_packaged_release
 ```

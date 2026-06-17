@@ -1,0 +1,365 @@
+export const PHASES = [
+  "router",
+  "reference-acquisition",
+  "logic-blueprint",
+  "implementation-handoff",
+  "implementation",
+  "interfaces",
+  "verification",
+  "release",
+  "orchestration",
+] as const;
+
+export type EngineeringCalcPhase = (typeof PHASES)[number];
+
+export const ORCHESTRATION_PHASES = [
+  "acquisition",
+  "analysis",
+  "implementation",
+  "verification",
+  "release",
+] as const;
+
+export type OrchestrationPhase = (typeof ORCHESTRATION_PHASES)[number];
+
+export const ORCHESTRATION_ARTIFACTS = [
+  "parallel_work_plan",
+  "agent_result_packet",
+  "merge_review",
+] as const;
+
+export type OrchestrationArtifact = (typeof ORCHESTRATION_ARTIFACTS)[number];
+
+export function phasePrompt(phase: EngineeringCalcPhase): string {
+  switch (phase) {
+    case "reference-acquisition":
+      return [
+        "Use the reference acquisition parent skill.",
+        "Load parent/engineering-calculation-reference-acquisition.skill.md, then the child skills selected by the router.",
+        "Record meaningful searches, accepted/rejected sources, access limits, and local persistence decisions.",
+      ].join("\n");
+    case "logic-blueprint":
+      return [
+        "Use the logic architecture parent skill.",
+        "Resolve source authority before extracting formulas, lookup tables, branch logic, applicability limits, and conflicts.",
+        "Emit the Calculation Logic Blueprint and related inventories before coding.",
+      ].join("\n");
+    case "implementation-handoff":
+      return [
+        "Generate or review handoff/implementation_handoff.yaml and handoff/coding_go_no_go.md.",
+        "Treat unresolved source gaps, missing traceability, and blocked go/no-go state as coding blockers.",
+      ].join("\n");
+    case "implementation":
+      return [
+        "Use the calculation book parent skill and implementation child skills.",
+        "Keep official formulas inside reusable calculation modules and route calculations through run_book(BookInput) -> BookResult.",
+        "Keep UI, reports, batch scripts, and review apps as thin consumers of trusted results.",
+      ].join("\n");
+    case "interfaces":
+      return [
+        "Use Skill 12 and the 12a/12b/12c split for reports, frontend/review, and batch/package interfaces.",
+        "Preserve warnings, limitations, traceability, import/export manifests, and report status semantics.",
+      ].join("\n");
+    case "verification":
+      return [
+        "Use Skill 13 for regression, branch, lookup, traceability, interface, package, and smoke verification.",
+        "Do not mark the system complete until validation artifacts and tests support the claim.",
+      ].join("\n");
+    case "release":
+      return [
+        "Use Skill 14 for local runnable and Linux-cloud deployable release paths.",
+        "Include environment configuration, health checks, deployment files, release checklist, and smoke evidence.",
+      ].join("\n");
+    case "orchestration":
+      return orchestrationGuidance();
+    case "router":
+    default:
+      return [
+        "Start with SKILL.md, then skills/00-engineering-calculation-router.skill.md.",
+        "Let the router choose one parent orchestrator and only the child skills needed for the task.",
+      ].join("\n");
+  }
+}
+
+export function gateSummary(): string {
+  return [
+    "Hard gates:",
+    "- Do not invent engineering formulas, lookup rules, units, coefficients, branch logic, or pass/fail criteria.",
+    "- Do not start production implementation unless implementation_handoff.yaml and coding_go_no_go.md allow it.",
+    "- Keep formulas out of UI, report templates, frontend JavaScript, notebooks, batch scripts, and input files.",
+    "- Route official calculations through run_book(BookInput) -> BookResult.",
+    "- Run scripts/validate_artifacts.py before calling the package or generated project complete.",
+  ].join("\n");
+}
+
+export function orchestrationLoadOrder(skillRoot: string): string {
+  return [
+    "Orchestration load order:",
+    `1. ${skillRoot}/shared/multi-agent-orchestration.md`,
+    `2. ${skillRoot}/templates/orchestration/parallel_work_plan.yaml`,
+    `3. ${skillRoot}/templates/orchestration/agent_result_packet.yaml`,
+    `4. ${skillRoot}/templates/orchestration/merge_review.md`,
+  ].join("\n");
+}
+
+export function supervisorOnlyDecisions(): string {
+  return [
+    "Supervisor-only decisions:",
+    "- lifecycle routing when material state is unclear",
+    "- evidence gate status",
+    "- source authority priority and conflict resolution",
+    "- ID namespace allocation after downstream references exist",
+    "- coding gate status",
+    "- implementation_handoff.yaml and coding_go_no_go.md freeze",
+    "- BookInput -> run_book() -> BookResult contract changes",
+    "- final report, production, and release readiness labels",
+  ].join("\n");
+}
+
+export function workerOwnershipRules(): string {
+  return [
+    "Worker ownership rules:",
+    "- assign disjoint owned_paths before parallel work starts",
+    "- workers write only inside owned_paths",
+    "- shared registries, handoff files, root README files, release files, and public API contracts stay supervisor-owned unless explicitly assigned",
+    "- workers return agent_result_packet.yaml fields",
+    "- supervisor accepts output only after merge_review.md checks",
+  ].join("\n");
+}
+
+export function orchestrationGuidance(): string {
+  return [
+    "Use orchestration only when the user explicitly requests multiple agents, subagents, delegation, or parallel work.",
+    "Create a parallel work plan before splitting work, give every worker read-only inputs and disjoint owned_paths, and merge through supervisor review.",
+    supervisorOnlyDecisions(),
+    workerOwnershipRules(),
+  ].join("\n\n");
+}
+
+export function compactionOrchestrationContext(): string {
+  return [
+    "Preserve orchestration state when present:",
+    "- active plan_id and phase",
+    "- worker task IDs, roles, owned_paths, and read-only inputs",
+    "- result packet status, changed paths, IDs touched, assumptions, open questions, and validation result",
+    "- merge conflicts, requested shared-file changes, supervisor actions, and merge decision",
+    "- evidence/coding gate decisions, source authority decisions, ID allocation, public runner contract status, and final acceptance state",
+  ].join("\n");
+}
+
+function yamlScalar(value: string | undefined, fallback: string): string {
+  const text = value?.trim() || fallback;
+  if (/^[A-Za-z0-9_.:/ -]+$/.test(text)) return text;
+  return JSON.stringify(text);
+}
+
+function yamlList(values: string[] | undefined, fallback: string[] = []): string {
+  const items = values && values.length > 0 ? values : fallback;
+  if (items.length === 0) return "[]";
+  return items.map((item) => `  - ${yamlScalar(item, "to_be_defined")}`).join("\n");
+}
+
+export interface OrchestrationDraftArgs {
+  artifact: OrchestrationArtifact;
+  phase: OrchestrationPhase;
+  objective?: string;
+  taskId?: string;
+  role?: string;
+  readOnlyInputs?: string[];
+  ownedPaths?: string[];
+  expectedArtifacts?: string[];
+  validationCommands?: string[];
+}
+
+export function renderOrchestrationDraft(args: OrchestrationDraftArgs): string {
+  switch (args.artifact) {
+    case "agent_result_packet":
+      return renderAgentResultPacket(args);
+    case "merge_review":
+      return renderMergeReview(args);
+    case "parallel_work_plan":
+    default:
+      return renderParallelWorkPlan(args);
+  }
+}
+
+function renderParallelWorkPlan(args: OrchestrationDraftArgs): string {
+  const createdAt = new Date().toISOString().slice(0, 10);
+  const taskId = args.taskId?.trim() || "TASK-001";
+  const role = args.role?.trim() || defaultWorkerRole(args.phase);
+  const objective = args.objective?.trim() || "to_be_defined";
+
+  return [
+    "```yaml",
+    "plan_id: PWP-001",
+    "project_or_book: to_be_defined",
+    `created_at: ${createdAt}`,
+    "status: draft # draft | active | merging | complete | blocked",
+    "supervisor:",
+    "  owner: supervisor",
+    "  responsibilities:",
+    "    - route lifecycle phase",
+    "    - assign disjoint owned paths",
+    "    - preserve IDs and public contracts",
+    "    - merge worker outputs",
+    "    - run validation",
+    `phase: ${args.phase}`,
+    "gate_context:",
+    "  evidence_gate: to_be_defined",
+    "  coding_gate: to_be_defined",
+    "  handoff_status: to_be_defined",
+    "read_only_inputs:",
+    yamlList(args.readOnlyInputs, defaultReadOnlyInputs(args.phase)),
+    "shared_outputs:",
+    "  - templates/orchestration/merge_review.md",
+    "agent_roles:",
+    "  - role: supervisor",
+    "    may_delegate: true",
+    "    owns_gate_decisions: true",
+    `  - role: ${yamlScalar(role, "worker")}`,
+    "    may_delegate: false",
+    "    owns_gate_decisions: false",
+    "tasks:",
+    `  - task_id: ${yamlScalar(taskId, "TASK-001")}`,
+    `    role: ${yamlScalar(role, "worker")}`,
+    `    objective: ${yamlScalar(objective, "to_be_defined")}`,
+    "    read_only_inputs:",
+    indentList(args.readOnlyInputs, defaultReadOnlyInputs(args.phase), 6),
+    "    owned_paths:",
+    indentList(args.ownedPaths, ["to_be_defined/"], 6),
+    "    expected_artifacts:",
+    indentList(args.expectedArtifacts, ["agent result packet"], 6),
+    "    blocked_by: []",
+    "    merge_point: merge_review",
+    "    validation_commands:",
+    indentList(args.validationCommands, defaultValidationCommands(args.phase), 6),
+    "merge_points:",
+    "  - merge_id: merge_review",
+    "    reviewer: supervisor",
+    "    checklist: templates/orchestration/merge_review.md",
+    "validation_commands:",
+    indentList(args.validationCommands, defaultValidationCommands(args.phase), 2),
+    "notes:",
+    "  - This draft is generated by the OpenCode plugin as text only; write it intentionally if accepted.",
+    "```",
+  ].join("\n");
+}
+
+function renderAgentResultPacket(args: OrchestrationDraftArgs): string {
+  const today = new Date().toISOString().slice(0, 10);
+  return [
+    "```yaml",
+    "packet_id: ARP-001",
+    "plan_id: PWP-001",
+    `task_id: ${yamlScalar(args.taskId, "TASK-001")}`,
+    "agent_id: agent-001",
+    `role: ${yamlScalar(args.role, defaultWorkerRole(args.phase))}`,
+    "status: partial # complete | partial | blocked | not_started",
+    `started_at: ${today}`,
+    "completed_at: null",
+    "changed_paths: []",
+    "artifacts_created:",
+    yamlList(args.expectedArtifacts),
+    "ids_touched:",
+    "  source_ids: []",
+    "  node_ids: []",
+    "  formula_ids: []",
+    "  lookup_ids: []",
+    "  branch_ids: []",
+    "  module_ids: []",
+    "  result_paths: []",
+    "assumptions: []",
+    "open_questions: []",
+    "validation_run:",
+    "  commands:",
+    indentList(args.validationCommands, [], 4),
+    "  status: not_run # passed | failed | not_run | blocked",
+    "  notes: []",
+    "merge_notes:",
+    "  requested_shared_file_changes: []",
+    "  conflicts: []",
+    "  supervisor_actions_needed: []",
+    "```",
+  ].join("\n");
+}
+
+function renderMergeReview(args: OrchestrationDraftArgs): string {
+  return [
+    "# Merge Review",
+    "",
+    "## Context",
+    "",
+    "| Item | Value |",
+    "| --- | --- |",
+    "| Plan ID | PWP-001 |",
+    `| Task ID | ${args.taskId?.trim() || "TASK-001"} |`,
+    `| Worker role | ${args.role?.trim() || defaultWorkerRole(args.phase)} |`,
+    "| Reviewer | supervisor |",
+    "| Review status | draft / accepted / needs_changes / rejected |",
+    "",
+    "## Required Checks",
+    "",
+    "- [ ] Worker only changed declared owned paths.",
+    "- [ ] Result packet is present and complete.",
+    "- [ ] No worker made final evidence, coding, production, or release gate decisions.",
+    "- [ ] No worker changed source IDs, formula IDs, lookup IDs, branch IDs, module IDs, or result paths outside its assignment.",
+    "- [ ] No engineering formulas were added to UI, report templates, batch scripts, CSV/XLSX input files, or presentation-only code.",
+    "- [ ] Official calculation flow still uses `run_book(BookInput) -> BookResult`.",
+    "- [ ] Source references and formula traces are stable.",
+    "- [ ] Tests, validation commands, or blockers are recorded.",
+    "",
+    "## Merge Decision",
+    "",
+    "Decision: draft # accepted | needs_changes | rejected",
+    "",
+    "Reviewer notes:",
+    "",
+    "- to_be_defined",
+  ].join("\n");
+}
+
+function indentList(values: string[] | undefined, fallback: string[], spaces: number): string {
+  const prefix = " ".repeat(spaces);
+  const items = values && values.length > 0 ? values : fallback;
+  if (items.length === 0) return `${prefix}[]`;
+  return items.map((item) => `${prefix}- ${yamlScalar(item, "to_be_defined")}`).join("\n");
+}
+
+function defaultWorkerRole(phase: OrchestrationPhase): string {
+  switch (phase) {
+    case "acquisition":
+      return "reference-acquirer";
+    case "analysis":
+      return "logic-extractor";
+    case "verification":
+      return "verification-worker";
+    case "release":
+      return "verification-worker";
+    case "implementation":
+    default:
+      return "module-worker";
+  }
+}
+
+function defaultReadOnlyInputs(phase: OrchestrationPhase): string[] {
+  switch (phase) {
+    case "acquisition":
+      return ["references/acquisition/reference_gap_assessment.md"];
+    case "analysis":
+      return ["references/source_registry.yaml"];
+    case "verification":
+      return ["handoff/implementation_handoff.yaml", "tests/"];
+    case "release":
+      return ["release/release_checklist.md", "deploy/"];
+    case "implementation":
+    default:
+      return ["handoff/implementation_handoff.yaml"];
+  }
+}
+
+function defaultValidationCommands(phase: OrchestrationPhase): string[] {
+  if (phase === "implementation" || phase === "verification" || phase === "release") {
+    return ["pytest"];
+  }
+  return ["python scripts/validate_artifacts.py --package-root . --profile core"];
+}

@@ -7,6 +7,11 @@ description: Full lifecycle workflow for engineering calculation software. Use w
 
 Start with `skills/00-engineering-calculation-router.skill.md` for any non-trivial request. The router decides whether the task belongs to reference acquisition, source analysis, implementation, interface work, or verification.
 
+When the user explicitly requests multiple agents, subagents, delegation, or
+parallel work, also read `shared/multi-agent-orchestration.md` before assigning
+work. Multi-agent orchestration is optional; platforms without subagents can use
+the same templates as a manual work plan.
+
 ## Load Order
 
 Use progressive disclosure:
@@ -17,11 +22,17 @@ Use progressive disclosure:
    - `parent/engineering-calculation-logic-architecture.skill.md`
    - `parent/engineering-calculation-book.skill.md`
 3. Read only the child skill files named by the router or parent.
-4. Use templates from `templates/` and shared contracts from `shared/` only when generating or validating artifacts.
+4. For explicit multi-agent or parallel work, read `shared/multi-agent-orchestration.md` and use `templates/orchestration/`.
+5. Use templates from `templates/` and shared contracts from `shared/` only when generating or validating artifacts.
 
 Install the default runtime skill from `dist/core/engineering-calculation-system/` when using a built release. For environments that cannot load multiple files reliably, use the generated single-file fallback from `dist/singlefile/engineering-calculation-system.all-in-one.md`.
 
 Agent-specific loading paths are optional overlays from `dist/adapters-light/` or `dist/qoder-addon/`. MCPs are accelerators, not required dependencies.
+
+Codex-compatible environments should keep worker tasks bounded and sidecar-only.
+Do not delegate lifecycle routing, evidence gate decisions, source authority
+ranking, ID namespace control, handoff freeze, `run_book()` public contract
+changes, or final acceptance.
 
 ## Non-Negotiable Gates
 
@@ -64,7 +75,7 @@ When this package is available on disk, run:
 python3 scripts/validate_artifacts.py --package-root .
 ```
 
-For layered v2.3 releases, prefer:
+For layered v2.4 releases, prefer:
 
 ```bash
 python3 scripts/validate_artifacts.py --package-root . --profile core

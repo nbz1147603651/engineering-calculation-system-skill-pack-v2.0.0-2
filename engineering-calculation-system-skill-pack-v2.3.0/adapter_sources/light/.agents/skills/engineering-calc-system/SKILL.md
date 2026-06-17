@@ -22,6 +22,15 @@ Read the root package entrypoint:
 
 Then read only the parent and child skill files selected by the router.
 
+For explicit multi-agent or parallel work, also read:
+
+```text
+../../../shared/multi-agent-orchestration.md
+../../../templates/orchestration/parallel_work_plan.yaml
+../../../templates/orchestration/agent_result_packet.yaml
+../../../templates/orchestration/merge_review.md
+```
+
 If the target agent cannot access multiple files reliably, use:
 
 ```text
@@ -34,6 +43,8 @@ the generated dist/singlefile/engineering-calculation-system.all-in-one.md relea
 - Do not skip evidence and handoff gates.
 - Keep all official calculations in reusable calculation modules and `run_book(BookInput) -> BookResult`.
 - Keep UI, reports, batch scripts, and review tools as thin consumers of trusted results.
+- Split parallel work only by disjoint owned paths.
+- Keep gate decisions, source authority, ID allocation, handoff freeze, public runner contracts, and final acceptance with the supervisor.
 - Validate the package and generated project artifacts with `scripts/validate_artifacts.py --profile core`.
 
 ## Tooling

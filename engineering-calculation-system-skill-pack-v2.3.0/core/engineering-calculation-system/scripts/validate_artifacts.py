@@ -523,6 +523,7 @@ def validate_singlefile_profile(package_root: Path) -> list[str]:
             "Engineering Calculation System - All-in-One Skill Pack",
             "## SKILL.md",
             "## skills/00-engineering-calculation-router.skill.md",
+            "## shared/multi-agent-orchestration.md",
         ]:
             if phrase not in text:
                 errors.append(f"singlefile output missing phrase: {phrase!r}")

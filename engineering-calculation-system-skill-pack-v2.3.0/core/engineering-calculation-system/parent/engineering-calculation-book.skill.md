@@ -58,6 +58,33 @@ modal/drawer for report preview, imported report comparison, source trace, formu
 status strip for hashes, versions, package id, and timestamp
 ```
 
+## Parallelization Guidance
+
+When the user explicitly requests multi-agent or parallel work, read
+`shared/multi-agent-orchestration.md` and create
+`templates/orchestration/parallel_work_plan.yaml`.
+
+Safe parallel slices after the handoff gate allows work:
+
+```text
+core utilities and status semantics
+typed model drafts
+independent reusable calculation modules with disjoint paths
+thin API/frontend/report/batch interface slices
+unit, regression, integration, smoke, and deployment checks
+```
+
+Supervisor-only or integrator-only work:
+
+```text
+dependency direction decisions
+shared public models after downstream use
+module ID and result path registry control
+run_book(BookInput) -> BookResult public contract
+governing summary semantics
+production and release readiness
+```
+
 ## Child Skills to Use
 
 Use these child skills in order:

@@ -26,7 +26,7 @@ validation scripts
 project scaffold
 ```
 
-The default v2.3 install target is `dist/core/engineering-calculation-system/`. Examples, workflow diagrams, historical source files, and agent-specific adapters are development or overlay material, not part of the default runtime skill.
+The default v2.4 install target is `dist/core/engineering-calculation-system/`. Examples, workflow diagrams, historical source files, and agent-specific adapters are development or overlay material, not part of the default runtime skill.
 
 ## Main gates
 
@@ -126,6 +126,20 @@ administrator formula edits should use declaration-based formula registry publis
 static HTML files and exported report HTML are outputs or prototypes, not complete production web calculation systems
 ```
 
+## v2.4.0 multi-agent orchestration
+
+```text
+shared/multi-agent-orchestration.md          optional supervisor/worker contract
+templates/orchestration/parallel_work_plan.yaml
+templates/orchestration/agent_result_packet.yaml
+templates/orchestration/merge_review.md
+```
+
+Use multi-agent orchestration only for explicit multi-agent, delegated, or
+parallel work. Split work by disjoint owned paths. Keep evidence gates, coding
+gates, source authority, ID allocation, handoff freeze, `run_book()` public
+contract changes, and final acceptance with the supervisor.
+
 ## v2.2.0 interface split
 
 ```text
@@ -136,7 +150,7 @@ Skill 12c handles managed data areas, upload packages, import/export, hashes, ma
 Skill 14 handles local runnable web clients, Linux cloud deployment, release checklists, and deployment smoke tests.
 ```
 
-## v2.3.0 release layering
+## v2.4.0 release layering
 
 ```text
 dist/core/engineering-calculation-system/    default runtime skill
@@ -145,16 +159,16 @@ dist/qoder-addon/                            optional Qoder overlay
 dist/singlefile/                             generated all-in-one fallback
 dist/source-dev/                             development/reference bundle
 dist/release/                                platform release zips and checksums
-  engineering-calculation-system-CODEX-v2.3.0.zip
-  engineering-calculation-system-QODER-v2.3.0.zip
-  engineering-calculation-system-QODER-Project-v2.3.0.zip
-  engineering-calculation-system-TRAE-v2.3.0.zip
-  engineering-calculation-system-OpenCode-v2.3.0.zip
+  engineering-calculation-system-CODEX-v2.4.0.zip
+  engineering-calculation-system-QODER-v2.4.0.zip
+  engineering-calculation-system-QODER-Project-v2.4.0.zip
+  engineering-calculation-system-TRAE-v2.4.0.zip
+  engineering-calculation-system-OpenCode-v2.4.0.zip
 
 tools/release_config.json                    release metadata and platform publish target config
 ```
 
-`engineering-calculation-system-QODER-v2.3.0.zip` is a direct QODER Skill upload package with `SKILL.md` at the zip root. `engineering-calculation-system-QODER-Project-v2.3.0.zip` is the QODER project-root overlay package.
+`engineering-calculation-system-QODER-v2.4.0.zip` is a direct QODER Skill upload package with `SKILL.md` at the zip root. `engineering-calculation-system-QODER-Project-v2.4.0.zip` is the QODER project-root overlay package.
 
 ## Best use
 

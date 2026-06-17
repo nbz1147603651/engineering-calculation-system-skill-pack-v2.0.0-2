@@ -29,6 +29,36 @@ local evidence library / user references
 -> implementation_handoff.yaml
 ```
 
+## Parallelization Guidance
+
+When the user explicitly requests multi-agent or parallel work, read
+`shared/multi-agent-orchestration.md` and create
+`templates/orchestration/parallel_work_plan.yaml`.
+
+Safe parallel slices:
+
+```text
+separate source intake packets by document or table
+formula inventory extraction
+lookup table and interpolation extraction
+branch logic extraction
+unit/sign convention review
+worked example and regression reference capture
+input, intermediate, and output inventory drafts
+```
+
+Supervisor-only work:
+
+```text
+source authority ranking
+source conflict resolution
+ID namespace allocation
+normalized node graph merge
+software module mapping
+coding gate recommendation
+implementation_handoff.yaml and coding_go_no_go.md finalization
+```
+
 ## Child Skills to Use
 
 Use these child skills in order:

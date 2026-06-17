@@ -1,0 +1,28 @@
+packet_id: ARP-001
+plan_id: PWP-001
+task_id: TASK-001
+agent_id: agent-001
+role: module-worker
+status: partial # complete | partial | blocked | not_started
+started_at: 2026-06-17
+completed_at: null
+changed_paths: []
+artifacts_created: []
+ids_touched:
+  source_ids: []
+  node_ids: []
+  formula_ids: []
+  lookup_ids: []
+  branch_ids: []
+  module_ids: []
+  result_paths: []
+assumptions: []
+open_questions: []
+validation_run:
+  commands: []
+  status: not_run # passed | failed | not_run | blocked
+  notes: []
+merge_notes:
+  requested_shared_file_changes: []
+  conflicts: []
+  supervisor_actions_needed: []

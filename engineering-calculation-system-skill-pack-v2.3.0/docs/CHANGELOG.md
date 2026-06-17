@@ -1,5 +1,15 @@
 # Changelog
 
+## v2.4.0 multi-agent orchestration - 2026-06-17
+
+### Added - Parallel-Safe Agent Coordination
+
+- Added `shared/multi-agent-orchestration.md` with supervisor duties, parallel-safe work slices, serial gate boundaries, ownership rules, worker result packets, and merge review rules.
+- Added orchestration templates for `parallel_work_plan.yaml`, `agent_result_packet.yaml`, and `merge_review.md`.
+- Updated the router and parent orchestrators with explicit parallel suitability guidance while keeping lifecycle gates serial.
+- Updated Codex, Qoder, OpenCode, Trae, AGENTS-compatible, and single-file entrypoints to reference the shared orchestration contract.
+- Updated validation contracts so orchestration files are required package artifacts in the core profile.
+
 ## v2.3.0 release layering - 2026-06-17
 
 ### Added - Slim Core and Layered Distribution

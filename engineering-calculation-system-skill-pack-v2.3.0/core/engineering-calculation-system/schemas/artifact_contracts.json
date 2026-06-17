@@ -1,5 +1,5 @@
 {
-  "version": "2.3.0",
+  "version": "2.4.0",
   "package_required_paths": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -7,6 +7,7 @@
     "parent/engineering-calculation-reference-acquisition.skill.md",
     "parent/engineering-calculation-logic-architecture.skill.md",
     "parent/engineering-calculation-book.skill.md",
+    "shared/multi-agent-orchestration.md",
     "shared/quality-gates.md",
     "templates/acquisition/open_reference_questions.md",
     "templates/acquisition/acquisition_notes.md",
@@ -14,6 +15,9 @@
     "templates/analysis/unit_and_sign_conventions.md",
     "templates/handoff/implementation_handoff.md",
     "templates/handoff/coding_go_no_go.md",
+    "templates/orchestration/parallel_work_plan.yaml",
+    "templates/orchestration/agent_result_packet.yaml",
+    "templates/orchestration/merge_review.md",
     "templates/implementation/project_structure.md",
     "templates/implementation/dependency_rules.md",
     "templates/implementation/package_layout.md",
@@ -149,6 +153,33 @@
       "implementation",
       "verification"
     ],
+    "templates/orchestration/parallel_work_plan.yaml": [
+      "plan_id",
+      "project_or_book",
+      "status",
+      "supervisor",
+      "phase",
+      "gate_context",
+      "agent_roles",
+      "tasks",
+      "merge_points",
+      "validation_commands"
+    ],
+    "templates/orchestration/agent_result_packet.yaml": [
+      "packet_id",
+      "plan_id",
+      "task_id",
+      "agent_id",
+      "role",
+      "status",
+      "changed_paths",
+      "artifacts_created",
+      "ids_touched",
+      "assumptions",
+      "open_questions",
+      "validation_run",
+      "merge_notes"
+    ],
     "templates/implementation/data_package_manifest.yaml": [
       "package_id",
       "schema_version",
@@ -282,6 +313,19 @@
       "Report production gate",
       "report production decision recorded",
       "Release and deployment gate"
+    ],
+    "shared/multi-agent-orchestration.md": [
+      "Supervisor Responsibilities",
+      "Parallel-Friendly Work",
+      "Serial Gates",
+      "Ownership Rules",
+      "Worker Result Packet",
+      "Merge Review"
+    ],
+    "templates/orchestration/merge_review.md": [
+      "Required Checks",
+      "No worker made final evidence, coding, production, or release gate decisions",
+      "Official calculation flow still uses"
     ]
   },
   "project_required_paths": [
