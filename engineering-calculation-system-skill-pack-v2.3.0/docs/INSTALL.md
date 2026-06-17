@@ -6,7 +6,7 @@ Build releases from the source checkout:
 python tools/build_release.py
 ```
 
-With no arguments, the build creates every release profile plus one publish-ready classified release zip under `dist/release/`.
+With no arguments, the build creates every release profile plus five publish-ready platform zips under `dist/release/`.
 
 The default runtime package is:
 
@@ -35,25 +35,27 @@ dist/source-dev/
   Development/reference source bundle, not the default install target.
 
 dist/release/
-  One classified release zip, checksums, and RELEASE_INDEX.md.
+  CODEX, QODER Skill, QODER project, TRAE, and OpenCode release zips, checksums, and RELEASE_INDEX.md.
 ```
 
-The publish file is:
+Publish files:
 
 ```text
-dist/release/engineering-calculation-system-release-v2.3.0.zip
+dist/release/engineering-calculation-system-CODEX-v2.3.0.zip
+dist/release/engineering-calculation-system-QODER-v2.3.0.zip
+dist/release/engineering-calculation-system-QODER-Project-v2.3.0.zip
+dist/release/engineering-calculation-system-TRAE-v2.3.0.zip
+dist/release/engineering-calculation-system-OpenCode-v2.3.0.zip
 ```
 
-Inside the zip, install from the directory matching the target tool:
+Each zip contains one install folder plus `INSTALL.md`:
 
 ```text
-CODEX/engineering-calculation-system/      copy this folder to the Codex skills directory
-Qoder/copy-to-project-root/                copy contents to the Qoder project root
-TRAE/copy-to-project-root/                 copy contents to the TRAE project root
-OpenCode/copy-to-project-root/             copy contents to the OpenCode project root
-AGENTS-generic/copy-to-project-root/       copy contents to an AGENTS.md-compatible project root
-Singlefile/                                all-in-one fallback
-SourceDev/source-dev/                      source/development bundle
+CODEX zip:         copy engineering-calculation-system/ to the Codex skills directory
+QODER zip:         upload the zip directly in QODER Skills / Install Skill
+QODER Project zip: copy copy-to-project-root/ contents to the QODER project root
+TRAE zip:          copy copy-to-project-root/ contents to the TRAE project root
+OpenCode zip:      copy copy-to-project-root/ contents to the OpenCode project root
 ```
 
 To build only one layer during development:
@@ -73,11 +75,11 @@ Release metadata and classified install targets are configured in:
 tools/release_config.json
 ```
 
-Update that file first when changing the package version, release date, single-file inclusion rules, source-dev contents, or adding a target such as another agent environment. The build script validates this configuration before creating the release zip.
+Update that file first when changing the package version, release date, publish targets, single-file inclusion rules, source-dev contents, or adding another agent environment. The build script validates this configuration before creating release zips.
 
 ## Overlay Usage
 
-The classified release bundle is the recommended install path because Qoder, TRAE, OpenCode, and AGENTS-generic folders are already merged with the required core files. Use raw overlays only when developing or debugging a release profile:
+The platform release zips are the recommended install path. Use the QODER zip for direct QODER Skill upload; use the QODER Project, TRAE, and OpenCode packages when copying an overlay into a project root. Use raw overlays only when developing or debugging a release profile:
 
 ```text
 core install root: dist/core/engineering-calculation-system/

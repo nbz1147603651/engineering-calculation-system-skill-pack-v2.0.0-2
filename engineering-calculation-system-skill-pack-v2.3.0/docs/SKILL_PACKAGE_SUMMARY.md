@@ -144,18 +144,17 @@ dist/adapters-light/                         optional AGENTS/OpenCode/Trae/gener
 dist/qoder-addon/                            optional Qoder overlay
 dist/singlefile/                             generated all-in-one fallback
 dist/source-dev/                             development/reference bundle
-dist/release/                                one classified release zip and checksums
-  engineering-calculation-system-release-v2.3.0.zip
-    CODEX/
-    Qoder/
-    TRAE/
-    OpenCode/
-    AGENTS-generic/
-    Singlefile/
-    SourceDev/
+dist/release/                                platform release zips and checksums
+  engineering-calculation-system-CODEX-v2.3.0.zip
+  engineering-calculation-system-QODER-v2.3.0.zip
+  engineering-calculation-system-QODER-Project-v2.3.0.zip
+  engineering-calculation-system-TRAE-v2.3.0.zip
+  engineering-calculation-system-OpenCode-v2.3.0.zip
 
-tools/release_config.json                    release metadata and classified install target config
+tools/release_config.json                    release metadata and platform publish target config
 ```
+
+`engineering-calculation-system-QODER-v2.3.0.zip` is a direct QODER Skill upload package with `SKILL.md` at the zip root. `engineering-calculation-system-QODER-Project-v2.3.0.zip` is the QODER project-root overlay package.
 
 ## Best use
 

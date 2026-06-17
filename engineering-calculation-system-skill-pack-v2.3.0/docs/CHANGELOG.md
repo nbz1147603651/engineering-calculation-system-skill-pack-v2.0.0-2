@@ -5,8 +5,9 @@
 ### Added - Slim Core and Layered Distribution
 
 - Added `tools/build_release.py` with `core`, `adapters-light`, `qoder-addon`, `singlefile`, and `source-dev` profiles.
-- Made `tools/build_release.py` default to a full publish build with one classified release zip under `dist/release/`.
-- Added `tools/release_config.json` so version metadata, classified install targets, single-file contents, and source-dev contents can be maintained without editing build logic.
+- Made `tools/build_release.py` default to a full publish build with separate CODEX, QODER Skill, QODER Project, TRAE, and OpenCode release zips under `dist/release/`.
+- Split QODER release output into a direct Skill upload zip with `SKILL.md` at the zip root and a separate QODER project-root overlay zip.
+- Added `tools/release_config.json` so version metadata, platform publish targets, single-file contents, and source-dev contents can be maintained without editing build logic.
 - Moved the default install target to `dist/core/engineering-calculation-system/`.
 - Moved AGENTS/OpenCode/Trae/generic adapter files to the optional `dist/adapters-light/` overlay.
 - Moved Qoder-specific files to the optional `dist/qoder-addon/` overlay.

@@ -38,6 +38,26 @@ source conflicts resolved or explicitly handled
 test requirements defined
 ```
 
+## Semantic production gate
+
+When `handoff/implementation_handoff.yaml` or `coding_go_no_go.md` claims
+`production_allowed`, the artifact set must also pass semantic consistency
+checks, not only file-existence checks:
+
+```text
+acquisition_handoff.yaml status is analysis_allowed
+critical/high source coverage rows that block coding are covered
+critical/high coverage rows have stable current_source_id values
+formula inventory rows have actionable source_reference and test_requirement values
+lookup rows define interpolation_rule, out_of_range_behavior, source_reference, and test_requirement
+branch rows define source_reference, true/false paths, and required_tests
+open questions with blocks_coding=true are resolved or gate is downgraded
+source conflicts with blocks_coding=true are resolved or gate is downgraded
+assumptions with blocks_production=true are resolved or gate is downgraded
+```
+
+If these checks fail, downgrade the gate to `prototype_allowed` or `no_go`.
+
 ## Implementation gate
 
 Before release:

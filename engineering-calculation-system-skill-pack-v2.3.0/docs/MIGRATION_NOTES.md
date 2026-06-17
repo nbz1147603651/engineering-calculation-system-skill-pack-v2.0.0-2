@@ -8,13 +8,17 @@ The default install target is no longer the source checkout root. Build release 
 python tools/build_release.py
 ```
 
-The no-argument build creates every release profile plus one publish-ready classified zip in `dist/release/`:
+The no-argument build creates every release profile plus five publish-ready platform zips in `dist/release/`:
 
 ```text
-dist/release/engineering-calculation-system-release-v2.3.0.zip
+dist/release/engineering-calculation-system-CODEX-v2.3.0.zip
+dist/release/engineering-calculation-system-QODER-v2.3.0.zip
+dist/release/engineering-calculation-system-QODER-Project-v2.3.0.zip
+dist/release/engineering-calculation-system-TRAE-v2.3.0.zip
+dist/release/engineering-calculation-system-OpenCode-v2.3.0.zip
 ```
 
-Inside that zip, install from the directory matching the target tool: `CODEX/`, `Qoder/`, `TRAE/`, `OpenCode/`, `AGENTS-generic/`, `Singlefile/`, or `SourceDev/`.
+Use `engineering-calculation-system-QODER-v2.3.0.zip` for direct QODER Skill upload; it places `SKILL.md` at the zip root. CODEX contains `engineering-calculation-system/`; QODER Project, TRAE, and OpenCode contain `copy-to-project-root/` for project-root installation.
 
 Release metadata and classified install targets now live in:
 

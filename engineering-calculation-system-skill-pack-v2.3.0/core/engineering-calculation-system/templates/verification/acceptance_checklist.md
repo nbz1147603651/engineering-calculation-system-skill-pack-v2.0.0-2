@@ -3,6 +3,7 @@
 - [ ] Source basis recorded
 - [ ] Acquisition handoff exists when sources were searched
 - [ ] Implementation handoff exists
+- [ ] Semantic production gate validation passes when `production_allowed`
 - [ ] Runtime stack is recorded and defaults to Python 3.9+ unless an explicit adapter plan exists
 - [ ] Frontend format is recorded and defaults to Jinja2 + Bootstrap 5 + vanilla JavaScript modules unless explicitly overridden
 - [ ] Operator workflow decisions preserve input quality, review convenience, traceability, report preview, and import/export usability

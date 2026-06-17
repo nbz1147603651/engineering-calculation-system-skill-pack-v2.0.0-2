@@ -104,7 +104,7 @@ Build release profiles from the source checkout:
 python tools/build_release.py
 ```
 
-Running the command with no arguments builds every release profile and creates one publish-ready classified release zip in `dist/release/`. Use `--profile <name>` when you only need one layer during development.
+Running the command with no arguments builds every release profile and creates five publish-ready platform zips in `dist/release/`. Use `--profile <name>` when you only need one layer during development.
 
 Default installation target:
 
@@ -119,28 +119,30 @@ dist/adapters-light/   AGENTS.md, .agents, .opencode, .trae, and adapter guidanc
 dist/qoder-addon/      Qoder-specific files
 dist/singlefile/       generated all-in-one fallback
 dist/source-dev/       development/reference source bundle
-dist/release/          classified release zip, checksums, and release index
+dist/release/          CODEX, QODER Skill, QODER project, TRAE, and OpenCode release zips
 ```
 
-For publishing or manual installation, use:
+For publishing or manual installation, use the package for the target tool:
 
 ```text
-dist/release/engineering-calculation-system-release-v2.3.0.zip
+dist/release/engineering-calculation-system-CODEX-v2.3.0.zip
+dist/release/engineering-calculation-system-QODER-v2.3.0.zip
+dist/release/engineering-calculation-system-QODER-Project-v2.3.0.zip
+dist/release/engineering-calculation-system-TRAE-v2.3.0.zip
+dist/release/engineering-calculation-system-OpenCode-v2.3.0.zip
 ```
 
-The zip is organized by target tool:
+Each package contains one install folder plus `INSTALL.md`:
 
 ```text
-CODEX/engineering-calculation-system/
-Qoder/copy-to-project-root/
-TRAE/copy-to-project-root/
-OpenCode/copy-to-project-root/
-AGENTS-generic/copy-to-project-root/
-Singlefile/
-SourceDev/source-dev/
+CODEX:         engineering-calculation-system/
+QODER:         SKILL.md at zip root for direct QODER Skill upload
+QODER Project: copy-to-project-root/
+TRAE:          copy-to-project-root/
+OpenCode:      copy-to-project-root/
 ```
 
-The Qoder, TRAE, OpenCode, and AGENTS-generic directories are already merged with the core runtime files, so users can copy the matching directory contents directly into their project root. Use the raw core and overlay profiles only when debugging or repackaging.
+The QODER package is for direct QODER Skill upload. The QODER Project, TRAE, and OpenCode packages are already merged with the core runtime files, so users can copy the matching package contents directly. Use the raw core and overlay profiles only when debugging or repackaging.
 
 Release metadata and classified install targets are maintained in:
 
@@ -148,7 +150,7 @@ Release metadata and classified install targets are maintained in:
 tools/release_config.json
 ```
 
-Change that file when updating the version, release date, single-file contents, source-dev contents, or target-agent folders.
+Change that file when updating the version, release date, publish targets, single-file contents, source-dev contents, or target-agent folders.
 
 ## Agent entrypoints
 

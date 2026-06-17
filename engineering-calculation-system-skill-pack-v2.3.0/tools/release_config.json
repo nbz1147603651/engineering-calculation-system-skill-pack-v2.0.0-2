@@ -22,6 +22,13 @@
     "singlefile",
     "source-dev"
   ],
+  "publish_targets": [
+    "CODEX",
+    "QODER",
+    "QODER Project",
+    "TRAE",
+    "OpenCode"
+  ],
   "source_dev_includes": [
     "core",
     "adapter_sources",
@@ -60,9 +67,27 @@
       ]
     },
     {
-      "name": "Qoder",
+      "name": "QODER",
+      "path": ".",
+      "install_text": "Upload this zip directly from QODER's Skills / Install Skill flow.",
+      "include_core": false,
+      "payload_at_root": true,
+      "include_install_guide": false,
+      "copies": [
+        {
+          "profile": "qoder-addon",
+          "source": ".qoder/skills/engineering-calc-system",
+          "target": "."
+        }
+      ],
+      "notes": [
+        "This archive places SKILL.md at the zip root for QODER skill import compatibility."
+      ]
+    },
+    {
+      "name": "QODER Project",
       "path": "Qoder/copy-to-project-root",
-      "install_text": "Copy the contents of this folder into the root of the Qoder project.",
+      "install_text": "Copy the contents of this folder into the root of the QODER project.",
       "include_adapter_docs": true,
       "copies": [
         {
@@ -122,19 +147,6 @@
           "target": ".agents"
         }
       ]
-    }
-  ],
-  "extra_bundle_copies": [
-    {
-      "profile": "singlefile",
-      "source": "engineering-calculation-system.all-in-one.md",
-      "target": "Singlefile/engineering-calculation-system.all-in-one.md",
-      "is_file": true
-    },
-    {
-      "profile": "source-dev",
-      "source": ".",
-      "target": "SourceDev/source-dev"
     }
   ]
 }

@@ -116,6 +116,30 @@ missing regression references but formulas are clear -> prototype_allowed
 all critical formulas, units, branches, and tests defined -> production_allowed
 ```
 
+## Semantic Gate Validation
+
+Before setting `production_allowed`, verify the handoff is semantically
+consistent:
+
+```text
+acquisition status is analysis_allowed
+critical/high source coverage rows that block coding are covered
+critical/high rows have current_source_id values
+formula rows have source_reference and test_requirement values
+lookup rows define interpolation and out-of-range behavior
+branch rows define source references, paths, and required tests
+blocking open questions, source conflicts, and production-blocking assumptions are resolved
+```
+
+When the validation script is available, run:
+
+```bash
+python3 scripts/validate_artifacts.py --package-root <skill-pack-root> --profile core --project <project-root>
+```
+
+Treat semantic validation failures as blockers unless the user explicitly asks
+for a draft or prototype.
+
 ## Required Final Response
 
 Provide:

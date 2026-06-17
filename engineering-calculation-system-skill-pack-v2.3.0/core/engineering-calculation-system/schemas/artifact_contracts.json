@@ -13,6 +13,7 @@
     "templates/analysis/source_intake_notes.md",
     "templates/analysis/unit_and_sign_conventions.md",
     "templates/handoff/implementation_handoff.md",
+    "templates/handoff/coding_go_no_go.md",
     "templates/implementation/project_structure.md",
     "templates/implementation/dependency_rules.md",
     "templates/implementation/package_layout.md",
@@ -195,6 +196,7 @@
     ],
     "skills/07-implementation-handoff-contract.skill.md": [
       "Delivery Contract Rule",
+      "Semantic Gate Validation",
       "runtime_stack",
       "backend_api_contract",
       "frontend_contract",
@@ -205,6 +207,10 @@
       "Primary Runtime",
       "Python 3.9+",
       "Python wrapper"
+    ],
+    "templates/handoff/coding_go_no_go.md": [
+      "status:",
+      "Semantic production gate checklist"
     ],
     "templates/implementation/ui_layout_spec.md": [
       "Standard Page Zones",
@@ -264,6 +270,7 @@
     "templates/verification/acceptance_checklist.md": [
       "Runtime stack is recorded",
       "Frontend format is recorded",
+      "Semantic production gate validation passes",
       "Operator workflow decisions",
       "Report production decision is recorded",
       "Report status is explicit",
@@ -271,6 +278,7 @@
       "Cloud Linux deployment path"
     ],
     "shared/quality-gates.md": [
+      "Semantic production gate",
       "Report production gate",
       "report production decision recorded",
       "Release and deployment gate"
@@ -281,6 +289,7 @@
     "pyproject.toml",
     "tests/conftest.py",
     "handoff/implementation_handoff.yaml",
+    "handoff/coding_go_no_go.md",
     "implementation/02_modules/module_asset_registry.csv",
     "deploy/env.example",
     "deploy/Dockerfile",
@@ -392,6 +401,10 @@
       "Operator workflow quality",
       "static `.html` file",
       "POST /api/calculate"
+    ],
+    "handoff/coding_go_no_go.md": [
+      "status:",
+      "Semantic production gate checklist"
     ]
   }
 }

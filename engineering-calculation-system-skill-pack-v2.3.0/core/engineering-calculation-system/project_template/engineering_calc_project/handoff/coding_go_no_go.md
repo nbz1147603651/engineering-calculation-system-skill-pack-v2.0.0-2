@@ -8,16 +8,19 @@ status: prototype_allowed # no_go | prototype_allowed | production_allowed
 
 ## Allowed work
 
-- 
+- scaffold typed models
+- implement formulas with `needs_confirmation` markers
 
 ## Blocked work
 
-- 
+- production release
+- final report certification
 
 ## Blocking issues
 
 | Issue ID | Issue | Affected module | Required resolution |
 | --- | --- | --- | --- |
+| Q001 | unresolved source issue | example_module | confirm source basis before production |
 
 ## Semantic production gate checklist
 

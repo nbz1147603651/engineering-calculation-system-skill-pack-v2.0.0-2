@@ -1,6 +1,7 @@
 ---
 name: engineering-calc-system
 description: 工程计算系统全生命周期专家。Use when a task involves engineering calculation references, formula/lookup/branch extraction, calculation logic blueprints, implementation handoff, auditable calculation-book software, reports, batch flows, or verification.
+version: 2.3.0
 ---
 
 # 工程计算系统全生命周期专家
@@ -36,7 +37,7 @@ description: 工程计算系统全生命周期专家。Use when a task involves 
 ```
 第一阶段（参考获取）：01 充分性评估 → 02 发现获取 → 03 本地持久化
 第二阶段（逻辑蓝图）：04 源摄入 → 05 逻辑蓝图 → 06 公式提取 → 07 交接契约
-第三阶段（实现验证）：08 架构 → 09 数据模型 → 10 模块 → 11 运行器 → 12 接口路由 → 12a/12b/12c 专项接口 → 13 验证
+第三阶段（实现验证发布）：08 架构 → 09 数据模型 → 10 模块 → 11 运行器 → 12 接口路由 → 12a/12b/12c 专项接口 → 13 验证 → 14 发布部署
 ```
 
 ### 全局工作流
@@ -62,7 +63,7 @@ flowchart TD
     O --> P[12 接口路由]
     O --> Q[13 验证]
     P --> Q
-    Q --> R[发布]
+    Q --> R[14 发布部署]
 ```
 
 ## 路由决策
@@ -74,7 +75,7 @@ flowchart TD
 | `no_materials` / `insufficient_materials` | 01→02→03 |
 | `materials_available_untrusted` | 04，可能需01→02→03 |
 | `local_evidence_library_available` | 04→05→06→07，**建议02补充验证** |
-| `analysis_handoff_available` | 08→09→10→11→13，需时加12 |
+| `analysis_handoff_available` | 08→09→10→11→13，需时加12，最终交付加14 |
 | `codebase_available` | 按层级分类，路由到08-13 |
 
 ### 任务→路由映射
@@ -90,6 +91,7 @@ flowchart TD
 | 构建/重构计算软件 | 08→09→10→11→13，需时加12 |
 | 构建报告/批量接口 | 12 + 13 |
 | 添加测试/回归/追溯 | 13 |
+| 发布/部署/在线计算器 | 14（需先完成12b和13） |
 | 修复缺陷 | 识别最低正确层级 |
 
 ### 路由前必检项
@@ -149,6 +151,10 @@ flowchart TD
 ### 报告生产门禁
 
 报告标记`final`前：生产决策已记录、状态明确、来源允许生产、从已保存BookResult生成、ReportContext完整、模板不计算、冒烟测试通过。缺失则用`draft`/`review`/`prototype`/`not_for_construction`。
+
+### 发布部署门禁
+
+最终 Web 计算程序标记为完成或可部署前：本地运行命令已记录并 smoke-tested，`/health` 可用，生产入口、环境变量、Docker 或 systemd/nginx 路径、release checklist 和部署 smoke 记录齐全，且交付物不是只有静态 HTML、报告 HTML 或 mockup。
 
 ## 约定速查
 
@@ -230,7 +236,7 @@ engineering_calc_project/
 
 **07 交接契约**：汇总分析产物 → 填写交接YAML → 判定编码门控 → 生成交接包
 
-### 第三阶段：实现验证（08-13）
+### 第三阶段：实现验证发布（08-14）
 
 **08 架构**：读取交接文件 → 功能分类（7层）→ 设计项目结构 → 定义依赖规则
 
@@ -249,6 +255,8 @@ engineering_calc_project/
 **12c 批量包**：导入导出 → 上传包 → manifest/hash → 批量流 → 摘要
 
 **13 验证**：10种测试 → 回归参考（6级优先）→ 追溯元数据（14字段）→ 18项验收检查
+
+**14 发布部署**：本地可运行 Web 客户端 → Linux/cloud 部署路径 → Docker/systemd/nginx/env → release checklist → health/API smoke tests → 证明交付不是静态 HTML-only
 
 ## 硬交接产物
 
@@ -280,6 +288,7 @@ handoff/implementation_handoff.yaml              → 分析→实现
 | 12b 前端审查 | `skills/12b-frontend-and-review-interfaces.skill.md` |
 | 12c 批量包 | `skills/12c-batch-import-export-packages.skill.md` |
 | 13 验证 | `skills/13-verification-regression-traceability.skill.md` |
+| 14 发布部署 | `skills/14-cloud-web-release-deployment.skill.md` |
 
 **父级编排器**：`parent/engineering-calculation-reference-acquisition.skill.md`、`parent/engineering-calculation-logic-architecture.skill.md`、`parent/engineering-calculation-book.skill.md`
 
@@ -313,7 +322,7 @@ show_widget(
   widget_path: "engineering-calc-system/assets/lifecycle-console.html",
   data: {
     project_name: "<项目名称>",
-    version: "2.2.0",
+    version: "2.3.0",
     current_stage: "<当前技能ID，如 02>",
     completed_stages: ["01"],
     gate_status: {

@@ -348,9 +348,9 @@ Mermaid图是视图，不是产品。核心交付物是 `calculation_blueprint.m
 
 ## 技能08：计算书架构
 
-### 功能分类层级（7层）
+### 功能分类层级（8层）
 
-`core platform` / `reusable engineering library` / `calculation book runner` / `report context/renderer` / `review/frontend` / `batch/CLI/API` / `verification`
+`core platform` / `reusable engineering library` / `calculation book runner` / `report context/renderer` / `review/frontend` / `batch/CLI/API` / `verification` / `release/deployment`
 
 ### 功能分类表
 
@@ -533,6 +533,47 @@ domain formulas, book-specific runner logic, UI code, report rendering, batch wo
 - `verification/tolerance_policy.md`
 - `verification/acceptance_checklist.md`
 - `tests/unit/`, `tests/regression/`, `tests/integration/`, `tests/smoke/`
+
+---
+
+## 技能14：云端 Web 发布与部署
+
+### 发布目标
+
+把工程计算系统打包为可本地运行、可 Linux/cloud 部署的 Web 计算程序，而不是静态 HTML、报告 HTML 或界面 mockup。
+
+### 必需输入
+
+- `handoff/implementation_handoff.yaml`
+- `handoff/coding_go_no_go.md`
+- 已实现的 `run_book(BookInput) -> BookResult`
+- Web/API 入口、前端资源、测试、部署配置和 release checklist
+
+### 生产 Web 最小要求
+
+可复用计算模块、官方 runner、后端应用入口、薄 API 路由、前端模板和静态资源、表单到 BookInput 映射、BookResult 到 UI 映射、单元/集成/smoke 测试、本地运行命令、Linux/cloud 部署路径。
+
+### 部署内容
+
+`README.md`, `deploy/env.example`, `deploy/Dockerfile` 或 `deploy/systemd/*.service`, `deploy/nginx/*.conf`, `release/release_checklist.md`, `/health` health check, `POST /api/calculate` smoke test.
+
+### 发布门禁
+
+最终交付必须证明：
+
+1. 本地运行和 health/API smoke test 通过
+2. 生产入口和环境变量配置齐全
+3. Docker 或 systemd/nginx 部署路径可执行
+4. 计算模块不依赖 Web、报告、批量或部署层
+5. `module_asset_registry.csv` 记录可复用模块
+6. release checklist 记录 smoke test 和剩余假设
+
+### 产物
+
+- `deploy/`
+- `release/release_checklist.md`
+- `tests/smoke/test_web_routes.py`
+- 本地运行命令和 Linux/cloud 部署命令
 
 ---
 

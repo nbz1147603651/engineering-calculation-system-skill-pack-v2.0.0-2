@@ -56,8 +56,18 @@ class BundleTarget:
     install_text: str
     include_core: bool = True
     include_adapter_docs: bool = False
+    payload_at_root: bool = False
+    include_install_guide: bool = True
     copies: tuple[BundleCopy, ...] = ()
     notes: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class ReleaseArchive:
+    target: BundleTarget
+    archive_path: Path
+    install_folder: str
+    file_count: int
 
 
 def load_release_config() -> dict:
@@ -81,6 +91,8 @@ def parse_bundle_target(data: dict) -> BundleTarget:
         install_text=data["install_text"],
         include_core=bool(data.get("include_core", True)),
         include_adapter_docs=bool(data.get("include_adapter_docs", False)),
+        payload_at_root=bool(data.get("payload_at_root", False)),
+        include_install_guide=bool(data.get("include_install_guide", True)),
         copies=tuple(parse_bundle_copy(copy) for copy in data.get("copies", ())),
         notes=tuple(data.get("notes", ())),
     )
@@ -99,7 +111,6 @@ def validate_rel_path(value: str, field: str, *, allow_dot: bool = False) -> Non
 def validate_release_config(
     config: dict,
     targets: tuple[BundleTarget, ...],
-    extra_copies: tuple[BundleCopy, ...],
 ) -> None:
     profiles = set(config["profiles"])
     for field in ("default_all_profiles", "release_required_profiles"):
@@ -109,15 +120,24 @@ def validate_release_config(
 
     seen_paths: set[str] = set()
     for target in targets:
-        validate_rel_path(target.path, f"classified target {target.name} path")
+        validate_rel_path(
+            target.path,
+            f"classified target {target.name} path",
+            allow_dot=target.payload_at_root,
+        )
         if target.path in seen_paths:
             raise ValueError(f"duplicate classified target path: {target.path}")
         seen_paths.add(target.path)
         for copy in target.copies:
             validate_bundle_copy(copy, profiles, f"classified target {target.name}")
 
-    for copy in extra_copies:
-        validate_bundle_copy(copy, profiles, "extra bundle copy")
+    target_names = {target.name for target in targets}
+    unknown_publish_targets = set(config.get("publish_targets", ())) - target_names
+    if unknown_publish_targets:
+        raise ValueError(
+            "publish_targets references unknown target(s): "
+            + ", ".join(sorted(unknown_publish_targets))
+        )
 
     if not config.get("singlefile_prefixes"):
         raise ValueError("singlefile_prefixes must not be empty")
@@ -129,21 +149,21 @@ def validate_bundle_copy(copy: BundleCopy, profiles: set[str], context: str) -> 
     if copy.profile not in profiles:
         raise ValueError(f"{context} references unknown profile: {copy.profile}")
     validate_rel_path(copy.source, f"{context} source", allow_dot=True)
-    validate_rel_path(copy.target, f"{context} target")
+    validate_rel_path(copy.target, f"{context} target", allow_dot=True)
 
 
 CONFIG = load_release_config()
 VERSION = CONFIG["version"]
 CREATED_AT = CONFIG["created_at"]
-BUNDLE_NAME = CONFIG.get("bundle_name", f"engineering-calculation-system-release-v{VERSION}")
+PACKAGE_PREFIX = CONFIG.get("package_prefix", "engineering-calculation-system")
 PROFILE_CHOICES = tuple(CONFIG["profiles"])
 DEFAULT_ALL_PROFILES = tuple(CONFIG.get("default_all_profiles", PROFILE_CHOICES))
 RELEASE_REQUIRED_PROFILES = tuple(CONFIG.get("release_required_profiles", PROFILE_CHOICES))
 SINGLEFILE_PREFIXES = tuple(CONFIG["singlefile_prefixes"])
 SOURCE_DEV_INCLUDES = tuple(CONFIG["source_dev_includes"])
 CLASSIFIED_TARGETS = tuple(parse_bundle_target(target) for target in CONFIG["classified_targets"])
-EXTRA_BUNDLE_COPIES = tuple(parse_bundle_copy(copy) for copy in CONFIG["extra_bundle_copies"])
-validate_release_config(CONFIG, CLASSIFIED_TARGETS, EXTRA_BUNDLE_COPIES)
+PUBLISH_TARGET_NAMES = tuple(CONFIG.get("publish_targets", (target.name for target in CLASSIFIED_TARGETS)))
+validate_release_config(CONFIG, CLASSIFIED_TARGETS)
 
 
 def should_skip(path: Path, *, include_indexes: bool = False) -> bool:
@@ -342,6 +362,24 @@ def archive_name(profile: str) -> str:
     return f"engineering-calculation-system-{profile}-v{VERSION}.zip"
 
 
+def target_slug(name: str) -> str:
+    return "".join(char if char.isalnum() else "-" for char in name).strip("-")
+
+
+def release_archive_name(target: BundleTarget) -> str:
+    return f"{PACKAGE_PREFIX}-{target_slug(target.name)}-v{VERSION}.zip"
+
+
+def release_package_root_name(target: BundleTarget) -> str:
+    return f"{PACKAGE_PREFIX}-{target_slug(target.name)}-v{VERSION}"
+
+
+def target_install_folder(target: BundleTarget) -> str:
+    if target.payload_at_root:
+        return "."
+    return Path(target.path).name
+
+
 def write_zip(source_root: Path, archive_path: Path, *, archive_root_name: str | None = None) -> None:
     files = iter_files(source_root, include_indexes=True)
     with zipfile.ZipFile(archive_path, "w") as archive:
@@ -375,42 +413,27 @@ def apply_bundle_copy(profile_roots: dict[str, Path], copy: BundleCopy, dst_root
         copy_tree(src, dst)
 
 
-def write_install_guide(bundle_root: Path) -> None:
+def published_targets() -> tuple[BundleTarget, ...]:
+    by_name = {target.name: target for target in CLASSIFIED_TARGETS}
+    return tuple(by_name[name] for name in PUBLISH_TARGET_NAMES)
+
+
+def write_target_install_guide(package_root: Path, target: BundleTarget, install_folder: str) -> None:
     lines = [
-        "# Engineering Calculation System v2.3.0 Release",
+        f"# Engineering Calculation System v{VERSION} - {target.name}",
         "",
-        "This bundle is organized by target agent software. Copy only the folder for the tool you are installing.",
+        f"This package is prepared for {target.name}.",
+        "",
+        target.install_text,
+        "",
+        "```text",
+        f"{install_folder}/",
+        "```",
         "",
     ]
-    for target in CLASSIFIED_TARGETS:
-        lines.extend(
-            [
-                f"## {target.name}",
-                "",
-                target.install_text,
-                "",
-                "```text",
-                f"{target.path}/",
-                "```",
-                "",
-            ]
-        )
-        for note in target.notes:
-            lines.extend([note, ""])
-
-    lines.extend(
-        [
-            "## Singlefile",
-            "",
-            "Use `Singlefile/engineering-calculation-system.all-in-one.md` only when an agent cannot load a multi-file skill folder.",
-            "",
-            "## SourceDev",
-            "",
-            "Use `SourceDev/source-dev/` for repository review or downstream packaging. It is not the default runtime install target.",
-            "",
-        ]
-    )
-    (bundle_root / "INSTALL.md").write_text("\n".join(lines), encoding="utf-8")
+    for note in target.notes:
+        lines.extend([note, ""])
+    (package_root / "INSTALL.md").write_text("\n".join(lines), encoding="utf-8")
 
 
 def merge_core_into(dst: Path, profile_roots: dict[str, Path]) -> None:
@@ -421,75 +444,80 @@ def merge_adapter_docs_into(dst: Path, profile_roots: dict[str, Path]) -> None:
     copy_tree(profile_roots["adapters-light"] / "adapters", dst / "adapters")
 
 
-def build_classified_bundle(profile_roots: dict[str, Path], bundle_root: Path) -> Path:
+def stage_target_payload(profile_roots: dict[str, Path], target: BundleTarget, payload_root: Path) -> None:
+    if target.include_core:
+        merge_core_into(payload_root, profile_roots)
+    if target.include_adapter_docs:
+        merge_adapter_docs_into(payload_root, profile_roots)
+    for copy in target.copies:
+        apply_bundle_copy(profile_roots, copy, payload_root)
+
+
+def build_platform_package(profile_roots: dict[str, Path], target: BundleTarget, package_root: Path) -> Path:
     missing = [profile for profile in RELEASE_REQUIRED_PROFILES if profile not in profile_roots]
     if missing:
-        raise RuntimeError(f"classified release requires profiles: {', '.join(missing)}")
+        raise RuntimeError(f"release package requires profiles: {', '.join(missing)}")
 
-    if bundle_root.exists():
-        shutil.rmtree(bundle_root)
-    bundle_root.mkdir(parents=True, exist_ok=True)
+    if package_root.exists():
+        shutil.rmtree(package_root)
+    package_root.mkdir(parents=True, exist_ok=True)
 
-    for target in CLASSIFIED_TARGETS:
-        target_root = bundle_path(bundle_root, target.path)
-        if target.include_core:
-            merge_core_into(target_root, profile_roots)
-        if target.include_adapter_docs:
-            merge_adapter_docs_into(target_root, profile_roots)
-        for copy in target.copies:
-            apply_bundle_copy(profile_roots, copy, target_root)
-
-    for copy in EXTRA_BUNDLE_COPIES:
-        apply_bundle_copy(profile_roots, copy, bundle_root)
-
-    write_install_guide(bundle_root)
-    return bundle_root
+    install_folder = target_install_folder(target)
+    payload_root = package_root if target.payload_at_root else package_root / install_folder
+    stage_target_payload(profile_roots, target, payload_root)
+    if target.include_install_guide:
+        write_target_install_guide(package_root, target, install_folder)
+    return package_root
 
 
-def write_release_index(bundle_zip: Path, bundle_file_count: int) -> None:
-    layout_lines = [f"  {target.path}/" for target in CLASSIFIED_TARGETS]
-    layout_lines.extend(
-        [
-            "  Singlefile/engineering-calculation-system.all-in-one.md",
-            "  SourceDev/source-dev/",
-        ]
-    )
-    install_lines = [
-        f"{target.name}: {target.install_text} Use `{target.path}/`."
-        for target in CLASSIFIED_TARGETS
-    ]
-    install_lines.extend(
-        [
-            "Singlefile: use only when multi-file skill loading is unavailable.",
-            "SourceDev: use for repository review or downstream packaging, not runtime installation.",
-        ]
-    )
+def write_release_index(archives: list[ReleaseArchive]) -> None:
     lines = [
         "# Engineering Calculation System Release Bundles",
         "",
         f"Version: {VERSION}",
         f"Created at: {CREATED_AT}",
         "",
-        "## Publish File",
+        "## Publish Files",
         "",
-        "| Archive | Size KB | SHA256 |",
-        "| --- | ---: | --- |",
-        f"| `{bundle_zip.name}` | {bundle_zip.stat().st_size / 1024:.1f} | `{sha256(bundle_zip)}` |",
-        "",
-        "## Bundle Layout",
-        "",
-        "```text",
-        f"{BUNDLE_NAME}/",
-        *layout_lines,
-        "```",
-        "",
-        f"Bundle file count: {bundle_file_count}",
-        "",
-        "## Install Order",
-        "",
-        *install_lines,
-        "",
+        "| Target | Archive | Install Folder | Files | Size KB | SHA256 |",
+        "| --- | --- | --- | ---: | ---: | --- |",
     ]
+    for item in archives:
+        lines.append(
+            f"| {item.target.name} | `{item.archive_path.name}` | "
+            f"`{item.install_folder}/` | {item.file_count} | "
+            f"{item.archive_path.stat().st_size / 1024:.1f} | `{sha256(item.archive_path)}` |"
+        )
+    lines.extend(
+        [
+            "",
+            "## Install",
+            "",
+        ]
+    )
+    for item in archives:
+        lines.extend(
+            [
+                f"### {item.target.name}",
+                "",
+                item.target.install_text,
+                "",
+                "```text",
+                f"{item.install_folder}/",
+                "```",
+                "",
+            ]
+        )
+        for note in item.target.notes:
+            lines.extend([note, ""])
+    lines.extend(
+        [
+            "## Non-Published Build Outputs",
+            "",
+            "`dist/singlefile/` and `dist/source-dev/` are still generated for fallback and development use, but they are not part of the default platform publish packages.",
+            "",
+        ]
+    )
     (RELEASE_ROOT / "RELEASE_INDEX.md").write_text("\n".join(lines), encoding="utf-8")
 
 
@@ -504,21 +532,37 @@ def build_split_archives(built_profiles: dict[str, Path]) -> list[Path]:
     return archives
 
 
-def build_release_bundle(built_profiles: dict[str, Path], *, split_archives: bool = False) -> tuple[Path, int]:
+def build_release_packages(
+    built_profiles: dict[str, Path],
+    *,
+    split_archives: bool = False,
+) -> list[ReleaseArchive]:
     clean_dir(RELEASE_ROOT)
-    bundle_zip = RELEASE_ROOT / f"{BUNDLE_NAME}.zip"
+    archives: list[ReleaseArchive] = []
     with tempfile.TemporaryDirectory(prefix="ecs-release-") as temp_dir:
-        bundle_root = build_classified_bundle(built_profiles, Path(temp_dir) / BUNDLE_NAME)
-        bundle_file_count = len(iter_files(bundle_root, include_indexes=True))
-        write_zip(bundle_root, bundle_zip, archive_root_name=bundle_root.name)
+        temp_root = Path(temp_dir)
+        for target in published_targets():
+            package_name = release_package_root_name(target)
+            package_root = build_platform_package(built_profiles, target, temp_root / package_name)
+            archive_path = RELEASE_ROOT / release_archive_name(target)
+            archive_root_name = None if target.payload_at_root else package_root.name
+            write_zip(package_root, archive_path, archive_root_name=archive_root_name)
+            archives.append(
+                ReleaseArchive(
+                    target=target,
+                    archive_path=archive_path,
+                    install_folder=target_install_folder(target),
+                    file_count=len(iter_files(package_root, include_indexes=True)),
+                )
+            )
 
-    checksum_lines = [f"{sha256(bundle_zip)}  {bundle_zip.name}"]
+    checksum_lines = [f"{sha256(item.archive_path)}  {item.archive_path.name}" for item in archives]
     if split_archives:
         for archive in build_split_archives(built_profiles):
             checksum_lines.append(f"{sha256(archive)}  split-archives/{archive.name}")
     (RELEASE_ROOT / "CHECKSUMS.txt").write_text("\n".join(checksum_lines) + "\n", encoding="utf-8")
-    write_release_index(bundle_zip, bundle_file_count)
-    return bundle_zip, bundle_file_count
+    write_release_index(archives)
+    return archives
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -533,12 +577,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--archives",
         action="store_true",
-        help="Also create a classified release zip under dist/release",
+        help="Also create platform release zip packages under dist/release",
     )
     parser.add_argument(
         "--no-archives",
         action="store_true",
-        help="Do not create the classified release zip when building every profile",
+        help="Do not create platform release zip packages when building every profile",
     )
     parser.add_argument(
         "--split-archives",
@@ -557,7 +601,7 @@ def main(argv: list[str] | None = None) -> int:
     create_archives = args.archives or ((args.all or default_publish) and not args.no_archives)
 
     if default_publish:
-        print("no profile specified; building all profiles and the classified release bundle")
+        print("no profile specified; building all profiles and platform release packages")
 
     built: dict[str, Path] = {}
     for profile in profiles:
@@ -571,13 +615,14 @@ def main(argv: list[str] | None = None) -> int:
     if create_archives:
         if set(RELEASE_REQUIRED_PROFILES) - set(built):
             missing = ", ".join(sorted(set(RELEASE_REQUIRED_PROFILES) - set(built)))
-            raise RuntimeError(f"classified release bundle requires all profiles; missing: {missing}")
-        bundle_zip, bundle_file_count = build_release_bundle(built, split_archives=args.split_archives)
-        print(f"staged classified bundle ({bundle_file_count} files)")
-        print(
-            f"built {bundle_zip.relative_to(REPO_ROOT).as_posix()} "
-            f"({bundle_zip.stat().st_size / 1024:.1f} KB)"
-        )
+            raise RuntimeError(f"platform release packages require all profiles; missing: {missing}")
+        archives = build_release_packages(built, split_archives=args.split_archives)
+        print(f"built {RELEASE_ROOT.relative_to(REPO_ROOT).as_posix()} ({len(archives)} platform archives)")
+        for archive in archives:
+            print(
+                f"  {archive.archive_path.name} "
+                f"({archive.file_count} files, {archive.archive_path.stat().st_size / 1024:.1f} KB)"
+            )
     return 0
 
 
