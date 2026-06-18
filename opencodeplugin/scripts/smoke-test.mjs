@@ -69,10 +69,13 @@ function candidateSkillRoots(base) {
   if (!isDirectory(base)) return [];
   const candidates = [
     path.join(base, "engineering-calculation-system"),
+    path.join(base, "engineering-calculation-system", "core", "engineering-calculation-system"),
     path.join(base, "core", "engineering-calculation-system"),
   ];
   for (const entry of readdirSync(base, { withFileTypes: true })) {
-    if (entry.isDirectory() && entry.name.startsWith("engineering-calculation-system-skill-pack-")) {
+    const isCanonicalPackage = entry.name === "engineering-calculation-system";
+    const isVersionedSkillPack = entry.name.startsWith("engineering-calculation-system-skill-pack-");
+    if (entry.isDirectory() && (isCanonicalPackage || isVersionedSkillPack)) {
       candidates.push(path.join(base, entry.name, "core", "engineering-calculation-system"));
     }
   }

@@ -84,7 +84,9 @@ function addSkillPackCandidates(
   try {
     const entries = readdirSync(base, { withFileTypes: true });
     for (const entry of entries) {
-      if (!entry.isDirectory() || !entry.name.startsWith("engineering-calculation-system-skill-pack-")) {
+      const isCanonicalPackage = entry.name === "engineering-calculation-system";
+      const isVersionedSkillPack = entry.name.startsWith("engineering-calculation-system-skill-pack-");
+      if (!entry.isDirectory() || (!isCanonicalPackage && !isVersionedSkillPack)) {
         continue;
       }
       addCandidate(

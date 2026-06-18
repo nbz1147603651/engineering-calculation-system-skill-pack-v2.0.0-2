@@ -17,7 +17,7 @@ node dist/cli/index.js install --target .. --force
 If the skill root cannot be inferred from schema version `2.4.0`, pass it explicitly:
 
 ```bash
-node dist/cli/index.js install --target .. --skill-root ../engineering-calculation-system-skill-pack-v2.4.0/core/engineering-calculation-system --force
+node dist/cli/index.js install --target .. --skill-root ../engineering-calculation-system/core/engineering-calculation-system --force
 ```
 
 Update managed assets:

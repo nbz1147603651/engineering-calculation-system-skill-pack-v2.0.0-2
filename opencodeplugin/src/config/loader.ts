@@ -130,7 +130,7 @@ export function minimalConfigExample(): string {
 export function fullConfigExample(): string {
   return `{
   "$schema": "./engineering-calc-system.schema.json",
-  "skillRoot": "../engineering-calculation-system-skill-pack-v2.x.x/core/engineering-calculation-system",
+  "skillRoot": "../engineering-calculation-system/core/engineering-calculation-system",
   "strictGateMode": true,
   "defaultPhase": "router",
   "doctor": {
@@ -163,4 +163,3 @@ export function fullConfigExample(): string {
   }
 }`;
 }
-

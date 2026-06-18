@@ -26,7 +26,7 @@ const { renderOrchestrationDraft } = await import("../dist/domain.js");
 const workspaceRoot = path.resolve(root, "..");
 const skillRoot = path.join(
   workspaceRoot,
-  "engineering-calculation-system-skill-pack-v2.4.0",
+  "engineering-calculation-system",
   "core",
   "engineering-calculation-system",
 );
