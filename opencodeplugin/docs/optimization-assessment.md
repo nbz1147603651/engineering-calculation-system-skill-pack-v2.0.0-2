@@ -13,7 +13,7 @@ The gap is that the current OpenCode support is an adapter overlay, not a dedica
 7. Conservative MCP posture: recommend task-scoped MCPs, but do not bundle broad or secret-bearing MCPs by default.
 8. Compaction support: preserve evidence gates, source authority decisions, handoff status, validation state, changed artifacts, active plan IDs, worker task IDs, owned paths, result packet status, merge conflicts, and gate decisions across long OpenCode sessions.
 
-This `opencodeplugin` directory implements that bridge while keeping the existing core skill pack untouched and staying independent from `tools/build_release.py`.
+This `opencodeplugin` directory implements that bridge while keeping the existing core skill pack untouched and staying independent from `tools/build_release.py`. Version `0.3.0` adds the productization layer borrowed from oh-my-openagent: config loading, schema generation, doctor checks, CLI install/update/uninstall/status, managed asset markers, and a testable plugin factory.
 
 ## v2.4.0 orchestration posture
 

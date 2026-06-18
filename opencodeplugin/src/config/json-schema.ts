@@ -1,0 +1,81 @@
+export function createConfigJsonSchema(): Record<string, unknown> {
+  return {
+    $schema: "http://json-schema.org/draft-07/schema#",
+    $id: "engineering-calc-system.schema.json",
+    title: "Engineering Calculation System OpenCode Plugin Configuration",
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      $schema: { type: "string" },
+      skillRoot: { type: "string" },
+      strictGateMode: { type: "boolean", default: true },
+      defaultPhase: {
+        type: "string",
+        enum: [
+          "router",
+          "reference-acquisition",
+          "logic-blueprint",
+          "implementation-handoff",
+          "implementation",
+          "interfaces",
+          "verification",
+          "release",
+          "orchestration",
+        ],
+        default: "router",
+      },
+      doctor: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          validateOnStartup: { type: "boolean", default: false },
+          timeoutMs: { type: "integer", minimum: 1, default: 30000 },
+        },
+      },
+      orchestration: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          enabled: { type: "boolean", default: true },
+          readOnlyDrafts: { type: "boolean", default: true },
+        },
+      },
+      agents: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          disabled: { type: "array", items: { type: "string" }, default: [] },
+          roleOverrides: {
+            type: "object",
+            additionalProperties: {
+              type: "object",
+              additionalProperties: false,
+              properties: {
+                description: { type: "string" },
+                promptAppend: { type: "string" },
+                disabled: { type: "boolean" },
+              },
+            },
+          },
+        },
+      },
+      agentOrder: { type: "array", items: { type: "string", maxLength: 128 }, maxItems: 64 },
+      commands: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          disabled: { type: "array", items: { type: "string" }, default: [] },
+        },
+      },
+      mcpPresets: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          enabled: { type: "boolean", default: false },
+          allowed: { type: "array", items: { type: "string" }, default: [] },
+        },
+      },
+    },
+  };
+}
+

@@ -1,0 +1,30 @@
+\section{Calculation Checks}
+
+{% if checks %}
+\begin{longtable}{p{0.18\linewidth}p{0.28\linewidth}p{0.14\linewidth}p{0.14\linewidth}p{0.14\linewidth}}
+\toprule
+Check ID & Name & Status & Utilization & Unit \\
+\midrule
+{% for check in checks %}
+{{ check.check_id | latex_escape }} &
+{{ check.name | latex_escape }} &
+{{ check.status | latex_escape }} &
+{{ check.utilization | default("--") | latex_escape }} &
+{{ check.unit | default("") | latex_escape }} \\
+{% endfor %}
+\bottomrule
+\end{longtable}
+{% else %}
+No check rows were exposed in the BookResult.
+{% endif %}
+
+\subsection{Intermediate Values Selected for Audit}
+\begin{longtable}{p{0.35\linewidth}p{0.55\linewidth}}
+\toprule
+Path & Value \\
+\midrule
+{% for path, value in intermediate_values.items() %}
+{{ path | latex_escape }} & {{ value | latex_escape }} \\
+{% endfor %}
+\bottomrule
+\end{longtable}

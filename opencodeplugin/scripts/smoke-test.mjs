@@ -12,10 +12,22 @@ const targetSchemaVersion = "2.4.0";
 const requiredFiles = [
   "package.json",
   "tsconfig.json",
+  "assets/engineering-calc-system.schema.json",
   "src/index.ts",
+  "src/plugin/create-plugin-module.ts",
+  "src/create-tools.ts",
+  "src/create-hooks.ts",
+  "src/config/loader.ts",
+  "src/doctor/runner.ts",
+  "src/installer/asset-manager.ts",
+  "src/cli/index.ts",
   "src/paths.ts",
+  "templates/.opencode/AGENTS.md",
   "templates/.opencode/skills/engineering-calc-system/SKILL.md",
   "templates/.opencode/commands/engineering-calc-start.md",
+  "templates/.opencode/commands/engineering-calc-status.md",
+  "templates/.opencode/commands/engineering-calc-config.md",
+  "templates/.opencode/commands/engineering-calc-validate.md",
   "templates/.opencode/commands/engineering-calc-orchestrate.md",
   "templates/.opencode/commands/engineering-calc-worker-packet.md",
   "templates/.opencode/commands/engineering-calc-merge-review.md",
@@ -95,8 +107,12 @@ async function main() {
   assert(!existsSync(path.join(pluginRoot, "templates/.opencode/agents/engineering-calc-builder.md")), "Legacy builder agent template is still present");
 
   const packageJson = JSON.parse(await fs.readFile(path.join(pluginRoot, "package.json"), "utf8"));
-  assert(packageJson.version === "0.2.0", "Plugin package version should be 0.2.0");
+  assert(packageJson.version === "0.3.0", "Plugin package version should be 0.3.0");
   assert(packageJson.skillPack?.schemaVersion === targetSchemaVersion, "Plugin package should declare skill pack schema 2.4.0");
+  assert(packageJson.bin?.["engineering-calc-opencode"], "Missing CLI bin");
+  assert(packageJson.dependencies?.zod, "Missing zod dependency");
+  assert(packageJson.dependencies?.["jsonc-parser"], "Missing jsonc-parser dependency");
+  assert(packageJson.dependencies?.commander, "Missing commander dependency");
   assert(packageJson.dependencies?.["@opencode-ai/plugin"], "Missing @opencode-ai/plugin dependency");
   assert(packageJson.scripts?.build, "Missing build script");
 
@@ -110,9 +126,13 @@ async function main() {
   assert(skillTemplate.includes("templates/orchestration/"), "Skill template missing orchestration templates");
 
   const indexSource = await fs.readFile(path.join(pluginRoot, "src/index.ts"), "utf8");
-  assert(indexSource.includes("engineering_calc_route"), "Route tool is missing");
-  assert(indexSource.includes("engineering_calc_doctor"), "Doctor tool is missing");
-  assert(indexSource.includes("engineering_calc_orchestration"), "Orchestration tool is missing");
+  assert(indexSource.includes("createPluginModule"), "Index should export the plugin module factory");
+  const toolSource = await fs.readFile(path.join(pluginRoot, "src/create-tools.ts"), "utf8");
+  assert(toolSource.includes("engineering_calc_route"), "Route tool is missing");
+  assert(toolSource.includes("engineering_calc_doctor"), "Doctor tool is missing");
+  assert(toolSource.includes("engineering_calc_orchestration"), "Orchestration tool is missing");
+  assert(toolSource.includes("engineering_calc_status"), "Status tool is missing");
+  assert(toolSource.includes("engineering_calc_config_example"), "Config example tool is missing");
 
   const domainSource = await fs.readFile(path.join(pluginRoot, "src/domain.ts"), "utf8");
   assert(domainSource.includes("\"orchestration\""), "Orchestration phase is missing");

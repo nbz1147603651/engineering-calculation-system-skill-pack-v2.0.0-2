@@ -1,45 +1,24 @@
 # Engineering Calculation System OpenCode Plugin
 
-This folder turns the Engineering Calculation System skill pack into a dedicated OpenCode plugin project.
+Standalone OpenCode plugin for the Engineering Calculation System skill pack.
 
-Current plugin version: `0.2.0`
+Current plugin version: `0.3.0`
 Target skill pack schema: `2.4.0`
 
-It complements the existing lightweight adapter at `adapter_sources/light/.opencode/skills/engineering-calc-system/SKILL.md` with:
-
-- a native OpenCode plugin entrypoint in `src/index.ts`
-- custom tools: `engineering_calc_route`, `engineering_calc_orchestration`, and `engineering_calc_doctor`
-- OpenCode command templates under `.opencode/commands`
-- OpenCode role-specific agent templates under `.opencode/agents`
-- an OpenCode skill wrapper generated with correct relative paths
-- a project installer script
-- a short optimization assessment in `docs/optimization-assessment.md`
-
-The orchestration tool is read-only: it returns YAML or Markdown drafts for `parallel_work_plan`, `agent_result_packet`, and `merge_review`, but it never writes files directly.
-
-## Local Development
+## Quick Install
 
 ```bash
 cd opencodeplugin
 npm install
-npm run typecheck
 npm run build
-npm run smoke
+node dist/cli/index.js install --target .. --force
+node dist/cli/index.js doctor --target ..
 ```
 
-## Install Into The Current Project
-
-From this folder:
-
-```bash
-npm run install-project -- --target .. --force
-```
-
-The installer infers a v2.4.0 skill root by reading `schemas/artifact_contracts.json`. If inference fails, pass `--skill-root` explicitly.
-
-The installer writes:
+The installer writes managed project-local assets under:
 
 ```text
+.opencode/AGENTS.md
 .opencode/plugins/engineering-calc-system.ts
 .opencode/skills/engineering-calc-system/SKILL.md
 .opencode/commands/engineering-calc-*.md
@@ -47,40 +26,51 @@ The installer writes:
 .opencode/package.json
 ```
 
-OpenCode loads local plugins from `.opencode/plugins/` automatically.
+Managed files contain an `engineering-calc-opencode-managed` marker so `uninstall` can remove only this plugin's files.
 
-## Publish Path
-
-After the package name and license are finalized, build with:
+## Common Commands
 
 ```bash
-npm run build
-npm pack
+engineering-calc-opencode install --target <project> --skill-root <skill-root> --force
+engineering-calc-opencode update --target <project>
+engineering-calc-opencode doctor --target <project> --verbose
+engineering-calc-opencode status --target <project>
+engineering-calc-opencode schema --write
+engineering-calc-opencode config-example --full
+engineering-calc-opencode uninstall --target <project>
 ```
 
-Then an OpenCode config can use the npm package:
+## OpenCode Tools
 
-```json
-{
-  "$schema": "https://opencode.ai/config.json",
-  "plugin": ["engineering-calculation-system-opencode-plugin"]
-}
-```
+- `engineering_calc_route`
+- `engineering_calc_orchestration`
+- `engineering_calc_doctor`
+- `engineering_calc_status`
+- `engineering_calc_config_example`
 
-For engineering work, keep the skill pack itself available on disk and set `ENGINEERING_CALC_SKILL_ROOT` when OpenCode cannot infer it automatically.
+The orchestration tool is read-only: it returns YAML or Markdown drafts for `parallel_work_plan`, `agent_result_packet`, and `merge_review`, but never writes files directly.
 
-## Orchestration Workflow
+## Configuration
 
-Use orchestration only when the user explicitly asks for multiple agents, subagents, delegation, or parallel work.
-
-Recommended flow:
+Project config lives at:
 
 ```text
-/engineering-calc-orchestrate
-@engineering-calc-supervisor
-@engineering-calc-module-worker
-/engineering-calc-worker-packet
-/engineering-calc-merge-review
+.opencode/engineering-calc-system.jsonc
 ```
 
-The supervisor owns routing, gates, source authority, ID allocation, handoff freeze, public runner contract changes, production/release labels, validation, and final acceptance. Workers only edit declared `owned_paths` and return result packets.
+User config lives at:
+
+```text
+%APPDATA%/opencode/engineering-calc-system.jsonc
+~/.config/opencode/engineering-calc-system.jsonc
+```
+
+See [configuration.md](docs/configuration.md).
+
+## More
+
+- [Installation](docs/installation.md)
+- [Configuration](docs/configuration.md)
+- [Doctor](docs/doctor.md)
+- [Orchestration Guide](docs/orchestration-guide.md)
+- [Optimization Assessment](docs/optimization-assessment.md)

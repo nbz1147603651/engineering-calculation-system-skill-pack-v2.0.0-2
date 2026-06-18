@@ -1,0 +1,11 @@
+\section{Input Summary}
+
+\begin{longtable}{p{0.35\linewidth}p{0.55\linewidth}}
+\toprule
+Field & Value \\
+\midrule
+{% for group_name, group_value in input.items() %}
+{{ group_name | latex_escape }} & {{ group_value | latex_escape }} \\
+{% endfor %}
+\bottomrule
+\end{longtable}

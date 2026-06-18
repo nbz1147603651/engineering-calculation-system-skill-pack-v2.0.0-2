@@ -13,6 +13,7 @@ export type SkillRootSource =
 export interface OpenCodePathContext {
   directory?: string;
   worktree?: string;
+  configuredSkillRoot?: string;
 }
 
 export interface SkillRootInspection {
@@ -99,6 +100,9 @@ function addSkillPackCandidates(
 
 function candidateRoots(ctx: OpenCodePathContext): Array<{ root: string; source: SkillRootSource }> {
   const roots: Array<{ root: string; source: SkillRootSource }> = [];
+
+  const configuredRoot = normalizeCandidate(ctx.configuredSkillRoot);
+  if (configuredRoot) addCandidate(roots, configuredRoot, "env");
 
   const envRoot = normalizeCandidate(process.env.ENGINEERING_CALC_SKILL_ROOT);
   if (envRoot) addCandidate(roots, envRoot, "env");
