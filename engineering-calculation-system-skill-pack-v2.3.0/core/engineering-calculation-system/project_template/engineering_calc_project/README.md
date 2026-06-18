@@ -17,6 +17,7 @@ Official runner: src/pkg/books/book_name/book_runner.py::run_book
 Backend/API: Flask application factory at webapp.app:create_app()
 Frontend format: Jinja2 templates + Bootstrap 5 + vanilla JavaScript modules
 Frontend files: webapp/templates/ and webapp/static/
+UI language: Chinese/English switch via webapp/i18n.py, /api/i18n/<lang>, and webapp/static/js/i18n.js
 Review/admin: Marimo when enabled
 ```
 

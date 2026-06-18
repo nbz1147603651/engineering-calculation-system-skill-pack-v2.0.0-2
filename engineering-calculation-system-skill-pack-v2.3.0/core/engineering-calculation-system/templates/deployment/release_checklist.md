@@ -25,6 +25,7 @@
 - [ ] Cloud Linux deployment files are present.
 - [ ] `/health` endpoint passes.
 - [ ] `POST /api/calculate` smoke test passes with known input.
+- [ ] Chinese/English UI switch is present, persisted, and smoke-tested through `/api/i18n/en` and `/api/i18n/zh`.
 - [ ] Delivery is not only a static `.html` file, exported report HTML, or mockup unless explicitly labeled as a non-production prototype.
 - [ ] Production debug mode is disabled.
 - [ ] Secrets are environment-based and not committed.
@@ -54,6 +55,7 @@
 | Local app start | `python -m webapp.app` | to_be_defined |  |
 | Health | `curl -fsS http://127.0.0.1:5000/health` | to_be_defined |  |
 | Main page | `curl -fsS http://127.0.0.1:5000/` | to_be_defined |  |
+| i18n EN/ZH | `curl -fsS http://127.0.0.1:5000/api/i18n/en && curl -fsS http://127.0.0.1:5000/api/i18n/zh` | to_be_defined |  |
 | Calculate API | `curl -fsS -X POST ... /api/calculate` | to_be_defined |  |
 | Marimo admin | `curl -fsS http://127.0.0.1:2718/` | to_be_defined |  |
 | Docker build | `docker build -f deploy/Dockerfile .` | to_be_defined |  |

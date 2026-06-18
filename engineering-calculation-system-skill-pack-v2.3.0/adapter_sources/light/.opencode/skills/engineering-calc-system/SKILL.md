@@ -36,6 +36,7 @@ fallback before claiming `web-complete`.
 - Route official calculations through `run_book(BookInput) -> BookResult`.
 - Declare delivery mode before implementation: `core-only`, `report-only`, `prototype-web`, or `web-complete`.
 - Default to `web-complete`; its path is `08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14`.
+- For `web-complete`, include a Chinese/English interactive UI switch with `/api/i18n/<lang>`, `data-i18n`, persisted language preference, and selected-language report calls.
 - Do not call CLI runners, static HTML, exported report HTML, notebooks, or UI mockups complete or deployable.
 - Parallel workers must have disjoint `owned_paths`, return an agent result packet, and wait for supervisor merge review before their output is accepted.
 - Do not delegate evidence gates, coding gates, source authority, ID allocation, handoff freeze, public runner contracts, or final acceptance.

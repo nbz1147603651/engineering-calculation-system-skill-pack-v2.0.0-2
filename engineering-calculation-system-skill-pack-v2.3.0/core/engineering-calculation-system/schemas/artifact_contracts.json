@@ -213,7 +213,9 @@
       "Unified Frontend Layout",
       "Form and API Contract",
       "Static HTML Delivery Guard",
-      "Marimo Review Apps"
+      "Marimo Review Apps",
+      "Chinese/English language switch",
+      "localStorage or equivalent persisted language preference"
     ],
     "skills/12c-batch-import-export-packages.skill.md": [
       "Managed Data Area",
@@ -251,7 +253,14 @@
       "Operator Convenience Decisions",
       "Frontend File Layout",
       "Jinja2 + Bootstrap 5 + vanilla JavaScript modules",
-      "Deployment Entry"
+      "Deployment Entry",
+      "Chinese/English language switch"
+    ],
+    "templates/implementation/i18n_pattern.md": [
+      "visible Chinese/English toggle",
+      "localStorage",
+      "document.documentElement.lang",
+      "report preview/download path"
     ],
     "templates/implementation/api_route_skeleton.md": [
       "Primary runtime",
@@ -291,7 +300,8 @@
     "templates/deployment/release_checklist.md": [
       "Required Gates",
       "Release Artifacts",
-      "Smoke Test Record"
+      "Smoke Test Record",
+      "Chinese/English UI switch"
     ],
     "templates/implementation/report_context_spec.md": [
       "Report Production Decision Record",
@@ -307,7 +317,8 @@
       "Report production decision is recorded",
       "Report status is explicit",
       "module_asset_registry.csv",
-      "Cloud Linux deployment path"
+      "Cloud Linux deployment path",
+      "Chinese/English switching"
     ],
     "shared/quality-gates.md": [
       "Semantic production gate",
@@ -320,7 +331,8 @@
       "Web-Complete Minimum",
       "Completion Guard",
       "Installation Shape Check",
-      "--delivery web-complete"
+      "--delivery web-complete",
+      "interactive Chinese/English UI switching"
     ],
     "shared/multi-agent-orchestration.md": [
       "Supervisor Responsibilities",
@@ -431,15 +443,47 @@
     ],
     "webapp/routes.py": [
       "/api/calculate",
+      "/api/i18n/<lang>",
       "/api/batch/run",
       "build_case_input_from_form",
       "run_book",
       "case_result_to_ui"
     ],
+    "webapp/i18n.py": [
+      "I18N",
+      "english, chinese",
+      "language_english",
+      "language_chinese",
+      "get_translations"
+    ],
+    "webapp/templates/base.html": [
+      "id=\"langToggle\"",
+      "data-lang=\"en\"",
+      "data-lang=\"zh\"",
+      "data-i18n-title=\"language_label\"",
+      "static/js/i18n.js"
+    ],
     "webapp/form_utils.py": [
       "build_case_input_from_form",
       "book_input_to_form",
       "case_result_to_ui"
+    ],
+    "webapp/static/js/i18n.js": [
+      "localStorage",
+      "document.documentElement.lang",
+      "data-i18n",
+      "setLanguage",
+      "data-lang",
+      "languagechange"
+    ],
+    "webapp/static/js/main.js": [
+      "/api/calculate",
+      "/api/report/preview",
+      "/api/report/html",
+      "/api/import/json",
+      "/api/export/json",
+      "getCurrentLang",
+      "data.lang = getCurrentLang()"
     ],
     "src/pkg/books/book_name/book_runner.py": [
       "def run_book",
@@ -448,12 +492,15 @@
     ],
     "tests/smoke/test_web_routes.py": [
       "/health",
+      "/api/i18n/en",
+      "/api/i18n/zh",
       "/api/calculate",
       "/api/import/json",
       "/api/export/json",
       "/api/report/preview",
       "/api/report/html",
-      "/api/batch/run"
+      "/api/batch/run",
+      "langToggle"
     ],
     "release/release_checklist.md": [
       "Runtime stack is recorded",

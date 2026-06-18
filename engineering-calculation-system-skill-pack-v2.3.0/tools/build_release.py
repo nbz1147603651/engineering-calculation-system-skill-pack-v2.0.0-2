@@ -533,6 +533,7 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
                 "QODER-Project",
                 "web-complete",
                 "轻量入口",
+                "中英文切换",
             ],
             context=context,
         )
@@ -549,8 +550,29 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
                 "schemas/artifact_contracts.json",
                 "scripts/validate_artifacts.py",
                 "project_template/engineering_calc_project/webapp/routes.py",
+                "project_template/engineering_calc_project/webapp/i18n.py",
+                "project_template/engineering_calc_project/webapp/templates/base.html",
+                "project_template/engineering_calc_project/webapp/static/js/i18n.js",
                 "project_template/engineering_calc_project/deploy/Dockerfile",
                 "project_template/engineering_calc_project/tests/smoke/test_web_routes.py",
+            ],
+            context=context,
+        )
+        require_text(
+            payload_root / "project_template/engineering_calc_project/webapp/templates/base.html",
+            [
+                "id=\"langToggle\"",
+                "data-lang=\"en\"",
+                "data-lang=\"zh\"",
+            ],
+            context=context,
+        )
+        require_text(
+            payload_root / "project_template/engineering_calc_project/webapp/static/js/i18n.js",
+            [
+                "localStorage",
+                "document.documentElement.lang",
+                "setLanguage",
             ],
             context=context,
         )

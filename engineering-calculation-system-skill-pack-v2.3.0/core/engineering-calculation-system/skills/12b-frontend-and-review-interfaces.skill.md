@@ -75,7 +75,7 @@ Use this layout unless an existing product design overrides it:
 
 ```text
 top bar:
-  book/project title, case selector, report status, import/export, report preview, language switch
+  book/project title, case selector, report status, import/export, report preview, Chinese/English language switch
 
 left input panel:
   grouped BookInput forms, units, validation feedback, sticky run/save controls
@@ -137,6 +137,10 @@ Use i18n when the project serves multilingual engineers or clients:
 single translation dictionary
 data-i18n attributes
 /api/i18n/<lang> endpoint
+visible Chinese/English toggle in the interactive UI
+localStorage or equivalent persisted language preference
+document.documentElement.lang and data-lang update on every switch
+selected lang included in calculate/report preview/report download calls when backend text can vary
 bilingual chart variants when needed
 ```
 

@@ -12,6 +12,7 @@
 - [ ] Cloud Linux deployment files are present under `deploy/`.
 - [ ] `/health` endpoint passes.
 - [ ] `POST /api/calculate` smoke test passes with known input.
+- [ ] Chinese/English UI switch is present, persists the selected language, and is smoke-tested through `/api/i18n/en` and `/api/i18n/zh`.
 - [ ] JSON import/export smoke tests pass: `/api/import/json` and `/api/export/json`.
 - [ ] Report preview/download smoke tests pass: `/api/report/preview` and `/api/report/html`.
 - [ ] Batch smoke test passes: `/api/batch/run` calls `run_book()` once per case and returns a batch summary.

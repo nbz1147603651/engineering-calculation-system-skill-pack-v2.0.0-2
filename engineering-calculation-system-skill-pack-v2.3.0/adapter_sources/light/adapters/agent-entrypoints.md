@@ -41,6 +41,10 @@ reduced scope. The default `web-complete` path is:
 08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14
 ```
 
+For `web-complete`, the interactive UI must include Chinese/English switching:
+`/api/i18n/<lang>`, `data-i18n` bindings, persisted language preference, and
+selected-language report preview/download calls.
+
 The supervisor must keep gate decisions, source authority, ID allocation,
 handoff freeze, `run_book()` public contracts, and final acceptance serial.
 
@@ -192,6 +196,7 @@ Use templates/ for output artifacts and scripts/validate_artifacts.py before con
 For implementation or release work, read shared/delivery-contract.md.
 Declare delivery mode before implementation: core-only, report-only, prototype-web, or web-complete. Default to web-complete.
 For web-complete, follow 08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14.
+For web-complete, include a Chinese/English interactive UI switch with /api/i18n/<lang>, data-i18n, persisted language preference, and selected-language report calls.
 Do not call CLI runners, static HTML, exported report HTML, notebooks, or UI mockups complete or deployable.
 For explicit multi-agent or parallel work, read shared/multi-agent-orchestration.md and use templates/orchestration/.
 Split work only by disjoint owned paths. Workers return agent_result_packet.yaml fields, and the supervisor accepts output only after merge_review.md checks.

@@ -16,6 +16,7 @@
 - [ ] Unit policy is explicit
 - [ ] Report/UI/batch do not calculate
 - [ ] UI follows the unified layout when a frontend exists
+- [ ] Interactive UI includes Chinese/English switching, persists the selected language, and uses the selected language for report preview/download when a frontend exists
 - [ ] Marimo review pages do not calculate outside trusted modules or run_book
 - [ ] Formula registry version/hash/published_at are exposed in BookResult when editable formulas are enabled
 - [ ] Formula publish failures do not update active_versions.yaml
@@ -28,6 +29,7 @@
 - [ ] Regression tests exist when references exist
 - [ ] Integration test exists
 - [ ] Smoke tests exist for reports/interfaces
+- [ ] Smoke tests cover `/api/i18n/en`, `/api/i18n/zh`, and the language toggle shell when a frontend exists
 - [ ] Web app exposes /health when frontend/API exists
 - [ ] Local run command is documented and smoke-tested when frontend/API exists
 - [ ] Cloud Linux deployment path is documented when final delivery is expected

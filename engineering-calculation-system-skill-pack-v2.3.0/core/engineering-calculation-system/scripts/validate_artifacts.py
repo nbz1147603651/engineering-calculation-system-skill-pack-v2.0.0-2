@@ -111,10 +111,13 @@ WEB_COMPLETE_REQUIRED_PROJECT_PATHS = [
     "webapp/app.py",
     "webapp/routes.py",
     "webapp/form_utils.py",
+    "webapp/i18n.py",
+    "webapp/templates/base.html",
     "webapp/templates/index.html",
     "webapp/static/js/main.js",
     "webapp/static/js/forms.js",
     "webapp/static/js/results.js",
+    "webapp/static/js/i18n.js",
     "webapp/static/css/style.css",
     "deploy/env.example",
     "deploy/Dockerfile",
@@ -137,6 +140,7 @@ WEB_COMPLETE_TEXT_REQUIRED_PHRASES = {
     ],
     "webapp/routes.py": [
         "/api/calculate",
+        "/api/i18n/<lang>",
         "/api/report/preview",
         "/api/report/html",
         "/api/import/json",
@@ -146,21 +150,48 @@ WEB_COMPLETE_TEXT_REQUIRED_PHRASES = {
         "build_case_input_from_form",
         "case_result_to_ui",
     ],
+    "webapp/i18n.py": [
+        "I18N",
+        "english, chinese",
+        "language_english",
+        "language_chinese",
+        "get_translations",
+    ],
+    "webapp/templates/base.html": [
+        "id=\"langToggle\"",
+        "data-lang=\"en\"",
+        "data-lang=\"zh\"",
+        "data-i18n-title=\"language_label\"",
+        "static/js/i18n.js",
+    ],
     "webapp/static/js/main.js": [
         "/api/calculate",
         "/api/report/preview",
         "/api/report/html",
         "/api/import/json",
         "/api/export/json",
+        "getCurrentLang",
+        "data.lang = getCurrentLang()",
+    ],
+    "webapp/static/js/i18n.js": [
+        "localStorage",
+        "document.documentElement.lang",
+        "data-i18n",
+        "setLanguage",
+        "data-lang",
+        "languagechange",
     ],
     "tests/smoke/test_web_routes.py": [
         "/health",
+        "/api/i18n/en",
+        "/api/i18n/zh",
         "/api/calculate",
         "/api/import/json",
         "/api/export/json",
         "/api/report/preview",
         "/api/report/html",
         "/api/batch/run",
+        "langToggle",
     ],
     "release/release_checklist.md": [
         "web-complete",
@@ -595,6 +626,18 @@ def validate_adapters_light_profile(package_root: Path) -> list[str]:
         ".opencode/skills/engineering-calc-system/SKILL.md",
     ]:
         check_skill_frontmatter(package_root, rel_path, errors, expected_version=expected_version)
+    check_text_required_phrases(
+        package_root,
+        {
+            "AGENTS.md": ["Chinese/English interactive UI switch"],
+            "adapters/agent-entrypoints.md": ["Chinese/English switching"],
+            ".agents/skills/engineering-calc-system/SKILL.md": ["Chinese/English interactive UI switch"],
+            ".opencode/skills/engineering-calc-system/SKILL.md": ["Chinese/English interactive UI switch"],
+            ".trae/project_rules.md": ["Chinese/English interactive UI switch"],
+            ".trae/rules/engineering-calc-system.md": ["Chinese/English interactive UI switch"],
+        },
+        errors,
+    )
     check_absent(package_root, ".qoder", errors)
     check_no_cache_artifacts(package_root, errors)
     return errors
@@ -617,6 +660,16 @@ def validate_qoder_addon_profile(package_root: Path) -> list[str]:
         ".qoder/skills/engineering-calc-system/SKILL.md",
         errors,
         expected_version=expected_version,
+    )
+    check_text_required_phrases(
+        package_root,
+        {
+            ".qoder/skills/engineering-calc-system/SKILL.md": ["中英文切换"],
+            ".qoder/skills/engineering-calc-system/reference.md": ["/api/i18n/<lang>"],
+            ".qoder/agents/engineering-calc-system.md": ["中英文切换"],
+            ".qoder/agents/reference.md": ["/api/i18n/<lang>"],
+        },
+        errors,
     )
     check_absent(package_root, "SKILL.md", errors)
     check_absent(package_root, "core", errors)

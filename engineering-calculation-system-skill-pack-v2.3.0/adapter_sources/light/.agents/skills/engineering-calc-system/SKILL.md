@@ -57,6 +57,7 @@ the generated dist/singlefile/engineering-calculation-system.all-in-one.md relea
 - Keep UI, reports, batch scripts, and review tools as thin consumers of trusted results.
 - Declare delivery mode before implementation: `core-only`, `report-only`, `prototype-web`, or `web-complete`.
 - Default to `web-complete`; its path is `08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14`.
+- For `web-complete`, include a Chinese/English interactive UI switch with `/api/i18n/<lang>`, `data-i18n`, persisted language preference, and selected-language report calls.
 - Do not call CLI runners, static HTML, exported report HTML, notebooks, or UI mockups complete or deployable.
 - Split parallel work only by disjoint owned paths.
 - Keep gate decisions, source authority, ID allocation, handoff freeze, public runner contracts, and final acceptance with the supervisor.

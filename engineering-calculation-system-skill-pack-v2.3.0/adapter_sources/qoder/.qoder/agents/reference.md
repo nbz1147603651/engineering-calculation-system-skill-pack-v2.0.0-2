@@ -8,7 +8,7 @@
 
 实现前必须声明交付模式：`core-only` / `report-only` / `prototype-web` / `web-complete`。
 
-默认使用 `web-complete`，除非用户明确要求轻量原型或仅计算核心。`web-complete` 必须包含计算核心、`run_book(BookInput) -> BookResult`、Web/API、交互前端、报告预览或下载、JSON 导入导出、批量接口、部署文件、smoke tests、release checklist 和项目校验记录。
+默认使用 `web-complete`，除非用户明确要求轻量原型或仅计算核心。`web-complete` 必须包含计算核心、`run_book(BookInput) -> BookResult`、Web/API、交互前端（含中英文切换：`/api/i18n/<lang>`、`data-i18n`、持久化语言偏好）、报告预览或下载、JSON 导入导出、批量接口、部署文件、smoke tests、release checklist 和项目校验记录。
 
 默认完整路径：
 

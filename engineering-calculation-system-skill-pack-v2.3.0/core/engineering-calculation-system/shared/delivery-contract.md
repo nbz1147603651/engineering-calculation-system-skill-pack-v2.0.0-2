@@ -38,10 +38,14 @@ A `web-complete` engineering calculation delivery must include all of these:
 - import/export route for JSON configuration
 - batch route or documented batch interface that calls `run_book()` once per case
 - browser frontend assets under `webapp/` or an explicitly documented equivalent
+- interactive Chinese/English UI switching with `data-i18n` bindings,
+  `/api/i18n/<lang>`, persisted language preference, and report/API calls using
+  the selected language
 - managed input, normalized result, upload package, report, batch summary, and log
   directories
 - release/deployment files for Docker or systemd/nginx plus environment examples
-- smoke tests for health, calculate, import, export, report, and batch paths
+- smoke tests for health, calculate, Chinese/English i18n, import, export,
+  report, and batch paths
 - release checklist with local run, API smoke, deployment smoke, and remaining
   assumptions
 - successful artifact validation before any claim of completion

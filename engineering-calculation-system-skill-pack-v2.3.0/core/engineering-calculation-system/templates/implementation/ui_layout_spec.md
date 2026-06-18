@@ -16,7 +16,7 @@ Use this template for production frontend, review UI, or app-like engineering ca
 
 | Zone | Required content | Notes |
 | --- | --- | --- |
-| Top bar | project/book title, case selector, status, import, export, report preview | Keep actions predictable across projects. |
+| Top bar | project/book title, case selector, status, import, export, report preview, Chinese/English language switch | Keep actions predictable across projects. |
 | Left input panel | collapsible BookInput groups, units, validation, sticky run/save controls | Do not place result logic here. |
 | Right review workbench | governing summary, warnings/errors, result cards, charts, traces | Conclusion first, details below. |
 | Modal/drawer | report preview, imported report preview, source trace, formula trace, package validation, diff | Use for deep review without losing context. |
@@ -75,7 +75,7 @@ Use this template for production frontend, review UI, or app-like engineering ca
 | Template engine | Jinja2 | Default; React/Vue is allowed when workflow complexity justifies it |
 | CSS framework | Bootstrap 5 + `webapp/static/css/style.css` | Standard project scaffold |
 | JS architecture | vanilla modules: `i18n.js`, `forms.js`, `results.js`, `main.js` | see `api_route_skeleton.md` |
-| i18n strategy | data-i18n + `/api/i18n/<lang>` endpoint | see `i18n_pattern.md` |
+| i18n strategy | visible Chinese/English toggle + data-i18n + `/api/i18n/<lang>` endpoint + persisted language preference | see `i18n_pattern.md` |
 | Chart library | matplotlib SVG / plotly / D3 | to_be_defined | see `chart_integration.md` |
 | Formula rendering | KaTeX / MathJax / none | to_be_defined | for report preview |
 

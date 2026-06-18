@@ -55,6 +55,7 @@ health endpoint for deployment smoke tests
 thin API routes that call run_book()
 explicit form_to_model and result_to_ui mapping
 static/templates or SPA bundle needed by the browser UI
+Chinese/English language switch with /api/i18n/<lang>, persisted selection, and selected-language report calls
 environment-based configuration
 non-debug production defaults
 structured error responses that preserve server logs
@@ -127,6 +128,7 @@ python -m webapp.app or equivalent local start
 GET /health
 GET /
 POST /api/calculate with a known input
+GET /api/i18n/en and GET /api/i18n/zh plus main-page language-toggle shell
 report preview or export when present
 Marimo admin route /admin/review/ when present
 Docker build/run or systemd command syntax when provided

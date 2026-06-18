@@ -17,6 +17,9 @@ I18N: dict[str, tuple[str, str]] = {
     "nav_import": ("Import JSON", "导入配置"),
     "nav_export": ("Export JSON", "导出配置"),
     "nav_language": ("Language", "语言"),
+    "language_label": ("Language", "语言"),
+    "language_english": ("English", "英文"),
+    "language_chinese": ("Chinese", "中文"),
     "nav_preview": ("Preview Report", "预览报告"),
     "nav_download": ("Download Report", "下载报告"),
     "nav_admin_review": ("Review Admin", "审查后台"),
@@ -39,6 +42,7 @@ I18N: dict[str, tuple[str, str]] = {
     "btn_download_report": ("Download Report", "下载报告"),
     "btn_close": ("Close", "关闭"),
     "btn_reset": ("Reset to Defaults", "恢复默认值"),
+    "status_calculating": ("Calculating...", "正在计算..."),
 
     # ── Results display ──────────────────────────────────────────────
     "result_title": ("Calculation Results", "计算结果"),
@@ -55,6 +59,10 @@ I18N: dict[str, tuple[str, str]] = {
     "error_invalid_input": ("Invalid input value", "输入值无效"),
     "error_missing_field": ("Required field missing", "必填字段缺失"),
     "error_import_failed": ("Failed to import configuration.", "导入配置失败。"),
+    "error_export_failed": ("Export failed.", "导出失败。"),
+    "error_report_preview_failed": ("Report preview failed.", "报告预览失败。"),
+    "error_report_download_failed": ("Report download failed.", "报告下载失败。"),
+    "error_network": ("Network error", "网络错误"),
     "error_no_result": ("Please run calculation first.", "请先执行计算。"),
 
     # ── Warning messages ─────────────────────────────────────────────

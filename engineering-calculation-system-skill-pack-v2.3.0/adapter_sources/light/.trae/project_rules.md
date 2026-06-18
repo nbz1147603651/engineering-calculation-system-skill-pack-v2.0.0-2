@@ -73,6 +73,10 @@ explicitly requests a narrower prototype.
 Do not call CLI runners, static HTML, exported report HTML, notebooks, or UI
 mockups complete or deployable.
 
+For `web-complete`, include a Chinese/English interactive UI switch with
+`/api/i18n/<lang>`, `data-i18n`, persisted language preference, and
+selected-language report calls.
+
 ## Parallel Work
 
 Parallel work is optional and must use disjoint owned paths.

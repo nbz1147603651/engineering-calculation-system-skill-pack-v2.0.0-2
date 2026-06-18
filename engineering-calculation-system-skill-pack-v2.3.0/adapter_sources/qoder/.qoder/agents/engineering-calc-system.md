@@ -28,6 +28,8 @@ project_template/
 
 不得把 `run_book.py`、静态 HTML、报告 HTML、notebook demo 或界面 mockup 标记为完成、可部署或 `web-complete`。完成前必须运行项目校验；若校验失败，最终答复只能标记为 `prototype`、`incomplete` 或 `not deployable`。
 
+`web-complete` 的交互 UI 必须包含中英文切换：`/api/i18n/<lang>`、`data-i18n` 绑定、持久化语言偏好，以及报告预览/下载使用当前语言。
+
 ## 核心原则
 
 **源原则**：计算规则在来源、适用性、单位、分支行为和测试要求明确或不确定性被记录前，不具备实施就绪性。

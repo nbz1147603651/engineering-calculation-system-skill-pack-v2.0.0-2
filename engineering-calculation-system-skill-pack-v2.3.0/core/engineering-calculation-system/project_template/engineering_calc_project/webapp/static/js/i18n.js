@@ -1,58 +1,138 @@
 /**
  * i18n.js — Language toggle and bilingual content management.
  *
- * Replaces text content of elements with data-i18n attributes
- * and toggles bilingual chart visibility on language switch.
+ * Uses the same pattern as the reference signboard foundation app:
+ * server-side key -> (English, Chinese) dictionary, /api/i18n/<lang>,
+ * data-i18n bindings, persisted operator preference, and bilingual chart
+ * visibility through .bi-en / .bi-zh classes.
  */
 
-let currentLang = "en";
-let translations = {};
+var currentLang = "en";
+var translations = {};
 
-async function switchLanguage(lang) {
-    if (lang === currentLang) return;
+const I18n = (function () {
+    const STORAGE_KEY = "engineering_calc_lang";
+    const SUPPORTED_LANGS = ["en", "zh"];
 
-    try {
-        const resp = await fetch(`/api/i18n/${lang}`);
-        if (!resp.ok) return;
-        translations = await resp.json();
-        currentLang = lang;
-    } catch (e) {
-        console.warn("Failed to load translations for", lang, e);
-        return;
+    let _translations = {};
+    let _currentLang = localStorage.getItem(STORAGE_KEY) || "en";
+    if (!SUPPORTED_LANGS.includes(_currentLang)) {
+        _currentLang = "en";
     }
 
-    // Replace text content of all data-i18n elements
-    document.querySelectorAll("[data-i18n]").forEach(el => {
-        const key = el.getAttribute("data-i18n");
-        if (translations[key] !== undefined) {
-            el.textContent = translations[key];
+    async function loadTranslations(lang) {
+        const resp = await fetch(`/api/i18n/${lang}`);
+        if (!resp.ok) {
+            throw new Error(`Failed to load translations for ${lang}`);
         }
-    });
+        _translations = await resp.json();
+        publishGlobals();
+        return _translations;
+    }
 
-    // Replace placeholder attributes
-    document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
-        const key = el.getAttribute("data-i18n-placeholder");
-        if (translations[key] !== undefined) {
-            el.placeholder = translations[key];
+    function publishGlobals() {
+        currentLang = _currentLang;
+        translations = _translations;
+        window.currentLang = _currentLang;
+        window.translations = _translations;
+    }
+
+    function t(key, fallback) {
+        return _translations[key] || fallback || key;
+    }
+
+    function translateTextBindings() {
+        document.querySelectorAll("[data-i18n]").forEach(el => {
+            const key = el.getAttribute("data-i18n");
+            const text = t(key);
+            if (text !== key) {
+                el.textContent = text;
+            }
+        });
+
+        document.querySelectorAll("[data-i18n-html]").forEach(el => {
+            const key = el.getAttribute("data-i18n-html");
+            const text = t(key);
+            if (text !== key) {
+                el.innerHTML = text;
+            }
+        });
+
+        document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+            const key = el.getAttribute("data-i18n-placeholder");
+            const text = t(key);
+            if (text !== key) {
+                el.placeholder = text;
+            }
+        });
+
+        document.querySelectorAll("[data-i18n-title]").forEach(el => {
+            const key = el.getAttribute("data-i18n-title");
+            const text = t(key);
+            if (text !== key) {
+                el.title = text;
+                el.setAttribute("aria-label", text);
+            }
+        });
+    }
+
+    function updateLanguageShell() {
+        document.documentElement.lang = _currentLang === "zh" ? "zh-CN" : "en";
+        document.documentElement.setAttribute("data-lang", _currentLang);
+
+        document.querySelectorAll("#langToggle .btn").forEach(btn => {
+            const active = btn.getAttribute("data-lang") === _currentLang;
+            btn.classList.toggle("active", active);
+            btn.setAttribute("aria-pressed", active ? "true" : "false");
+        });
+
+        document.querySelectorAll(".bi-zh, .bi-en").forEach(el => {
+            el.style.display = el.classList.contains(`bi-${_currentLang}`) ? "" : "none";
+        });
+    }
+
+    function applyTranslations() {
+        translateTextBindings();
+        updateLanguageShell();
+    }
+
+    async function setLanguage(lang, options = {}) {
+        if (!SUPPORTED_LANGS.includes(lang)) {
+            lang = "en";
         }
-    });
+        if (!options.force && lang === _currentLang && Object.keys(_translations).length > 0) {
+            applyTranslations();
+            return;
+        }
 
-    // Toggle bilingual chart visibility
-    document.querySelectorAll(".bi-zh, .bi-en").forEach(el => {
-        el.style.display = el.classList.contains(`bi-${lang}`) ? "" : "none";
-    });
+        _currentLang = lang;
+        localStorage.setItem(STORAGE_KEY, lang);
+        await loadTranslations(lang);
+        applyTranslations();
 
-    // Update language toggle button states
-    document.querySelectorAll("#langToggle .btn").forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.lang === lang);
-    });
-}
+        document.dispatchEvent(new CustomEvent("languagechange", {
+            detail: {lang: _currentLang, translations: _translations},
+        }));
+    }
 
-// Initialize language toggle on page load
+    function getLang() {
+        return _currentLang;
+    }
+
+    async function init() {
+        document.querySelectorAll("#langToggle .btn").forEach(btn => {
+            btn.addEventListener("click", () => setLanguage(btn.getAttribute("data-lang")));
+        });
+        await setLanguage(_currentLang, {force: true});
+    }
+
+    publishGlobals();
+    return {init, setLanguage, switchLanguage: setLanguage, getLang, t, applyTranslations};
+})();
+
+window.I18n = I18n;
+window.switchLanguage = I18n.setLanguage;
+
 document.addEventListener("DOMContentLoaded", () => {
-    document.querySelectorAll("#langToggle .btn").forEach(btn => {
-        btn.addEventListener("click", () => switchLanguage(btn.dataset.lang));
-    });
-    // Load default language translations
-    switchLanguage("en").then(() => { currentLang = "en"; });
+    I18n.init().catch(e => console.warn("Failed to initialize i18n:", e));
 });

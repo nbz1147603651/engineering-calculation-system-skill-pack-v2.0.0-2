@@ -37,6 +37,29 @@ def test_import_report_and_batch_routes():
     assert payload["count"] == 2
 
 
+def test_i18n_api_and_language_toggle_shell():
+    client = create_app().test_client()
+
+    en_response = client.get("/api/i18n/en")
+    assert en_response.status_code == 200
+    assert en_response.get_json()["btn_calculate"] == "Run Calculation"
+    assert en_response.get_json()["language_chinese"] == "Chinese"
+
+    zh_response = client.get("/api/i18n/zh")
+    assert zh_response.status_code == 200
+    assert zh_response.get_json()["btn_calculate"] == "执行计算"
+    assert zh_response.get_json()["language_english"] == "英文"
+
+    page = client.get("/")
+    assert page.status_code == 200
+    html = page.get_data(as_text=True)
+    assert 'id="langToggle"' in html
+    assert 'data-lang="en"' in html
+    assert 'data-lang="zh"' in html
+    assert 'data-i18n-title="language_label"' in html
+    assert "static/js/i18n.js" in html
+
+
 def test_export_json_accepts_posted_form_data():
     client = create_app().test_client()
 

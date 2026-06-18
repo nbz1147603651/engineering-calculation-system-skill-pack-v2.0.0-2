@@ -45,10 +45,10 @@
                     </li>
                 </ul>
                 <div class="d-flex align-items-center gap-2">
-                    <!-- Language toggle -->
-                    <div class="btn-group btn-group-sm" role="group" id="langToggle">
-                        <button type="button" class="btn btn-outline-light active" data-lang="en">EN</button>
-                        <button type="button" class="btn btn-outline-light" data-lang="zh">中文</button>
+                    <!-- Chinese/English language toggle -->
+                    <div class="btn-group btn-group-sm" role="group" id="langToggle" aria-label="Language" data-i18n-title="language_label">
+                        <button type="button" class="btn btn-outline-light active" data-lang="en" aria-pressed="true" data-i18n-title="language_english">EN</button>
+                        <button type="button" class="btn btn-outline-light" data-lang="zh" aria-pressed="false" data-i18n-title="language_chinese">中文</button>
                     </div>
                     <!-- Report preview button -->
                     <button class="btn btn-warning btn-sm fw-bold" id="btnPreviewReport" disabled>

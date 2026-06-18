@@ -4,6 +4,24 @@
  * This is the central coordinator that ties forms, results, and i18n together.
  */
 
+function getCurrentLang() {
+    if (window.I18n && typeof window.I18n.getLang === "function") {
+        return window.I18n.getLang();
+    }
+    return window.currentLang || document.documentElement.getAttribute("data-lang") || "en";
+}
+
+function uiText(key, fallback) {
+    if (window.I18n && typeof window.I18n.t === "function") {
+        return window.I18n.t(key, fallback);
+    }
+    return (window.translations && window.translations[key]) || fallback || key;
+}
+
+function restoreCalculateButton(btnCalc) {
+    btnCalc.innerHTML = `<i class="bi bi-play-fill me-1"></i><span data-i18n="btn_calculate">${uiText("btn_calculate", "Run Calculation")}</span>`;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
 
     // ── Load defaults on page load ────────────────────────────────────
@@ -17,10 +35,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (btnCalc) {
         btnCalc.addEventListener("click", async () => {
             btnCalc.disabled = true;
-            btnCalc.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Calculating...';
+            btnCalc.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span>${uiText("status_calculating", "Calculating...")}`;
             try {
                 const data = collectFormData();
-                data.lang = currentLang;
+                data.lang = getCurrentLang();
 
                 const resp = await fetch("/api/calculate", {
                     method: "POST",
@@ -30,12 +48,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 const result = await resp.json();
                 renderResults(result);
+                if (window.I18n) window.I18n.applyTranslations();
 
             } catch (e) {
-                showError(e.message || "Network error");
+                showError(e.message || uiText("error_network", "Network error"));
             } finally {
                 btnCalc.disabled = false;
-                btnCalc.innerHTML = `<i class="bi bi-play-fill me-1"></i><span data-i18n="btn_calculate">${translations.btn_calculate || "Run Calculation"}</span>`;
+                restoreCalculateButton(btnCalc);
             }
         });
     }
@@ -58,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             try {
                 const data = collectFormData();
-                data.lang = currentLang;
+                data.lang = getCurrentLang();
 
                 const resp = await fetch("/api/report/preview", {
                     method: "POST",
@@ -73,7 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     frame.srcdoc = `<p style="padding:2rem;color:red">${result.message}</p>`;
                 }
             } catch (e) {
-                frame.srcdoc = `<p style="padding:2rem;color:red">Report preview failed.</p>`;
+                frame.srcdoc = `<p style="padding:2rem;color:red">${uiText("error_report_preview_failed", "Report preview failed.")}</p>`;
             } finally {
                 if (loading) loading.classList.add("d-none");
             }
@@ -86,7 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
         btnDownload.addEventListener("click", async () => {
             try {
                 const data = collectFormData();
-                data.lang = currentLang;
+                data.lang = getCurrentLang();
 
                 const resp = await fetch("/api/report/html", {
                     method: "POST",
@@ -94,7 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     body: JSON.stringify(data),
                 });
 
-                if (!resp.ok) throw new Error("Report download failed");
+                if (!resp.ok) throw new Error(uiText("error_report_download_failed", "Report download failed."));
                 const blob = await resp.blob();
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement("a");
@@ -133,10 +152,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     populateForm(result.data);
                     clearResults();
                 } else {
-                    alert(result.message || "Import failed");
+                    alert(result.message || uiText("error_import_failed", "Import failed."));
                 }
             } catch (e) {
-                alert("Import failed: " + e.message);
+                alert(`${uiText("error_import_failed", "Import failed.")}: ${e.message}`);
             }
 
             fileInput.value = "";  // Reset for re-import
@@ -154,7 +173,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify(data),
                 });
-                if (!resp.ok) throw new Error("Export failed");
+                if (!resp.ok) throw new Error(uiText("error_export_failed", "Export failed."));
                 const blob = await resp.blob();
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement("a");
@@ -163,7 +182,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 a.click();
                 URL.revokeObjectURL(url);
             } catch (e) {
-                alert("Export failed: " + e.message);
+                alert(`${uiText("error_export_failed", "Export failed.")}: ${e.message}`);
             }
         });
     }

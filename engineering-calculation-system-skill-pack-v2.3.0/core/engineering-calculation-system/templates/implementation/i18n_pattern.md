@@ -12,6 +12,8 @@ Use this template to document the i18n strategy for multilingual engineering cal
 | Chart i18n | Bilingual SVG generation | CSS class toggle: `.bi-zh` / `.bi-en` |
 | Report i18n | `lang` parameter passed to renderer | Report generated in selected language |
 | Storage | `webapp/i18n.py` | Master dictionary + helper functions |
+| Persistence | `localStorage` key such as `engineering_calc_lang` | Operator preference survives reloads |
+| Page state | `document.documentElement.lang` and `data-lang` | Required for accessibility and CSS hooks |
 
 ## Dictionary Categories
 
@@ -52,13 +54,16 @@ def t(key: str, lang: str = "en") -> str:
 
 ```javascript
 // webapp/static/js/i18n.js
-let currentLang = "en";
-let translations = {};
+var currentLang = "en";
+var translations = {};
 
-async function switchLanguage(lang) {
+async function setLanguage(lang) {
     const resp = await fetch(`/api/i18n/${lang}`);
     translations = await resp.json();
     currentLang = lang;
+    localStorage.setItem("engineering_calc_lang", lang);
+    document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
+    document.documentElement.setAttribute("data-lang", lang);
     document.querySelectorAll("[data-i18n]").forEach(el => {
         const key = el.getAttribute("data-i18n");
         if (translations[key]) el.textContent = translations[key];
@@ -75,6 +80,10 @@ async function switchLanguage(lang) {
 ```html
 <span data-i18n="btn_calculate">Run Calculation</span>
 <button data-i18n="btn_add_layer">Add Layer</button>
+<div id="langToggle" data-i18n-title="language_label">
+  <button data-lang="en" aria-pressed="true" data-i18n-title="language_english">EN</button>
+  <button data-lang="zh" aria-pressed="false" data-i18n-title="language_chinese">中文</button>
+</div>
 ```
 
 ## Rules
@@ -82,7 +91,9 @@ async function switchLanguage(lang) {
 ```text
 never hard-code display text in HTML templates — always use data-i18n keys
 add new keys to the master dictionary before using them in templates
-test both languages render correctly for every page
+provide a visible Chinese/English toggle in the interactive UI
+persist the selected language and update html lang/data-lang
+test both languages render correctly for every page and the report preview/download path
 keep chart labels bilingual — generate two SVG variants
 report renderer should accept lang parameter and use the same dictionary
 ```

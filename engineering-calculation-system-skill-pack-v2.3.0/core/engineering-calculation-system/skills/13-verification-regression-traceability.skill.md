@@ -23,6 +23,7 @@ regression tests against references
 integration tests for complete run_book workflows
 report smoke tests
 web/API smoke tests
+Chinese/English i18n and language-toggle smoke tests
 Marimo review smoke tests
 upload/import package manifest and hash tests
 batch smoke tests
@@ -103,6 +104,7 @@ tests cover reusable modules
 book integration test exists
 report rendering smoke test exists when reports exist
 web app health and calculate API smoke tests exist when frontend/API exists
+Chinese/English i18n API and language toggle shell tests exist when frontend exists
 deployment smoke tests or explicit deployment blockers are recorded when final delivery is expected
 traceability metadata exists for production outputs
 formula registry version/hash/published_at are exposed in BookResult when formula registry is used
