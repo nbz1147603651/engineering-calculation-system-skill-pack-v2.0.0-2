@@ -9,7 +9,7 @@ gaps:
     why_it_matters: blocks source-backed calculation implementation
     preferred_source_type: governing code or official design manual
     authority_priority: high
-    target_jurisdiction_or_standard: to_be_defined
+    target_jurisdiction_or_standard: template_demonstration
     search_keywords:
       - example calculation design manual official pdf
     candidate_domains_or_publishers: []

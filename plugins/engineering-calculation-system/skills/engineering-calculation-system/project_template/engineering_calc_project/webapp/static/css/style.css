@@ -76,6 +76,33 @@
     height: auto;
 }
 
+.chart-panel {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 0.75rem;
+    background-color: #f8f9fa;
+    margin-bottom: 0.75rem;
+}
+
+.chart-panel:last-child {
+    margin-bottom: 0;
+}
+
+.chart-svg {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    margin: 0.5rem 0 0.75rem;
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 0.25rem;
+}
+
+.chart-data-table {
+    font-size: 0.8125rem;
+}
+
 /* ── Responsive ───────────────────────────────────────────────────── */
 @media (max-width: 991px) {
     .input-panel {

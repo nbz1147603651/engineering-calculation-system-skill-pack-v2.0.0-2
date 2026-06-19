@@ -1,7 +1,7 @@
 """Flask route handlers for the engineering calculation web app.
 
 Scaffold: customize routes for each calculation book.
-All route handlers are thin: parse → build model → call runner → convert → return.
+All route handlers are thin: parse 鈫?build model 鈫?call runner 鈫?convert 鈫?return.
 """
 
 from __future__ import annotations
@@ -122,15 +122,15 @@ def api_report_decision():
 def api_calculate():
     """Run engineering calculation and return structured results.
 
-    Flow: form JSON → BookInput → run_book() → BookResult → UI dict
+    Flow: form JSON 鈫?BookInput 鈫?run_book() 鈫?BookResult 鈫?UI dict
     """
     try:
         data = request.get_json(force=True)
         book_input = build_case_input_from_form(data)
 
-        # Import the book runner — the ONLY official calculation path.
+        # Import the book runner 鈥?the ONLY official calculation path.
         # Replace with the actual import for your calculation book.
-        from pkg.books.book_name.book_runner import run_book
+        from pkg.books.example_book.book_runner import run_book
         result = run_book(book_input)
 
         ui_data = case_result_to_ui(result, book_input)
@@ -151,8 +151,8 @@ def api_report_html():
         lang = data.pop("lang", "en")
         book_input = build_case_input_from_form(data)
 
-        from pkg.books.book_name.book_runner import run_book
-        from pkg.books.book_name.report_context import build_report_context
+        from pkg.books.example_book.book_runner import run_book
+        from pkg.books.example_book.report_context import build_report_context
         from pkg.report.html_renderer import build_html_report_context, render_a4_html_report
 
         result = run_book(book_input)
@@ -192,8 +192,8 @@ def api_report_latex():
         template_id, template_dir = _resolve_latex_template_dir(template_request)
         book_input = build_case_input_from_form(data)
 
-        from pkg.books.book_name.book_runner import run_book
-        from pkg.books.book_name.report_context import build_report_context
+        from pkg.books.example_book.book_runner import run_book
+        from pkg.books.example_book.report_context import build_report_context
         from pkg.report.latex_renderer import build_latex_report_context, render_latex_project_zip
 
         result = run_book(book_input)
@@ -235,8 +235,8 @@ def api_report_final():
         )
         book_input = build_case_input_from_form(data)
 
-        from pkg.books.book_name.book_runner import run_book
-        from pkg.books.book_name.report_context import build_report_context
+        from pkg.books.example_book.book_runner import run_book
+        from pkg.books.example_book.report_context import build_report_context
         from pkg.report.html_renderer import build_html_report_context, render_a4_html_report
         from pkg.report.latex_renderer import build_latex_report_context, compile_latex_project
         from pkg.report.report_selector import select_report_output
@@ -304,8 +304,8 @@ def api_report_preview():
         lang = data.pop("lang", "en")
         book_input = build_case_input_from_form(data)
 
-        from pkg.books.book_name.book_runner import run_book
-        from pkg.books.book_name.report_context import build_report_context
+        from pkg.books.example_book.book_runner import run_book
+        from pkg.books.example_book.report_context import build_report_context
         from pkg.report.html_renderer import build_html_report_context, render_a4_html_report
 
         result = run_book(book_input)
@@ -392,7 +392,7 @@ def api_batch_run():
                 "message": "Batch payload must contain a non-empty cases list.",
             }), 400
 
-        from pkg.books.book_name.book_runner import run_book
+        from pkg.books.example_book.book_runner import run_book
 
         results = []
         for index, case_data in enumerate(cases, start=1):

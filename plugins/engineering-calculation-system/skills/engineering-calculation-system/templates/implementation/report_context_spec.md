@@ -32,6 +32,7 @@ Use this template to define how a report, review page, export, or batch artifact
 | Warnings and errors are preserved | to_be_defined | smoke test |  |
 | Traceability metadata is preserved | to_be_defined | result/report metadata |  |
 | Renderer smoke test exists | to_be_defined | tests/smoke |  |
+| Charts preserve source result paths when present | to_be_defined | BookResult.charts / report smoke |  |
 
 If any production requirement is not satisfied, the report status must not be `final`.
 
@@ -50,6 +51,14 @@ Derive sections from the user request, calculation scope, result paths, review n
 | Section ID | Section title | Purpose | Required data paths | Visibility rule | Notes |
 | --- | --- | --- | --- | --- | --- |
 | R001 | to_be_defined | to_be_defined | to_be_defined | to_be_defined | to_be_defined |
+
+## Engineering Charts
+
+Charts are optional, but when they are useful they should come from `BookResult.charts` or an equivalent `ChartSpec` list built by the book layer from already-computed values.
+
+| Chart ID | Title | Purpose | BookResult paths | Recommended report location | Recommended UI location | Visibility rule | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| to_be_defined | to_be_defined | to_be_defined | to_be_defined | after_input_summary / after_governing_summary / appendix | after_governing_summary / before_checks / result_detail | to_be_defined | templates render values only |
 
 ## Module summaries
 

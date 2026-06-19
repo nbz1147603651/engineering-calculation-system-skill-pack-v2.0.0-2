@@ -45,6 +45,52 @@ def latex_escape(value: Any) -> str:
     return "".join(LATEX_ESCAPE_MAP.get(char, char) for char in text)
 
 
+def report_sources_from_checks(checks: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Summarize source references already present in formula traces."""
+    sources: dict[str, dict[str, Any]] = {}
+    for check in checks:
+        check_id = str(check.get("check_id") or "check")
+        for trace in check.get("formula_traces", []) or []:
+            source_reference = str(trace.get("source_reference") or "").strip()
+            if not source_reference:
+                continue
+            formula_id = str(trace.get("formula_id") or "formula")
+            record = sources.setdefault(
+                source_reference,
+                {
+                    "source_reference": source_reference,
+                    "role": "formula_trace_source",
+                    "used_in": [],
+                },
+            )
+            record["used_in"].append(f"{check_id}:{formula_id}")
+    return list(sources.values())
+
+
+def report_assumptions_from_context(
+    plain_input: dict[str, Any],
+    plain_report: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Return report assumptions without inventing engineering logic."""
+    explicit = plain_report.get("assumptions")
+    if isinstance(explicit, list) and explicit:
+        return explicit
+
+    design_options = plain_input.get("design_options", {})
+    input_assumptions = design_options.get("assumptions") if isinstance(design_options, dict) else None
+    if isinstance(input_assumptions, list) and input_assumptions:
+        return input_assumptions
+
+    return [
+        {
+            "assumption_id": "A001",
+            "assumption": "Demand and capacity are supplied in the same unit for the template demonstration check.",
+            "source_reference": "S01",
+            "program_handling": "The template reports the unit and evaluates utilization only.",
+        }
+    ]
+
+
 def build_latex_report_context(
     book_input: Any,
     book_result: Any,
@@ -58,6 +104,10 @@ def build_latex_report_context(
     plain_input = to_plain(book_input)
     plain_result = to_plain(book_result)
     plain_report = to_plain(report_context or {})
+    charts = plain_report.get("charts") or plain_result.get("charts", [])
+    checks = plain_result.get("checks", [])
+    sources = plain_report.get("sources") or report_sources_from_checks(checks)
+    assumptions = report_assumptions_from_context(plain_input, plain_report)
     return {
         "lang": lang,
         "report_status": report_status,
@@ -68,7 +118,10 @@ def build_latex_report_context(
         "result": plain_result,
         "report": plain_report,
         "governing": plain_result.get("governing", {}),
-        "checks": plain_result.get("checks", []),
+        "checks": checks,
+        "charts": charts,
+        "sources": sources,
+        "assumptions": assumptions,
         "warnings": plain_result.get("warnings", []),
         "errors": plain_result.get("errors", []),
         "intermediate_values": plain_result.get("intermediate_values", {}),

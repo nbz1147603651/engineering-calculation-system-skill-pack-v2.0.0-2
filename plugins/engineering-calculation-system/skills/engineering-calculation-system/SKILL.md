@@ -30,7 +30,9 @@ Use progressive disclosure:
    - `parent/engineering-calculation-book.skill.md`
 3. Read only the child skill files named by the router or parent.
 4. For explicit multi-agent or parallel work, read `shared/multi-agent-orchestration.md` and use `templates/orchestration/`.
-5. Use templates from `templates/` and shared contracts from `shared/` only when generating or validating artifacts.
+5. For implementation, release, or validation work, read `shared/delivery-contract.md`
+   and `shared/lifecycle-matrix.md`.
+6. Use templates from `templates/` and shared contracts from `shared/` only when generating or validating artifacts.
 
 Install the default runtime skill from `dist/core/engineering-calculation-system/` when using a built release. For environments that cannot load multiple files reliably, use the generated single-file fallback from `dist/singlefile/engineering-calculation-system.all-in-one.md`.
 
@@ -43,8 +45,9 @@ changes, or final acceptance.
 
 ## Delivery Contract
 
-Read `shared/delivery-contract.md` before implementation or release work. Every
-adapter entrypoint uses the same completion rules.
+Read `shared/delivery-contract.md` and `shared/lifecycle-matrix.md` before
+implementation or release work. Every adapter entrypoint uses the same
+completion rules and the same 01-14 entry/action/artifact/exit gates.
 
 Before implementation starts, declare one delivery mode:
 
@@ -54,7 +57,9 @@ core-only | report-only | prototype-web | web-complete
 
 Default to `web-complete` for calculation systems, calculation-book software,
 web apps, online calculators, reusable software packages, batch workflows, and
-any request that does not explicitly ask for a narrower prototype.
+any request that does not explicitly ask for a narrower prototype. In this
+skill, `web-complete` means dual closure: a readable, traceable calculation
+book and a complete web calculation system.
 
 For `web-complete`, the default implementation path is:
 
@@ -126,3 +131,9 @@ python3 scripts/validate_artifacts.py --package-root <skill-pack-root> --profile
 ```
 
 Treat validation failures as blocking unless the user explicitly asks for a draft or prototype.
+
+## Windows (win32) platform notes
+
+When running validation commands on Windows, use `python` or `py` if `python3`
+is not available. Quote paths that contain spaces and prefer PowerShell-native
+path handling.

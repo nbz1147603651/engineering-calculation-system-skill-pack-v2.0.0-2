@@ -164,13 +164,14 @@ bilingual chart variants when needed
 
 Use a recursive sanitizer for non-finite numeric values. Display sanitized values as `--` or `N/A` and preserve warnings.
 
-Generate charts from already-computed `BookResult` values. Charts visualize; they do not calculate.
+Generate charts from already-computed `BookResult` values. Prefer structured `BookResult.charts` / `ChartSpec` entries built in the book layer, with source result paths and recommended UI/report locations. Charts visualize; they do not calculate, recalculate utilization, override pass/fail status, or perform official unit conversion.
 
 Use:
 
 ```text
 templates/implementation/i18n_pattern.md
 templates/implementation/chart_integration.md
+src/<pkg>/books/<book_name>/charts.py
 src/<pkg>/core/sanitize.py or equivalent
 ```
 

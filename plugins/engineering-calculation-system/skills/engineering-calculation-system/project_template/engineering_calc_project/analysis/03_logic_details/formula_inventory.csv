@@ -1,0 +1,2 @@
+formula_id,name,purpose,inputs,outputs,units,source_reference,applicability,branch_dependencies,lookup_dependencies,implementation_note,test_requirement,risk_level
+F001,Demand capacity utilization,Demonstrate an evaluated engineering check,demand;capacity;limit,utilization;status,kN/kN,S01,Template demonstration check only,,,utilization = demand / capacity; status follows limit,T001 verifies 45/90 = 0.5 PASS,low

@@ -7,6 +7,11 @@ description: Route engineering calculation tasks to the correct reference acquis
 
 Use this skill to decide which engineering calculation skill path should handle the task.
 
+For implementation, release, or validation tasks, read
+`shared/delivery-contract.md` and `shared/lifecycle-matrix.md` before selecting
+or narrowing a path. The lifecycle matrix is the shared 01-14 gate table for all
+adapters.
+
 ## Routing Principle
 
 Do not jump into analysis or coding when the source basis is missing or insufficient.
@@ -33,7 +38,7 @@ Classify the material state first:
 | `insufficient_materials` | Some materials exist but formula, code basis, units, coefficients, examples, or branches are missing | 01 -> 02 -> 03 |
 | `materials_available_untrusted` | Materials exist but authority/version/conflicts are unclear | 04, and maybe 01 -> 02 -> 03 |
 | `local_evidence_library_available` | Source registry, source cards, raw/extracted references, and acquisition handoff exist | 04 -> 05 -> 06 -> 07 |
-| `analysis_handoff_available` | Implementation handoff and coding gate exist | 08 -> 09 -> 10 -> 11 -> 13, plus 12 if interfaces needed, plus 14 for deployable web delivery |
+| `analysis_handoff_available` | Implementation handoff and coding gate exist | 08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14 for default `web-complete`; narrower paths only when explicitly requested |
 | `codebase_available` | Existing implementation exists | classify bug/feature by layer, then route to 08-14 |
 
 ## Task Classification
@@ -47,7 +52,7 @@ Classify the material state first:
 | Create Calculation Logic Blueprint | 05, with 04 first |
 | Extract formulas, lookup tables, branch rules, units, assumptions | 06 |
 | Prepare downstream coding guidance | 07 |
-| Build or refactor engineering calculation software | 08 -> 09 -> 10 -> 11 -> 13, plus 12 if needed, plus 14 when final delivery is expected |
+| Build or refactor engineering calculation software | 08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14 by default; reduce scope only when the user explicitly requests `core-only`, `report-only`, or `prototype-web` |
 | Build reusable or asset-ready calculation modules | 08 -> 10 -> 13, record module assets |
 | Build typed models only | 09 |
 | Build reusable formula/calculation module | 10, plus 13 |
@@ -104,6 +109,10 @@ no_go: do not code except scaffolding or non-formula architecture notes
 prototype_allowed: code only with explicit assumptions and needs_confirmation markers
 production_allowed: implementation can proceed with tests and traceability
 ```
+
+For `web-complete`, do not route around 12a, 12b, 12c, 13, or 14. The final
+delivery must close both the readable calculation-book track and the complete
+web-system track.
 
 ## Required Checks Before Routing
 

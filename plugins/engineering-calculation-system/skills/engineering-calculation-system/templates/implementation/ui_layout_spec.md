@@ -78,7 +78,8 @@ Use this template for production frontend, review UI, or app-like engineering ca
 | CSS framework | Bootstrap 5 + `webapp/static/css/style.css` | Standard project scaffold |
 | JS architecture | vanilla modules: `i18n.js`, `forms.js`, `results.js`, `main.js` | see `api_route_skeleton.md` |
 | i18n strategy | visible Chinese/English toggle + data-i18n + `/api/i18n/<lang>` endpoint + persisted language preference | see `i18n_pattern.md` |
-| Chart library | matplotlib SVG / plotly / D3 | to_be_defined | see `chart_integration.md` |
+| Chart contract | BookResult.charts / ChartSpec | default | see `chart_integration.md` |
+| Chart renderer | inline SVG / matplotlib SVG / plotly / D3 | to_be_defined | renderer consumes ChartSpec values only |
 | Formula rendering | KaTeX / MathJax / none | to_be_defined | for report preview |
 
 ## Frontend File Layout

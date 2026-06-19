@@ -30,6 +30,7 @@ call reusable calculation modules
 collect module results
 preserve warnings and errors
 summarize governing checks
+create chart specifications from already-computed result values when they improve review
 create run metadata
 return structured BookResult
 ```
@@ -68,6 +69,7 @@ implementation/03_book_runner/governing_summary_spec.md
 implementation/03_book_runner/result_path_registry.csv
 src/<pkg>/books/<book_name>/book_runner.py
 src/<pkg>/books/<book_name>/governing.py
+src/<pkg>/books/<book_name>/charts.py when chartable result paths exist
 tests/integration/test_<book_name>_runner.py
 ```
 

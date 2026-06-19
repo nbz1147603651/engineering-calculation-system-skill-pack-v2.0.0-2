@@ -60,6 +60,7 @@ assumptions and limitations
 module summaries
 governing summary
 checks and stable result paths
+chart specifications and recommended report locations
 intermediate values selected for audit
 warnings and errors
 formula traces or source trace references
@@ -160,7 +161,9 @@ LaTeX templates follow the same template boundary rules as HTML/DOCX/PDF templat
 
 ## A4 HTML Calculation Report
 
-When no local LaTeX compiler is available, render HTML as a formal A4 calculation book, not a loose web page. The HTML must include `@page size: A4`, print-safe margins, cover/title block, governing summary, input summary, calculation checks, formula logic trace, warnings/errors, traceability metadata, and a template boundary statement. Formula logic must be shown from stored traces; the HTML must not calculate or override status.
+When no local LaTeX compiler is available, render HTML as a formal A4 calculation book, not a loose web page. The HTML must include `@page size: A4`, print-safe margins, cover/title block, governing summary, input summary, engineering charts when `BookResult.charts` is present, calculation checks, formula logic trace, warnings/errors, traceability metadata, and a template boundary statement. Formula logic must be shown from stored traces; the HTML must not calculate or override status.
+
+When `BookResult.charts` is present, place engineering charts after the governing/input summary and before detailed check tables unless the handoff specifies another review order. Charts must display stored values and source result paths only.
 
 ## Production Minimum
 

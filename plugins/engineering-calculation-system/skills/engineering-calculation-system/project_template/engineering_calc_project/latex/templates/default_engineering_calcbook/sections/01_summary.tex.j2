@@ -1,9 +1,9 @@
-\section{Governing Summary}
+\section{Control Results and Governing Summary}
 
 \begin{tabular}{ll}
 \toprule
 Overall status & {{ governing.overall_status | default("NOT_EVALUATED") | latex_escape }} \\
-Governing check & {{ governing.governing_check_name | default("to_be_defined") | latex_escape }} \\
+Governing check & {{ governing.governing_check_name | default("--") | latex_escape }} \\
 Utilization or margin & {{ governing.governing_utilization_or_margin | default("--") | latex_escape }} \\
 Warnings & {{ warnings | length }} \\
 Errors & {{ errors | length }} \\
