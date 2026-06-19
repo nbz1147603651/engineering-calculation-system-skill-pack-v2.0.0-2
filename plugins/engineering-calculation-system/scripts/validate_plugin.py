@@ -72,8 +72,9 @@ def check_manifest(manifest: dict[str, Any], errors: list[str]) -> None:
     if manifest.get("name") != expected_name:
         errors.append(f"manifest name must match folder name {expected_name!r}")
 
-    if manifest.get("version") != "2.4.0":
-        errors.append("manifest version must match bundled skill schema 2.4.0")
+    version = str(manifest.get("version", ""))
+    if version.split("+", 1)[0] != "2.4.0":
+        errors.append("manifest version base must match bundled skill schema 2.4.0")
 
     if manifest.get("skills") != "./skills/":
         errors.append("manifest skills path must be ./skills/")
@@ -178,4 +179,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

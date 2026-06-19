@@ -552,6 +552,7 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
                 "project_template/engineering_calc_project/webapp/routes.py",
                 "project_template/engineering_calc_project/webapp/i18n.py",
                 "project_template/engineering_calc_project/webapp/templates/base.html",
+                "project_template/engineering_calc_project/webapp/templates/partials/_topbar.html",
                 "project_template/engineering_calc_project/webapp/static/js/i18n.js",
                 "project_template/engineering_calc_project/deploy/Dockerfile",
                 "project_template/engineering_calc_project/tests/smoke/test_web_routes.py",
@@ -559,7 +560,7 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
             context=context,
         )
         require_text(
-            payload_root / "project_template/engineering_calc_project/webapp/templates/base.html",
+            payload_root / "project_template/engineering_calc_project/webapp/templates/partials/_topbar.html",
             [
                 "id=\"langToggle\"",
                 "data-lang=\"en\"",
