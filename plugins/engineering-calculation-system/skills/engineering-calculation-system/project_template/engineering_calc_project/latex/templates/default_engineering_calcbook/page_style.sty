@@ -1,0 +1,11 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{page_style}[2026/06/18 Engineering calculation report page style]
+\RequirePackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Engineering Calculation Report}
+\rhead{\leftmark}
+\cfoot{\thepage\ of \pageref{LastPage}}
+\definecolor{statuspass}{HTML}{198754}
+\definecolor{statusfail}{HTML}{DC3545}
+\definecolor{statuswarn}{HTML}{B7791F}

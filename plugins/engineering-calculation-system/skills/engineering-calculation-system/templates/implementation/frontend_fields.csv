@@ -1,0 +1,8 @@
+field_path,label,unit,group,editable,source,notes
+project.name,Project Name,,project,true,user_input,
+project.code,Project Code,,project,true,user_input,
+project.location,Location,,project,true,user_input,
+inputs.param_example_1,Parameter 1,kN,loads,true,user_input,Edit label/unit per BookInput field
+inputs.param_example_2,Parameter 2,m,geometry,true,user_input,
+intermediate.value_1,Intermediate 1,kPa,results,false,computed,Read-only display from BookResult
+checks.check_1,Check 1,,results,false,computed,Status badge + utilization bar

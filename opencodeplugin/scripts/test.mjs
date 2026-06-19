@@ -110,6 +110,7 @@ assert(existsSync(skillRoot), "Expected local v2.4.0 skill root");
     includeValidation: false,
   });
   assert.equal(doctor.results.some((entry) => entry.name === "schema-version" && entry.status === "pass"), true);
+  assert.equal(doctor.results.some((entry) => entry.name === "optional-capabilities"), true);
   await fs.rm(project, { recursive: true, force: true });
 }
 

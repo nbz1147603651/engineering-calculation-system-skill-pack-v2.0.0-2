@@ -1,0 +1,7 @@
+flowchart TD
+    A[Collect inputs] --> B[Validate inputs]
+    B --> C{Inputs valid?}
+    C -- No --> E[Stop with validation error]
+    C -- Yes --> D[Run calculation modules]
+    D --> F[Summarize governing results]
+    F --> G[Build structured outputs]

@@ -1,0 +1,41 @@
+# Acceptance Checklist
+
+- [ ] Source basis recorded
+- [ ] Acquisition handoff exists when sources were searched
+- [ ] Implementation handoff exists
+- [ ] Semantic production gate validation passes when `production_allowed`
+- [ ] Runtime stack is recorded and defaults to Python 3.9+ unless an explicit adapter plan exists
+- [ ] Frontend format is recorded and defaults to Jinja2 + Bootstrap 5 + vanilla JavaScript modules unless explicitly overridden
+- [ ] Operator workflow decisions preserve input quality, review convenience, traceability, report preview, and import/export usability
+- [ ] Report production decision is recorded when a report/export is produced
+- [ ] Automatic report output decision is recorded: LaTeX/PDF with successful local compilation when `latexmk` or `pdflatex` exists, otherwise A4 HTML
+- [ ] HTML report fallback uses `@page size: A4`, formal calculation-book sections, formula logic traces, and a template boundary statement
+- [ ] Report status is explicit and matches evidence/coding gate state
+- [ ] Formulas are only in calculation modules/books
+- [ ] Reusable calculation modules are decoupled and registered in module_asset_registry.csv
+- [ ] One official run_book() exists
+- [ ] Typed BookInput and BookResult exist
+- [ ] Unit policy is explicit
+- [ ] Report/UI/batch do not calculate
+- [ ] UI follows the unified layout when a frontend exists
+- [ ] Interactive UI includes Chinese/English switching, persists the selected language, and uses the selected language for report preview/download when a frontend exists
+- [ ] Marimo review pages do not calculate outside trusted modules or run_book
+- [ ] Formula registry version/hash/published_at are exposed in BookResult when editable formulas are enabled
+- [ ] Formula publish failures do not update active_versions.yaml
+- [ ] Formula publish log is written when Marimo admin review is enabled
+- [ ] Upload/import packages have manifests and hashes when present
+- [ ] Imported reports are labeled as review/reference artifacts
+- [ ] Reports are generated from saved final input or trusted BookResult
+- [ ] ReportContext preserves source basis, limitations, warnings/errors, and traceability metadata
+- [ ] Unit tests exist
+- [ ] Regression tests exist when references exist
+- [ ] Integration test exists
+- [ ] Smoke tests exist for reports/interfaces
+- [ ] Smoke tests cover `/api/i18n/en`, `/api/i18n/zh`, and the language toggle shell when a frontend exists
+- [ ] Web app exposes /health when frontend/API exists
+- [ ] Local run command is documented and smoke-tested when frontend/API exists
+- [ ] Cloud Linux deployment path is documented when final delivery is expected
+- [ ] Final web delivery is not only a static `.html` file, exported report HTML, or mockup
+- [ ] Release checklist records deployment smoke tests and remaining assumptions when final delivery is expected
+- [ ] Report renderer/export path has a documented run command
+- [ ] Traceability metadata exists for production outputs

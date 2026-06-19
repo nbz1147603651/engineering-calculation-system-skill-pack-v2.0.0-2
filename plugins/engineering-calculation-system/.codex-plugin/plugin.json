@@ -1,0 +1,35 @@
+{
+  "name": "engineering-calculation-system",
+  "version": "2.4.0",
+  "description": "Codex plugin wrapper for the Engineering Calculation System skill pack.",
+  "license": "UNLICENSED",
+  "keywords": [
+    "codex",
+    "codex-plugin",
+    "skills",
+    "engineering-calculation",
+    "calculation-software",
+    "traceability"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Engineering Calculation System",
+    "shortDescription": "Lifecycle workflow for auditable engineering calculators.",
+    "longDescription": "Packages the Engineering Calculation System skill pack for Codex, including lifecycle routing, reference acquisition, source-backed formula extraction, implementation handoff, reusable calculation modules, reports, verification, and deployable web calculation system guidance.",
+    "developerName": "Engineering Calculation System",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Skills",
+      "Workflow",
+      "Engineering Calculations",
+      "Traceability"
+    ],
+    "defaultPrompt": [
+      "Build a traceable engineering calculation web app.",
+      "Assess whether my engineering references are sufficient.",
+      "Create a source-backed implementation handoff."
+    ],
+    "brandColor": "#2563EB",
+    "screenshots": []
+  }
+}

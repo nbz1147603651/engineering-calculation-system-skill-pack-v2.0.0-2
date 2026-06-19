@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "registry_version": "example_v1",
+  "published_at": "2026-06-17T00:00:00+00:00",
+  "active": {
+    "example_module": {
+      "version_id": "example_v1",
+      "path": "modules/example_module/versions/example_v1.yaml",
+      "sha256": "b31a019b5cc468fd3f5a1fe6d0b292a3b5e8b0788cea9d0799e4533da7f17ebd",
+      "published_at": "2026-06-17T00:00:00+00:00"
+    }
+  }
+}

@@ -88,6 +88,48 @@ export const checks: CheckDefinition[] = [
     },
   },
   {
+    name: "optional-capabilities",
+    async run(ctx) {
+      if (ctx.skillRoot.missingRequiredPaths.length > 0) return result("optional-capabilities", "skip", "Skill root incomplete");
+      const projectRoot = path.join(ctx.skillRoot.root, "project_template", "engineering_calc_project");
+      if (!existsSync(projectRoot)) return result("optional-capabilities", "skip", "Project template not present");
+
+      const script = [
+        "import json, sys",
+        `sys.path.insert(0, ${JSON.stringify(path.join(projectRoot, "src"))})`,
+        "from pkg.core.capabilities import detect_capabilities",
+        "caps = detect_capabilities()['capabilities']",
+        "print(json.dumps({'marimo_review': caps['marimo_review']['status'], 'latex': caps['latex']['status'], 'docker': caps['docker']['status']}))",
+      ].join("; ");
+      const report = await runPython(["-c", script], { cwd: projectRoot, timeoutMs: ctx.timeoutMs });
+      if (report.exitCode !== 0) {
+        return result("optional-capabilities", "warn", "Optional capability detection could not run", [
+          report.stdout.trim(),
+          report.stderr.trim(),
+        ].filter(Boolean));
+      }
+
+      try {
+        const caps = JSON.parse(report.stdout.trim()) as Record<string, string>;
+        const details = [
+          `marimo_review: ${caps.marimo_review}`,
+          `latex: ${caps.latex}`,
+          `docker: ${caps.docker}`,
+        ];
+        if (caps.marimo_review === "configured") {
+          return result("optional-capabilities", "pass", "Optional capabilities detected", details);
+        }
+        return result("optional-capabilities", "warn", "Marimo review is optional and not fully configured", [
+          ...details,
+          "Install with: python -m pip install marimo",
+          "Set ADMIN_REVIEW_TOKEN before running the review admin.",
+        ]);
+      } catch {
+        return result("optional-capabilities", "warn", "Optional capability report was not valid JSON", [report.stdout.trim()]);
+      }
+    },
+  },
+  {
     name: "python-validation",
     async run(ctx) {
       if (ctx.skillRoot.missingRequiredPaths.length > 0) return result("python-validation", "skip", "Skill root incomplete");
@@ -120,4 +162,3 @@ export const checks: CheckDefinition[] = [
     },
   },
 ];
-

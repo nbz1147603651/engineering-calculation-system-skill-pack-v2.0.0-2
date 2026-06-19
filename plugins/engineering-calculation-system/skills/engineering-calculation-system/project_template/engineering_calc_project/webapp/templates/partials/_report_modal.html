@@ -1,0 +1,24 @@
+<!-- Standard report preview modal. Renderers may add download buttons but should keep this structure. -->
+<div class="modal fade" id="reportModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title" data-i18n="report_title">Calculation Report</h5>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary btn-sm" id="btnDownloadReport">
+                        <i class="bi bi-download me-1"></i>
+                        <span data-i18n="btn_download_report">Download</span>
+                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+            </div>
+            <div class="modal-body p-0">
+                <div id="reportLoading" class="text-center py-5 d-none">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2 text-muted" data-i18n="report_generating">Generating report...</p>
+                </div>
+                <iframe id="reportFrame" class="w-100 border-0 report-frame"></iframe>
+            </div>
+        </div>
+    </div>
+</div>

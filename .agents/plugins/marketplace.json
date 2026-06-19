@@ -1,0 +1,20 @@
+{
+  "name": "engineering-calculation-system-local",
+  "interface": {
+    "displayName": "Engineering Calculation System Local Plugins"
+  },
+  "plugins": [
+    {
+      "name": "engineering-calculation-system",
+      "source": {
+        "source": "local",
+        "path": "./plugins/engineering-calculation-system"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

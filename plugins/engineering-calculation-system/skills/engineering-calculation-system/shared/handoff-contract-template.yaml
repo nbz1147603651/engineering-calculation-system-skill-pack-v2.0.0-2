@@ -1,0 +1,221 @@
+handoff_id: H001
+book_name: example_book
+version: 0.1.0
+status: prototype_allowed # no_go | prototype_allowed | production_allowed
+
+source_basis:
+  acquisition_handoff: references/acquisition/acquisition_handoff.yaml
+  source_registry: references/source_registry.yaml
+  governing_sources:
+    - source_id: S01
+      role: governing_code
+      priority: 1
+  example_sources:
+    - source_id: S02
+      role: regression_reference
+
+evidence_library_status:
+  status: analysis_allowed
+  remaining_gaps:
+    - gap_id: G001
+      description: example remaining gap
+      blocks_production: true
+
+calculation_scope:
+  domain: geotechnical
+  object: shallow_foundation
+  checks:
+    - bearing_capacity
+    - settlement
+
+runtime_stack:
+  primary_language: python
+  python_version: ">=3.9"
+  calculation_runtime: python_package
+  calculation_package_root: src/pkg
+  backend_runtime: flask # flask | fastapi
+  frontend_format: jinja2_bootstrap5_vanilla_js
+  frontend_root: webapp
+  review_runtime: marimo_optional
+  non_python_adapter_required: false
+
+input_model_groups:
+  - ProjectInfo
+  - DesignBasis
+  - GeometryInput
+  - LoadInput
+  - MaterialOrSoilInput
+  - DesignOptions
+
+result_model_groups:
+  - ModuleResult
+  - CheckResult
+  - GoverningSummary
+  - BookResult
+
+runner_sequence:
+  - validate_input
+  - normalize_units
+  - select_method
+  - compute_module_results
+  - check_utilization
+  - summarize_governing
+  - build_report_context
+
+module_candidates:
+  - module: libraries.domain.category.module_name
+    responsibility: compute source-backed engineering result
+    source_nodes: [N001]
+    formulas: [F001]
+    lookups: []
+
+calculation_module_contract:
+  required_paths:
+    - implementation/02_modules/module_interface_spec.md
+    - implementation/02_modules/module_asset_registry.csv
+    - src/pkg/libraries/<domain>/<category>/
+    - tests/unit/test_<module>.py
+  required_properties:
+    - typed_input_model
+    - typed_result_model
+    - stable_public_function
+    - source_backed_formula_traces
+    - independent_unit_tests
+  forbidden_dependencies:
+    - webapp
+    - report_templates
+    - batch_scripts
+    - deployment_files
+    - browser_state
+
+book_runner_contract:
+  entrypoint: src/pkg/books/<book_name>/book_runner.py::run_book
+  required_paths:
+    - src/pkg/books/<book_name>/book_models.py
+    - src/pkg/books/<book_name>/book_runner.py
+    - tests/integration/test_<book_name>_runner.py
+  official_flow: BookInput -> reusable_modules -> BookResult
+  forbidden_responsibilities:
+    - rendering_reports
+    - reading_frontend_state
+    - implementing_template_logic
+
+backend_api_contract:
+  runtime: flask
+  required_paths:
+    - webapp/app.py
+    - webapp/routes.py
+    - webapp/form_utils.py
+    - webapp/config.py
+  required_entrypoints:
+    - webapp.app:create_app()
+    - GET /health
+    - GET /
+    - POST /api/calculate
+  required_mapping_functions:
+    - form_to_model_or_build_case_input_from_form
+    - model_to_form_or_book_input_to_form
+    - result_to_ui_or_case_result_to_ui
+  rule: thin routes parse input, build BookInput, call run_book, convert BookResult, and return JSON or report output
+
+frontend_contract:
+  format: jinja2_bootstrap5_vanilla_js
+  page_type: server_rendered_shell_with_api_driven_interactions
+  frontend_root: webapp
+  required_paths:
+    - webapp/templates/base.html
+    - webapp/templates/index.html
+    - webapp/static/js/main.js
+    - webapp/static/js/forms.js
+    - webapp/static/js/results.js
+    - webapp/static/css/style.css
+  required_behavior:
+    - grouped BookInput forms
+    - API-driven calculation call
+    - governing summary and warnings/errors display
+    - source/formula trace display when available
+    - import/export and report preview when in scope
+  forbidden_behavior:
+    - engineering_formula_calculation_in_javascript
+    - independent_pass_fail_logic_in_templates
+
+operator_workflow_contract:
+  quality_priority: operation_quality_and_reviewer_convenience_before_minimal_dependencies
+  repeated_use_features:
+    - defaults
+    - field_validation
+    - import_export_json
+  review_features:
+    - governing_summary
+    - warnings_errors
+    - source_traces
+    - formula_traces
+  reporting_features:
+    - report_preview
+    - report_download
+    - explicit_report_status
+  upgrade_frontend_when:
+    - complex_dynamic_forms
+    - multi-case_comparison
+    - heavy_review_state
+    - workflow_quality_requires_component_state_management
+
+release_contract:
+  delivery_type: runnable_web_calculation_system
+  static_html_only_allowed: false
+  report_html_is_output_not_application: true
+  required_paths_when_final_delivery_expected:
+    - README.md
+    - deploy/env.example
+    - deploy/Dockerfile or deploy/systemd/*.service
+    - release/release_checklist.md
+    - tests/smoke/test_web_routes.py
+  required_smoke_tests:
+    - python -m webapp.app
+    - GET /health
+    - POST /api/calculate with known input
+
+formula_inventory_refs:
+  - F001
+
+lookup_inventory_refs: []
+
+branch_inventory_refs: []
+
+validation_rules:
+  - rule_id: V001
+    severity: error
+    description: required input must be present
+    related_inputs: []
+
+test_requirements:
+  - test_id: T001
+    type: regression
+    basis: S02 worked example
+    tolerance: to_be_defined
+
+report_sections:
+  - section_id: R001
+    title: Input summary
+    result_paths: []
+
+traceability_requirements:
+  - input_hash
+  - result_hash
+  - formula_traces
+  - source_references
+
+open_questions:
+  - question_id: Q001
+    severity: high
+    blocks_production: true
+    description: unresolved source issue
+
+coding_gate:
+  status: prototype_allowed
+  allowed_work:
+    - scaffold typed models
+    - implement formulas with needs_confirmation markers
+  blocked_work:
+    - production release
+    - final report certification

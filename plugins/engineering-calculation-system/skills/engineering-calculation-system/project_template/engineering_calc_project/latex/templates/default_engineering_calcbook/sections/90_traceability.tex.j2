@@ -1,0 +1,15 @@
+\section{Traceability}
+
+\begin{tabular}{ll}
+\toprule
+Item & Value \\
+\midrule
+Formula registry version & {{ traceability.formula_registry_version | latex_escape }} \\
+Formula hash & {{ traceability.formula_hash | latex_escape }} \\
+Formula published at & {{ traceability.formula_published_at | latex_escape }} \\
+Report template version & {{ traceability.report_template_version | latex_escape }} \\
+\bottomrule
+\end{tabular}
+
+\subsection{Template Boundary}
+This LaTeX project references values, metadata, warnings, errors, traces, and already computed result paths only. It must not contain engineering formulas, lookup rules, independent unit conversion, load combination generation, optimization logic, or pass/fail recalculation.

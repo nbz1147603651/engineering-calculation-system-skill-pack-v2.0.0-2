@@ -1,0 +1,100 @@
+/* style.css - project-level additions for the unified engineering calculator layout.
+ * Keep structural styles in tokens.css and components.css.
+ */
+
+/* ── Input panel ──────────────────────────────────────────────────── */
+.input-panel {
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.sticky-bottom {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    border-radius: 0.375rem;
+}
+
+/* ── Result cards ─────────────────────────────────────────────────── */
+.result-card .card-header {
+    cursor: pointer;
+    user-select: none;
+}
+
+.result-card .card-header:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+.result-card .card-body table {
+    font-size: 0.875rem;
+}
+
+/* ── Status colors ────────────────────────────────────────────────── */
+.status-pass { color: #198754; }
+.status-fail { color: #dc3545; }
+.status-warn { color: #ffc107; }
+
+/* ── Utilization bar ──────────────────────────────────────────────── */
+.util-bar {
+    height: 8px;
+    border-radius: 4px;
+    background-color: #e9ecef;
+    overflow: hidden;
+}
+
+.util-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.util-bar-fill.safe   { background-color: #198754; }
+.util-bar-fill.caution { background-color: #ffc107; }
+.util-bar-fill.fail   { background-color: #dc3545; }
+
+.status-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    background-color: #f8f9fa;
+    color: #495057;
+    font-size: 0.875rem;
+}
+
+/* ── Chart containers ─────────────────────────────────────────────── */
+.chart-container {
+    margin: 0.75rem 0;
+    text-align: center;
+}
+
+.chart-container svg {
+    max-width: 100%;
+    height: auto;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────── */
+@media (max-width: 991px) {
+    .input-panel {
+        max-height: none;
+        overflow-y: visible;
+    }
+}
+
+/* ── Form compactness ─────────────────────────────────────────────── */
+.form-label {
+    margin-bottom: 0.15rem;
+    font-weight: 500;
+}
+
+.form-control-sm {
+    font-size: 0.8125rem;
+}
+
+/* ── Results icon placeholder ─────────────────────────────────────── */
+.results-icon {
+    opacity: 0.3;
+}

@@ -1,0 +1,85 @@
+/*
+ * Reusable component rules. Keep calculation-book custom CSS small and additive.
+ */
+body {
+    background: var(--ecs-color-bg);
+    color: var(--ecs-color-text);
+}
+
+.app-topbar {
+    min-height: var(--ecs-topbar-height);
+}
+
+.bg-primary-gradient {
+    background: linear-gradient(135deg, var(--ecs-color-primary) 0%, var(--ecs-color-primary-2) 100%);
+}
+
+.input-panel,
+.results-panel {
+    min-width: 0;
+}
+
+.input-panel .card,
+.result-card,
+.review-card {
+    border-color: var(--ecs-color-border);
+    border-radius: var(--ecs-radius-md);
+    box-shadow: var(--ecs-shadow-sm);
+}
+
+.input-panel .card-header,
+.result-card .card-header,
+.review-card .card-header {
+    background: var(--ecs-color-surface-muted);
+    border-bottom-color: var(--ecs-color-border);
+}
+
+.metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    gap: 0.75rem;
+}
+
+.metric-box {
+    border: 1px solid var(--ecs-color-border);
+    border-radius: var(--ecs-radius-md);
+    background: var(--ecs-color-surface);
+    padding: 0.75rem;
+}
+
+.metric-label {
+    color: var(--ecs-color-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.metric-value {
+    font-size: 1.35rem;
+    font-weight: 700;
+}
+
+.report-frame {
+    min-height: 80vh;
+}
+
+.topbar-actions {
+    flex-wrap: wrap;
+}
+
+.topbar-template-select {
+    max-width: 14rem;
+    min-width: 11rem;
+}
+
+@media (max-width: 991px) {
+    .topbar-actions {
+        align-items: stretch !important;
+        margin-top: 0.75rem;
+    }
+
+    .topbar-template-select {
+        max-width: none;
+        width: 100%;
+    }
+}
