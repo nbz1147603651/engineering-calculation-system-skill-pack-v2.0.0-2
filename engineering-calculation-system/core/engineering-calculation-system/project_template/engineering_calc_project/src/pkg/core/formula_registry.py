@@ -214,8 +214,8 @@ def validate_formula_rule(rule: dict[str, Any]) -> list[str]:
 def run_book_smoke_check() -> list[str]:
     """Run the official book entry point once before publishing active rules."""
     try:
-        from pkg.books.book_name.book_models import BookInput, ProjectInfo
-        from pkg.books.book_name.book_runner import run_book
+        from pkg.books.example_book.book_models import BookInput, ProjectInfo
+        from pkg.books.example_book.book_runner import run_book
 
         book_input = BookInput(
             project=ProjectInfo(

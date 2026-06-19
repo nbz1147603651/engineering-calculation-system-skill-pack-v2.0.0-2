@@ -4,8 +4,8 @@
 \vspace{12mm}
 {\huge {{ project.title | default("Calculation Book") | latex_escape }}\par}
 \vspace{8mm}
-{\large Project ID: {{ project.project_id | default("to_be_defined") | latex_escape }}\par}
-{\large Case ID: {{ project.case_id | default("to_be_defined") | latex_escape }}\par}
+{\large Project ID: {{ project.project_id | default("--") | latex_escape }}\par}
+{\large Case ID: {{ project.case_id | default("--") | latex_escape }}\par}
 \vfill
 \begin{tabular}{ll}
 Report status & {{ report_status | latex_escape }} \\

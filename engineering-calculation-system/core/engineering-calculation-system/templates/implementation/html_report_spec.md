@@ -31,10 +31,13 @@ HTML reports must be formatted as formal A4 calculation books:
 @page size: A4
 print-safe margins
 cover or title block
-governing summary
+control results and governing summary
 input summary
+engineering charts when BookResult.charts is present
 calculation checks
 formula logic trace
+sources
+assumptions
 warnings and errors
 traceability metadata
 template boundary statement
@@ -66,6 +69,9 @@ Generated projects should verify:
 /api/report/final returns PDF when LaTeX compilation succeeds
 /api/report/final returns A4 HTML when no LaTeX compiler is available
 HTML contains @page size: A4
+HTML contains Engineering Charts when chart specs exist
 HTML contains Formula Logic Trace
+HTML contains Sources
+HTML contains Assumptions
 HTML contains Template Boundary Statement
 ```

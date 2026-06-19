@@ -71,10 +71,22 @@
     },
     {
       "name": "MiniMaxCode",
-      "path": "MiniMaxCode/engineering-calculation-system",
-      "install_text": "Copy this folder into a MiniMax Code-discovered skills directory, or import it as a standard SKILL.md skill folder.",
+      "path": "MiniMaxCode",
+      "install_text": "For local MiniMax Code / Mavis installs, copy `skills/engineering-calculation-system/` to `%USERPROFILE%/.mavis/skills/engineering-calculation-system/`, then restart MiniMax Code or verify with `mavis skill list`. For sharing or marketplace-style import, publish the unzipped archive as a Github repository root and use Skills -> Create -> Import from Github. The repository skill entry is `skills/engineering-calculation-system/SKILL.md`.",
+      "include_core": false,
+      "payload_at_root": true,
+      "copies": [
+        {
+          "profile": "core",
+          "source": "engineering-calculation-system",
+          "target": "skills/engineering-calculation-system"
+        }
+      ],
       "notes": [
-        "MiniMax Code can auto-discover standard SKILL.md skills from supported coding tools; this package keeps the root `SKILL.md` layout intact."
+        "This package follows the MiniMax Skills repository layout: `skills/<skill-name>/SKILL.md`.",
+        "Local user-skill install root observed on Windows MiniMax Code / Mavis builds: `%USERPROFILE%/.mavis/skills/`.",
+        "If `mavis skill list` reports a different `agent_skills_dir` or user skill root, copy the folder to that reported root instead.",
+        "For Github import, publish the unzipped archive contents as the repository root rather than uploading the zip file itself."
       ]
     },
     {

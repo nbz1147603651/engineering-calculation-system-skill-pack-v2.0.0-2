@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import importlib
 import importlib.util
 import json
 import os
@@ -238,6 +239,7 @@ WEB_COMPLETE_TEXT_REQUIRED_PHRASES = {
     ],
     "webapp/static/js/results.js": [
         "renderCapabilities",
+        "renderCharts",
         "renderChecksTable",
         "renderFormulaTraces",
         "configureReviewAdmin",
@@ -248,22 +250,28 @@ WEB_COMPLETE_TEXT_REQUIRED_PHRASES = {
         "latex",
         "docker",
     ],
+    "src/pkg/report/html_renderer.py": [
+        "build_html_report_context",
+        "render_a4_html_report",
+        "@page",
+        "size: A4",
+        "Engineering Charts",
+        "Formula Logic Trace",
+        "Control Results and Governing Summary",
+        "Sources",
+        "Assumptions",
+        "Template Boundary Statement",
+    ],
     "src/pkg/report/latex_renderer.py": [
         "build_latex_report_context",
+        "report_sources_from_checks",
+        "report_assumptions_from_context",
         "render_latex_project_zip",
         "detect_latex_toolchain",
         "compile_latex_project",
         "main.pdf",
         "latex_escape",
         "Overleaf import",
-    ],
-    "src/pkg/report/html_renderer.py": [
-        "build_html_report_context",
-        "render_a4_html_report",
-        "@page",
-        "size: A4",
-        "Formula Logic Trace",
-        "Template Boundary Statement",
     ],
     "src/pkg/report/report_selector.py": [
         "select_report_output",
@@ -294,8 +302,12 @@ WEB_COMPLETE_TEXT_REQUIRED_PHRASES = {
         "langToggle",
         "capabilityStrip",
         "btnAdminReview",
+        "chartsSection",
         "size: A4",
+        "Engineering Charts",
         "Formula Logic Trace",
+        "Sources",
+        "Assumptions",
     ],
     "tests/smoke/test_latex_report.py": [
         "/api/report/latex",
@@ -308,6 +320,10 @@ WEB_COMPLETE_TEXT_REQUIRED_PHRASES = {
         "application/zip",
         "main.tex",
         "page_style.sty",
+        "Formula Logic Trace",
+        "Sources",
+        "Assumptions",
+        "Template Boundary Statement",
     ],
     "release/release_checklist.md": [
         "web-complete",
@@ -322,6 +338,50 @@ WEB_COMPLETE_TEXT_REQUIRED_PHRASES = {
         "CLI runner",
     ],
 }
+WEB_COMPLETE_PLACEHOLDER_SCAN_PATHS = [
+    "README.md",
+    "handoff/implementation_handoff.yaml",
+    "handoff/coding_go_no_go.md",
+    "tests/smoke/example_input.json",
+    "webapp/config.py",
+    "webapp/templates/index.html",
+    "references/source_registry.yaml",
+    "references/evidence_library_manifest.yaml",
+    "references/acquisition/acquisition_handoff.yaml",
+    "references/acquisition/source_coverage_matrix.csv",
+    "analysis/01_source_inventory/source_inventory.yaml",
+    "analysis/01_source_inventory/source_authority_table.csv",
+    "analysis/03_logic_details/formula_inventory.csv",
+    "analysis/03_logic_details/unit_and_sign_conventions.md",
+    "analysis/03_logic_details/assumption_register.csv",
+    "analysis/05_risks_and_questions/open_questions.csv",
+]
+WEB_COMPLETE_FORBIDDEN_PROJECT_TOKENS = [
+    "Example Project",
+    "EXAMPLE_001",
+    "<book_name>",
+    "<example_book>",
+    "to_be_defined",
+    "needs_confirmation",
+]
+WEB_COMPLETE_REQUIRED_REPORT_SECTIONS = [
+    "Control Results and Governing Summary",
+    "Input Summary",
+    "Engineering Charts",
+    "Calculation Checks",
+    "Formula Logic Trace",
+    "Sources",
+    "Assumptions",
+    "Traceability",
+    "Template Boundary Statement",
+]
+WEB_COMPLETE_FORBIDDEN_REPORT_PHRASES = [
+    "No checks recorded.",
+    "No chart specifications were exposed",
+    "No sources recorded.",
+    "No assumptions recorded.",
+    "Example Project",
+]
 
 
 def read_text(path: Path) -> str:
@@ -655,7 +715,7 @@ def check_static_html_delivery_guard(project_root: Path, errors: list[str]) -> N
         "webapp/app.py",
         "webapp/routes.py",
         "webapp/form_utils.py",
-        "src/pkg/books/book_name/book_runner.py",
+        "src/pkg/books/example_book/book_runner.py",
         "tests/smoke/test_web_routes.py",
     ]
     missing = [rel_path for rel_path in runtime_paths if not (project_root / rel_path).exists()]
@@ -664,7 +724,159 @@ def check_static_html_delivery_guard(project_root: Path, errors: list[str]) -> N
             "report-only output is not a deployable web system; static HTML/report HTML "
             "alone is not a production-ready web calculation "
             f"system; missing runtime artifacts: {', '.join(missing)}"
+            )
+
+
+def check_web_complete_gate_status(project_root: Path, errors: list[str]) -> None:
+    handoff_path = project_root / "handoff" / "implementation_handoff.yaml"
+    handoff_status = normalize_token(yaml_top_scalar(handoff_path, "status"))
+    coding_status = project_coding_gate_status(project_root)
+    markdown_status = markdown_gate_status(project_root / "handoff" / "coding_go_no_go.md")
+    if handoff_status == "prototype_allowed" or coding_status == "prototype_allowed" or markdown_status == "prototype_allowed":
+        errors.append(
+            "web-complete cannot be claimed while handoff or coding gate is prototype_allowed"
         )
+    if coding_status != PRODUCTION_ALLOWED:
+        errors.append(
+            "web-complete requires handoff/implementation_handoff.yaml "
+            f"coding_gate.status={PRODUCTION_ALLOWED!r}, got {coding_status or 'missing'}"
+        )
+    if markdown_status and markdown_status != PRODUCTION_ALLOWED:
+        errors.append(
+            "web-complete requires handoff/coding_go_no_go.md "
+            f"status={PRODUCTION_ALLOWED!r}, got {markdown_status}"
+        )
+
+
+def check_web_complete_placeholders(project_root: Path, errors: list[str]) -> None:
+    for rel_path in WEB_COMPLETE_PLACEHOLDER_SCAN_PATHS:
+        path = project_root / rel_path
+        if not path.exists():
+            continue
+        text = read_text(path)
+        for token in WEB_COMPLETE_FORBIDDEN_PROJECT_TOKENS:
+            if token in text:
+                errors.append(
+                    f"web-complete project artifact contains unresolved placeholder "
+                    f"{token!r}: {rel_path}"
+                )
+
+
+def load_json_object(path: Path, errors: list[str], *, label: str) -> dict:
+    if not path.exists():
+        errors.append(f"missing {label}: {path.as_posix()}")
+        return {}
+    try:
+        data = json.loads(read_text(path))
+    except json.JSONDecodeError as exc:
+        errors.append(f"could not parse {label}: {exc}")
+        return {}
+    if not isinstance(data, dict):
+        errors.append(f"{label} must be a JSON object")
+        return {}
+    return data
+
+
+def check_example_input_payload(project_root: Path, errors: list[str]) -> dict:
+    data = load_json_object(
+        project_root / "tests" / "smoke" / "example_input.json",
+        errors,
+        label="web-complete example input",
+    )
+    project = data.get("project")
+    if not isinstance(project, dict):
+        errors.append("web-complete example input requires a project object")
+    else:
+        for key in ("project_id", "case_id"):
+            if not has_actionable_text(project.get(key)):
+                errors.append(f"web-complete example input requires actionable project.{key}")
+        if any(str(project.get(key, "")).startswith("EXAMPLE") for key in ("project_id", "case_id")):
+            errors.append("web-complete example input still uses EXAMPLE placeholder IDs")
+
+    inputs = data.get("inputs")
+    if not isinstance(inputs, dict) or not inputs:
+        errors.append("web-complete example input requires a non-empty inputs object")
+        return data
+    checks = inputs.get("checks")
+    if not isinstance(checks, list) or not checks:
+        errors.append("web-complete example input requires non-empty inputs.checks")
+    return data
+
+
+def project_book_name(project_root: Path) -> str:
+    handoff_path = project_root / "handoff" / "implementation_handoff.yaml"
+    book_name = yaml_top_scalar(handoff_path, "book_name")
+    if book_name:
+        return book_name
+    books_root = project_root / "src" / "pkg" / "books"
+    if books_root.exists():
+        for path in sorted(books_root.iterdir()):
+            if (path / "book_runner.py").exists():
+                return path.name
+    return ""
+
+
+def purge_project_modules() -> None:
+    for name in list(sys.modules):
+        if name == "webapp" or name.startswith("webapp.") or name == "pkg" or name.startswith("pkg."):
+            sys.modules.pop(name, None)
+
+
+def status_value(value: object) -> str:
+    if hasattr(value, "value"):
+        return normalize_token(getattr(value, "value"))
+    return normalize_token(value)
+
+
+def check_web_complete_runtime_closure(project_root: Path, errors: list[str]) -> None:
+    example_data = check_example_input_payload(project_root, errors)
+    if not example_data:
+        return
+
+    book_name = project_book_name(project_root)
+    if not book_name:
+        errors.append("web-complete runtime closure could not determine book_name")
+        return
+
+    previous_path = list(sys.path)
+    purge_project_modules()
+    sys.path.insert(0, str(project_root))
+    sys.path.insert(0, str(project_root / "src"))
+    try:
+        form_utils = importlib.import_module("webapp.form_utils")
+        book_runner = importlib.import_module(f"pkg.books.{book_name}.book_runner")
+        report_context_module = importlib.import_module(f"pkg.books.{book_name}.report_context")
+        html_renderer = importlib.import_module("pkg.report.html_renderer")
+
+        book_input = form_utils.build_case_input_from_form(example_data)
+        result = book_runner.run_book(book_input)
+        checks = list(getattr(result, "checks", []) or [])
+        if not checks:
+            errors.append("web-complete runtime closure requires non-empty BookResult.checks")
+        elif not any(status_value(getattr(check, "status", "")) not in {"", "not_evaluated", "needs_confirmation"} for check in checks):
+            errors.append("web-complete runtime closure requires at least one evaluated CheckResult")
+
+        if not any(getattr(check, "formula_traces", None) for check in checks):
+            errors.append("web-complete runtime closure requires formula traces on BookResult.checks")
+
+        charts = list(getattr(result, "charts", []) or [])
+        if not charts:
+            errors.append("web-complete runtime closure requires non-empty BookResult.charts")
+
+        report_context = report_context_module.build_report_context(result)
+        html_context = html_renderer.build_html_report_context(book_input, result, report_context)
+        html = html_renderer.render_a4_html_report(html_context)
+        for section in WEB_COMPLETE_REQUIRED_REPORT_SECTIONS:
+            if section not in html:
+                errors.append(f"web-complete report is missing required section: {section}")
+        for phrase in WEB_COMPLETE_FORBIDDEN_REPORT_PHRASES:
+            if phrase in html:
+                errors.append(f"web-complete report contains incomplete placeholder phrase: {phrase}")
+    except Exception as exc:  # pragma: no cover - validator must report import/runtime failures cleanly.
+        errors.append(f"web-complete runtime closure failed: {exc}")
+    finally:
+        sys.path[:] = previous_path
+        purge_project_modules()
 
 
 def check_web_complete_delivery(project_root: Path, errors: list[str]) -> None:
@@ -672,6 +884,10 @@ def check_web_complete_delivery(project_root: Path, errors: list[str]) -> None:
     for rel_path in WEB_COMPLETE_REQUIRED_PROJECT_PATHS:
         check_exists(project_root, rel_path, errors)
     check_text_required_phrases(project_root, WEB_COMPLETE_TEXT_REQUIRED_PHRASES, errors)
+    check_web_complete_gate_status(project_root, errors)
+    check_web_complete_placeholders(project_root, errors)
+    check_web_complete_runtime_closure(project_root, errors)
+
 
 
 def check_skill_frontmatter(
@@ -748,12 +964,12 @@ def validate_adapters_light_profile(package_root: Path) -> list[str]:
     check_text_required_phrases(
         package_root,
         {
-            "AGENTS.md": ["Chinese/English interactive UI switch"],
-            "adapters/agent-entrypoints.md": ["Chinese/English switching"],
-            ".agents/skills/engineering-calc-system/SKILL.md": ["Chinese/English interactive UI switch"],
-            ".opencode/skills/engineering-calc-system/SKILL.md": ["Chinese/English interactive UI switch"],
-            ".trae/project_rules.md": ["Chinese/English interactive UI switch"],
-            ".trae/rules/engineering-calc-system.md": ["Chinese/English interactive UI switch"],
+            "AGENTS.md": ["Chinese/English interactive UI switch", "shared/lifecycle-matrix.md", "dual closure"],
+            "adapters/agent-entrypoints.md": ["Chinese/English switching", "shared/lifecycle-matrix.md", "dual closure"],
+            ".agents/skills/engineering-calc-system/SKILL.md": ["Chinese/English interactive UI switch", "lifecycle-matrix.md", "dual closure"],
+            ".opencode/skills/engineering-calc-system/SKILL.md": ["Chinese/English interactive UI switch", "lifecycle-matrix.md", "dual closure"],
+            ".trae/project_rules.md": ["Chinese/English interactive UI switch", "shared/lifecycle-matrix.md", "dual closure"],
+            ".trae/rules/engineering-calc-system.md": ["Chinese/English interactive UI switch", "shared/lifecycle-matrix.md", "dual closure"],
         },
         errors,
     )
@@ -783,9 +999,9 @@ def validate_qoder_addon_profile(package_root: Path) -> list[str]:
     check_text_required_phrases(
         package_root,
         {
-            ".qoder/skills/engineering-calc-system/SKILL.md": ["中英文切换"],
+            ".qoder/skills/engineering-calc-system/SKILL.md": ["Stable ASCII Contract", "shared/lifecycle-matrix.md", "dual closure"],
             ".qoder/skills/engineering-calc-system/reference.md": ["/api/i18n/<lang>"],
-            ".qoder/agents/engineering-calc-system.md": ["中英文切换"],
+            ".qoder/agents/engineering-calc-system.md": ["Stable ASCII Contract", "shared/lifecycle-matrix.md", "dual closure"],
             ".qoder/agents/reference.md": ["/api/i18n/<lang>"],
         },
         errors,
@@ -811,6 +1027,7 @@ def validate_singlefile_profile(package_root: Path) -> list[str]:
             "## skills/00-engineering-calculation-router.skill.md",
             "## shared/multi-agent-orchestration.md",
             "## shared/delivery-contract.md",
+            "## shared/lifecycle-matrix.md",
         ]:
             if phrase not in text:
                 errors.append(f"singlefile output missing phrase: {phrase!r}")

@@ -9,6 +9,7 @@
     "parent/engineering-calculation-book.skill.md",
     "shared/multi-agent-orchestration.md",
     "shared/delivery-contract.md",
+    "shared/lifecycle-matrix.md",
     "shared/quality-gates.md",
     "templates/acquisition/open_reference_questions.md",
     "templates/acquisition/acquisition_notes.md",
@@ -61,7 +62,8 @@
     "project_template/engineering_calc_project/src/pkg/report/latex_renderer.py",
     "project_template/engineering_calc_project/src/pkg/report/html_renderer.py",
     "project_template/engineering_calc_project/src/pkg/report/report_selector.py",
-    "project_template/engineering_calc_project/src/pkg/books/book_name/book_runner.py",
+    "project_template/engineering_calc_project/src/pkg/books/example_book/book_runner.py",
+    "project_template/engineering_calc_project/src/pkg/books/example_book/charts.py",
     "project_template/engineering_calc_project/tests/smoke/test_web_routes.py",
     "project_template/engineering_calc_project/tests/smoke/test_latex_report.py"
   ],
@@ -294,6 +296,9 @@
       "GET /api/report/decision",
       "POST /api/report/final",
       "@page size: A4",
+      "control results and governing summary",
+      "sources",
+      "assumptions",
       "Formula Logic Trace",
       "Template Boundary Statement"
     ],
@@ -309,6 +314,9 @@
       "main.pdf",
       "no_response_default",
       "Template Boundary",
+      "formula logic trace",
+      "sources",
+      "assumptions",
       "/api/report/latex"
     ],
     "templates/implementation/i18n_pattern.md": [
@@ -397,6 +405,10 @@
     "shared/delivery-contract.md": [
       "Delivery Mode Declaration",
       "Web-Complete Minimum",
+      "shared/lifecycle-matrix.md",
+      "dual closure",
+      "BookResult.checks",
+      "coding_gate.status=production_allowed",
       "Completion Guard",
       "LaTeX/Overleaf-compatible report package export",
       "POST /api/report/final",
@@ -405,6 +417,25 @@
       "Installation Shape Check",
       "--delivery web-complete",
       "interactive Chinese/English UI switching"
+    ],
+    "shared/lifecycle-matrix.md": [
+      "Engineering Calculation Lifecycle Matrix",
+      "Web-Complete Exit Gate",
+      "coding_gate.status=production_allowed",
+      "BookResult.checks",
+      "scripts/validate_artifacts.py --delivery web-complete"
+    ],
+    "SKILL.md": [
+      "shared/lifecycle-matrix.md",
+      "web-complete` means dual closure"
+    ],
+    "skills/00-engineering-calculation-router.skill.md": [
+      "shared/lifecycle-matrix.md",
+      "do not route around 12a"
+    ],
+    "parent/engineering-calculation-book.skill.md": [
+      "shared/lifecycle-matrix.md",
+      "dual closure"
     ],
     "shared/multi-agent-orchestration.md": [
       "Supervisor Responsibilities",
@@ -433,6 +464,19 @@
     "deploy/systemd/engineering-calc.service",
     "deploy/nginx/engineering-calc.conf",
     "release/release_checklist.md",
+    "references/source_registry.yaml",
+    "references/evidence_library_manifest.yaml",
+    "references/acquisition/acquisition_handoff.yaml",
+    "references/acquisition/source_coverage_matrix.csv",
+    "analysis/01_source_inventory/source_inventory.yaml",
+    "analysis/01_source_inventory/source_authority_table.csv",
+    "analysis/01_source_inventory/source_conflicts.csv",
+    "analysis/03_logic_details/formula_inventory.csv",
+    "analysis/03_logic_details/lookup_inventory.csv",
+    "analysis/03_logic_details/branch_inventory.csv",
+    "analysis/03_logic_details/unit_and_sign_conventions.md",
+    "analysis/03_logic_details/assumption_register.csv",
+    "analysis/05_risks_and_questions/open_questions.csv",
     "tests/smoke/example_input.json",
     "apps/review/admin_formula_review.py",
     "data/formula_registry/active_versions.yaml",
@@ -476,10 +520,11 @@
     "src/pkg/core/capabilities.py",
     "src/pkg/core/formula_registry.py",
     "src/pkg/books/__init__.py",
-    "src/pkg/books/book_name/__init__.py",
-    "src/pkg/books/book_name/book_runner.py",
-    "src/pkg/books/book_name/book_models.py",
-    "src/pkg/books/book_name/report_context.py",
+    "src/pkg/books/example_book/__init__.py",
+    "src/pkg/books/example_book/book_runner.py",
+    "src/pkg/books/example_book/book_models.py",
+    "src/pkg/books/example_book/charts.py",
+    "src/pkg/books/example_book/report_context.py",
     "src/pkg/interfaces/__init__.py",
     "src/pkg/report/__init__.py",
     "src/pkg/report/latex_renderer.py",
@@ -625,6 +670,7 @@
     ],
     "webapp/static/js/results.js": [
       "renderCapabilities",
+      "renderCharts",
       "renderChecksTable",
       "renderFormulaTraces",
       "configureReviewAdmin"
@@ -637,6 +683,8 @@
     ],
     "src/pkg/report/latex_renderer.py": [
       "build_latex_report_context",
+      "report_sources_from_checks",
+      "report_assumptions_from_context",
       "render_latex_project_zip",
       "detect_latex_toolchain",
       "compile_latex_project",
@@ -649,7 +697,11 @@
       "render_a4_html_report",
       "@page",
       "size: A4",
+      "Engineering Charts",
       "Formula Logic Trace",
+      "Control Results and Governing Summary",
+      "Sources",
+      "Assumptions",
       "Template Boundary Statement"
     ],
     "src/pkg/report/report_selector.py": [
@@ -658,10 +710,23 @@
       "html_a4",
       "detect_latex_toolchain"
     ],
-    "src/pkg/books/book_name/book_runner.py": [
+    "src/pkg/books/example_book/book_runner.py": [
       "def run_book",
       "BookInput",
-      "BookResult"
+      "BookResult",
+      "build_book_charts"
+    ],
+    "src/pkg/books/example_book/book_models.py": [
+      "BookResult",
+      "ChartSpec",
+      "ChartSeries",
+      "ChartAxis",
+      "ChartThreshold"
+    ],
+    "src/pkg/books/example_book/charts.py": [
+      "build_book_charts",
+      "CheckResult",
+      "source_result_paths"
     ],
     "tests/smoke/test_web_routes.py": [
       "/health",
@@ -677,9 +742,13 @@
       "/api/batch/run",
       "langToggle",
       "capabilityStrip",
+      "chartsSection",
       "btnAdminReview",
       "size: A4",
-      "Formula Logic Trace"
+      "Engineering Charts",
+      "Formula Logic Trace",
+      "Sources",
+      "Assumptions"
     ],
     "tests/smoke/test_latex_report.py": [
       "/api/report/latex",
@@ -691,7 +760,12 @@
       "size: A4",
       "application/zip",
       "main.tex",
-      "page_style.sty"
+      "page_style.sty",
+      "Engineering Charts",
+      "Formula Logic Trace",
+      "Sources",
+      "Assumptions",
+      "Template Boundary Statement"
     ],
     "release/release_checklist.md": [
       "Runtime stack is recorded",

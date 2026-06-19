@@ -1,1 +1,2 @@
 requirement_id,requirement,importance,covered,current_source_id,gap,needed_source_type,blocks_analysis,blocks_coding
+COV-001,Template demand/capacity demonstration rule,critical,covered,S01,,source_card,false,false

@@ -18,10 +18,19 @@ function collectFormData() {
         case_id: document.getElementById("case_id")?.value || "",
     };
 
-    // Scaffold: collect book-specific form sections.
-    // data.foundation = { B_m: parseFloat(...), ... };
-    // data.loads = { Fx_kN: parseFloat(...), ... };
-    // data.options = { ... };
+    data.inputs = {
+        checks: [
+            {
+                check_id: "DEMO-001",
+                name: document.getElementById("check_name")?.value || "Template demand/capacity check",
+                demand: _numVal("check_demand", 45),
+                capacity: _numVal("check_capacity", 90),
+                limit: _numVal("check_limit", 1),
+                unit: document.getElementById("check_unit")?.value || "kN",
+                source_reference: "S01",
+            },
+        ],
+    };
 
     return data;
 }
@@ -36,9 +45,12 @@ function populateForm(data) {
         _setVal("case_id", data.project.case_id);
     }
 
-    // Scaffold: populate book-specific sections.
-    // if (data.foundation) { _setVal("B_m", data.foundation.B_m); ... }
-    // if (data.loads) { _setVal("Fx_kN", data.loads.Fx_kN); ... }
+    const check = data.inputs?.checks?.[0] || data.checks?.[0] || {};
+    _setVal("check_name", check.name);
+    _setVal("check_demand", check.demand);
+    _setVal("check_capacity", check.capacity);
+    _setVal("check_limit", check.limit);
+    _setVal("check_unit", check.unit);
 }
 
 /**
@@ -62,4 +74,10 @@ function _setVal(id, value) {
     if (el && value !== undefined && value !== null) {
         el.value = value;
     }
+}
+
+function _numVal(id, fallback) {
+    const value = document.getElementById(id)?.value;
+    const number = Number.parseFloat(value);
+    return Number.isFinite(number) ? number : fallback;
 }

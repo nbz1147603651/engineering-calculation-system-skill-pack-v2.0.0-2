@@ -9,6 +9,11 @@ Use this parent skill after a valid implementation handoff exists, or when the u
 
 This skill builds engineering calculation books as reusable, auditable software systems, not disposable scripts.
 
+For any implementation, validation, or release task, read
+`shared/delivery-contract.md` and `shared/lifecycle-matrix.md`. The matrix
+defines the required 08-14 sequence and exit gates for the book, web, batch,
+verification, and deployment tracks.
+
 ## Core Principle
 
 Correctness and traceability come first. Reuse comes second. Presentation comes third.
@@ -46,7 +51,7 @@ def run_book(book_input: BookInput) -> BookResult:
     ...
 ```
 
-Do not treat a static `.html` file, exported report HTML, or visual mockup as a complete web calculation system. Final web delivery must include calculation modules, `run_book()`, backend/API runtime files, frontend assets, tests, and release/deployment artifacts unless the user explicitly requested a static prototype.
+Do not treat a static `.html` file, exported report HTML, or visual mockup as a complete web calculation system. Final `web-complete` delivery means dual closure: a readable traceable calculation book and a complete web system with calculation modules, `run_book()`, backend/API runtime files, frontend assets, import/export, batch, tests, and release/deployment artifacts unless the user explicitly requested a static prototype.
 
 Operational interfaces should use the shared layout pattern from Skill 12:
 

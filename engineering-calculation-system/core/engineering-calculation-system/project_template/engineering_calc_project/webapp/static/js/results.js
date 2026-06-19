@@ -28,6 +28,7 @@ function renderResults(data) {
     hidePlaceholder();
     renderGoverning(data.governing);
     renderFormulaRegistry(data.formula_registry);
+    renderCharts(data.charts || []);
     renderChecksTable(data.checks || []);
     renderFormulaTraces(data.checks || []);
     renderWarningsErrors(data.warnings || [], data.errors || []);
@@ -80,6 +81,170 @@ function statusBadge(status) {
             ? "bg-danger"
             : "bg-warning text-dark";
     return `<span class="badge ${cls}">${escapeHtml(normalized)}</span>`;
+}
+
+function chartValue(chart, series, index) {
+    const values = Array.isArray(series.values) ? series.values : [];
+    return index < values.length ? values[index] : null;
+}
+
+function chartUnit(chart, series) {
+    const axis = chart && chart.y_axis ? chart.y_axis : {};
+    return series.unit || axis.unit || "";
+}
+
+function finiteNumber(value) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
+}
+
+function chartMaxValue(chart) {
+    const values = [];
+    (chart.series || []).forEach(series => {
+        (series.values || []).forEach(value => {
+            const number = finiteNumber(value);
+            if (number !== null) values.push(Math.abs(number));
+        });
+    });
+    (chart.thresholds || []).forEach(threshold => {
+        const number = finiteNumber(threshold.value);
+        if (number !== null) values.push(Math.abs(number));
+    });
+    return values.length ? Math.max(...values) : 1;
+}
+
+function renderChartSvg(chart) {
+    const categories = chart.categories || [];
+    const seriesList = chart.series || [];
+    if (!categories.length || !seriesList.length) return "";
+
+    const palette = ["#2563eb", "#16a34a", "#dc2626", "#9333ea", "#f59e0b"];
+    const left = 185;
+    const top = 40;
+    const plotWidth = 430;
+    const barHeight = 12;
+    const seriesGap = 5;
+    const rowGap = 18;
+    const seriesCount = Math.max(1, seriesList.length);
+    const rowHeight = seriesCount * (barHeight + seriesGap) + rowGap;
+    const width = 680;
+    const height = top + categories.length * rowHeight + 38;
+    const scale = plotWidth / chartMaxValue(chart);
+    const axisLabel = escapeHtml((chart.y_axis && chart.y_axis.label) || "Value");
+
+    let svg = `
+        <svg class="chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(chart.title || "Chart")}">
+            <line x1="${left}" y1="${top - 8}" x2="${left}" y2="${height - 30}" stroke="#94a3b8" stroke-width="1"></line>
+            <line x1="${left}" y1="${height - 30}" x2="${left + plotWidth}" y2="${height - 30}" stroke="#94a3b8" stroke-width="1"></line>
+    `;
+
+    (chart.thresholds || []).forEach(threshold => {
+        const value = finiteNumber(threshold.value);
+        if (value === null) return;
+        const x = left + Math.min(Math.abs(value) * scale, plotWidth);
+        svg += `
+            <line x1="${x.toFixed(2)}" y1="${top - 12}" x2="${x.toFixed(2)}" y2="${height - 30}" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4 3"></line>
+            <text x="${(x + 4).toFixed(2)}" y="${top - 18}" font-size="10" fill="#991b1b">${escapeHtml(threshold.label || "Threshold")}: ${escapeHtml(threshold.value)}</text>
+        `;
+    });
+
+    seriesList.forEach((series, index) => {
+        const color = series.color || palette[index % palette.length];
+        const x = left + index * 120;
+        svg += `
+            <rect x="${x}" y="8" width="10" height="10" fill="${escapeHtml(color)}"></rect>
+            <text x="${x + 15}" y="17" font-size="10" fill="#334155">${escapeHtml(series.label || "Series")}</text>
+        `;
+    });
+
+    categories.forEach((category, categoryIndex) => {
+        const y0 = top + categoryIndex * rowHeight;
+        const labelY = y0 + (seriesCount * (barHeight + seriesGap)) / 2;
+        svg += `<text x="8" y="${labelY.toFixed(2)}" font-size="10" fill="#334155">${escapeHtml(category)}</text>`;
+
+        seriesList.forEach((series, seriesIndex) => {
+            const value = finiteNumber(chartValue(chart, series, categoryIndex));
+            if (value === null) return;
+            const color = series.color || palette[seriesIndex % palette.length];
+            const y = y0 + seriesIndex * (barHeight + seriesGap);
+            const barWidth = Math.min(Math.abs(value) * scale, plotWidth);
+            svg += `
+                <rect x="${left}" y="${y.toFixed(2)}" width="${barWidth.toFixed(2)}" height="${barHeight}" rx="2" fill="${escapeHtml(color)}"></rect>
+                <text x="${(left + barWidth + 5).toFixed(2)}" y="${(y + 10).toFixed(2)}" font-size="10" fill="#334155">${escapeHtml(value)} ${escapeHtml(chartUnit(chart, series))}</text>
+            `;
+        });
+    });
+
+    svg += `
+            <text x="${(left + plotWidth / 2).toFixed(2)}" y="${height - 8}" font-size="10" text-anchor="middle" fill="#475569">${axisLabel}</text>
+        </svg>
+    `;
+    return svg;
+}
+
+function renderChartDataTable(chart) {
+    const categories = chart.categories || [];
+    const rows = [];
+    categories.forEach((category, categoryIndex) => {
+        (chart.series || []).forEach(series => {
+            const paths = series.result_paths || [];
+            rows.push(`
+                <tr>
+                    <td>${escapeHtml(category)}</td>
+                    <td>${escapeHtml(series.label || "-")}</td>
+                    <td>${fmt(chartValue(chart, series, categoryIndex))}</td>
+                    <td>${escapeHtml(chartUnit(chart, series) || "-")}</td>
+                    <td><code>${escapeHtml(paths[categoryIndex] || "-")}</code></td>
+                </tr>
+            `);
+        });
+    });
+
+    return `
+        <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0 chart-data-table">
+                <thead><tr><th>Category</th><th>Series</th><th>Value</th><th>Unit</th><th>Result Path</th></tr></thead>
+                <tbody>${rows.join("") || '<tr><td colspan="5" class="text-muted">No chart data recorded.</td></tr>'}</tbody>
+            </table>
+        </div>
+    `;
+}
+
+function renderCharts(charts) {
+    const section = document.getElementById("chartsSection");
+    const body = document.getElementById("chartsBody");
+    if (!section || !body) return;
+
+    if (!charts.length) {
+        section.classList.add("d-none");
+        body.innerHTML = "";
+        return;
+    }
+
+    section.classList.remove("d-none");
+    body.innerHTML = charts.map(chart => {
+        const notes = (chart.notes || []).map(note => `<li>${escapeHtml(note)}</li>`).join("");
+        const paths = (chart.source_result_paths || []).map(path => `<code>${escapeHtml(path)}</code>`).join(", ") || "-";
+        return `
+            <article class="chart-panel">
+                <div class="d-flex flex-wrap justify-content-between gap-2">
+                    <div>
+                        <h6 class="mb-1">${escapeHtml(chart.title || "Chart")}</h6>
+                        <p class="text-muted small mb-2">${escapeHtml(chart.purpose || "")}</p>
+                    </div>
+                    <span class="badge bg-light text-dark border">${escapeHtml(chart.chart_type || "chart")}</span>
+                </div>
+                ${renderChartSvg(chart)}
+                ${renderChartDataTable(chart)}
+                <div class="small text-muted mt-2">
+                    Source result paths: ${paths}<br>
+                    Placement: report=${escapeHtml(chart.recommended_report_location || "-")};
+                    UI=${escapeHtml(chart.recommended_ui_location || "-")}
+                </div>
+                ${notes ? `<ul class="small text-muted mt-2 mb-0">${notes}</ul>` : ""}
+            </article>
+        `;
+    }).join("");
 }
 
 function renderChecksTable(checks) {
@@ -153,7 +318,7 @@ function renderListAlert(id, items, kind, title) {
 
 function clearResults() {
     showPlaceholder();
-    ["governingBox", "formulaRegistryStrip", "checksSection", "traceSection", "warningsBox", "errorsBox"].forEach(id => {
+    ["governingBox", "formulaRegistryStrip", "chartsSection", "checksSection", "traceSection", "warningsBox", "errorsBox"].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.add("d-none");
     });

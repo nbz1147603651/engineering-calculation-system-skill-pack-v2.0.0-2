@@ -21,19 +21,39 @@ calculation-book software, web app, online calculator, deployable tool, reusable
 software package, batch workflow, or does not explicitly request a narrower
 prototype.
 
+Read `shared/lifecycle-matrix.md` with this contract. The matrix defines the
+01-14 entry conditions, required actions, artifacts, exit gates, and items that
+cannot be skipped. This contract defines the final delivery bar.
+
 Only use `core-only`, `report-only`, or `prototype-web` when the user explicitly
 asks for that reduced scope. Reduced-scope work must be labeled as not complete
 and not deployable.
 
 ## Web-Complete Minimum
 
+`web-complete` is the default production delivery name and means dual closure:
+
+- calculation-book closure: real project input, evaluated checks, traceable
+  formulas/sources, charts, and a readable A4 HTML or LaTeX/PDF calculation
+  book
+- web-system closure: API, UI, import/export, batch, deployment artifacts, and
+  smoke tests over the official runner
+
 A `web-complete` engineering calculation delivery must include all of these:
 
 - reusable calculation modules and the official `run_book(BookInput) -> BookResult`
   path
 - typed input/result models and traceable governing status
+- real project input, not an empty placeholder payload
+- non-empty `BookResult.checks`, with evaluated statuses and source/formula
+  traceability
+- report sections for Formula Logic Trace, Template Boundary Statement, input
+  summary, governing/control result, detailed checks, charts, sources, and
+  assumptions
 - backend application entrypoint and thin API routes
 - `/health` health endpoint and `POST /api/calculate`
+- `GET /api/report/decision`, `GET /api/report/templates`,
+  `POST /api/report/final`, and `POST /api/batch/run`
 - report preview or download route that consumes `BookResult`
 - automatic final calculation-book route `POST /api/report/final` that chooses LaTeX/PDF when a local compiler exists and A4 HTML otherwise
 - LaTeX/Overleaf-compatible report package export when calculation-book export is in scope, including template interaction, `GET /api/report/decision`, `GET /api/report/templates`, `latex_template_id`, compile validation, and default fallback
@@ -52,6 +72,11 @@ A `web-complete` engineering calculation delivery must include all of these:
   report, and batch paths
 - release checklist with local run, API smoke, deployment smoke, and remaining
   assumptions
+- `handoff/implementation_handoff.yaml` with
+  `coding_gate.status=production_allowed`
+- no production claim while handoff status is `prototype_allowed`
+- no residual `Example Project`, empty checks, empty sources, unresolved
+  `to_be_defined`, or static HTML masquerading as a web app
 - successful artifact validation before any claim of completion
 
 ## Completion Guard

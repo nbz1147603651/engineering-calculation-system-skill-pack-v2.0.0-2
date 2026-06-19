@@ -9,6 +9,7 @@ def build_report_context(result: BookResult) -> dict:
         "project": result.project,
         "governing": result.governing,
         "checks": result.checks,
+        "charts": result.charts,
         "warnings": result.warnings,
         "errors": result.errors,
     }

@@ -1,9 +1,24 @@
 {
   "project": {
-    "project_id": "EXAMPLE_001",
-    "case_id": "CASE_001",
-    "title": "Example Project"
+    "project_id": "DEMO_001",
+    "case_id": "DEMO_CASE_001",
+    "title": "Template Demonstration Project"
   },
-  "options": {},
-  "inputs": {}
+  "design_options": {
+    "calculation_basis": "template_demonstration",
+    "report_status": "review"
+  },
+  "inputs": {
+    "checks": [
+      {
+        "check_id": "DEMO-001",
+        "name": "Template demand/capacity check",
+        "demand": 45.0,
+        "capacity": 90.0,
+        "limit": 1.0,
+        "unit": "kN",
+        "source_reference": "S01"
+      }
+    ]
+  }
 }

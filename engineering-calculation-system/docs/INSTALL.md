@@ -6,7 +6,7 @@ Build releases from the source checkout:
 python tools/build_release.py
 ```
 
-With no arguments, the build creates every release profile plus six publish-ready platform zips under `dist/release/`.
+With no arguments, the build creates every release profile plus seven publish-ready platform zips under `dist/release/`.
 
 The default runtime package is:
 
@@ -50,17 +50,29 @@ dist/release/engineering-calculation-system-OpenCode-v2.4.0.zip
 dist/release/engineering-calculation-system-AGENTS-Generic-v2.4.0.zip
 ```
 
-Each zip contains one install folder plus `INSTALL.md`:
+Each zip contains one install folder plus `INSTALL.md`, except MiniMaxCode which is packaged as a MiniMax skills repository root:
 
 ```text
 CODEX zip:         copy engineering-calculation-system/ to the Codex skills directory
-MiniMaxCode zip:   copy engineering-calculation-system/ to a MiniMax Code-discovered skills directory
+MiniMaxCode zip:   local install by copying skills/engineering-calculation-system/ to %USERPROFILE%/.mavis/skills/engineering-calculation-system/; Github import remains supported
 QODER zip:         upload the zip directly in QODER Skills / Install Skill; this is a lightweight entrypoint
 QODER Project zip: copy copy-to-project-root/ contents to the QODER project root
 TRAE zip:          copy copy-to-project-root/ contents to the TRAE project root
 OpenCode zip:      copy copy-to-project-root/ contents to the OpenCode project root
 AGENTS Generic zip: copy copy-to-project-root/ contents to an AGENTS.md-compatible project root
 ```
+
+MiniMax Code local verification on Windows:
+
+```powershell
+& "$env:USERPROFILE\.mavis\bin\mavis.cmd" skill list
+& "$env:USERPROFILE\.mavis\bin\mavis.cmd" skill show engineering-calculation-system
+```
+
+If a future MiniMax Code / Mavis build reports a different user skill root, copy
+the skill folder to the reported root. The repository-style layout
+`skills/engineering-calculation-system/SKILL.md` is still used when importing
+from Github.
 
 For QODER web-complete generation, prefer the QODER Project zip. The direct
 QODER zip keeps `SKILL.md` at the archive root for QODER skill-import

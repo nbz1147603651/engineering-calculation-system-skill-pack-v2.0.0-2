@@ -1,7 +1,4 @@
-"""Flask application configuration.
-
-Scaffold: customize DEFAULTS and settings for each project.
-"""
+"""Flask application configuration."""
 
 from __future__ import annotations
 
@@ -30,25 +27,31 @@ FORMULA_REGISTRY_DIR = Path(os.environ.get("FORMULA_REGISTRY_DIR", DATA_DIR / "f
 LATEX_TEMPLATE_DIR = Path(os.environ.get("LATEX_TEMPLATE_DIR", LATEX_TEMPLATE_DIR))
 DEFAULT_LATEX_TEMPLATE_ID = os.environ.get("DEFAULT_LATEX_TEMPLATE_ID", "default_engineering_calcbook")
 
-# Default calculation parameters — served on page load so the user
-# can calculate immediately without filling every field.
-# Customize these defaults for each engineering calculation book.
+# Default calculation parameters served on page load so the user can calculate
+# immediately without filling every field. Keep this structure aligned with
+# webapp.form_utils.build_case_input_from_form and tests/smoke/example_input.json.
 DEFAULTS: dict = {
     "project": {
-        "project_id": "EXAMPLE_001",
-        "project_name": "Example Project",
+        "project_id": "DEMO_001",
+        "case_id": "DEMO_CASE_001",
+        "project_name": "Template Demonstration Project",
+        "title": "Template Demonstration Project",
     },
-    "foundation": {
-        # Add book-specific geometry fields here.
-        # e.g. "B_m": 1.0, "L_m": 1.0, "D_m": 1.2,
+    "inputs": {
+        "checks": [
+            {
+                "check_id": "DEMO-001",
+                "name": "Template demand/capacity check",
+                "demand": 45.0,
+                "capacity": 90.0,
+                "limit": 1.0,
+                "unit": "kN",
+                "source_reference": "S01",
+            }
+        ]
     },
-    "loads": {
-        # Add book-specific load fields here.
-        # e.g. "Fx_kN": 0.0, "Fy_kN": 0.0, "Fz_kN": 100.0,
+    "design_options": {
+        "calculation_basis": "template_demonstration",
+        "report_status": "review",
     },
-    "options": {
-        # Add book-specific design options here.
-        # e.g. "fos_bearing": 3.0,
-    },
-    # Add soil_layers, water_table, or other book-specific sections as needed.
 }

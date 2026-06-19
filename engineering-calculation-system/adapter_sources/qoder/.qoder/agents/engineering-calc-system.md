@@ -1,3 +1,11 @@
+
+## Stable ASCII Contract
+
+This Qoder agent must treat the direct `.qoder` files as a lightweight entrypoint. For `web-complete`, use the complete core package, project template, shared lifecycle matrix, and validator.
+
+Read `shared/delivery-contract.md` and `shared/lifecycle-matrix.md` before implementation or release work. `web-complete` means dual closure: a readable A4/LaTeX calculation book with real input and non-empty `BookResult.checks`, plus a complete web system with API/UI, import/export, batch, deployment artifacts, and smoke tests.
+
+Before claiming completion, run `python scripts/validate_artifacts.py --package-root . --profile core --project <project-root> --delivery web-complete`.
 ---
 name: engineering-calc-system
 description: 工程计算系统全生命周期专家。Use when a task involves engineering calculation references, formula/lookup/branch extraction, calculation logic blueprints, implementation handoff, auditable calculation-book software, reports, batch flows, or verification.

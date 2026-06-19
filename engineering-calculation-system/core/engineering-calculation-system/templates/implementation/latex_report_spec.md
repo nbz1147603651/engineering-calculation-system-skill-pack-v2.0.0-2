@@ -107,6 +107,10 @@ table of contents
 governing summary
 input summary
 calculation checks table
+engineering charts when BookResult.charts is present
+formula logic trace
+sources
+assumptions
 warnings and errors
 traceability metadata
 template boundary statement

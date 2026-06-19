@@ -31,6 +31,7 @@ For implementation or release work, also load:
 
 ```text
 shared/delivery-contract.md
+shared/lifecycle-matrix.md
 ```
 
 Before implementing, declare `core-only`, `report-only`, `prototype-web`, or
@@ -40,6 +41,12 @@ reduced scope. The default `web-complete` path is:
 ```text
 08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14
 ```
+
+`web-complete` means dual closure: a readable A4/LaTeX calculation book with
+real input and non-empty `BookResult.checks`, plus a complete web system with
+API/UI, import/export, batch, deployment artifacts, and smoke tests. Lightweight
+entrypoints must call into the complete core package, project template, and
+validator before making a production completion claim.
 
 For `web-complete`, the interactive UI must include Chinese/English switching:
 `/api/i18n/<lang>`, `data-i18n` bindings, persisted language preference, and
@@ -210,8 +217,10 @@ Do not load all child skills at once. Load only the parent and child skills sele
 During 02-reference-discovery-and-acquisition, use available internet search/browser tools actively for missing, insufficient, stale, or jurisdiction-specific references, and log meaningful searches in references/acquisition/search_log.csv.
 Use templates/ for output artifacts and scripts/validate_artifacts.py before considering the work complete.
 For implementation or release work, read shared/delivery-contract.md.
+Also read shared/lifecycle-matrix.md.
 Declare delivery mode before implementation: core-only, report-only, prototype-web, or web-complete. Default to web-complete.
 For web-complete, follow 08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14.
+For web-complete, deliver both a readable calculation book with non-empty BookResult.checks and a complete web system with API/UI, import/export, batch, deployment, and smoke tests.
 For web-complete, include a Chinese/English interactive UI switch with /api/i18n/<lang>, data-i18n, persisted language preference, and selected-language report calls.
 For production UI, use templates/implementation/ui_design_system.md plus webapp/templates/partials/, tokens.css, and components.css.
 For calculation-book export, use templates/implementation/latex_report_spec.md and templates/implementation/html_report_spec.md; choose LaTeX/PDF when latexmk or pdflatex is installed and require successful compilation to main.pdf, otherwise use A4 HTML with @page size: A4; expose GET /api/report/decision, POST /api/report/final, GET /api/report/templates, and send latex_template_id to /api/report/latex with default fallback.

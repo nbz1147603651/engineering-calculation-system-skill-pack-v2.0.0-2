@@ -11,5 +11,57 @@ Report template version & {{ traceability.report_template_version | latex_escape
 \bottomrule
 \end{tabular}
 
-\subsection{Template Boundary}
+\section{Formula Logic Trace}
+
+This section displays source-backed formula traces from BookResult only. It does not recalculate engineering outcomes.
+
+{% set trace_count = namespace(value=0) %}
+{% for check in checks %}
+{% for trace in check.formula_traces %}
+{% set trace_count.value = trace_count.value + 1 %}
+\subsection{ {{ trace.formula_id | latex_escape }} -- {{ trace.formula_name | latex_escape }} }
+
+\begin{longtable}{p{0.30\linewidth}p{0.60\linewidth}}
+\toprule
+Item & Value \\
+\midrule
+Source & {{ trace.source_reference | latex_escape }} \\
+Inputs & {{ trace.inputs | latex_escape }} \\
+Intermediates & {{ trace.intermediates | latex_escape }} \\
+Result & {{ trace.result_symbol | latex_escape }} = {{ trace.result_value | latex_escape }} {{ trace.unit | default("") | latex_escape }} \\
+Notes & {{ trace.notes | latex_escape }} \\
+\bottomrule
+\end{longtable}
+{% endfor %}
+{% endfor %}
+{% if trace_count.value == 0 %}
+No formula traces were recorded for this result.
+{% endif %}
+
+\section{Sources}
+
+\begin{longtable}{p{0.18\linewidth}p{0.26\linewidth}p{0.46\linewidth}}
+\toprule
+Source & Role & Used in \\
+\midrule
+{% for source in sources %}
+{{ source.source_reference | latex_escape }} & {{ source.role | latex_escape }} & {{ source.used_in | latex_escape }} \\
+{% endfor %}
+\bottomrule
+\end{longtable}
+
+\section{Assumptions}
+
+\begin{longtable}{p{0.16\linewidth}p{0.36\linewidth}p{0.16\linewidth}p{0.24\linewidth}}
+\toprule
+ID & Assumption & Source & Handling \\
+\midrule
+{% for assumption in assumptions %}
+{{ assumption.assumption_id | latex_escape }} & {{ assumption.assumption | latex_escape }} & {{ assumption.source_reference | latex_escape }} & {{ assumption.program_handling | latex_escape }} \\
+{% endfor %}
+\bottomrule
+\end{longtable}
+
+\section{Template Boundary Statement}
+
 This LaTeX project references values, metadata, warnings, errors, traces, and already computed result paths only. It must not contain engineering formulas, lookup rules, independent unit conversion, load combination generation, optimization logic, or pass/fail recalculation.

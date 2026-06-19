@@ -1,4 +1,5 @@
 from webapp.app import create_app
+from webapp import config as cfg
 
 
 def test_health_and_calculate_routes():
@@ -7,16 +8,18 @@ def test_health_and_calculate_routes():
     assert client.get("/health").status_code == 200
     response = client.post(
         "/api/calculate",
-        json={"project": {"project_id": "P001", "case_id": "C001", "title": "Example"}},
+        json=cfg.DEFAULTS,
     )
     assert response.status_code == 200
     payload = response.get_json()
     assert payload["formula_registry"]["version"]
-    assert payload["governing"]["status"] == "NOT_EVALUATED"
+    assert payload["governing"]["status"] == "PASS"
     assert isinstance(payload["checks"], list)
-    if payload["checks"]:
-        assert payload["checks"][0]["status"] == "NOT_EVALUATED"
-        assert payload["checks"][0]["formula_traces"] == []
+    assert payload["checks"]
+    assert isinstance(payload["charts"], list)
+    assert payload["charts"]
+    assert payload["checks"][0]["status"] == "PASS"
+    assert payload["checks"][0]["formula_traces"]
     assert isinstance(payload["warnings"], list)
     assert isinstance(payload["errors"], list)
 
@@ -35,7 +38,7 @@ def test_capabilities_route_and_review_shell():
 
 def test_import_report_and_batch_routes():
     client = create_app().test_client()
-    case = {"project": {"project_id": "P003", "case_id": "C003", "title": "Batch"}}
+    case = cfg.DEFAULTS
 
     import_response = client.post("/api/import/json", json=case)
     assert import_response.status_code == 200
@@ -51,7 +54,10 @@ def test_import_report_and_batch_routes():
     html = html_response.get_data(as_text=True)
     assert "@page" in html
     assert "size: A4" in html
+    assert "Engineering Charts" in html
     assert "Formula Logic Trace" in html
+    assert "Sources" in html
+    assert "Assumptions" in html
     assert "Template Boundary Statement" in html
 
     decision_response = client.get("/api/report/decision")
@@ -85,6 +91,7 @@ def test_i18n_api_and_language_toggle_shell():
     assert 'id="langToggle"' in html
     assert 'id="latexTemplateSelect"' in html
     assert 'id="capabilityStrip"' in html
+    assert 'id="chartsSection"' in html
     assert 'id="checksSection"' in html
     assert 'id="traceSection"' in html
     assert 'id="btnAdminReview"' in html

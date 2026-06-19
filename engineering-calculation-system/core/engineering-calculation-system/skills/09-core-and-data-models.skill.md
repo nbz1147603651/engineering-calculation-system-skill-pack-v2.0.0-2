@@ -51,6 +51,7 @@ ModuleInput
 ModuleResult
 CheckResult
 GoverningSummary
+ChartSpec / ChartSeries / ChartAxis / ChartThreshold when charts improve review
 ReportContext
 ```
 
@@ -67,6 +68,7 @@ warnings
 errors
 intermediate_values
 formula_traces
+chart specifications derived from already-computed result values
 code_references
 governing_reason
 ```

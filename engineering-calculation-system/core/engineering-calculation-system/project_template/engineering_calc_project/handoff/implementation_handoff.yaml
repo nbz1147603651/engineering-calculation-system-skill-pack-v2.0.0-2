@@ -1,7 +1,7 @@
 handoff_id: H001
 book_name: example_book
 version: 0.1.0
-status: prototype_allowed # no_go | prototype_allowed | production_allowed
+status: production_allowed # no_go | prototype_allowed | production_allowed
 
 source_basis:
   acquisition_handoff: references/acquisition/acquisition_handoff.yaml
@@ -16,17 +16,13 @@ source_basis:
 
 evidence_library_status:
   status: analysis_allowed
-  remaining_gaps:
-    - gap_id: G001
-      description: example remaining gap
-      blocks_production: true
+  remaining_gaps: []
 
 calculation_scope:
-  domain: geotechnical
-  object: shallow_foundation
+  domain: template
+  object: demand_capacity_demonstration
   checks:
-    - bearing_capacity
-    - settlement
+    - template_demand_capacity
 
 runtime_stack:
   primary_language: python
@@ -63,7 +59,7 @@ runner_sequence:
   - build_report_context
 
 module_candidates:
-  - module: libraries.domain.category.module_name
+  - module: pkg.books.example_book.book_runner
     responsibility: compute source-backed engineering result
     source_nodes: [N001]
     formulas: [F001]
@@ -89,11 +85,11 @@ calculation_module_contract:
     - browser_state
 
 book_runner_contract:
-  entrypoint: src/pkg/books/<book_name>/book_runner.py::run_book
+  entrypoint: src/pkg/books/example_book/book_runner.py::run_book
   required_paths:
-    - src/pkg/books/<book_name>/book_models.py
-    - src/pkg/books/<book_name>/book_runner.py
-    - tests/integration/test_<book_name>_runner.py
+    - src/pkg/books/example_book/book_models.py
+    - src/pkg/books/example_book/book_runner.py
+    - tests/integration/test_book_runner.py
   official_flow: BookInput -> reusable_modules -> BookResult
   forbidden_responsibilities:
     - rendering_reports
@@ -192,7 +188,7 @@ test_requirements:
   - test_id: T001
     type: regression
     basis: S02 worked example
-    tolerance: to_be_defined
+    tolerance: exact template demonstration values
 
 report_sections:
   - section_id: R001
@@ -205,17 +201,11 @@ traceability_requirements:
   - formula_traces
   - source_references
 
-open_questions:
-  - question_id: Q001
-    severity: high
-    blocks_production: true
-    description: unresolved source issue
+open_questions: []
 
 coding_gate:
-  status: prototype_allowed
+  status: production_allowed
   allowed_work:
-    - scaffold typed models
-    - implement formulas with needs_confirmation markers
-  blocked_work:
-    - production release
-    - final report certification
+    - run template demonstration calculation
+    - replace example module with source-backed engineering modules
+  blocked_work: []

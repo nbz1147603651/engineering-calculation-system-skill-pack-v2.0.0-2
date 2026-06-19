@@ -18,6 +18,62 @@ Check ID & Name & Status & Utilization & Unit \\
 No check rows were exposed in the BookResult.
 {% endif %}
 
+\section{Engineering Charts}
+
+Charts in this section are rendered from trusted BookResult chart specifications only. They visualize recorded values and do not recalculate engineering outcomes.
+
+{% if charts %}
+{% for chart in charts %}
+\subsection{ {{ chart.title | default("Chart") | latex_escape }} }
+
+{{ chart.purpose | default("") | latex_escape }}
+
+\begin{longtable}{p{0.24\linewidth}p{0.22\linewidth}p{0.14\linewidth}p{0.12\linewidth}p{0.20\linewidth}}
+\toprule
+Category & Series & Value & Unit & Result path \\
+\midrule
+{% for category in chart.categories %}
+{% set category_index = loop.index0 %}
+{% for series in chart.series %}
+{{ category | latex_escape }} &
+{{ series.label | latex_escape }} &
+{{ series.values[category_index] | default("--") | latex_escape }} &
+{{ series.unit | default(chart.y_axis.unit | default("")) | latex_escape }} &
+{{ series.result_paths[category_index] | default("") | latex_escape }} \\
+{% endfor %}
+{% endfor %}
+\bottomrule
+\end{longtable}
+
+{% if chart.thresholds %}
+\begin{longtable}{p{0.35\linewidth}p{0.20\linewidth}p{0.15\linewidth}p{0.22\linewidth}}
+\toprule
+Threshold & Value & Unit & Source result path \\
+\midrule
+{% for threshold in chart.thresholds %}
+{{ threshold.label | latex_escape }} &
+{{ threshold.value | latex_escape }} &
+{{ threshold.unit | default("") | latex_escape }} &
+{{ threshold.source_result_path | default("") | latex_escape }} \\
+{% endfor %}
+\bottomrule
+\end{longtable}
+{% endif %}
+
+Recommended placement: report={{ chart.recommended_report_location | default("after_input_summary") | latex_escape }}; UI={{ chart.recommended_ui_location | default("after_governing_summary") | latex_escape }}.
+
+{% if chart.notes %}
+\begin{itemize}
+{% for note in chart.notes %}
+\item {{ note | latex_escape }}
+{% endfor %}
+\end{itemize}
+{% endif %}
+{% endfor %}
+{% else %}
+No chart specifications were exposed in the BookResult.
+{% endif %}
+
 \subsection{Intermediate Values Selected for Audit}
 \begin{longtable}{p{0.35\linewidth}p{0.55\linewidth}}
 \toprule

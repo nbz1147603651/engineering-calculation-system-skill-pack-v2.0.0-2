@@ -13,7 +13,7 @@ Start with `references/acquisition/` when materials are missing or insufficient.
 ```text
 Primary runtime: Python 3.9+
 Calculation modules: Python package under src/pkg/libraries/
-Official runner: src/pkg/books/book_name/book_runner.py::run_book
+Official runner: src/pkg/books/example_book/book_runner.py::run_book
 Backend/API: Flask application factory at webapp.app:create_app()
 Frontend format: Jinja2 templates + Bootstrap 5 + vanilla JavaScript modules
 Frontend files: webapp/templates/, webapp/templates/partials/, and webapp/static/
@@ -22,6 +22,7 @@ UI language: Chinese/English switch via webapp/i18n.py, /api/i18n/<lang>, and we
 Report export: automatic final report at /api/report/final, HTML preview/download, and Overleaf-compatible LaTeX zip at /api/report/latex
 Report decision: /api/report/decision selects latex_pdf when latexmk or pdflatex is available, otherwise html_a4
 LaTeX templates: list via /api/report/templates; send latex_template_id when downloading, or omit it to use the default template
+Charts: structured BookResult.charts from src/pkg/books/example_book/charts.py, rendered by reports and UI without recalculating engineering results
 Review/admin: Marimo when enabled
 ```
 
@@ -31,7 +32,7 @@ Delivery mode: `web-complete` unless the user explicitly requests `core-only`,
 `report-only`, or `prototype-web`. A CLI runner, static HTML, exported report
 HTML, notebook demo, or UI mockup is not a deployable web calculation system.
 
-Operational quality and reviewer convenience take priority over minimal dependencies. Keep the implementation maintainable, but do not remove validation, traces, report preview, import/export, or review tooling when they make engineering work safer or faster.
+Operational quality and reviewer convenience take priority over minimal dependencies. Keep the implementation maintainable, but do not remove validation, traces, charts, report preview, import/export, or review tooling when they make engineering work safer or faster.
 
 LaTeX report templates live under `latex/templates/default_engineering_calcbook/`. If a client or company template is supplied, add it as a separate folder under `latex/templates/<template_id>/` with `main.tex.j2`. The UI lists available templates from `/api/report/templates` and sends `latex_template_id` to `/api/report/latex`; a missing or empty value falls back to `default_engineering_calcbook`. Keep `src/pkg/report/latex_renderer.py` as a presentation-only renderer over trusted `BookResult` and `ReportContext` data. Final report generation uses `src/pkg/report/report_selector.py`: if local LaTeX is available, `src/pkg/report/latex_renderer.py` must compile without errors and produce `main.pdf`; otherwise `src/pkg/report/html_renderer.py` renders a rigorous A4 HTML calculation report with formula logic traces and `@page size: A4`.
 

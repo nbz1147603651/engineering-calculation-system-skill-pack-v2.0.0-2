@@ -1,8 +1,8 @@
-"""Form data ↔ BookInput builder and BookResult → UI dict converter.
+"""Form data 鈫?BookInput builder and BookResult 鈫?UI dict converter.
 
 Scaffold: customize for each calculation book's BookInput / BookResult models.
 
-This module is the SINGLE source of truth for form ↔ model mapping.
+This module is the SINGLE source of truth for form 鈫?model mapping.
 Never put mapping logic in route handlers or template renderers.
 """
 
@@ -13,7 +13,7 @@ from dataclasses import asdict, is_dataclass
 from enum import Enum
 from typing import Any, Optional
 
-from pkg.books.book_name.book_models import BookInput, BookResult, ProjectInfo
+from pkg.books.example_book.book_models import BookInput, BookResult, ProjectInfo
 
 
 # ---------------------------------------------------------------------------
@@ -86,22 +86,47 @@ def _plain(obj: Any) -> Any:
     return obj
 
 
+def _to_dict(value: Any) -> dict[str, Any]:
+    return value if isinstance(value, dict) else {}
+
+
+def _default_check_payload() -> list[dict[str, Any]]:
+    return [
+        {
+            "check_id": "DEMO-001",
+            "name": "Template demand/capacity check",
+            "demand": 45.0,
+            "capacity": 90.0,
+            "limit": 1.0,
+            "unit": "kN",
+            "source_reference": "S01",
+        }
+    ]
+
+
 # ---------------------------------------------------------------------------
-# Form → BookInput
+# Form 鈫?BookInput
 # ---------------------------------------------------------------------------
 
 def build_case_input_from_form(data: dict) -> BookInput:
     """Build a BookInput from web form JSON data.
 
     Customize this function for each calculation book.
-    Use explicit field-by-field conversion — no reflection or magic.
+    Use explicit field-by-field conversion 鈥?no reflection or magic.
     """
-    proj = data.get("project", {})
+    data = data if isinstance(data, dict) else {}
+    proj = _to_dict(data.get("project", {}))
+    inputs = _to_dict(data.get("inputs", {}))
+    design_options = _to_dict(data.get("design_options", data.get("options", {})))
+    if "checks" in data and "checks" not in inputs:
+        inputs["checks"] = data["checks"]
+    if "checks" not in inputs:
+        inputs["checks"] = _default_check_payload()
 
     project = ProjectInfo(
-        project_id=proj.get("project_id", "UNKNOWN"),
-        case_id=proj.get("case_id", "CASE_001"),
-        title=proj.get("title") or proj.get("project_name", "Untitled Project"),
+        project_id=str(proj.get("project_id", "DEMO_001")).strip() or "DEMO_001",
+        case_id=str(proj.get("case_id", "DEMO_CASE_001")).strip() or "DEMO_CASE_001",
+        title=proj.get("title") or proj.get("project_name", "Template Demonstration Project"),
     )
 
     # Scaffold: add book-specific input groups here.
@@ -111,13 +136,13 @@ def build_case_input_from_form(data: dict) -> BookInput:
 
     return BookInput(
         project=project,
-        design_options=data.get("design_options", data.get("options", {})),
-        inputs=data.get("inputs", {}),
+        design_options=design_options,
+        inputs=inputs,
     )
 
 
 # ---------------------------------------------------------------------------
-# BookInput → Form (for import/export)
+# BookInput 鈫?Form (for import/export)
 # ---------------------------------------------------------------------------
 
 def book_input_to_form(bi: BookInput) -> dict:
@@ -138,7 +163,7 @@ def book_input_to_form(bi: BookInput) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# BookResult → UI dict
+# BookResult 鈫?UI dict
 # ---------------------------------------------------------------------------
 
 def case_result_to_ui(r: BookResult, bi: BookInput) -> dict:
@@ -185,6 +210,7 @@ def case_result_to_ui(r: BookResult, bi: BookInput) -> dict:
         }
         for c in r.checks
     ]
+    out["charts"] = _plain(r.charts)
 
     # Warnings and errors
     out["warnings"] = r.warnings

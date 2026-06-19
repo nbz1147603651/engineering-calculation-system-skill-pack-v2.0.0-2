@@ -210,10 +210,15 @@ def copy_file(src: Path, dst: Path) -> None:
     shutil.copy2(src, dst)
 
 
+def write_text_lf(path: Path, text: str) -> None:
+    with path.open("w", encoding="utf-8", newline="\n") as handle:
+        handle.write(text)
+
+
 def sync_frontmatter_versions(root: Path) -> None:
     """Synchronize SKILL.md frontmatter versions in generated artifacts."""
     for path in root.rglob("SKILL.md"):
-        text = path.read_text(encoding="utf-8")
+        text = path.read_text(encoding="utf-8").replace("\r\n", "\n").replace("\r", "\n")
         match = FRONTMATTER_RE.match(text)
         if not match:
             continue
@@ -229,7 +234,7 @@ def sync_frontmatter_versions(root: Path) -> None:
                     break
             lines.insert(insert_at, f"version: {VERSION}")
             body = "\n".join(lines)
-        path.write_text(f"---\n{body}\n---\n{text[match.end():]}", encoding="utf-8")
+        write_text_lf(path, f"---\n{body}\n---\n{text[match.end():]}")
 
 
 def assert_frontmatter_versions(root: Path) -> None:
@@ -498,6 +503,94 @@ def write_target_install_guide(package_root: Path, target: BundleTarget, install
     (package_root / "INSTALL.md").write_text("\n".join(lines), encoding="utf-8")
 
 
+def write_minimax_readmes(payload_root: Path) -> None:
+    """Write repo-root guides for MiniMax Code local and Github import flows."""
+    readme = f"""# Engineering Calculation System for MiniMax Code
+
+This package is prepared as a MiniMax Code skills repository.
+
+## Local Install
+
+For a local MiniMax Code / Mavis install on Windows:
+
+1. Unzip this archive.
+2. Copy `skills/engineering-calculation-system/` to:
+
+```text
+%USERPROFILE%\\.mavis\\skills\\engineering-calculation-system\\
+```
+
+3. Restart MiniMax Code, or verify from PowerShell:
+
+```powershell
+& "$env:USERPROFILE\\.mavis\\bin\\mavis.cmd" skill list
+& "$env:USERPROFILE\\.mavis\\bin\\mavis.cmd" skill show engineering-calculation-system
+```
+
+If your MiniMax Code / Mavis build reports a different user skill root, use the reported root.
+
+## Delivery Contract
+
+For implementation or release work, the skill must use both:
+
+```text
+shared/delivery-contract.md
+shared/lifecycle-matrix.md
+```
+
+`web-complete` means dual closure: a readable A4/LaTeX calculation book with
+real input and non-empty `BookResult.checks`, plus a complete web system with
+API/UI, import/export, batch, deployment artifacts, and smoke tests. The
+MiniMaxCode entrypoint must use the full core package, project template, and
+validator before making a production completion claim.
+
+## Import from Github
+
+1. Unzip this archive.
+2. Publish the unzipped contents as a Github repository root.
+3. In MiniMax Code, open Skills, choose Create, then Import from Github.
+4. Paste the repository URL.
+
+The skill entry is:
+
+```text
+skills/engineering-calculation-system/SKILL.md
+```
+
+## Smoke Prompt
+
+After import, start a task with:
+
+```text
+Use engineering-calculation-system to create a web-complete engineering calculation scaffold with capability detection, Marimo optional review, and HTML/LaTeX report export.
+```
+
+## Validation
+
+When the package is available on disk, validate it with:
+
+```bash
+python skills/engineering-calculation-system/scripts/validate_artifacts.py --package-root skills/engineering-calculation-system --profile core
+```
+"""
+    readme_zh = f"""# MiniMax Code Engineering Calculation System
+
+This ASCII guide replaces the previous encoded Chinese fallback to avoid mojibake in strict package validation.
+
+Use `skills/engineering-calculation-system/SKILL.md` as the skill entrypoint. For implementation or release work, load `shared/delivery-contract.md` and `shared/lifecycle-matrix.md`.
+
+`web-complete` means dual closure: a readable A4/LaTeX calculation book with real input and non-empty `BookResult.checks`, plus a complete web system with API/UI, import/export, batch, deployment artifacts, and smoke tests.
+
+Validate before completion:
+
+```bash
+python skills/engineering-calculation-system/scripts/validate_artifacts.py --package-root skills/engineering-calculation-system --profile core
+```
+"""
+    (payload_root / "README.md").write_text(readme, encoding="utf-8")
+    (payload_root / "README_zh.md").write_text(readme_zh, encoding="utf-8")
+
+
 def merge_core_into(dst: Path, profile_roots: dict[str, Path]) -> None:
     copy_tree(profile_roots["core"] / "engineering-calculation-system", dst)
 
@@ -513,6 +606,8 @@ def stage_target_payload(profile_roots: dict[str, Path], target: BundleTarget, p
         merge_adapter_docs_into(payload_root, profile_roots)
     for copy in target.copies:
         apply_bundle_copy(profile_roots, copy, payload_root)
+    if target.name == "MiniMaxCode":
+        write_minimax_readmes(payload_root)
 
 
 def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
@@ -532,8 +627,48 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
             [
                 "QODER-Project",
                 "web-complete",
-                "轻量入口",
-                "中英文切换",
+                "Stable ASCII Contract",
+                "shared/lifecycle-matrix.md",
+                "dual closure",
+            ],
+            context=context,
+        )
+        return
+
+    if target.name == "MiniMaxCode":
+        require_paths(
+            payload_root,
+            [
+                "README.md",
+                "README_zh.md",
+                "skills/engineering-calculation-system/SKILL.md",
+                "skills/engineering-calculation-system/shared/lifecycle-matrix.md",
+                "skills/engineering-calculation-system/scripts/validate_artifacts.py",
+                "skills/engineering-calculation-system/project_template/engineering_calc_project/src/pkg/core/capabilities.py",
+            ],
+            context=context,
+        )
+        require_text(
+            payload_root / "skills/engineering-calculation-system/SKILL.md",
+            [
+                "name: engineering-calculation-system",
+                "shared/delivery-contract.md",
+                "shared/lifecycle-matrix.md",
+                "dual closure",
+                "run_book(BookInput) -> BookResult",
+            ],
+            context=context,
+        )
+        require_text(
+            payload_root / "README.md",
+            [
+                "Local Install",
+                "Import from Github",
+                "%USERPROFILE%\\.mavis\\skills\\engineering-calculation-system\\",
+                "skills/engineering-calculation-system/SKILL.md",
+                "shared/lifecycle-matrix.md",
+                "dual closure",
+                "BookResult.checks",
             ],
             context=context,
         )
@@ -546,6 +681,7 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
                 "SKILL.md",
                 "skills/00-engineering-calculation-router.skill.md",
                 "shared/delivery-contract.md",
+                "shared/lifecycle-matrix.md",
                 "templates/implementation/ui_layout_spec.md",
                 "schemas/artifact_contracts.json",
                 "scripts/validate_artifacts.py",
@@ -556,6 +692,23 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
                 "project_template/engineering_calc_project/webapp/static/js/i18n.js",
                 "project_template/engineering_calc_project/deploy/Dockerfile",
                 "project_template/engineering_calc_project/tests/smoke/test_web_routes.py",
+            ],
+            context=context,
+        )
+        require_text(
+            payload_root / "SKILL.md",
+            [
+                "shared/lifecycle-matrix.md",
+                "dual closure",
+            ],
+            context=context,
+        )
+        require_text(
+            payload_root / "shared/lifecycle-matrix.md",
+            [
+                "Engineering Calculation Lifecycle Matrix",
+                "Web-Complete Exit Gate",
+                "BookResult.checks",
             ],
             context=context,
         )

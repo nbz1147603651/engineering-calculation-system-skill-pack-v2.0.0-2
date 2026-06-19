@@ -34,6 +34,7 @@ Before implementation or release work, also read:
 
 ```text
 shared/delivery-contract.md
+shared/lifecycle-matrix.md
 ```
 
 If the install lacks `skills/`, `shared/`, `templates/`, `schemas/`,
@@ -69,6 +70,12 @@ run_book(BookInput) -> BookResult
 Declare delivery mode before implementation: `core-only`, `report-only`,
 `prototype-web`, or `web-complete`. Default to `web-complete` unless the user
 explicitly requests a narrower prototype.
+
+`web-complete` means dual closure: a readable A4/LaTeX calculation book with
+real input and non-empty `BookResult.checks`, plus a complete web system with
+API/UI, import/export, batch, deployment artifacts, and smoke tests. Lightweight
+wrappers must use the complete core package, project template, and validator
+before making a production completion claim.
 
 Do not call CLI runners, static HTML, exported report HTML, notebooks, or UI
 mockups complete or deployable.

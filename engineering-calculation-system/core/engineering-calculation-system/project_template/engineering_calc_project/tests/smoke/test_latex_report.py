@@ -3,11 +3,12 @@ from zipfile import ZipFile
 
 from pkg.report.report_selector import ReportRenderDecision
 from webapp.app import create_app
+from webapp import config as cfg
 
 
 def test_latex_report_package_route():
     client = create_app().test_client()
-    case = {"project": {"project_id": "P004", "case_id": "C004", "title": "LaTeX"}}
+    case = cfg.DEFAULTS
 
     response = client.post("/api/report/latex", json=case)
 
@@ -19,6 +20,14 @@ def test_latex_report_package_route():
         assert "cover.tex" in names
         assert "page_style.sty" in names
         assert "sections/01_summary.tex" in names
+        results_tex = archive.read("sections/03_results.tex").decode("utf-8")
+        traceability_tex = archive.read("sections/90_traceability.tex").decode("utf-8")
+        assert "Engineering Charts" in results_tex
+        assert "do not recalculate engineering outcomes" in results_tex
+        assert "Formula Logic Trace" in traceability_tex
+        assert "Sources" in traceability_tex
+        assert "Assumptions" in traceability_tex
+        assert "Template Boundary Statement" in traceability_tex
 
 
 def test_final_report_route_uses_a4_html_when_latex_unavailable(monkeypatch):
@@ -37,7 +46,7 @@ def test_final_report_route_uses_a4_html_when_latex_unavailable(monkeypatch):
 
     response = client.post(
         "/api/report/final",
-        json={"project": {"project_id": "P006", "case_id": "C006", "title": "HTML A4"}},
+        json=cfg.DEFAULTS,
     )
 
     assert response.status_code == 200
@@ -46,7 +55,10 @@ def test_final_report_route_uses_a4_html_when_latex_unavailable(monkeypatch):
     html = response.get_data(as_text=True)
     assert "@page" in html
     assert "size: A4" in html
+    assert "Engineering Charts" in html
     assert "Formula Logic Trace" in html
+    assert "Sources" in html
+    assert "Assumptions" in html
 
 
 def test_latex_template_listing_and_default_fallback():
@@ -62,6 +74,8 @@ def test_latex_template_listing_and_default_fallback():
         "/api/report/latex",
         json={
             "project": {"project_id": "P005", "case_id": "C005", "title": "LaTeX Default"},
+            "inputs": cfg.DEFAULTS["inputs"],
+            "design_options": cfg.DEFAULTS["design_options"],
             "latex_template_id": "",
         },
     )

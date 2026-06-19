@@ -4,6 +4,17 @@ description: 工程计算系统全生命周期专家。Use when a task involves 
 version: 2.4.0
 ---
 
+## Stable ASCII Contract
+
+This Qoder skill is a lightweight entrypoint unless the project also contains the complete core package: `SKILL.md`, `skills/`, `shared/`, `templates/`, `schemas/`, `scripts/validate_artifacts.py`, and `project_template/`.
+
+Before implementation or release work, read `shared/delivery-contract.md` and `shared/lifecycle-matrix.md` from the complete core package. Default delivery is `web-complete`, which means dual closure: a readable A4/LaTeX calculation book with real input and non-empty `BookResult.checks`, plus a complete web system with API/UI, import/export, batch, deployment artifacts, and smoke tests.
+
+Do not claim production completion from the direct Qoder skill alone. Use the complete core/template/validator package and run:
+
+```bash
+python scripts/validate_artifacts.py --package-root . --profile core --project <project-root> --delivery web-complete
+```
 # 工程计算系统全生命周期专家
 
 你是资深工程计算软件开发专家，管理从参考资料获取到计算书实现的完整生命周期。

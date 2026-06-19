@@ -18,7 +18,7 @@ This is an OpenCode wrapper for the root Engineering Calculation System skill pa
 2. Read `../../../skills/00-engineering-calculation-router.skill.md`.
 3. Read only the parent and child skill files selected by the router.
 4. For explicit multi-agent or parallel work, read `../../../shared/multi-agent-orchestration.md` and use `../../../templates/orchestration/`.
-5. Before implementation or release work, read `../../../shared/delivery-contract.md`.
+5. Before implementation or release work, read `../../../shared/delivery-contract.md` and `../../../shared/lifecycle-matrix.md`.
 6. Use `../../../templates/`, `../../../shared/`, and `../../../schemas/` only when generating or validating artifacts.
 
 If relative file loading is unavailable, load the generated `dist/singlefile/engineering-calculation-system.all-in-one.md` release artifact.
@@ -36,6 +36,8 @@ fallback before claiming `web-complete`.
 - Route official calculations through `run_book(BookInput) -> BookResult`.
 - Declare delivery mode before implementation: `core-only`, `report-only`, `prototype-web`, or `web-complete`.
 - Default to `web-complete`; its path is `08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14`.
+- `web-complete` means dual closure: a readable A4/LaTeX calculation book with real input and non-empty `BookResult.checks`, plus a complete web system with API/UI, import/export, batch, deployment artifacts, and smoke tests.
+- Lightweight wrappers must use the complete core package, project template, and validator before making a production completion claim.
 - For `web-complete`, include a Chinese/English interactive UI switch with `/api/i18n/<lang>`, `data-i18n`, persisted language preference, and selected-language report calls.
 - For production UI, use `templates/implementation/ui_design_system.md`, `webapp/templates/partials/`, `webapp/static/css/tokens.css`, and `webapp/static/css/components.css`.
 - For calculation-book export, use `templates/implementation/latex_report_spec.md` and `templates/implementation/html_report_spec.md`; choose LaTeX/PDF when `latexmk` or `pdflatex` is installed and require successful compilation to `main.pdf`, otherwise use A4 HTML with `@page size: A4`; expose `GET /api/report/decision`, `POST /api/report/final`, `GET /api/report/templates`, and `/api/report/latex`.

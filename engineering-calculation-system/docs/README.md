@@ -116,7 +116,7 @@ Build release profiles from the source checkout:
 python tools/build_release.py
 ```
 
-Running the command with no arguments builds every release profile and creates six publish-ready platform zips in `dist/release/`. Use `--profile <name>` when you only need one layer during development.
+Running the command with no arguments builds every release profile and creates seven publish-ready platform zips in `dist/release/`. Use `--profile <name>` when you only need one layer during development.
 
 Default installation target:
 
@@ -146,11 +146,11 @@ dist/release/engineering-calculation-system-OpenCode-v2.4.0.zip
 dist/release/engineering-calculation-system-AGENTS-Generic-v2.4.0.zip
 ```
 
-Each package contains one install folder plus `INSTALL.md`:
+Each package contains one install folder plus `INSTALL.md`, except MiniMaxCode which is packaged as a MiniMax skills repository root:
 
 ```text
 CODEX:         engineering-calculation-system/
-MiniMaxCode:   engineering-calculation-system/
+MiniMaxCode:   skills/engineering-calculation-system/ for Github import, or copy that folder to %USERPROFILE%/.mavis/skills/engineering-calculation-system/ for local install
 QODER:         SKILL.md at zip root for direct QODER Skill upload (lightweight entrypoint)
 QODER Project: copy-to-project-root/
 TRAE:          copy-to-project-root/
@@ -158,7 +158,7 @@ OpenCode:      copy-to-project-root/
 AGENTS Generic: copy-to-project-root/
 ```
 
-The MiniMaxCode package keeps the standard root `SKILL.md` skill layout for MiniMax Code import or auto-discovery. The QODER package is for direct QODER Skill upload and is intentionally lightweight. For QODER web-complete generation, prefer QODER Project because it includes the core runtime files, templates, schemas, validator, project scaffold, and `.qoder/` overlay. The QODER Project, TRAE, OpenCode, and AGENTS Generic packages are already merged with the core runtime files, so users can copy the matching package contents directly. Use the raw core and overlay profiles only when debugging or repackaging.
+The MiniMaxCode package follows MiniMax's skills repository layout with `skills/engineering-calculation-system/SKILL.md`. For this machine, the local MiniMax Code / Mavis user skill root is `%USERPROFILE%/.mavis/skills/`; for sharing, the same archive can be published as a Github repository root and imported through MiniMax Code. The QODER package is for direct QODER Skill upload and is intentionally lightweight. For QODER web-complete generation, prefer QODER Project because it includes the core runtime files, templates, schemas, validator, project scaffold, and `.qoder/` overlay. The QODER Project, TRAE, OpenCode, and AGENTS Generic packages are already merged with the core runtime files, so users can copy the matching package contents directly. Use the raw core and overlay profiles only when debugging or repackaging.
 
 Release metadata and classified install targets are maintained in:
 

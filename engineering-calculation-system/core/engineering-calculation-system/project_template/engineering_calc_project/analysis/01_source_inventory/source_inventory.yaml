@@ -1,0 +1,10 @@
+inventory_id: SOURCE-INVENTORY-001
+project_or_calculation_name: template_demonstration
+status: analysis_allowed
+sources:
+  - source_id: S01
+    title: Template demonstration source card
+    role: governing_source
+    authority_level: high
+    applicability: Template demand/capacity demonstration check only
+    notes: Replace with project-specific engineering sources before real design use.

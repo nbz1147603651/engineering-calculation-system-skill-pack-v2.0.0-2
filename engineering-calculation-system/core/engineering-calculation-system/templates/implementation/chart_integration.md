@@ -1,95 +1,164 @@
 # Chart and Visualization Integration
 
-Use this template to document the chart generation strategy for engineering calculation interfaces.
+Use this template to document how engineering charts are produced, placed, and verified.
 
-## Chart Generation Architecture
+## Principle
+
+Charts are part of the calculation result contract. Build chart specifications from already-computed `BookResult` values in the book layer, then let the UI and report renderers display those specifications.
+
+Charts must not compute engineering results, recalculate utilization, override status, choose design branches, perform official unit conversion, or suppress warnings/errors.
+
+## Recommended Architecture
 
 | Item | Selected value | Notes |
 | --- | --- | --- |
-| Chart library | matplotlib / plotly / D3.js | Server-side SVG generation |
-| Output format | SVG string | Inline embeddable in HTML |
-| i18n support | Bilingual SVG per chart | `{zh: svg_zh, en: svg_en}` dict |
-| Delivery | Embedded in API response JSON | Via `result_to_ui()` converter |
-| Frontend toggle | CSS class `.bi-zh` / `.bi-en` | JS hides/shows on language switch |
+| Chart contract | `BookResult.charts: list[ChartSpec]` | Stable data passed to UI, report, and export paths |
+| Builder location | `src/<pkg>/books/<book_name>/charts.py` | Uses `CheckResult`, module results, and stable result paths only |
+| UI placement | `recommended_ui_location` | Example: `after_governing_summary`, `before_checks`, `result_detail` |
+| Report placement | `recommended_report_location` | Example: `after_input_summary`, `after_governing_summary`, `appendix` |
+| Renderer | inline SVG / matplotlib SVG / Plotly / D3 | Renderer consumes ChartSpec values only |
+| Accessibility | chart data table alongside visual | Required for review, testing, and non-visual export |
+| Source trace | `source_result_paths` and per-series `result_paths` | Makes every chart value auditable |
+
+## ChartSpec Fields
+
+```python
+@dataclass(frozen=True)
+class ChartAxis:
+    label: str
+    unit: str | None = None
+
+
+@dataclass(frozen=True)
+class ChartSeries:
+    label: str
+    values: list[float | None]
+    unit: str | None = None
+    result_paths: list[str] = field(default_factory=list)
+    color: str | None = None
+
+
+@dataclass(frozen=True)
+class ChartThreshold:
+    label: str
+    value: float
+    unit: str | None = None
+    source_result_path: str | None = None
+
+
+@dataclass(frozen=True)
+class ChartSpec:
+    chart_id: str
+    title: str
+    chart_type: str
+    purpose: str
+    categories: list[str]
+    series: list[ChartSeries]
+    x_axis: ChartAxis
+    y_axis: ChartAxis
+    recommended_ui_location: str = "after_governing_summary"
+    recommended_report_location: str = "after_input_summary"
+    thresholds: list[ChartThreshold] = field(default_factory=list)
+    source_result_paths: list[str] = field(default_factory=list)
+    notes: list[str] = field(default_factory=list)
+```
 
 ## Chart Inventory
 
-| Chart ID | Name | Type | Data source | Trigger |
-| --- | --- | --- | --- | --- |
-| `chart_breakdown` | Result breakdown | horizontal bar | `BookResult.checks` | when > 1 check |
-| `chart_stress` | Stress distribution | line (depth vs stress) | `SettlementResult.stress_profile` | when settlement exists |
-| `chart_iz` | Influence factor Iz | line (depth vs Iz) | `SettlementResult.iz_profile` | when Iz method used |
-| `chart_consol` | Consolidation curve | line (time vs U) | `ConsolidationResult` | when consolidation exists |
-| `chart_soil` | Soil profile schematic | custom schematic | `SoilProfile.layers` | always available |
-| `chart_util` | Utilization summary | horizontal bar | `BookResult.checks[*].utilization` | when > 1 check |
-| to_be_defined | to_be_defined | to_be_defined | to_be_defined | to_be_defined |
+| Chart ID | Name | Type | Data source | Trigger | Placement |
+| --- | --- | --- | --- | --- | --- |
+| `check_utilization_summary` | Check utilization summary | bar | `BookResult.checks[*].utilization` | any check has utilization | after governing/input summary |
+| `demand_capacity_comparison` | Demand and capacity comparison | grouped_bar | `BookResult.checks[*].demand/capacity` | demand and capacity are both present | before check table |
+| `chart_stress_profile` | Stress distribution | line | module result profile values | settlement/stress profile exists | result detail or appendix |
+| `chart_envelope` | Governing envelope | line/bar | envelope result paths | envelope values exist | after governing summary |
+| `chart_soil_profile` | Soil profile schematic | schematic | normalized layer model | soil profile exists | input summary or appendix |
+| to_be_defined | to_be_defined | to_be_defined | to_be_defined | to_be_defined | to_be_defined |
 
-## Chart Generation Pattern
-
-```python
-# src/<pkg>/report/charts.py
-import matplotlib
-matplotlib.use("Agg")  # Non-interactive backend
-import matplotlib.pyplot as plt
-from io import BytesIO
-
-def figure_to_svg(fig) -> str:
-    buf = BytesIO()
-    fig.savefig(buf, format="svg", bbox_inches="tight", dpi=150)
-    plt.close(fig)
-    return buf.getvalue().decode("utf-8")
-
-def plot_result_breakdown(checks: list, lang: str = "en") -> plt.Figure:
-    """Horizontal bar chart of utilization for all checks."""
-    fig, ax = plt.subplots(figsize=(8, 3))
-    # ... plot logic using BookResult values only ...
-    ax.set_xlabel("Utilization" if lang == "en" else "利用率")
-    return fig
-```
-
-## Bilingual Chart Helper
+## Builder Pattern
 
 ```python
-def _bilingual_svg(plot_fn, *args, **kwargs) -> dict | None:
-    """Generate chart in both languages for i18n toggle."""
-    try:
-        fig_zh = plot_fn(*args, lang="zh", **kwargs)
-        svg_zh = figure_to_svg(fig_zh)
-        fig_en = plot_fn(*args, lang="en", **kwargs)
-        svg_en = figure_to_svg(fig_en)
-        return {"zh": svg_zh, "en": svg_en}
-    except Exception:
-        return None
+# src/<pkg>/books/<book_name>/charts.py
+from .book_models import BookResult, ChartAxis, ChartSeries, ChartSpec
+
+
+def build_book_charts(result: BookResult) -> list[ChartSpec]:
+    charts = []
+    utilization_checks = [
+        (index, check)
+        for index, check in enumerate(result.checks)
+        if check.utilization is not None
+    ]
+    if utilization_checks:
+        charts.append(
+            ChartSpec(
+                chart_id="check_utilization_summary",
+                title="Check Utilization Summary",
+                chart_type="bar",
+                purpose="Compare recorded utilization values across checks.",
+                categories=[check.name for _, check in utilization_checks],
+                series=[
+                    ChartSeries(
+                        label="Utilization",
+                        values=[check.utilization for _, check in utilization_checks],
+                        unit="ratio",
+                        result_paths=[
+                            f"checks[{index}].utilization"
+                            for index, _ in utilization_checks
+                        ],
+                    )
+                ],
+                x_axis=ChartAxis(label="Check"),
+                y_axis=ChartAxis(label="Utilization", unit="ratio"),
+                source_result_paths=[
+                    f"checks[{index}].utilization"
+                    for index, _ in utilization_checks
+                ],
+            )
+        )
+    return charts
 ```
 
-## Frontend Rendering Pattern
+## Interface Rendering Pattern
 
-```html
-<!-- In results.js or result template -->
-<div class="chart-container">
-    <div class="bi-zh" style="display:none">{{ chart_svg_zh | safe }}</div>
-    <div class="bi-en">{{ chart_svg_en | safe }}</div>
-</div>
+```text
+BookInput
+-> run_book(BookInput)
+-> BookResult(checks, governing, charts, warnings, errors)
+-> result_to_ui() includes charts unchanged except JSON sanitization
+-> results.js renders ChartSpec and a data table
 ```
+
+The frontend may calculate SVG coordinates, bar widths, labels, and layout geometry. It must not calculate engineering outcomes, utilization, capacity, branch choice, or status.
+
+## Report Rendering Pattern
+
+```text
+trusted BookResult
+-> build_report_context() includes charts
+-> HTML/LaTeX renderer displays chart visual and/or chart data table
+-> chart section appears after governing/input summary and before detailed checks unless handoff overrides it
+```
+
+HTML can render inline SVG from `ChartSpec`. LaTeX/Overleaf exports should at minimum include the chart title, purpose, values, units, source result paths, thresholds, and placement notes. If graphic LaTeX charts are added, they must still consume `ChartSpec` values only.
 
 ## Color and Style Conventions
 
 | Element | Color | Notes |
 | --- | --- | --- |
-| PASS status | `#198754` (Bootstrap success green) | Utilization < 1.0 |
-| FAIL status | `#dc3545` (Bootstrap danger red) | Utilization >= 1.0 |
-| WARNING | `#ffc107` (Bootstrap warning amber) | Near limit |
-| Utilization bar < 0.7 | green fill | Safe |
-| Utilization bar 0.7–1.0 | amber fill | Caution |
-| Utilization bar >= 1.0 | red fill | Fail |
+| Primary series | `#2563eb` | Main utilization or response |
+| Capacity/pass reference | `#16a34a` | Display only |
+| Demand/fail reference | `#dc2626` | Display only |
+| Threshold line | `#ef4444` dashed | Use only when threshold is recorded in result data |
+| Warning/caution | `#f59e0b` | Display only |
 
-## Rules
+## Verification Rules
 
 ```text
-charts visualize BookResult values — they must not compute engineering results
-label all axes with units
-keep SVG output under 50KB per chart
-use matplotlib Agg backend for server-side rendering
-close all figures after SVG export to prevent memory leaks
-provide chart data as structured dicts alongside SVG for accessibility and testing
+unit/integration tests cover ChartSpec builders
+API smoke tests assert "charts" is present
+report smoke tests assert chart section is present when chart specs exist
+frontend shell tests assert chartsSection exists
+chart data includes source result paths
+no UI/report template computes engineering formulas, utilization, or status
+non-finite chart values are sanitized before JSON output
 ```
