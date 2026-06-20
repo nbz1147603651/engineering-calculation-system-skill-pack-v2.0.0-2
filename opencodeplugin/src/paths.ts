@@ -24,7 +24,24 @@ export interface SkillRootInspection {
   missingRequiredPaths: string[];
 }
 
-export const TARGET_SCHEMA_VERSION = "2.4.0";
+const moduleFile = fileURLToPath(import.meta.url);
+const pluginDistDir = path.dirname(moduleFile);
+const pluginRoot = path.resolve(pluginDistDir, "..");
+
+function packageTargetSchemaVersion(): string {
+  const packagePath = path.join(pluginRoot, "package.json");
+  try {
+    const parsed = JSON.parse(readFileSync(packagePath, "utf8")) as { skillPack?: { schemaVersion?: unknown } };
+    if (typeof parsed.skillPack?.schemaVersion === "string") {
+      return parsed.skillPack.schemaVersion;
+    }
+  } catch {
+    // Build-time tests cover the configured package metadata.
+  }
+  return "unknown";
+}
+
+export const TARGET_SCHEMA_VERSION = packageTargetSchemaVersion();
 
 export const REQUIRED_SKILL_PATHS = [
   "SKILL.md",
@@ -40,10 +57,6 @@ export const REQUIRED_SKILL_PATHS = [
   "schemas/artifact_contracts.json",
   "scripts/validate_artifacts.py",
 ] as const;
-
-const moduleFile = fileURLToPath(import.meta.url);
-const pluginDistDir = path.dirname(moduleFile);
-const pluginRoot = path.resolve(pluginDistDir, "..");
 
 function normalizeCandidate(candidate: string | undefined): string | undefined {
   if (!candidate) return undefined;

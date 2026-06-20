@@ -14,10 +14,17 @@ from typing import Any
 
 
 PLUGIN_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = PLUGIN_ROOT.parents[1]
+TOOLS_ROOT = REPO_ROOT / "engineering-calculation-system" / "tools"
+sys.path.insert(0, str(TOOLS_ROOT))
+
+from versioning import release_version
+
 MANIFEST_PATH = PLUGIN_ROOT / ".codex-plugin" / "plugin.json"
 SKILL_ROOT = PLUGIN_ROOT / "skills" / "engineering-calculation-system"
 TODO_PATTERN = re.compile(r"\[TODO:")
 HEX_COLOR_PATTERN = re.compile(r"^#[0-9A-Fa-f]{6}$")
+EXPECTED_SKILL_VERSION = release_version()
 
 REQUIRED_PLUGIN_PATHS = [
     ".codex-plugin/plugin.json",
@@ -77,8 +84,8 @@ def check_manifest(manifest: dict[str, Any], errors: list[str]) -> None:
         errors.append(f"manifest name must match folder name {expected_name!r}")
 
     version = str(manifest.get("version", ""))
-    if version.split("+", 1)[0] != "2.4.0":
-        errors.append("manifest version base must match bundled skill schema 2.4.0")
+    if version.split("+", 1)[0] != EXPECTED_SKILL_VERSION:
+        errors.append(f"manifest version base must match bundled skill schema {EXPECTED_SKILL_VERSION}")
 
     if manifest.get("skills") != "./skills/":
         errors.append("manifest skills path must be ./skills/")

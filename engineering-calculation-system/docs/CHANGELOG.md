@@ -1,5 +1,14 @@
 # Changelog
 
+## v2.4.1 release version unification - 2026-06-20
+
+### Changed - Single Source Versioning
+
+- Added shared version helpers and a `tools/sync_versions.py` release command so the skill pack version is driven from `tools/release_config.json`.
+- Synchronized schema contracts, skill frontmatter, platform adapter manifests, OpenCode package metadata, and current install docs from the central release version.
+- Updated OpenCode runtime checks and tests to read the target skill schema from package metadata instead of hard-coded version strings.
+- Kept historical migration/changelog references intact while current release documentation now points at v2.4.1 packages.
+
 ## v2.4.0 multi-agent orchestration - 2026-06-17
 
 ### Added - Parallel-Safe Agent Coordination

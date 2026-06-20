@@ -7,7 +7,11 @@ import { fileURLToPath } from "node:url";
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const pluginRoot = path.resolve(scriptDir, "..");
 const workspaceRoot = path.resolve(pluginRoot, "..");
-const targetSchemaVersion = "2.4.0";
+const pluginPackageJson = JSON.parse(readFileSync(path.join(pluginRoot, "package.json"), "utf8"));
+const targetSchemaVersion = pluginPackageJson.skillPack?.schemaVersion;
+if (typeof targetSchemaVersion !== "string" || targetSchemaVersion.length === 0) {
+  throw new Error("Plugin package is missing skillPack.schemaVersion");
+}
 
 const requiredFiles = [
   "package.json",
@@ -116,9 +120,9 @@ async function main() {
   assert(!existsSync(path.join(pluginRoot, "templates/.opencode/agents/engineering-calc-architect.md")), "Legacy architect agent template is still present");
   assert(!existsSync(path.join(pluginRoot, "templates/.opencode/agents/engineering-calc-builder.md")), "Legacy builder agent template is still present");
 
-  const packageJson = JSON.parse(await fs.readFile(path.join(pluginRoot, "package.json"), "utf8"));
+  const packageJson = pluginPackageJson;
   assert(packageJson.version === "0.3.0", "Plugin package version should be 0.3.0");
-  assert(packageJson.skillPack?.schemaVersion === targetSchemaVersion, "Plugin package should declare skill pack schema 2.4.0");
+  assert(packageJson.skillPack?.schemaVersion === targetSchemaVersion, `Plugin package should declare skill pack schema ${targetSchemaVersion}`);
   assert(packageJson.bin?.["engineering-calc-opencode"], "Missing CLI bin");
   assert(packageJson.dependencies?.zod, "Missing zod dependency");
   assert(packageJson.dependencies?.["jsonc-parser"], "Missing jsonc-parser dependency");
@@ -172,7 +176,7 @@ async function main() {
   for (const relPath of requiredSkillFiles) {
     assert(existsSync(path.join(skillRoot, relPath)), `Missing source skill file: ${relPath}`);
   }
-  assert(schemaVersion(skillRoot) === targetSchemaVersion, "Source skill schema is not 2.4.0");
+  assert(schemaVersion(skillRoot) === targetSchemaVersion, `Source skill schema is not ${targetSchemaVersion}`);
 
   console.log("Smoke test passed.");
 }

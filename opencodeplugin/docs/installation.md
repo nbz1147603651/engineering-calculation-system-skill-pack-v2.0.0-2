@@ -14,7 +14,7 @@ Install project-local OpenCode assets:
 node dist/cli/index.js install --target .. --force
 ```
 
-If the skill root cannot be inferred from schema version `2.4.0`, pass it explicitly:
+If the skill root cannot be inferred from schema version `2.4.1`, pass it explicitly:
 
 ```bash
 node dist/cli/index.js install --target .. --skill-root ../engineering-calculation-system/core/engineering-calculation-system --force

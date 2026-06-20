@@ -8,6 +8,23 @@ python tools/build_release.py
 
 With no arguments, the build creates every release profile plus seven publish-ready platform zips under `dist/release/`.
 
+## Version Management
+
+The release version is managed from one source:
+
+```text
+tools/release_config.json
+```
+
+For a new release, update all derived version fields with:
+
+```bash
+python tools/sync_versions.py --version <version> --created-at <YYYY-MM-DD>
+python ../plugins/engineering-calculation-system/scripts/sync_from_core.py
+```
+
+Do not hand-edit individual schema, skill frontmatter, adapter manifest, or OpenCode metadata versions; the sync command updates those from the release config.
+
 The default runtime package is:
 
 ```text
@@ -41,13 +58,13 @@ dist/release/
 Publish files:
 
 ```text
-dist/release/engineering-calculation-system-CODEX-v2.4.0.zip
-dist/release/engineering-calculation-system-MiniMaxCode-v2.4.0.zip
-dist/release/engineering-calculation-system-QODER-v2.4.0.zip
-dist/release/engineering-calculation-system-QODER-Project-v2.4.0.zip
-dist/release/engineering-calculation-system-TRAE-v2.4.0.zip
-dist/release/engineering-calculation-system-OpenCode-v2.4.0.zip
-dist/release/engineering-calculation-system-AGENTS-Generic-v2.4.0.zip
+dist/release/engineering-calculation-system-CODEX-v2.4.1.zip
+dist/release/engineering-calculation-system-MiniMaxCode-v2.4.1.zip
+dist/release/engineering-calculation-system-QODER-v2.4.1.zip
+dist/release/engineering-calculation-system-QODER-Project-v2.4.1.zip
+dist/release/engineering-calculation-system-TRAE-v2.4.1.zip
+dist/release/engineering-calculation-system-OpenCode-v2.4.1.zip
+dist/release/engineering-calculation-system-AGENTS-Generic-v2.4.1.zip
 ```
 
 Each zip contains one install folder plus `INSTALL.md`, except MiniMaxCode which is packaged as a MiniMax skills repository root:

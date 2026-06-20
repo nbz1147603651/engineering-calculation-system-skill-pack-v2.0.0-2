@@ -1,9 +1,17 @@
 ---
 name: engineering-calculation-system
 description: Build, verify, package, or deploy source-backed engineering calculation web apps and calculation books. Use when the user needs to assess or acquire engineering references, turn standards/manuals/PDFs/spreadsheets into a Calculation Logic Blueprint and implementation handoff, build decoupled reusable calculation modules and an official run_book() runner, build an auditable web calculation app with a reusable UI kit and HTML/LaTeX/Overleaf reports, verify formulas/reports/batch/traceability, or package a runnable local and Linux-cloud deployable online calculator — even when "calculation", "engineering", or "calculation book" is not named explicitly.
+version: 2.4.1
 ---
 
 # Engineering Calculation System
+
+## Codex Plugin Adapter
+
+When this package is loaded from the Codex plugin, read
+`shared/codex-plugin-adapter.md` before the router. The adapter maps this
+platform-neutral skill pack onto Codex tool use, workspace edits, validation,
+multi-agent boundaries, and user-facing completion rules.
 
 Full lifecycle for source-backed engineering calculation software. Start with
 `skills/00-engineering-calculation-router.skill.md` for any non-trivial request — it classifies
@@ -74,8 +82,4 @@ Windows use `python`/`py` if `python3` is unavailable; quote paths with spaces.
 
 ## Codex plugin adapter
 
-## Codex Plugin Adapter
-
-When this package is loaded from the Codex plugin, read `shared/codex-plugin-adapter.md` before the router. The adapter maps this platform-neutral skill pack onto Codex tool use, workspace edits, validation, multi-agent boundaries, and user-facing completion rules.
-
-Keep worker tasks bounded and sidecar-only; do not delegate lifecycle routing, evidence-gate decisions, source-authority ranking, ID-namespace control, handoff freeze, `run_book()` public-contract changes, or final acceptance.
+Keep worker tasks bounded and sidecar-only in Codex-compatible environments; do not delegate lifecycle routing, evidence-gate decisions, source-authority ranking, ID-namespace control, handoff freeze, `run_book()` public-contract changes, or final acceptance.

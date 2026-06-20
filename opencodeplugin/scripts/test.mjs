@@ -24,6 +24,9 @@ const { DEFAULT_CONFIG } = await import("../dist/config/schema.js");
 const { renderOrchestrationDraft } = await import("../dist/domain.js");
 
 const workspaceRoot = path.resolve(root, "..");
+const packageJson = JSON.parse(await fs.readFile(path.join(root, "package.json"), "utf8"));
+const targetSchemaVersion = packageJson.skillPack?.schemaVersion;
+assert.equal(typeof targetSchemaVersion, "string", "Expected package skillPack.schemaVersion");
 const skillRoot = path.join(
   workspaceRoot,
   "engineering-calculation-system",
@@ -31,7 +34,7 @@ const skillRoot = path.join(
   "engineering-calculation-system",
 );
 
-assert(existsSync(skillRoot), "Expected local v2.4.0 skill root");
+assert(existsSync(skillRoot), `Expected local v${targetSchemaVersion} skill root`);
 
 {
   const project = await fs.mkdtemp(path.join(os.tmpdir(), "ecs-config-test-"));
@@ -53,7 +56,7 @@ assert(existsSync(skillRoot), "Expected local v2.4.0 skill root");
 
 {
   const resolved = resolveSkillRoot({ directory: workspaceRoot, worktree: workspaceRoot });
-  assert.equal(resolved.schemaVersion, "2.4.0");
+  assert.equal(resolved.schemaVersion, targetSchemaVersion);
   assert.equal(resolved.missingRequiredPaths.length, 0);
 }
 

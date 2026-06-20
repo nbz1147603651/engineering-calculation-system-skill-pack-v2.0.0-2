@@ -70,7 +70,7 @@ export function createTools(args: { config: EngineeringCalcConfig }): NonNullabl
         parallel: tool.schema
           .boolean()
           .default(false)
-          .describe(argDescription("Include v2.4.0 multi-agent orchestration load order and ownership rules.", "true or false")),
+          .describe(argDescription(`Include v${TARGET_SCHEMA_VERSION} multi-agent orchestration load order and ownership rules.`, "true or false")),
       },
       async execute(routeArgs, context) {
         const status = resolveSkillRoot({
@@ -124,7 +124,7 @@ export function createTools(args: { config: EngineeringCalcConfig }): NonNullabl
 
     engineering_calc_orchestration: tool({
       description: toolDescription(
-        "Generate read-only v2.4.0 orchestration drafts for parallel work plans, worker result packets, and merge reviews.",
+        `Generate read-only v${TARGET_SCHEMA_VERSION} orchestration drafts for parallel work plans, worker result packets, and merge reviews.`,
         "{\"artifact\":\"parallel_work_plan\",\"phase\":\"implementation\",\"ownedPaths\":[\"src/pkg/libraries/example/\"]}",
       ),
       args: {

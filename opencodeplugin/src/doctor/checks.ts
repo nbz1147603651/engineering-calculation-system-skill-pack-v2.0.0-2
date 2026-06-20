@@ -54,7 +54,7 @@ export const checks: CheckDefinition[] = [
       ];
       const missing = required.filter((relPath) => !existsSync(path.join(ctx.skillRoot.root, relPath)));
       if (missing.length > 0) return result("orchestration-templates", "fail", "Orchestration files missing", missing);
-      return result("orchestration-templates", "pass", "v2.4.0 orchestration files found");
+      return result("orchestration-templates", "pass", `v${TARGET_SCHEMA_VERSION} orchestration files found`);
     },
   },
   {

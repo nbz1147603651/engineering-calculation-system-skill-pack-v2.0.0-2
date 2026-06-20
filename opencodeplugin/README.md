@@ -3,7 +3,7 @@
 Standalone OpenCode plugin for the Engineering Calculation System skill pack.
 
 Current plugin version: `0.3.0`
-Target skill pack schema: `2.4.0`
+Target skill pack schema: `2.4.1`
 
 ## Quick Install
 

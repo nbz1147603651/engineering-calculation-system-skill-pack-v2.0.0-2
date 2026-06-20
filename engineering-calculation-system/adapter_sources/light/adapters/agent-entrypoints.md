@@ -105,7 +105,7 @@ Multi-agent note:
 
 Preferred setup:
 
-1. Use `dist/release/engineering-calculation-system-MiniMaxCode-v2.4.0.zip`, or expose `dist/core/engineering-calculation-system/` as a standard `SKILL.md` skill folder.
+1. Use `dist/release/engineering-calculation-system-MiniMaxCode-v2.4.1.zip`, or expose `dist/core/engineering-calculation-system/` as a standard `SKILL.md` skill folder.
 2. Let MiniMax Code import or auto-discover the root `SKILL.md`.
 3. Start with `SKILL.md` and `skills/00-engineering-calculation-router.skill.md`.
 
@@ -123,7 +123,7 @@ Fallback:
 
 Preferred setup:
 
-1. For project-root installation, use `dist/release/engineering-calculation-system-QODER-Project-v2.4.0.zip`.
+1. For project-root installation, use `dist/release/engineering-calculation-system-QODER-Project-v2.4.1.zip`.
 2. Apply `dist/qoder-addon/` on top of the core package when composing manually.
 3. Use `.qoder/skills/engineering-calc-system/SKILL.md` as the project skill.
 4. Use `.qoder/agents/engineering-calc-system.md` when the environment supports custom agents.

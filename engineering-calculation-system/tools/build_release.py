@@ -6,12 +6,16 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 import hashlib
-import json
-import re
 import shutil
 import tempfile
 import zipfile
 from pathlib import Path
+
+from versioning import (
+    assert_skill_frontmatter_versions,
+    load_release_config,
+    sync_skill_frontmatter_versions,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -20,8 +24,6 @@ LIGHT_ADAPTER_SOURCE = REPO_ROOT / "adapter_sources" / "light"
 QODER_ADAPTER_SOURCE = REPO_ROOT / "adapter_sources" / "qoder"
 DIST_ROOT = REPO_ROOT / "dist"
 RELEASE_ROOT = DIST_ROOT / "release"
-RELEASE_CONFIG_PATH = REPO_ROOT / "tools" / "release_config.json"
-FRONTMATTER_RE = re.compile(r"^---\n(?P<body>.*?)\n---\n", re.DOTALL)
 
 EXCLUDED_DIR_NAMES = {
     ".git",
@@ -70,11 +72,6 @@ class ReleaseArchive:
     archive_path: Path
     install_folder: str
     file_count: int
-
-
-def load_release_config() -> dict:
-    with RELEASE_CONFIG_PATH.open("r", encoding="utf-8") as handle:
-        return json.load(handle)
 
 
 def parse_bundle_copy(data: dict) -> BundleCopy:
@@ -210,48 +207,13 @@ def copy_file(src: Path, dst: Path) -> None:
     shutil.copy2(src, dst)
 
 
-def write_text_lf(path: Path, text: str) -> None:
-    with path.open("w", encoding="utf-8", newline="\n") as handle:
-        handle.write(text)
-
-
 def sync_frontmatter_versions(root: Path) -> None:
     """Synchronize SKILL.md frontmatter versions in generated artifacts."""
-    for path in root.rglob("SKILL.md"):
-        text = path.read_text(encoding="utf-8").replace("\r\n", "\n").replace("\r", "\n")
-        match = FRONTMATTER_RE.match(text)
-        if not match:
-            continue
-        body = match.group("body")
-        if re.search(r"^version:\s*.+$", body, re.MULTILINE):
-            body = re.sub(r"^version:\s*.+$", f"version: {VERSION}", body, flags=re.MULTILINE)
-        else:
-            lines = body.splitlines()
-            insert_at = len(lines)
-            for index, line in enumerate(lines):
-                if line.startswith("description:"):
-                    insert_at = index + 1
-                    break
-            lines.insert(insert_at, f"version: {VERSION}")
-            body = "\n".join(lines)
-        write_text_lf(path, f"---\n{body}\n---\n{text[match.end():]}")
+    sync_skill_frontmatter_versions(root, VERSION)
 
 
 def assert_frontmatter_versions(root: Path) -> None:
-    for path in root.rglob("SKILL.md"):
-        text = path.read_text(encoding="utf-8")
-        match = FRONTMATTER_RE.match(text)
-        if not match:
-            continue
-        version_match = re.search(r"^version:\s*(.+)$", match.group("body"), re.MULTILINE)
-        if not version_match:
-            continue
-        actual = version_match.group(1).strip().strip('"').strip("'")
-        if actual != VERSION:
-            rel = path.relative_to(root).as_posix()
-            raise RuntimeError(
-                f"frontmatter version mismatch in {rel}: expected {VERSION}, got {actual}"
-            )
+    assert_skill_frontmatter_versions(root, VERSION)
 
 
 def require_paths(root: Path, paths: list[str], *, context: str) -> None:
