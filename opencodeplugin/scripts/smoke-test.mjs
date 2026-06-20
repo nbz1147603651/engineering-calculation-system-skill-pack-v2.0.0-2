@@ -48,6 +48,7 @@ const requiredFiles = [
 const requiredSkillFiles = [
   "SKILL.md",
   "skills/00-engineering-calculation-router.skill.md",
+  "shared/lifecycle.md",
   "shared/quality-gates.md",
   "shared/delivery-contract.md",
   "shared/lifecycle-matrix.md",

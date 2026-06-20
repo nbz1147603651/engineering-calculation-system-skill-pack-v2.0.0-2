@@ -1,8 +1,8 @@
-"""Form data 鈫?BookInput builder and BookResult 鈫?UI dict converter.
+"""Form data -> BookInput builder and BookResult -> UI dict converter.
 
 Scaffold: customize for each calculation book's BookInput / BookResult models.
 
-This module is the SINGLE source of truth for form 鈫?model mapping.
+This module is the SINGLE source of truth for form -> model mapping.
 Never put mapping logic in route handlers or template renderers.
 """
 
@@ -105,14 +105,14 @@ def _default_check_payload() -> list[dict[str, Any]]:
 
 
 # ---------------------------------------------------------------------------
-# Form 鈫?BookInput
+# Form -> BookInput
 # ---------------------------------------------------------------------------
 
 def build_case_input_from_form(data: dict) -> BookInput:
     """Build a BookInput from web form JSON data.
 
     Customize this function for each calculation book.
-    Use explicit field-by-field conversion 鈥?no reflection or magic.
+    Use explicit field-by-field conversion - no reflection or magic.
     """
     data = data if isinstance(data, dict) else {}
     proj = _to_dict(data.get("project", {}))
@@ -142,7 +142,7 @@ def build_case_input_from_form(data: dict) -> BookInput:
 
 
 # ---------------------------------------------------------------------------
-# BookInput 鈫?Form (for import/export)
+# BookInput -> Form (for import/export)
 # ---------------------------------------------------------------------------
 
 def book_input_to_form(bi: BookInput) -> dict:
@@ -163,7 +163,7 @@ def book_input_to_form(bi: BookInput) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# BookResult 鈫?UI dict
+# BookResult -> UI dict
 # ---------------------------------------------------------------------------
 
 def case_result_to_ui(r: BookResult, bi: BookInput) -> dict:

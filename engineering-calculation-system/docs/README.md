@@ -41,10 +41,10 @@ The goal is operational quality and convenience, not minimalism for its own sake
 
 A final web calculation system is not complete when the deliverable is only a static `.html` file, exported report HTML, or UI mockup. Production delivery must include reusable calculation modules, the official runner, backend API/application entrypoint, frontend assets, tests, local run commands, and a Linux/cloud deployment path unless the user explicitly requests a static prototype.
 
-All entrypoints share `shared/delivery-contract.md`. Before implementation,
-declare one delivery mode: `core-only`, `report-only`, `prototype-web`, or
-`web-complete`. Default to `web-complete`; its default path is
-`08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14`.
+All entrypoints share `shared/lifecycle.md` as the single source of truth.
+Before implementation, declare one delivery mode: `core-only`, `report-only`,
+`prototype-web`, or `web-complete`. Default to `web-complete`; its default path
+is `08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14`.
 
 v2.2.0 splits the interface layer into a lightweight router plus three focused subskills:
 

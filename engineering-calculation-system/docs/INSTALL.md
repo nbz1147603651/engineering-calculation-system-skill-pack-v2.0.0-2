@@ -141,8 +141,9 @@ the supervisor performs merge review and keeps all gate decisions serial.
 
 ## Web-Complete Delivery Contract
 
-All platform packages share `shared/delivery-contract.md`. Generated projects
-that are intended to be complete web systems must validate with:
+All platform packages share `shared/lifecycle.md` as the single source of truth.
+The legacy shared contract files are short compatibility redirects. Generated
+projects that are intended to be complete web systems must validate with:
 
 ```bash
 python scripts/validate_artifacts.py --package-root . --profile core --project <project-root> --delivery web-complete

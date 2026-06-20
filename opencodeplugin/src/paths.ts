@@ -29,6 +29,7 @@ export const TARGET_SCHEMA_VERSION = "2.4.0";
 export const REQUIRED_SKILL_PATHS = [
   "SKILL.md",
   "skills/00-engineering-calculation-router.skill.md",
+  "shared/lifecycle.md",
   "shared/quality-gates.md",
   "shared/delivery-contract.md",
   "shared/lifecycle-matrix.md",

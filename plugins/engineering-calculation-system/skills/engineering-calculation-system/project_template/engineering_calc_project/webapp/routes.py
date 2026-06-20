@@ -1,7 +1,7 @@
 """Flask route handlers for the engineering calculation web app.
 
 Scaffold: customize routes for each calculation book.
-All route handlers are thin: parse 鈫?build model 鈫?call runner 鈫?convert 鈫?return.
+All route handlers are thin: parse -> build model -> call runner -> convert -> return.
 """
 
 from __future__ import annotations
@@ -122,13 +122,13 @@ def api_report_decision():
 def api_calculate():
     """Run engineering calculation and return structured results.
 
-    Flow: form JSON 鈫?BookInput 鈫?run_book() 鈫?BookResult 鈫?UI dict
+    Flow: form JSON -> BookInput -> run_book() -> BookResult -> UI dict
     """
     try:
         data = request.get_json(force=True)
         book_input = build_case_input_from_form(data)
 
-        # Import the book runner 鈥?the ONLY official calculation path.
+        # Import the book runner - the ONLY official calculation path.
         # Replace with the actual import for your calculation book.
         from pkg.books.example_book.book_runner import run_book
         result = run_book(book_input)

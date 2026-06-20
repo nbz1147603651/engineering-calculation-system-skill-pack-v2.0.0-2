@@ -66,6 +66,27 @@ CORE_FORBIDDEN_ROOT_PATHS = {
 }
 FORBIDDEN_CACHE_NAMES = {".pytest_cache", "__pycache__"}
 FORBIDDEN_CACHE_SUFFIXES = {".pyc", ".pyo"}
+TEXT_FILE_SUFFIXES = {
+    ".css",
+    ".csv",
+    ".html",
+    ".j2",
+    ".js",
+    ".json",
+    ".md",
+    ".py",
+    ".sty",
+    ".tex",
+    ".txt",
+    ".yaml",
+    ".yml",
+}
+MOJIBAKE_MARKERS = ("\u922b", "\u9225")
+LIFECYCLE_REDIRECT_PATHS = [
+    "shared/delivery-contract.md",
+    "shared/lifecycle-matrix.md",
+    "shared/quality-gates.md",
+]
 SINGLEFILE_ALLOWED_FILES = {
     "engineering-calculation-system.all-in-one.md",
     "MANIFEST.yaml",
@@ -704,6 +725,43 @@ def check_text_required_phrases(root: Path, required: dict[str, list[str]], erro
                 errors.append(f"missing required phrase {phrase!r} in {rel_path}")
 
 
+def check_lifecycle_single_source(root: Path, errors: list[str]) -> None:
+    lifecycle_path = root / "shared" / "lifecycle.md"
+    if not lifecycle_path.exists():
+        errors.append("missing lifecycle single source: shared/lifecycle.md")
+        return
+
+    for rel_path in LIFECYCLE_REDIRECT_PATHS:
+        path = root / rel_path
+        if not path.exists():
+            continue
+        text = read_text(path)
+        non_blank_lines = [line for line in text.splitlines() if line.strip()]
+        if len(non_blank_lines) > 5:
+            errors.append(
+                f"{rel_path} must stay a short redirect; move lifecycle rules to shared/lifecycle.md"
+            )
+        if "shared/lifecycle.md" not in text or "consolidated" not in text.lower():
+            errors.append(f"{rel_path} must redirect readers to shared/lifecycle.md")
+
+
+def check_no_mojibake_markers(root: Path, errors: list[str]) -> None:
+    for path in sorted(root.rglob("*")):
+        if not path.is_file():
+            continue
+        if path.suffix.lower() not in TEXT_FILE_SUFFIXES:
+            continue
+        if any(part in FORBIDDEN_CACHE_NAMES for part in path.parts):
+            continue
+        try:
+            text = read_text(path)
+        except UnicodeDecodeError:
+            continue
+        if any(marker in text for marker in MOJIBAKE_MARKERS):
+            rel_path = path.relative_to(root).as_posix()
+            errors.append(f"mojibake marker found in {rel_path}")
+
+
 def check_static_html_delivery_guard(project_root: Path, errors: list[str]) -> None:
     """Catch static HTML/report-only projects before they are called web apps."""
     html_files = [
@@ -933,6 +991,8 @@ def validate_package(package_root: Path, contract: dict) -> list[str]:
     check_csv_headers(package_root, contract["csv_headers"], errors)
     check_yaml_required_keys(package_root, contract["yaml_required_keys"], errors)
     check_text_required_phrases(package_root, contract.get("text_required_phrases", {}), errors)
+    check_lifecycle_single_source(package_root, errors)
+    check_no_mojibake_markers(package_root, errors)
     return errors
 
 
@@ -1058,6 +1118,7 @@ def validate_project(project_root: Path, contract: dict, *, delivery: str = "sta
     check_csv_headers(project_root, contract["project_csv_headers"], errors)
     check_yaml_required_keys(project_root, contract.get("project_yaml_required_keys", {}), errors)
     check_text_required_phrases(project_root, contract.get("project_text_required_phrases", {}), errors)
+    check_no_mojibake_markers(project_root, errors)
     check_static_html_delivery_guard(project_root, errors)
     if delivery == "web-complete":
         check_web_complete_delivery(project_root, errors)
