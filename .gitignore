@@ -1,5 +1,6 @@
 # Local indexes and generated release artifacts
 .codegraph/
+/.opencode/
 engineering-calculation-system/dist/
 engineering-calculation-system-skill-pack-v*/dist/
 

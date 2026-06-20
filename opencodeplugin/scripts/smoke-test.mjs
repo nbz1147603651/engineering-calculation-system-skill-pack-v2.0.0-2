@@ -164,6 +164,18 @@ async function main() {
     "Command templates should include strict JSON tool-call guidance",
   );
 
+  const agentDir = path.join(pluginRoot, "templates/.opencode/agents");
+  const agentTemplates = await Promise.all(
+    readdirSync(agentDir)
+      .filter((entry) => entry.endsWith(".md"))
+      .map(async (entry) => [entry, await fs.readFile(path.join(agentDir, entry), "utf8")]),
+  );
+  for (const [entry, text] of agentTemplates) {
+    assert(text.includes("permission:"), `Agent template missing permission frontmatter: ${entry}`);
+    assert(text.includes("edit: ask"), `Agent template should keep edits approval-gated: ${entry}`);
+    assert(!text.includes("edit: allow"), `Agent template must not bypass global edit permissions: ${entry}`);
+  }
+
   const indexSource = await fs.readFile(path.join(pluginRoot, "src/index.ts"), "utf8");
   assert(indexSource.includes("createPluginModule"), "Index should export the plugin module factory");
   const toolSource = await fs.readFile(path.join(pluginRoot, "src/create-tools.ts"), "utf8");

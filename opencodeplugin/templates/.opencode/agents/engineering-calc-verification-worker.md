@@ -3,7 +3,7 @@ description: Performs bounded verification, regression, interface smoke, package
 mode: subagent
 temperature: 0.1
 permission:
-  edit: allow
+  edit: ask
   bash: ask
 ---
 

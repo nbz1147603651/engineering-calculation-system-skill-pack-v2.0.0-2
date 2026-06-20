@@ -26,7 +26,7 @@ const { DEFAULT_CONFIG } = await import("../dist/config/schema.js");
 const { renderOrchestrationDraft } = await import("../dist/domain.js");
 const { loadGateState, evaluateEdit, extractFilePath, extractContent } = await import("../dist/gates.js");
 const { createHooks } = await import("../dist/create-hooks.js");
-const { emptyManifest, writeManifest } = await import("../dist/manifest.js");
+const { emptyManifest, readManifest, writeManifest } = await import("../dist/manifest.js");
 const { PROFILE_NAMES, parseOpenCodeProfile } = await import("../dist/profiles.js");
 const { MCP_CATALOG, buildMcpConfig, mcpForProfile, parseMcpMode } = await import("../dist/mcp-presets.js");
 const fsPromises = await import("node:fs/promises");
@@ -253,6 +253,15 @@ assert(existsSync(skillRoot), `Expected local v${targetSchemaVersion} skill root
   const packageText = await fs.readFile(path.join(project, ".opencode", "package.json"), "utf8");
   assert(packageText.includes("@opencode-ai/plugin"));
   assert(packageText.includes("engineeringCalcOpenCodeManaged"));
+  const opencodePackage = JSON.parse(packageText);
+  assert.equal(opencodePackage.engineeringCalcOpenCodeManaged.opencodePluginDependencyAdded, true);
+  const installManifest = await readManifest(project);
+  assert(installManifest, "Install manifest should be written");
+  assert.equal(
+    installManifest.files[".opencode/package.json"].size,
+    Buffer.byteLength(packageText, "utf8"),
+    "Manifest should record the real package.json size",
+  );
   const assets = await inspectAssets(project);
   assert.equal(assets.installed, true);
   const uninstall = await uninstallAssets(project);

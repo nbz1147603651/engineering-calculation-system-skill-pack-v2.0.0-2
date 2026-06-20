@@ -276,15 +276,16 @@ async function mergeOpenCodePackage(
   packageJson[OPENCODE_PACKAGE_MANAGED_KEY] = {
     opencodePluginDependencyAdded: previousAdded || !hadDependency,
   } satisfies OpenCodePackageManagedMeta;
+  const serializedPackageJson = `${JSON.stringify(packageJson, null, 2)}\n`;
   args.report.installed.push(relPath);
   if (!args.dryRun) {
     await fs.mkdir(path.dirname(destination), { recursive: true });
-    await fs.writeFile(destination, `${JSON.stringify(packageJson, null, 2)}\n`, "utf8");
+    await fs.writeFile(destination, serializedPackageJson, "utf8");
   }
   args.manifest.files[relPath] = {
     relPath,
-    sha256: computeSha256(JSON.stringify(packageJson, null, 2) + "\n"),
-    size: 0,
+    sha256: computeSha256(serializedPackageJson),
+    size: Buffer.byteLength(serializedPackageJson, "utf8"),
   };
 }
 
