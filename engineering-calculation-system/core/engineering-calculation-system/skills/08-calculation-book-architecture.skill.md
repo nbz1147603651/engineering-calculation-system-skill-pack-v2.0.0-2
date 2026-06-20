@@ -5,127 +5,47 @@ description: Design the project and package architecture for a reusable engineer
 
 # Calculation Book Architecture
 
-Use this skill as the first implementation-stage skill.
+## When to use
 
-## Goal
+First implementation-stage skill. Design the software architecture before writing formulas or
+interfaces. Plan reusable modules as long-lived assets, not book-local helpers.
 
-Design the software architecture before writing formulas or interfaces.
+## Inputs
 
-Plan reusable modules as long-lived assets, not book-local helpers.
+`handoff/implementation_handoff.yaml`, `handoff/coding_go_no_go.md`. If the gate is `no_go`,
+produce only scaffold or architecture notes — do not implement production formulas.
 
-## Required Inputs
+## Steps
 
-```text
-handoff/implementation_handoff.yaml
-handoff/coding_go_no_go.md
-```
+1. Classify every feature by layer (use `templates/implementation/feature_classification.csv`):
+   core platform | reusable engineering library | calculation-book runner | report context/
+   renderer | review/frontend | batch/CLI/API | verification | release/deployment. For each
+   feature record: Existing module? | New module needed? | Reusable? | Location | Notes.
+2. Fix the dependency direction (non-negotiable, see `shared/lifecycle.md`):
+   `presentation/report/review/batch/API -> books -> libraries -> core`. Define the forbidden
+   reverse dependencies in `templates/implementation/dependency_rules.md`.
+3. Define reusable module boundaries: library modules must be independent of a specific web page,
+   report, batch job, database, or file layout; expose typed input/options/result models; own
+   source-backed formulas/lookup behavior/intermediate values; return warnings/errors instead of
+   hiding assumptions; be registered in `module_asset_registry.csv`.
+4. Define the package layout and default project structure
+   (`templates/implementation/package_layout.md`, `templates/implementation/project_structure.md`):
+   `src/<pkg>/{core,libraries,books/<book_name>,interfaces,report}`, `webapp/`, `apps/review/`,
+   `data/{input,imported,staging,normalized/cases,packages}`, `outputs/{results_json,reports_*,
+   upload_packages,logs}`, `deploy/{nginx,systemd}`, `release/`, `tests/`, `verification/`.
+5. Seed `implementation/02_modules/module_asset_registry.csv` with the planned module IDs.
 
-If the gate is `no_go`, produce only scaffold or architecture notes; do not implement production formulas.
-
-## Dependency Direction
-
-```text
-presentation / report / review / batch / API
-  -> books
-    -> libraries
-      -> core
-```
-
-## Feature Classification
-
-Before implementation, classify every feature:
-
-| Feature | Layer | Existing module? | New module needed? | Reusable? | Location | Notes |
-| --- | --- | --- | --- | --- | --- | --- |
-
-Layers:
+## Artifacts
 
 ```text
-core platform
-reusable engineering library
-calculation book runner
-report context / renderer
-review/frontend
-batch / CLI / API
-verification
-release / deployment
-```
-
-## Reusable Module Boundaries
-
-Before coding, define which engineering logic belongs in reusable libraries and which orchestration belongs in book runners.
-
-Reusable library modules must:
-
-```text
-be independent from a specific web page, report, batch job, database, or file layout
-expose typed input/options/result models
-own source-backed formulas, lookup behavior, and intermediate values
-return warnings/errors instead of hiding assumptions
-be registered in module_asset_registry.csv
-```
-
-## Default Project Structure
-
-```text
-engineering_calc_project/
-  references/
-  analysis/
-  handoff/
-  data/
-    input/
-    imported/
-      reports/
-      references/
-    staging/
-    normalized/
-      cases/
-    packages/
-  implementation/
-  src/<pkg>/
-    core/
-    libraries/
-    books/<book_name>/
-    interfaces/
-    report/
-  webapp/
-  apps/
-    review/
-  outputs/
-    results_json/
-    reports_html/
-    reports_pdf/
-    reports_docx/
-    upload_packages/
-    logs/
-  deploy/
-    nginx/
-    systemd/
-  release/
-  tests/
-  verification/
-```
-
-## Required Output Artifacts
-
-```text
-implementation/00_architecture/project_structure.md
+implementation/00_architecture/project_structure.md     (templates/implementation/project_structure.md)
 implementation/00_architecture/feature_classification.csv
-implementation/00_architecture/dependency_rules.md
-implementation/00_architecture/package_layout.md
+implementation/00_architecture/dependency_rules.md      (templates/implementation/dependency_rules.md)
+implementation/00_architecture/package_layout.md        (templates/implementation/package_layout.md)
 implementation/02_modules/module_asset_registry.csv
 ```
 
-## Required Final Response
+## Exit gate
 
-Provide:
-
-```text
-architecture decision
-feature classification
-project tree
-layer placement
-forbidden dependencies
-module asset boundaries
-implementation order
-```
+Architecture prevents formulas in UI/report/batch; dependency direction is fixed. See
+`shared/lifecycle.md` row 08. Next path: 09 for core/data models.

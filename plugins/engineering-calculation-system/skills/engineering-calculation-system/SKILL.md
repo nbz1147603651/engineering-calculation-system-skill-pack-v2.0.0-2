@@ -1,139 +1,81 @@
 ---
 name: engineering-calculation-system
-description: Full lifecycle workflow for engineering calculation software. Use when Codex or another coding agent must assess missing engineering references, acquire and persist source evidence, transform references into a Calculation Logic Blueprint, create an implementation handoff, build decoupled reusable calculation modules, build auditable web calculation software with a reusable UI kit, generate HTML/LaTeX/Overleaf-compatible reports, verify formulas, reports, batch flows, and traceability, or package a runnable local and Linux-cloud deployable online calculator.
+description: Build, verify, package, or deploy source-backed engineering calculation web apps and calculation books. Use when the user needs to assess or acquire engineering references, turn standards/manuals/PDFs/spreadsheets into a Calculation Logic Blueprint and implementation handoff, build decoupled reusable calculation modules and an official run_book() runner, build an auditable web calculation app with a reusable UI kit and HTML/LaTeX/Overleaf reports, verify formulas/reports/batch/traceability, or package a runnable local and Linux-cloud deployable online calculator — even when "calculation", "engineering", or "calculation book" is not named explicitly.
 ---
 
 # Engineering Calculation System
 
-## Codex Plugin Adapter
+Full lifecycle for source-backed engineering calculation software. Start with
+`skills/00-engineering-calculation-router.skill.md` for any non-trivial request — it classifies
+the material state and task intent and routes to the right 01-14 path.
 
-When this package is loaded from the Codex plugin, read
-`shared/codex-plugin-adapter.md` before the router. The adapter maps this
-platform-neutral skill pack onto Codex tool use, workspace edits, validation,
-multi-agent boundaries, and user-facing completion rules.
-
-Start with `skills/00-engineering-calculation-router.skill.md` for any non-trivial request. The router decides whether the task belongs to reference acquisition, source analysis, implementation, interface work, or verification.
-
-When the user explicitly requests multiple agents, subagents, delegation, or
-parallel work, also read `shared/multi-agent-orchestration.md` before assigning
-work. Multi-agent orchestration is optional; platforms without subagents can use
-the same templates as a manual work plan.
-
-## Load Order
-
-Use progressive disclosure:
+## Load order (progressive disclosure)
 
 1. Read the router.
-2. Read one parent orchestrator when the task spans a phase:
-   - `parent/engineering-calculation-reference-acquisition.skill.md`
-   - `parent/engineering-calculation-logic-architecture.skill.md`
-   - `parent/engineering-calculation-book.skill.md`
-3. Read only the child skill files named by the router or parent.
-4. For explicit multi-agent or parallel work, read `shared/multi-agent-orchestration.md` and use `templates/orchestration/`.
-5. For implementation, release, or validation work, read `shared/delivery-contract.md`
-   and `shared/lifecycle-matrix.md`.
-6. Use templates from `templates/` and shared contracts from `shared/` only when generating or validating artifacts.
+2. Read one parent orchestrator when a task spans a phase:
+   `parent/engineering-calculation-reference-acquisition.skill.md` (skills 01-03),
+   `parent/engineering-calculation-logic-architecture.skill.md` (skills 04-07), or
+   `parent/engineering-calculation-book.skill.md` (skills 08-14).
+3. Read only the child skills named by the router or parent.
+4. For implementation/release/validation, read `shared/lifecycle.md` (the single source for the
+   01-14 gates, delivery-mode bar, and quality checks).
+5. For explicit multi-agent/parallel work, read `shared/multi-agent-orchestration.md`.
+6. Load `templates/` and `shared/` contracts only when generating or validating artifacts.
 
-Install the default runtime skill from `dist/core/engineering-calculation-system/` when using a built release. For environments that cannot load multiple files reliably, use the generated single-file fallback from `dist/singlefile/engineering-calculation-system.all-in-one.md`.
+Install the runtime skill from `dist/core/engineering-calculation-system/` for a built release; use
+`dist/singlefile/engineering-calculation-system.all-in-one.md` when an environment cannot load
+multiple files. Adapter overlays live in `dist/adapters-light/` or `dist/qoder-addon/`. MCPs are
+accelerators, not required dependencies.
 
-Agent-specific loading paths are optional overlays from `dist/adapters-light/` or `dist/qoder-addon/`. MCPs are accelerators, not required dependencies.
+## Delivery mode
 
-Codex-compatible environments should keep worker tasks bounded and sidecar-only.
-Do not delegate lifecycle routing, evidence gate decisions, source authority
-ranking, ID namespace control, handoff freeze, `run_book()` public contract
-changes, or final acceptance.
+Before implementation starts, declare one mode: `core-only | report-only | prototype-web | web-complete`.
+Default to `web-complete` for calculation systems, calculation-book software, web apps, online
+calculators, reusable packages, batch workflows, or any request that does not explicitly ask for a
+narrower prototype. In this skill, `web-complete` means dual closure: a readable, traceable
+calculation book AND a complete web calculation system. For `web-complete` the default path is
+`08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14`.
 
-## Delivery Contract
+## Non-negotiable gates
 
-Read `shared/delivery-contract.md` and `shared/lifecycle-matrix.md` before
-implementation or release work. Every adapter entrypoint uses the same
-completion rules and the same 01-14 entry/action/artifact/exit gates.
+The full gate vocabulary, the step/gate matrix, and the web-complete exit gate live in
+`shared/lifecycle.md` (single source). The rules below are the highest-level restatement; do not
+duplicate them elsewhere:
 
-Before implementation starts, declare one delivery mode:
+- Engineering formulas, lookups, branches, and load-combination logic live ONLY in reusable
+  calculation modules and the official book runner.
+- The one official calculation path is `run_book(book_input: BookInput) -> BookResult`
+  (shorthand: `run_book(BookInput) -> BookResult`); every interface calls it, none reimplements it.
+- Do not invent formulas/coefficients/units/lookups/branches when the source basis is missing.
+- Do not start production implementation unless `handoff/implementation_handoff.yaml` and
+  `handoff/coding_go_no_go.md` allow it.
+- Default stack is Python-first (Python 3.9+, `src/<pkg>/libraries/`, Flask/FastAPI thin routes,
+  `webapp/` browser UI, Marimo review when Python-native module review is needed). Use another
+  runtime only when the user explicitly requests it and the handoff defines an adapter plan.
+- Do not call a delivery complete/production-ready/deployable/web-complete when it is only a CLI
+  runner, static `.html`, exported report HTML, notebook demo, or UI mockup.
+- Use the shared UI design system (`templates/implementation/ui_design_system.md`,
+  `webapp/templates/partials/`, `webapp/static/css/{tokens,components}.css`) for production UI.
+- When formula rules must change after deployment, use a declaration-based formula registry plus a
+  token-protected Marimo admin review app under `/admin/review/`; publish only after validation
+  and smoke tests pass.
 
-```text
-core-only | report-only | prototype-web | web-complete
-```
-
-Default to `web-complete` for calculation systems, calculation-book software,
-web apps, online calculators, reusable software packages, batch workflows, and
-any request that does not explicitly ask for a narrower prototype. In this
-skill, `web-complete` means dual closure: a readable, traceable calculation
-book and a complete web calculation system.
-
-For `web-complete`, the default implementation path is:
-
-```text
-08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14
-```
-
-Do not call a delivery complete, production-ready, deployable, or web-complete
-when it is only a CLI runner, static HTML, exported report HTML, notebook demo,
-or UI mockup. If the package shape only contains a lightweight wrapper, use the
-full project/root package or the generated single-file fallback before claiming
-web-complete delivery.
-
-## Non-Negotiable Gates
-
-Optimize for engineering operation quality and reviewer convenience first. Keep the stack as simple as possible only after the workflow is complete, clear, traceable, and pleasant to use.
-
-Default implementation stack is Python-first:
-
-```text
-primary runtime: Python 3.9+
-calculation modules: Python package under src/<pkg>/libraries/
-official runner: Python run_book(BookInput) -> BookResult
-backend/API: Flask or FastAPI thin route layer
-frontend: browser web app served from webapp/
-review/admin: Marimo when Python-native module review or formula publishing is needed
-```
-
-Use another calculation runtime only when the user explicitly requests it and the handoff defines an adapter plan. Marimo review is Python-native and cannot directly inspect non-Python modules without a Python wrapper, CLI, or API adapter.
-
-Do not remove useful interface capabilities just to reduce dependencies. Input validation, import/export, report preview, trace review, formula/source visibility, status clarity, and repeatable deployment are part of the product quality bar.
-
-Use the shared UI design system for production interfaces. Keep `templates/implementation/ui_design_system.md`, `webapp/templates/partials/`, `webapp/static/css/tokens.css`, and `webapp/static/css/components.css` as the default structure before adding book-specific UI.
-
-For calculation-book reports, make one automatic output decision before final delivery. If `latexmk` or `pdflatex` is installed locally, choose LaTeX/PDF, compile locally, and do not mark the report complete unless compilation exits 0 and `main.pdf` exists. If no local LaTeX compiler exists, use the A4 HTML calculation-book path from `templates/implementation/html_report_spec.md`. For LaTeX or Overleaf-compatible calculation books, use `templates/implementation/latex_report_spec.md`; ask whether the user has a preferred template, `.cls/.sty`, cover, page format, or section order before project initialization or first report generation; when the user provides no usable template, use `latex/templates/default_engineering_calcbook/`. Generated web apps must keep `GET /api/report/decision`, `GET /api/report/templates`, a stable `latex_template_id` selection, default fallback behavior in `POST /api/report/latex`, and the automatic final report route `POST /api/report/final`.
-
-Do not invent engineering formulas, lookup rules, units, coefficients, or branch logic when the source basis is missing.
-
-Do not start production implementation unless `handoff/implementation_handoff.yaml` and `handoff/coding_go_no_go.md` allow it.
-
-Keep formulas out of UI, report templates, CSV/Excel inputs, batch scripts, and presentation-only code. Official calculations must flow through `run_book(BookInput) -> BookResult`.
-
-Do not label a system complete unless reusable calculation modules are decoupled, traceable, independently testable, and recorded for future reuse.
-
-Do not label a web calculation system production-ready unless it has local run instructions, a Linux cloud deployment path, environment-based configuration, smoke tests, and release artifacts.
-
-Do not label a web calculation system complete when the deliverable is only a static `.html` file, exported report HTML, or visual mockup. Production web delivery must include the calculation modules, official runner, backend API/application entrypoint, frontend assets, tests, and deployment path unless the user explicitly requests a static prototype.
-
-When formula rules must be reviewed or changed after deployment, use a declaration-based formula registry plus a token-protected Marimo admin review app under `/admin/review/`; publish changes only after validation and smoke tests pass.
-
-## Artifact Validation
-
-When this package is available on disk, run:
+## Artifact validation
 
 ```bash
-python3 scripts/validate_artifacts.py --package-root .
+python3 scripts/validate_artifacts.py --package-root .                         # skill pack
+python3 scripts/validate_artifacts.py --package-root . --profile core          # layered release
+python3 scripts/validate_artifacts.py --package-root <skill-pack-root> --profile core \
+  --project <project-root> --delivery web-complete                             # generated project
 ```
 
-For layered v2.4 releases, prefer:
+Treat validation failures as blocking unless the user explicitly asks for a draft or prototype. On
+Windows use `python`/`py` if `python3` is unavailable; quote paths with spaces.
 
-```bash
-python3 scripts/validate_artifacts.py --package-root . --profile core
-```
+## Codex plugin adapter
 
-For generated engineering calculation projects, also run:
+## Codex Plugin Adapter
 
-```bash
-python3 scripts/validate_artifacts.py --package-root <skill-pack-root> --profile core --project <project-root> --delivery web-complete
-```
+When this package is loaded from the Codex plugin, read `shared/codex-plugin-adapter.md` before the router. The adapter maps this platform-neutral skill pack onto Codex tool use, workspace edits, validation, multi-agent boundaries, and user-facing completion rules.
 
-Treat validation failures as blocking unless the user explicitly asks for a draft or prototype.
-
-## Windows (win32) platform notes
-
-When running validation commands on Windows, use `python` or `py` if `python3`
-is not available. Quote paths that contain spaces and prefer PowerShell-native
-path handling.
+Keep worker tasks bounded and sidecar-only; do not delegate lifecycle routing, evidence-gate decisions, source-authority ranking, ID-namespace control, handoff freeze, `run_book()` public-contract changes, or final acceptance.

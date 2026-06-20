@@ -8,7 +8,7 @@ version: 2.4.0
 
 This Qoder skill is a lightweight entrypoint unless the project also contains the complete core package: `SKILL.md`, `skills/`, `shared/`, `templates/`, `schemas/`, `scripts/validate_artifacts.py`, and `project_template/`.
 
-Before implementation or release work, read `shared/delivery-contract.md` and `shared/lifecycle-matrix.md` from the complete core package. Default delivery is `web-complete`, which means dual closure: a readable A4/LaTeX calculation book with real input and non-empty `BookResult.checks`, plus a complete web system with API/UI, import/export, batch, deployment artifacts, and smoke tests.
+Before implementation or release work, read `shared/lifecycle.md` and `shared/lifecycle.md` from the complete core package. Default delivery is `web-complete`, which means dual closure: a readable A4/LaTeX calculation book with real input and non-empty `BookResult.checks`, plus a complete web system with API/UI, import/export, batch, deployment artifacts, and smoke tests.
 
 Do not claim production completion from the direct Qoder skill alone. Use the complete core/template/validator package and run:
 
@@ -35,7 +35,7 @@ project_template/
 
 如果当前 Qoder 安装只有 `SKILL.md`、`reference.md` 和 `assets/`，这只是 direct skill 轻量入口，不是完整项目模板。要产出 `web-complete` 交付物，优先使用 `engineering-calculation-system-QODER-Project-v2.4.0.zip` 的 `copy-to-project-root/`，或加载完整 single-file fallback。
 
-若 `../../../shared/delivery-contract.md` 可用，必须先读取它。否则按本文件和 `reference.md` 中的同名契约执行。
+若 `../../../shared/lifecycle.md` 可用，必须先读取它。否则按本文件和 `reference.md` 中的同名契约执行。
 
 实现前必须声明交付模式：
 

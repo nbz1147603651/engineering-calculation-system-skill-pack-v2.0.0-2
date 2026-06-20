@@ -23,6 +23,17 @@ import { getStatus } from "./status.js";
 import { resolveSkillRoot, TARGET_SCHEMA_VERSION, toPosixPath } from "./paths.js";
 import type { EngineeringCalcConfig } from "./config/schema.js";
 
+const STRICT_JSON_ARGUMENTS_NOTE =
+  "Tool-call compatibility: arguments must be one strict JSON object with double-quoted keys and strings. Use {} for defaults; omit optional fields instead of undefined. Do not use key=value, single quotes, comments, trailing commas, or Markdown.";
+
+function toolDescription(summary: string, exampleArgs: string): string {
+  return `${summary} ${STRICT_JSON_ARGUMENTS_NOTE} Example arguments: ${exampleArgs}.`;
+}
+
+function argDescription(description: string, jsonShape: string): string {
+  return `${description} JSON shape: ${jsonShape}.`;
+}
+
 function formatSkillRootStatus(rootStatus: ReturnType<typeof resolveSkillRoot>): string {
   const missing =
     rootStatus.missingRequiredPaths.length === 0
@@ -41,23 +52,25 @@ function formatSkillRootStatus(rootStatus: ReturnType<typeof resolveSkillRoot>):
 }
 
 function arrayArg(description: string) {
-  return tool.schema.array(tool.schema.string()).default([]).describe(description);
+  return tool.schema.array(tool.schema.string()).default([]).describe(argDescription(description, "[\"path/or/command\"] or []"));
 }
 
 export function createTools(args: { config: EngineeringCalcConfig }): NonNullable<Hooks["tool"]> {
   return {
     engineering_calc_route: tool({
-      description:
+      description: toolDescription(
         "Return the Engineering Calculation System OpenCode routing prompt, load order, and phase-specific gates.",
+        "{\"phase\":\"router\",\"parallel\":false}",
+      ),
       args: {
         phase: tool.schema
           .enum(PHASES)
           .default(args.config.defaultPhase)
-          .describe("Workflow phase to route. Use router when unsure."),
+          .describe(argDescription("Workflow phase to route. Use router when unsure.", "\"router\"")),
         parallel: tool.schema
           .boolean()
           .default(false)
-          .describe("Include v2.4.0 multi-agent orchestration load order and ownership rules."),
+          .describe(argDescription("Include v2.4.0 multi-agent orchestration load order and ownership rules.", "true or false")),
       },
       async execute(routeArgs, context) {
         const status = resolveSkillRoot({
@@ -110,14 +123,22 @@ export function createTools(args: { config: EngineeringCalcConfig }): NonNullabl
     }),
 
     engineering_calc_orchestration: tool({
-      description:
+      description: toolDescription(
         "Generate read-only v2.4.0 orchestration drafts for parallel work plans, worker result packets, and merge reviews.",
+        "{\"artifact\":\"parallel_work_plan\",\"phase\":\"implementation\",\"ownedPaths\":[\"src/pkg/libraries/example/\"]}",
+      ),
       args: {
-        artifact: tool.schema.enum(ORCHESTRATION_ARTIFACTS).default("parallel_work_plan").describe("Draft artifact to render."),
-        phase: tool.schema.enum(ORCHESTRATION_PHASES).default("implementation").describe("Lifecycle phase for the orchestration draft."),
-        objective: tool.schema.string().optional().describe("Bounded objective for the work item."),
-        taskId: tool.schema.string().optional().describe("Task identifier such as TASK-001."),
-        role: tool.schema.string().optional().describe("Worker role such as module-worker."),
+        artifact: tool.schema
+          .enum(ORCHESTRATION_ARTIFACTS)
+          .default("parallel_work_plan")
+          .describe(argDescription("Draft artifact to render.", "\"parallel_work_plan\"")),
+        phase: tool.schema
+          .enum(ORCHESTRATION_PHASES)
+          .default("implementation")
+          .describe(argDescription("Lifecycle phase for the orchestration draft.", "\"implementation\"")),
+        objective: tool.schema.string().optional().describe(argDescription("Bounded objective for the work item.", "\"bounded module\"")),
+        taskId: tool.schema.string().optional().describe(argDescription("Task identifier such as TASK-001.", "\"TASK-001\"")),
+        role: tool.schema.string().optional().describe(argDescription("Worker role such as module-worker.", "\"module-worker\"")),
         readOnlyInputs: arrayArg("Read-only input paths assigned to the worker."),
         ownedPaths: arrayArg("Disjoint paths owned by the worker."),
         expectedArtifacts: arrayArg("Expected artifacts or outputs from the worker."),
@@ -145,10 +166,16 @@ export function createTools(args: { config: EngineeringCalcConfig }): NonNullabl
     }),
 
     engineering_calc_doctor: tool({
-      description: "Run Engineering Calculation System OpenCode plugin doctor checks.",
+      description: toolDescription(
+        "Run Engineering Calculation System OpenCode plugin doctor checks.",
+        "{\"mode\":\"verbose\",\"validate\":true}",
+      ),
       args: {
-        mode: tool.schema.enum(["default", "verbose", "json"]).default("default").describe("Doctor output mode."),
-        validate: tool.schema.boolean().default(true).describe("Run Python validation checks."),
+        mode: tool.schema
+          .enum(["default", "verbose", "json"])
+          .default("default")
+          .describe(argDescription("Doctor output mode.", "\"default\", \"verbose\", or \"json\"")),
+        validate: tool.schema.boolean().default(true).describe(argDescription("Run Python validation checks.", "true or false")),
       },
       async execute(doctorArgs, context) {
         const result = await runDoctor({
@@ -161,7 +188,10 @@ export function createTools(args: { config: EngineeringCalcConfig }): NonNullabl
     }),
 
     engineering_calc_status: tool({
-      description: "Return skill root, schema version, config path, and installed OpenCode asset status.",
+      description: toolDescription(
+        "Return skill root, schema version, config path, and installed OpenCode asset status.",
+        "{}",
+      ),
       args: {},
       async execute(_statusArgs, context) {
         const status = await getStatus({
@@ -174,9 +204,12 @@ export function createTools(args: { config: EngineeringCalcConfig }): NonNullabl
     }),
 
     engineering_calc_config_example: tool({
-      description: "Return a minimal or full JSONC config example for the plugin.",
+      description: toolDescription(
+        "Return a minimal or full JSONC config example for the plugin.",
+        "{\"full\":false}",
+      ),
       args: {
-        full: tool.schema.boolean().default(false).describe("Return the full config example."),
+        full: tool.schema.boolean().default(false).describe(argDescription("Return the full config example.", "true or false")),
       },
       async execute(exampleArgs) {
         return `\`\`\`jsonc\n${exampleArgs.full ? fullConfigExample() : minimalConfigExample()}\n\`\`\``;

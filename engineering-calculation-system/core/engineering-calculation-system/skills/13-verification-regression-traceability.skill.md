@@ -5,121 +5,50 @@ description: Design and implement verification, regression tests, tolerance poli
 
 # Verification, Regression, and Traceability
 
-Use this skill throughout implementation and before release.
+## When to use
 
-## Goal
+Throughout implementation and before release. Verify formulas, lookups, branches, book
+orchestration, report context, interfaces, and traceability.
 
-Verify formulas, lookups, branches, book orchestration, report context, interfaces, and traceability.
+## Steps
 
-## Test Categories
+1. Build the test matrix (`templates/verification/test_matrix.csv`) covering: unit (isolated
+   formulas), lookup (tables/interpolation), branch (method selection), edge-case (boundary),
+   invalid-input, regression (against references), integration (full `run_book`), report smoke,
+   web/API smoke, Chinese/English i18n + language-toggle smoke, Marimo review smoke, upload/import
+   package manifest + hash, batch smoke, serialization + hash, formula-registry validation +
+   publish-gate, and deployment smoke (local + Linux cloud).
+2. Capture regression references (`templates/verification/regression_references.md`) in priority
+   order: design-code examples → published manual examples → approved historical reports →
+   verified legacy spreadsheets → independent hand calcs → synthetic edge cases.
+3. Define the tolerance policy (`templates/verification/tolerance_policy.md`).
+4. Attach traceability metadata to production results: book_type, book_name, case_id, project_id,
+   design_code + version, run_timestamp, package version, input_hash, result_hash, python_version,
+   git_commit if available, formula-registry version if used, runner version, report-template
+   version.
+5. Run the acceptance checklist (`templates/verification/acceptance_checklist.md`): source basis
+   recorded; features classified by layer; formulas only in reusable modules; modules listed in
+   `module_asset_registry.csv`; `run_book` is the official entry point; CSV/JSON/frontend/API inputs
+   map to the same BookInput; unit conversion only at boundaries; templates/UI/review/Marimo/batch
+   do not calculate; upload packages preserve manifests/hashes/normalized inputs/trusted results;
+   units explicit; result objects include intermediate values; warnings/errors preserved; status
+   semantics defined; governing summary exists; tests cover modules; book integration test exists;
+   report/web/i18n smoke tests exist when those layers exist; deployment smoke or recorded
+   blockers when final delivery expected; traceability metadata on production outputs; formula-
+   registry version/hash/published_at in BookResult when used; run commands documented.
 
-```text
-unit tests for isolated formulas
-lookup tests for tables and interpolation
-branch tests for method selection
-edge case tests for boundary conditions
-invalid input tests
-regression tests against references
-integration tests for complete run_book workflows
-report smoke tests
-web/API smoke tests
-Chinese/English i18n and language-toggle smoke tests
-Marimo review smoke tests
-upload/import package manifest and hash tests
-batch smoke tests
-serialization and hash tests
-formula registry validation and publish-gate tests
-deployment smoke tests for local and Linux cloud release paths
-```
-
-## Regression Reference Priority
-
-```text
-design code examples
-published design manual examples
-approved historical reports
-verified legacy spreadsheets
-independent hand calculations
-synthetic edge cases
-```
-
-## Traceability Metadata
-
-For production results, include where feasible:
+## Artifacts
 
 ```text
-book_type
-book_name
-case_id
-project_id
-design_code and version
-run_timestamp
-package version
-input_hash
-result_hash
-python_version
-git_commit if available
-formula registry version if used
-runner version
-report template version
+verification/test_matrix.csv            (templates/verification/test_matrix.csv)
+verification/regression_references.md   (templates/verification/regression_references.md)
+verification/tolerance_policy.md        (templates/verification/tolerance_policy.md)
+verification/acceptance_checklist.md    (templates/verification/acceptance_checklist.md)
+tests/{unit,regression,integration,smoke}/
+release/release_checklist.md            (when final delivery expected)
 ```
 
-## Required Output Artifacts
+## Exit gate
 
-```text
-verification/test_matrix.csv
-verification/regression_references.md
-verification/tolerance_policy.md
-verification/acceptance_checklist.md
-tests/unit/
-tests/regression/
-tests/integration/
-tests/smoke/
-release/release_checklist.md when final delivery is expected
-```
-
-## Acceptance Checklist
-
-Verify:
-
-```text
-source basis is recorded
-features are classified into layers
-formulas live only in reusable calculation modules
-reusable modules are listed in module_asset_registry.csv
-book runner is the official calculation entry point
-CSV/JSON/frontend/API inputs map to the same BookInput
-unit conversions happen only at input/output boundaries
-templates do not calculate
-frontend/review does not calculate
-Marimo review pages do not calculate outside trusted modules or run_book
-upload packages preserve manifests, hashes, normalized inputs, and trusted results
-batch does not calculate independently
-units are explicit
-result objects include intermediate values
-warnings and errors are preserved
-status semantics are defined
-governing summary exists
-tests cover reusable modules
-book integration test exists
-report rendering smoke test exists when reports exist
-web app health and calculate API smoke tests exist when frontend/API exists
-Chinese/English i18n API and language toggle shell tests exist when frontend exists
-deployment smoke tests or explicit deployment blockers are recorded when final delivery is expected
-traceability metadata exists for production outputs
-formula registry version/hash/published_at are exposed in BookResult when formula registry is used
-run commands are documented
-```
-
-## Required Final Response
-
-Provide:
-
-```text
-test matrix summary
-regression references
-tolerance policy
-traceability plan
-acceptance result
-remaining verification risks
-```
+Hard blockers are fixed or delivery is downgraded; validator passes before any completion claim.
+See `shared/lifecycle.md` row 13. Next path: 14 for release/deployment.

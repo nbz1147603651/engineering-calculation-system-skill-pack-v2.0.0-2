@@ -5,175 +5,62 @@ description: Discover, search, screen, and select candidate engineering referenc
 
 # Reference Discovery and Acquisition
 
-Use this skill after `01-reference-adequacy-and-gap-assessment` identifies gaps.
+## When to use
 
-## Goal
+After skill 01 identifies gaps. Find candidate references that can support a traceable engineering
+calculation analysis.
 
-Find candidate references that can support a traceable engineering calculation analysis.
+## Inputs
 
-Required transformation:
+`references/acquisition/acquisition_plan.yaml` and `source_coverage_matrix.csv` from skill 01.
 
-```text
-acquisition_plan.yaml
--> search strategy
--> search log
--> candidate source list
--> authority and relevance screening
--> retrieval decisions
--> updated source coverage matrix
-```
+## Steps
 
-## Source Priority
+1. Build a search strategy per gap: search objective, required facts/tables, jurisdiction &
+   language, preferred publisher/authority, essential + alternative keywords, source acceptance
+   criteria, rejection criteria.
+2. Run web/file search. When an internet search or browser tool is available, use it actively for
+   each critical/high-importance gap — multiple query formulations, prefer official domains /
+   standards bodies / agencies / publishers, open and inspect promising primary sources, cross-check
+   authority/version/year/jurisdiction/applicability. If no search tool is available, state that
+   limitation explicitly and keep the evidence gate at `search_required` or
+   `partial_analysis_allowed` unless local evidence is already sufficient.
+3. Log every meaningful search in `templates/acquisition/search_log.csv` (columns:
+   search_id,gap_id,query,tool_or_location,date,results_reviewed,candidates_selected,notes).
+   Useful query shapes: `<object> <check> design manual pdf official`; `<standard> <clause/table>
+   <topic>`; `<agency> <topic> design guide`; `<calc type> worked example <code/version>`. Iterate:
+   after a candidate is found, search again by its title/publisher/clause identifiers/version to
+   find better primary sources or worked examples.
+4. Screen each candidate and record it in `templates/acquisition/candidate_sources.csv` (columns:
+   candidate_id,title,publisher,source_type,version_or_date,jurisdiction,url_or_location,
+   access_date,authority_level,relevance_score,gaps_covered,recommended_action,limitations,
+   license_or_access_notes). Recommended actions: persist_raw | persist_source_card_only |
+   use_for_background_only | reject | needs_user_access | needs_purchase_or_license |
+   needs_confirmation.
+5. Rank by authority hierarchy (canonical list lives in skill 04; reuse it, do not redefine).
+6. Record retrieval decisions in `templates/acquisition/retrieval_decisions.csv` (columns:
+   decision_id,candidate_id,decision,reason,local_target,raw_allowed,source_card_required,
+   extraction_required,follow_up) before any persistence.
+7. Update `source_coverage_matrix.csv` with newly covered gaps.
 
-Prefer sources in this order unless the user states a different authority hierarchy:
+## Copyright & access
 
-```text
-1. project-specific contractual requirements and design basis
-2. governing codes, standards, national annexes, client standards
-3. official code commentaries or recognized agency design manuals
-4. official technical guidance from ministries, agencies, institutes, or standards bodies
-5. approved historical calculation books or verified legacy spreadsheets
-6. published worked examples from reliable technical sources
-7. textbooks, peer-reviewed papers, university notes, manufacturer technical manuals
-8. independent hand calculations
-9. internal design notes
-10. unverified web pages, forums, AI summaries, or unknown sources
-```
+Follow `shared/copyright-and-access-policy.md`. Do not bypass paywalls/login/copy-protection/
+subscriptions/licensing. Save full copyrighted standards/textbooks/papers only when the user
+provides or explicitly authorizes them; otherwise store bibliographic metadata + source card +
+short compliant excerpts + clause/table/equation identifiers + access instructions only.
 
-## Search Strategy
-
-For each gap, define:
-
-```text
-search objective
-required facts or tables
-jurisdiction and language
-preferred publisher or authority
-essential keywords
-alternative keywords
-source acceptance criteria
-rejection criteria
-```
-
-## Web Search Tool Requirement
-
-When an internet search or browser/search tool is available, use it actively for this stage. Do not rely only on model memory, embedded knowledge, or the user's short description when references are absent, incomplete, stale, jurisdiction-specific, or version-sensitive.
-
-For each critical or high-importance gap:
+## Artifacts
 
 ```text
-run targeted web searches
-try multiple query formulations
-prefer official domains, standards bodies, agencies, ministries, publishers, or recognized technical institutions
-open and inspect promising primary sources when the tool supports it
-cross-check candidate authority, version/year, jurisdiction, and applicability
-record every meaningful search in search_log.csv
-record selected and rejected candidates in candidate_sources.csv
-record retrieval decisions before persistence
+references/acquisition/search_log.csv             (templates/acquisition/search_log.csv)
+references/acquisition/candidate_sources.csv      (templates/acquisition/candidate_sources.csv)
+references/acquisition/retrieval_decisions.csv    (templates/acquisition/retrieval_decisions.csv)
+references/acquisition/source_coverage_matrix.csv (updated)
+references/acquisition/acquisition_notes.md       (templates/acquisition/acquisition_notes.md)
 ```
 
-If the internet search tool is unavailable, explicitly state that limitation, use only local/user-provided materials, and keep the evidence gate at `search_required` or `partial_analysis_allowed` unless the local evidence is already sufficient.
+## Exit gate
 
-Prefer targeted queries such as:
-
-```text
-<engineering object> <check> design manual pdf official
-<standard/code name> <clause/table/equation> <topic>
-<agency/ministry> <topic> design guide
-<calculation type> worked example <code/version>
-```
-
-Use iterative search. After finding a candidate source, search again by its title, publisher, clause/table/equation identifiers, version/year, and related official manuals to find better primary sources or worked examples.
-
-## Screening Criteria
-
-For each candidate source, record:
-
-```text
-candidate_id
-title
-publisher / author
-source_type
-url_or_location
-access_date
-version_or_date
-jurisdiction
-relevance_score
-authority_level
-coverage_tags
-gaps_covered
-limitations
-license_or_access_notes
-recommended_action
-```
-
-Recommended actions:
-
-```text
-persist_raw
-persist_source_card_only
-use_for_background_only
-reject
-needs_user_access
-needs_purchase_or_license
-needs_confirmation
-```
-
-## Copyright and Access Rules
-
-Do not bypass paywalls, login requirements, copy protection, subscription systems, or licensing restrictions.
-
-Do not save full copyrighted standards, textbooks, or papers unless the user provides them or explicitly confirms authorization.
-
-For restricted sources, save only:
-
-```text
-bibliographic information
-source card
-short compliant excerpt if needed
-clause/table/equation identifiers
-summary of relevance
-access instructions
-```
-
-## Required Output Artifacts
-
-```text
-references/acquisition/search_log.csv
-references/acquisition/candidate_sources.csv
-references/acquisition/retrieval_decisions.csv
-references/acquisition/source_coverage_matrix.csv
-references/acquisition/acquisition_notes.md
-```
-
-## Search Log Columns
-
-```text
-search_id,gap_id,query,tool_or_location,date,results_reviewed,candidates_selected,notes
-```
-
-## Candidate Source Columns
-
-```text
-candidate_id,title,publisher,source_type,version_or_date,jurisdiction,url_or_location,access_date,authority_level,relevance_score,gaps_covered,recommended_action,limitations,license_or_access_notes
-```
-
-## Retrieval Decision Columns
-
-```text
-decision_id,candidate_id,decision,reason,local_target,raw_allowed,source_card_required,extraction_required,follow_up
-```
-
-## Required Final Response
-
-Provide:
-
-```text
-searches performed
-best sources found
-sources rejected and why
-which gaps are now covered
-which gaps remain
-what will be persisted locally
-whether analysis can proceed
-```
+Critical gaps have source candidates or recorded blockers. See `shared/lifecycle.md` row 02. Next
+path: 03 to persist the selected sources.

@@ -11,12 +11,13 @@ export interface ProcessResult {
 export async function runProcess(
   command: string,
   args: string[],
-  options: { cwd: string; timeoutMs?: number },
+  options: { cwd: string; timeoutMs?: number; env?: NodeJS.ProcessEnv },
 ): Promise<ProcessResult> {
   return await new Promise((resolve) => {
     let settled = false;
     const child = spawn(command, args, {
       cwd: options.cwd,
+      env: options.env ? { ...process.env, ...options.env } : process.env,
       shell: false,
       windowsHide: true,
     });
@@ -85,7 +86,10 @@ export async function runPython(
 
   let lastResult: ProcessResult | undefined;
   for (const candidate of candidates) {
-    const result = await runProcess(candidate.command, candidate.args, options);
+    const result = await runProcess(candidate.command, candidate.args, {
+      ...options,
+      env: { PYTHONDONTWRITEBYTECODE: "1" },
+    });
     if (result.exitCode !== -1) return result;
     lastResult = result;
   }

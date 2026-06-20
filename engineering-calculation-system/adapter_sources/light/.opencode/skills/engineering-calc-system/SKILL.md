@@ -18,7 +18,7 @@ This is an OpenCode wrapper for the root Engineering Calculation System skill pa
 2. Read `../../../skills/00-engineering-calculation-router.skill.md`.
 3. Read only the parent and child skill files selected by the router.
 4. For explicit multi-agent or parallel work, read `../../../shared/multi-agent-orchestration.md` and use `../../../templates/orchestration/`.
-5. Before implementation or release work, read `../../../shared/delivery-contract.md` and `../../../shared/lifecycle-matrix.md`.
+5. Before implementation or release work, read `../../../shared/lifecycle.md` and `../../../shared/lifecycle.md`.
 6. Use `../../../templates/`, `../../../shared/`, and `../../../schemas/` only when generating or validating artifacts.
 
 If relative file loading is unavailable, load the generated `dist/singlefile/engineering-calculation-system.all-in-one.md` release artifact.

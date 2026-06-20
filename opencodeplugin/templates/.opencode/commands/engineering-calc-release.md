@@ -9,7 +9,6 @@ Use the Engineering Calculation System release workflow for:
 $ARGUMENTS
 ```
 
-If available, call `engineering_calc_route` with phase `release`.
+If available, call `engineering_calc_route` with strict JSON object arguments `{"phase":"release"}`.
 
 Verify the release includes local run instructions, environment configuration, health checks, Linux deployment files when applicable, release checklist, smoke evidence, and proof that the delivery is not a static HTML-only artifact.
-

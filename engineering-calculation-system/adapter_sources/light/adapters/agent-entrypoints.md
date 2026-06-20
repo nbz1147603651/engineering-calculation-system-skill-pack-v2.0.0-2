@@ -30,8 +30,8 @@ templates/orchestration/merge_review.md
 For implementation or release work, also load:
 
 ```text
-shared/delivery-contract.md
-shared/lifecycle-matrix.md
+shared/lifecycle.md
+shared/lifecycle.md
 ```
 
 Before implementing, declare `core-only`, `report-only`, `prototype-web`, or
@@ -216,8 +216,8 @@ Start with SKILL.md and skills/00-engineering-calculation-router.skill.md.
 Do not load all child skills at once. Load only the parent and child skills selected by the router.
 During 02-reference-discovery-and-acquisition, use available internet search/browser tools actively for missing, insufficient, stale, or jurisdiction-specific references, and log meaningful searches in references/acquisition/search_log.csv.
 Use templates/ for output artifacts and scripts/validate_artifacts.py before considering the work complete.
-For implementation or release work, read shared/delivery-contract.md.
-Also read shared/lifecycle-matrix.md.
+For implementation or release work, read shared/lifecycle.md.
+Also read shared/lifecycle.md.
 Declare delivery mode before implementation: core-only, report-only, prototype-web, or web-complete. Default to web-complete.
 For web-complete, follow 08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14.
 For web-complete, deliver both a readable calculation book with non-empty BookResult.checks and a complete web system with API/UI, import/export, batch, deployment, and smoke tests.

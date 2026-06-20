@@ -8,9 +8,15 @@
     "parent/engineering-calculation-logic-architecture.skill.md",
     "parent/engineering-calculation-book.skill.md",
     "shared/multi-agent-orchestration.md",
-    "shared/delivery-contract.md",
-    "shared/lifecycle-matrix.md",
-    "shared/quality-gates.md",
+    "shared/lifecycle.md",
+    "shared/copyright-and-access-policy.md",
+    "shared/unit-convention.md",
+    "shared/id-convention.md",
+    "shared/status-semantics.md",
+    "shared/result-path-convention.md",
+    "shared/file-naming-convention.md",
+    "shared/handoff-contract-template.yaml",
+    "shared/artifact-index-template.yaml",
     "templates/acquisition/open_reference_questions.md",
     "templates/acquisition/acquisition_notes.md",
     "templates/analysis/source_intake_notes.md",
@@ -213,56 +219,67 @@
   },
   "text_required_phrases": {
     "skills/12-report-review-batch-interfaces.skill.md": [
-      "Interface Subskills",
-      "Required Interface Decision Record",
-      "Report Status Labels"
+      "12a-report-context-and-rendering",
+      "12b-frontend-and-review-interfaces",
+      "12c-batch-import-export-packages",
+      "interface decision",
+      "report status"
     ],
     "skills/12a-report-context-and-rendering.skill.md": [
-      "Report Production Decision",
-      "Report Status",
-      "Production Minimum",
-      "Template Boundaries",
-      "LaTeX and Overleaf-Compatible Export",
-      "Automatic Report Output Decision",
-      "A4 HTML Calculation Report",
+      "ReportContext",
+      "template boundaries",
+      "latexmk",
+      "pdflatex",
+      "main.pdf",
+      "@page size: A4",
       "GET /api/report/templates",
-      "latex_template_id"
+      "latex_template_id",
+      "POST /api/report/final",
+      "default_engineering_calcbook"
     ],
     "skills/12b-frontend-and-review-interfaces.skill.md": [
-      "Primary Frontend Format",
-      "Prioritize operator quality and convenience",
-      "Unified Frontend Layout",
-      "Form and API Contract",
-      "Static HTML Delivery Guard",
-      "Low-Freedom UI Kit",
-      "Marimo Review Apps",
-      "Chinese/English language switch",
-      "localStorage or equivalent persisted language preference"
+      "create_app()",
+      "GET /health",
+      "form_to_model",
+      "result_to_ui",
+      "data-i18n",
+      "/api/i18n/<lang>",
+      "Marimo",
+      "ui_design_system.md",
+      "sanitize"
     ],
     "skills/12c-batch-import-export-packages.skill.md": [
-      "Managed Data Area",
-      "Upload Package Flow",
-      "Batch Flow"
+      "data/staging/",
+      "run_book",
+      "batch_control.csv",
+      "data_package_manifest.yaml",
+      "BookResult"
     ],
     "skills/14-cloud-web-release-deployment.skill.md": [
-      "Release Targets",
-      "Production Web Minimum",
-      "Static HTML Delivery Guard",
-      "Linux Deployment Rules"
+      "create_app()",
+      "GET /health",
+      "run_book()",
+      "module_asset_registry.csv",
+      "gunicorn",
+      "/admin/review/",
+      "release_checklist.md"
     ],
     "skills/07-implementation-handoff-contract.skill.md": [
-      "Delivery Contract Rule",
-      "Semantic Gate Validation",
       "runtime_stack",
       "backend_api_contract",
       "frontend_contract",
       "operator_workflow_contract",
-      "release_contract"
+      "release_contract",
+      "coding_gate",
+      "production_allowed",
+      "implementation_handoff.yaml"
     ],
     "skills/10-reusable-calculation-modules.skill.md": [
-      "Primary Runtime",
       "Python 3.9+",
-      "Python wrapper"
+      "Python wrapper",
+      "module_asset_registry.csv",
+      "stable public function",
+      "formula-registry"
     ],
     "templates/handoff/coding_go_no_go.md": [
       "status:",
@@ -393,48 +410,30 @@
       "Cloud Linux deployment path",
       "Chinese/English switching"
     ],
-    "shared/quality-gates.md": [
-      "Semantic production gate",
-      "Report production gate",
-      "report production decision recorded",
-      "automatic report output decision",
-      "main.pdf",
-      "@page size: A4",
-      "Release and deployment gate"
-    ],
-    "shared/delivery-contract.md": [
-      "Delivery Mode Declaration",
-      "Web-Complete Minimum",
-      "shared/lifecycle-matrix.md",
-      "dual closure",
-      "BookResult.checks",
-      "coding_gate.status=production_allowed",
-      "Completion Guard",
-      "LaTeX/Overleaf-compatible report package export",
-      "POST /api/report/final",
-      "GET /api/report/decision",
-      "reusable UI kit assets",
-      "Installation Shape Check",
-      "--delivery web-complete",
-      "interactive Chinese/English UI switching"
-    ],
-    "shared/lifecycle-matrix.md": [
-      "Engineering Calculation Lifecycle Matrix",
+    "shared/lifecycle.md": [
+      "Engineering Calculation Lifecycle",
+      "Delivery Mode",
+      "Non-Negotiable Rules",
+      "Gate Statuses",
+      "Step / Gate Matrix",
+      "End-of-Step Rule",
       "Web-Complete Exit Gate",
-      "coding_gate.status=production_allowed",
+      "dual closure",
+      "coding_gate.status = production_allowed",
       "BookResult.checks",
-      "scripts/validate_artifacts.py --delivery web-complete"
+      "scripts/validate_artifacts.py --delivery web-complete",
+      "run_book(book_input: BookInput) -> BookResult"
     ],
     "SKILL.md": [
-      "shared/lifecycle-matrix.md",
+      "shared/lifecycle.md",
       "web-complete` means dual closure"
     ],
     "skills/00-engineering-calculation-router.skill.md": [
-      "shared/lifecycle-matrix.md",
+      "shared/lifecycle.md",
       "do not route around 12a"
     ],
     "parent/engineering-calculation-book.skill.md": [
-      "shared/lifecycle-matrix.md",
+      "shared/lifecycle.md",
       "dual closure"
     ],
     "shared/multi-agent-orchestration.md": [

@@ -5,121 +5,45 @@ description: Intake engineering source materials or a local evidence library, as
 
 # Source Intake and Authority
 
-Use this skill as the first analysis-stage skill after evidence acquisition or direct user upload.
+## When to use
 
-## Goal
-
-Turn references into a reliable source inventory that downstream logic extraction can cite.
+First analysis-stage skill, after evidence acquisition or direct user upload. Turn references into
+a reliable source inventory that downstream logic extraction can cite.
 
 ## Inputs
 
-Prefer reading these artifacts if available:
+Prefer reading `references/source_registry.yaml`, `evidence_library_manifest.yaml`,
+`acquisition/acquisition_handoff.yaml`, `references/raw/`, `references/extracted/`,
+`references/source_cards/`. If no local evidence library exists, use uploaded materials directly
+and create equivalent inventory artifacts.
 
-```text
-references/source_registry.yaml
-references/evidence_library_manifest.yaml
-references/acquisition/acquisition_handoff.yaml
-references/raw/
-references/extracted/
-references/source_cards/
-```
+## Steps
 
-If no local evidence library exists, use uploaded materials directly and create equivalent source inventory artifacts.
+1. Assign or verify stable source IDs (`shared/id-convention.md`).
+2. For each source, record in `source_inventory.yaml`: source_id, source_name, source_type,
+   version_or_date, jurisdiction_or_project, role_in_analysis, priority, authority_level,
+   reliability_notes, scope_of_applicability, known_limitations, local_path_or_source_card.
+3. Rank by authority hierarchy (canonical — referenced by skills 02 etc., not redefined there):
+   1 project-specific contractual requirement; 2 governing design code/standard; 3 official code
+   commentary or nationally recognized design manual; 4 project-approved calculation basis;
+   5 published worked example from reliable source; 6 verified historical calculation report;
+   7 legacy spreadsheet; 8 internal design note; 9 engineering assumption; 10 unknown/unverified.
+   Follow a user-specified order if given.
+4. Record conflicts in `source_conflicts.csv`: conflict_id, affected formula/coefficient/branch/
+   assumption, source A method, source B method, engineering consequence, recommended resolution,
+   whether it blocks analysis or coding.
+5. Write intake notes in `templates/analysis/source_intake_notes.md`.
 
-## Source Inventory Contract
-
-Assign or verify stable source IDs:
-
-```text
-S01, S02, S03
-CODE-01
-MANUAL-01
-EXCEL-01
-REPORT-01
-NOTE-01
-```
-
-For each source, record:
-
-```text
-source_id
-source_name
-source_type
-version_or_date
-jurisdiction_or_project
-role_in_analysis
-priority
-authority_level
-reliability_notes
-scope_of_applicability
-known_limitations
-local_path_or_source_card
-```
-
-## Authority Hierarchy
-
-Default priority order:
-
-```text
-1. project-specific contractual requirement
-2. governing design code or standard
-3. official code commentary or nationally recognized design manual
-4. project-approved calculation basis
-5. published worked example from reliable source
-6. verified historical calculation report
-7. legacy spreadsheet
-8. internal design note
-9. engineering assumption
-10. unknown source or unverified material
-```
-
-If the user specifies a different order, follow it.
-
-## Conflict Inventory
-
-When sources conflict, record:
-
-```text
-conflict_id
-affected formula, coefficient, branch, or assumption
-source A method
-source B method
-engineering consequence
-recommended resolution
-whether it blocks analysis or coding
-```
-
-## Required Output Artifacts
+## Artifacts
 
 ```text
 analysis/01_source_inventory/source_inventory.yaml
 analysis/01_source_inventory/source_authority_table.csv
 analysis/01_source_inventory/source_conflicts.csv
-analysis/01_source_inventory/source_intake_notes.md
+analysis/01_source_inventory/source_intake_notes.md   (templates/analysis/source_intake_notes.md)
 ```
 
-## Quality Gate
+## Exit gate
 
-Before passing to logic blueprint, verify:
-
-```text
-sources are identified
-source IDs are stable
-version/year and jurisdiction are captured where available
-authority ranking is explicit
-project-specific sources are distinguished from generic sources
-source cards or local paths are available
-conflicts and gaps are visible
-```
-
-## Required Final Response
-
-Provide:
-
-```text
-source inventory summary
-authority ranking
-conflicts found
-gaps remaining
-whether logic blueprint can proceed
-```
+Sources are trusted or conflicts block work; authority ranking is explicit; source IDs are stable.
+See `shared/lifecycle.md` row 04. Next path: 05 for the logic blueprint.

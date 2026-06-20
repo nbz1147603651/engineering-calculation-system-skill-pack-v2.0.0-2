@@ -27,8 +27,8 @@ templates/orchestration/merge_review.md
 For implementation or release work, read:
 
 ```text
-shared/delivery-contract.md
-shared/lifecycle-matrix.md
+shared/lifecycle.md
+shared/lifecycle.md
 ```
 
 If the install lacks `skills/`, `shared/`, `templates/`, `schemas/`,

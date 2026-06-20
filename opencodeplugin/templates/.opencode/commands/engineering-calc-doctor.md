@@ -6,7 +6,7 @@ agent: build
 Run the OpenCode plugin doctor if available:
 
 ```text
-engineering_calc_doctor profile=core validate=true
+engineering_calc_doctor {"mode":"verbose","validate":true}
 ```
 
 If the plugin tool is unavailable, inspect these paths manually:

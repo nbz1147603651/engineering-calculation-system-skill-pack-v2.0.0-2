@@ -5,134 +5,67 @@ description: Route and govern report, frontend, review, API, import/export, uplo
 
 # Report, Review, Batch, and Interface Router
 
-Use this skill after `run_book()` and `BookResult` exist or are specified.
+## When to use
 
-This skill selects the correct interface subskill and enforces the shared interface rules. Load only the subskill needed by the user request.
+After `run_book()` and `BookResult` exist or are specified (skill 11). This skill selects the
+correct interface subskill and enforces the shared interface rules. Load only the subskill needed
+by the user request. When the interface must become a deployable online web calculator, route to
+skill 14 after frontend/API verification.
 
-When the interface must become a deployable online web calculator, route to Skill 14 after frontend/API verification.
+## Core principle
 
-## Core Principle
+Interfaces consume trusted calculation outputs; they do not become calculation engines. The
+formula-placement rule, the `run_book(BookInput) -> BookResult` contract, and the static-HTML
+guard all live in `shared/lifecycle.md` (single source — do not restate).
 
-Interfaces consume trusted calculation outputs. They do not become calculation engines.
-
-Never place engineering formulas, lookup rules, branch decisions, load-combination logic, or independent pass/fail decisions in:
-
-```text
-UI code
-frontend JavaScript
-review notebooks
-report templates
-batch scripts
-CSV/XLSX input files
-presentation-only code
-```
-
-All official paths must call:
-
-```python
-run_book(BookInput) -> BookResult
-```
-
-## Interface Subskills
-
-Select one or more:
+## Step 1 — select subskill(s)
 
 ```text
-12a-report-context-and-rendering
-  Use for ReportContext design, report production decisions, renderer choice, templates, preview, HTML/LaTeX/PDF/DOCX/XLSX/JSON exports, report status, and template boundaries.
-
-12b-frontend-and-review-interfaces
-  Use for production web UI, form-to-model mapping, API route shape, frontend JavaScript structure, i18n, charts, numeric sanitization, and Marimo review apps.
-
-12c-batch-import-export-packages
-  Use for managed data areas, report import, upload packages, import/export manifests, hashes, package validation, CLI/API batch runs, and batch summaries.
-
-14-cloud-web-release-deployment
-  Use after 12b and 13 when the user expects a runnable local and cloud-deployable online web calculator.
+12a-report-context-and-rendering        ReportContext design, report-production decisions, renderer
+                                        choice, templates, preview, HTML/LaTeX/PDF/DOCX/XLSX/JSON
+                                        exports, report status, template boundaries.
+12b-frontend-and-review-interfaces      Production web UI, form-to-model mapping, API route shape,
+                                        frontend JS structure, i18n, charts, numeric sanitization,
+                                        Marimo review apps.
+12c-batch-import-export-packages        Managed data areas, report import, upload packages,
+                                        import/export manifests, hashes, package validation,
+                                        CLI/API batch runs, batch summaries.
+14-cloud-web-release-deployment         After 12b and 13, when a runnable local + cloud-deployable
+                                        online web calculator is expected.
 ```
 
-If the request spans all three families, read them in this order:
+If the request spans all three families, read in this order: `12a -> 12b -> 12c -> 13 -> 14`.
+
+## Step 2 — record the interface decision
+
+Before implementation, record: requested interface family; consumed BookInput/BookResult/
+ReportContext; runner entrypoint; source of saved input/result; report/interface status; chosen
+templates or UI pattern; import/export or batch scope; release/deployment scope when final web
+delivery is expected; verification method; known limitations; selected subskills.
+
+## Shared interface contract (every family preserves)
+
+BookInput path mapping; BookResult/ReportContext result paths; source basis and limitations;
+warnings, errors, assumptions, prototype status; input hash and result hash when persisted; runner
+version and report/template version when available; stable export paths; smoke tests for each
+user-facing path.
+
+## Report status labels
+
+`draft | review | final | superseded | prototype | not_for_construction`. Do not label an output
+`final` unless the coding gate allows production, the source basis is sufficient, the output is
+generated from saved final input or trusted saved `BookResult`, and verification has passed.
+
+## Templates available
 
 ```text
-12a -> 12b -> 12c -> 13 -> 14 when final web release is expected
-```
-
-## Shared Interface Contract
-
-Every interface family must preserve:
-
-```text
-BookInput path mapping
-BookResult or ReportContext result paths
-source basis and limitations
-warnings, errors, assumptions, and prototype status
-input hash and result hash when persisted
-runner version and report/template version when available
-stable export paths
-smoke tests for each user-facing path
-```
-
-## Report Status Labels
-
-Use explicit status:
-
-```text
-draft
-review
-final
-superseded
-prototype
-not_for_construction
-```
-
-Do not label a report or interface output `final` unless the coding gate allows production work, the source basis is sufficient, the output is generated from saved final input or trusted saved `BookResult`, and verification has passed.
-
-## Required Interface Decision Record
-
-Before implementation, record:
-
-```text
-requested interface family
-consumed BookInput / BookResult / ReportContext
-runner entrypoint
-source of saved input/result
-report or interface status
-chosen templates or UI pattern
-import/export or batch scope
-release/deployment scope when final web delivery is expected
-verification method
-known limitations
-selected subskills
-```
-
-Use templates from:
-
-```text
-templates/implementation/input_mapping_spec.md
-templates/implementation/ui_layout_spec.md
-templates/implementation/ui_design_system.md
-templates/implementation/report_context_spec.md
-templates/implementation/latex_report_spec.md
-templates/implementation/import_export_contract.md
-templates/implementation/marimo_review_spec.md
-templates/implementation/batch_flow.md
+templates/implementation/{input_mapping_spec, ui_layout_spec, ui_design_system, report_context_spec,
+  latex_report_spec, import_export_contract, marimo_review_spec, batch_flow}.md
 templates/implementation/data_package_manifest.yaml
-templates/deployment/cloud_linux_deployment.md
-templates/deployment/release_checklist.md
+templates/deployment/{cloud_linux_deployment, release_checklist}.md
 ```
 
-## Required Final Response
+## Exit gate
 
-Provide:
-
-```text
-selected interface subskills
-which runner is called
-which BookInput, BookResult, or ReportContext is consumed
-status and production eligibility
-proof that formulas are not in UI/report/Marimo/batch
-created or updated artifact paths
-smoke test or validation command
-release/deployment command when final web delivery is expected
-remaining limitations
-```
+Required subskills are selected; every interface is a thin layer over `run_book`. See
+`shared/lifecycle.md` row 12. Next path: the selected subskill(s), then 13.

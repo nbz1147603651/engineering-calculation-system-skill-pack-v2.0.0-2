@@ -30,6 +30,8 @@ export const REQUIRED_SKILL_PATHS = [
   "SKILL.md",
   "skills/00-engineering-calculation-router.skill.md",
   "shared/quality-gates.md",
+  "shared/delivery-contract.md",
+  "shared/lifecycle-matrix.md",
   "shared/multi-agent-orchestration.md",
   "templates/orchestration/parallel_work_plan.yaml",
   "templates/orchestration/agent_result_packet.yaml",

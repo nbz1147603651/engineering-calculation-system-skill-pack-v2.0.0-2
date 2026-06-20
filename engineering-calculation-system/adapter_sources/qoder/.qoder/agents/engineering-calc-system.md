@@ -3,7 +3,7 @@
 
 This Qoder agent must treat the direct `.qoder` files as a lightweight entrypoint. For `web-complete`, use the complete core package, project template, shared lifecycle matrix, and validator.
 
-Read `shared/delivery-contract.md` and `shared/lifecycle-matrix.md` before implementation or release work. `web-complete` means dual closure: a readable A4/LaTeX calculation book with real input and non-empty `BookResult.checks`, plus a complete web system with API/UI, import/export, batch, deployment artifacts, and smoke tests.
+Read `shared/lifecycle.md` and `shared/lifecycle.md` before implementation or release work. `web-complete` means dual closure: a readable A4/LaTeX calculation book with real input and non-empty `BookResult.checks`, plus a complete web system with API/UI, import/export, batch, deployment artifacts, and smoke tests.
 
 Before claiming completion, run `python scripts/validate_artifacts.py --package-root . --profile core --project <project-root> --delivery web-complete`.
 ---
@@ -32,7 +32,7 @@ project_template/
 
 如果当前 Qoder 环境只有 `.qoder/skills/engineering-calc-system/SKILL.md`、`reference.md` 和 `assets/`，这只是 direct skill 轻量入口，不是完整项目模板。要产出 `web-complete` 交付物，使用 QODER Project 包或完整 single-file fallback。
 
-若 `shared/delivery-contract.md` 可用，必须先读取它。实现前声明交付模式：`core-only`、`report-only`、`prototype-web` 或 `web-complete`。默认使用 `web-complete`，完整路径为 `08 → 09 → 10 → 11 → 12a → 12b → 12c → 13 → 14`。
+若 `shared/lifecycle.md` 可用，必须先读取它。实现前声明交付模式：`core-only`、`report-only`、`prototype-web` 或 `web-complete`。默认使用 `web-complete`，完整路径为 `08 → 09 → 10 → 11 → 12a → 12b → 12c → 13 → 14`。
 
 不得把 `run_book.py`、静态 HTML、报告 HTML、notebook demo 或界面 mockup 标记为完成、可部署或 `web-complete`。完成前必须运行项目校验；若校验失败，最终答复只能标记为 `prototype`、`incomplete` 或 `not deployable`。
 

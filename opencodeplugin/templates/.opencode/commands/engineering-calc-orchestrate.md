@@ -9,7 +9,7 @@ Use the Engineering Calculation System v2.4.0 orchestration workflow for:
 $ARGUMENTS
 ```
 
-If available, call `engineering_calc_route` with `phase=orchestration` and `parallel=true`, then call `engineering_calc_orchestration` with `artifact=parallel_work_plan`.
+If available, call `engineering_calc_route` with strict JSON object arguments `{"phase":"orchestration","parallel":true}`, then call `engineering_calc_orchestration` with `{"artifact":"parallel_work_plan","phase":"implementation"}`.
 
 Load:
 
@@ -21,4 +21,3 @@ Load:
 ```
 
 The supervisor owns lifecycle routing, gate decisions, source authority, ID allocation, handoff freeze, public runner contract changes, production/release labels, merge review, validation, and final acceptance.
-

@@ -16,6 +16,8 @@ import sys
 from pathlib import Path
 
 
+sys.dont_write_bytecode = True
+
 FRONTMATTER_RE = re.compile(r"^---\n(?P<body>.*?)\n---\n", re.DOTALL)
 YAML_KEY_RE = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*):")
 
@@ -964,12 +966,12 @@ def validate_adapters_light_profile(package_root: Path) -> list[str]:
     check_text_required_phrases(
         package_root,
         {
-            "AGENTS.md": ["Chinese/English interactive UI switch", "shared/lifecycle-matrix.md", "dual closure"],
-            "adapters/agent-entrypoints.md": ["Chinese/English switching", "shared/lifecycle-matrix.md", "dual closure"],
-            ".agents/skills/engineering-calc-system/SKILL.md": ["Chinese/English interactive UI switch", "lifecycle-matrix.md", "dual closure"],
-            ".opencode/skills/engineering-calc-system/SKILL.md": ["Chinese/English interactive UI switch", "lifecycle-matrix.md", "dual closure"],
-            ".trae/project_rules.md": ["Chinese/English interactive UI switch", "shared/lifecycle-matrix.md", "dual closure"],
-            ".trae/rules/engineering-calc-system.md": ["Chinese/English interactive UI switch", "shared/lifecycle-matrix.md", "dual closure"],
+            "AGENTS.md": ["Chinese/English interactive UI switch", "shared/lifecycle.md", "dual closure"],
+            "adapters/agent-entrypoints.md": ["Chinese/English switching", "shared/lifecycle.md", "dual closure"],
+            ".agents/skills/engineering-calc-system/SKILL.md": ["Chinese/English interactive UI switch", "lifecycle.md", "dual closure"],
+            ".opencode/skills/engineering-calc-system/SKILL.md": ["Chinese/English interactive UI switch", "lifecycle.md", "dual closure"],
+            ".trae/project_rules.md": ["Chinese/English interactive UI switch", "shared/lifecycle.md", "dual closure"],
+            ".trae/rules/engineering-calc-system.md": ["Chinese/English interactive UI switch", "shared/lifecycle.md", "dual closure"],
         },
         errors,
     )
@@ -999,9 +1001,9 @@ def validate_qoder_addon_profile(package_root: Path) -> list[str]:
     check_text_required_phrases(
         package_root,
         {
-            ".qoder/skills/engineering-calc-system/SKILL.md": ["Stable ASCII Contract", "shared/lifecycle-matrix.md", "dual closure"],
+            ".qoder/skills/engineering-calc-system/SKILL.md": ["Stable ASCII Contract", "shared/lifecycle.md", "dual closure"],
             ".qoder/skills/engineering-calc-system/reference.md": ["/api/i18n/<lang>"],
-            ".qoder/agents/engineering-calc-system.md": ["Stable ASCII Contract", "shared/lifecycle-matrix.md", "dual closure"],
+            ".qoder/agents/engineering-calc-system.md": ["Stable ASCII Contract", "shared/lifecycle.md", "dual closure"],
             ".qoder/agents/reference.md": ["/api/i18n/<lang>"],
         },
         errors,
@@ -1026,8 +1028,8 @@ def validate_singlefile_profile(package_root: Path) -> list[str]:
             "## SKILL.md",
             "## skills/00-engineering-calculation-router.skill.md",
             "## shared/multi-agent-orchestration.md",
-            "## shared/delivery-contract.md",
-            "## shared/lifecycle-matrix.md",
+            "## shared/lifecycle.md",
+            "## shared/copyright-and-access-policy.md",
         ]:
             if phrase not in text:
                 errors.append(f"singlefile output missing phrase: {phrase!r}")

@@ -45,7 +45,6 @@
     "parent/",
     "skills/",
     "shared/",
-    "shared/delivery-contract.md",
     "templates/",
     "schemas/",
     "scripts/validate_artifacts.py",

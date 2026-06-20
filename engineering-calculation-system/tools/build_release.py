@@ -531,11 +531,10 @@ If your MiniMax Code / Mavis build reports a different user skill root, use the 
 
 ## Delivery Contract
 
-For implementation or release work, the skill must use both:
+For implementation or release work, the skill must use:
 
 ```text
-shared/delivery-contract.md
-shared/lifecycle-matrix.md
+shared/lifecycle.md
 ```
 
 `web-complete` means dual closure: a readable A4/LaTeX calculation book with
@@ -577,7 +576,7 @@ python skills/engineering-calculation-system/scripts/validate_artifacts.py --pac
 
 This ASCII guide replaces the previous encoded Chinese fallback to avoid mojibake in strict package validation.
 
-Use `skills/engineering-calculation-system/SKILL.md` as the skill entrypoint. For implementation or release work, load `shared/delivery-contract.md` and `shared/lifecycle-matrix.md`.
+Use `skills/engineering-calculation-system/SKILL.md` as the skill entrypoint. For implementation or release work, load `shared/lifecycle.md`.
 
 `web-complete` means dual closure: a readable A4/LaTeX calculation book with real input and non-empty `BookResult.checks`, plus a complete web system with API/UI, import/export, batch, deployment artifacts, and smoke tests.
 
@@ -628,7 +627,7 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
                 "QODER-Project",
                 "web-complete",
                 "Stable ASCII Contract",
-                "shared/lifecycle-matrix.md",
+                "shared/lifecycle.md",
                 "dual closure",
             ],
             context=context,
@@ -642,7 +641,7 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
                 "README.md",
                 "README_zh.md",
                 "skills/engineering-calculation-system/SKILL.md",
-                "skills/engineering-calculation-system/shared/lifecycle-matrix.md",
+                "skills/engineering-calculation-system/shared/lifecycle.md",
                 "skills/engineering-calculation-system/scripts/validate_artifacts.py",
                 "skills/engineering-calculation-system/project_template/engineering_calc_project/src/pkg/core/capabilities.py",
             ],
@@ -652,8 +651,7 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
             payload_root / "skills/engineering-calculation-system/SKILL.md",
             [
                 "name: engineering-calculation-system",
-                "shared/delivery-contract.md",
-                "shared/lifecycle-matrix.md",
+                "shared/lifecycle.md",
                 "dual closure",
                 "run_book(BookInput) -> BookResult",
             ],
@@ -666,7 +664,7 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
                 "Import from Github",
                 "%USERPROFILE%\\.mavis\\skills\\engineering-calculation-system\\",
                 "skills/engineering-calculation-system/SKILL.md",
-                "shared/lifecycle-matrix.md",
+                "shared/lifecycle.md",
                 "dual closure",
                 "BookResult.checks",
             ],
@@ -680,8 +678,7 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
             [
                 "SKILL.md",
                 "skills/00-engineering-calculation-router.skill.md",
-                "shared/delivery-contract.md",
-                "shared/lifecycle-matrix.md",
+                "shared/lifecycle.md",
                 "templates/implementation/ui_layout_spec.md",
                 "schemas/artifact_contracts.json",
                 "scripts/validate_artifacts.py",
@@ -698,15 +695,15 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
         require_text(
             payload_root / "SKILL.md",
             [
-                "shared/lifecycle-matrix.md",
+                "shared/lifecycle.md",
                 "dual closure",
             ],
             context=context,
         )
         require_text(
-            payload_root / "shared/lifecycle-matrix.md",
+            payload_root / "shared/lifecycle.md",
             [
-                "Engineering Calculation Lifecycle Matrix",
+                "Engineering Calculation Lifecycle",
                 "Web-Complete Exit Gate",
                 "BookResult.checks",
             ],

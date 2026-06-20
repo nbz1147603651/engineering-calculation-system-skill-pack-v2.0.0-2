@@ -9,7 +9,7 @@ Use the Engineering Calculation System implementation handoff workflow for:
 $ARGUMENTS
 ```
 
-If available, call `engineering_calc_route` with phase `implementation-handoff`.
+If available, call `engineering_calc_route` with strict JSON object arguments `{"phase":"implementation-handoff"}`.
 
 Review or create these artifacts before production coding:
 
@@ -20,4 +20,3 @@ handoff/artifact_index.yaml
 ```
 
 Treat unresolved reference gaps, missing traceability, incomplete source authority decisions, or a blocked go/no-go state as coding blockers.
-

@@ -5,129 +5,49 @@ description: Design and implement managed import/export, uploaded calculation pa
 
 # Batch, Import/Export, and Upload Packages
 
-Use this skill when the task involves data packages, imported reports, export bundles, batch runs, or automated case processing.
+## When to use
 
-## Goal
+When the task involves data packages, imported reports, export bundles, batch runs, or automated
+case processing. Make inputs/results/reports/review artifacts portable and repeatable without
+moving formulas into data files or batch scripts. The `run_book()` contract and static-HTML guard
+live in `shared/lifecycle.md`.
 
-Make engineering calculation inputs, results, reports, and review artifacts portable and repeatable without moving formulas into data files or batch scripts.
+## Steps
 
-## Managed Data Area
+1. Set up the managed data area (`templates/implementation/import_export_contract.md`):
+   `data/{input,imported/reports,imported/references,staging,normalized/cases,packages}`;
+   `outputs/{results_json,reports_html,reports_pdf,reports_docx,upload_packages,logs}`.
+2. Implement the upload-package flow: upload ZIP/files → store in `data/staging/` → compute hashes
+   and inspect manifest → classify inputs/reports/references/outputs → normalize accepted inputs
+   into `BookInput` JSON → show validation and diff summary → `run_book` only after case selection
+   or batch approval → save `BookResult` JSON → render requested reports → export package with
+   manifest and hashes. Imported reports are review artifacts (comparison/regression evidence)
+   only — they never inject formulas or override official status.
+3. Implement the batch flow (`templates/implementation/batch_flow.md`): read `batch_control.csv`
+   or package manifest → load case input → validate → `run_book()` → save normalized input JSON →
+   save `BookResult` JSON → render report if requested → write batch summary CSV/HTML → export
+   upload package if requested → write logs.
+4. Enforce manifest & hash rules (`templates/implementation/data_package_manifest.yaml`): every
+   package records package id, schema version, created timestamp, project/book name, input/result/
+   report files + hashes, runner version, template version, source-basis references, validation
+   status, known limitations. Do not accept a package as trusted if required hashes, runner
+   version, source basis, or validation status are missing.
+5. Keep CLI/API endpoints thin: they may load manifests, validate files/hashes, normalize
+   `BookInput`, call `run_book()`, save `BookResult`, render reports, write summaries, export
+   packages. They must NOT implement formulas, recalculate pass/fail, silently override saved
+   final inputs, hide warnings/errors, or treat imported reports as source of truth.
 
-Use a predictable data layout:
-
-```text
-data/input/                  user-provided input files
-data/imported/reports/       prior reports used for review or comparison
-data/imported/references/    allowed project reference files
-data/staging/                uploaded but not yet accepted files
-data/normalized/cases/       normalized BookInput JSON per case
-data/packages/               unpacked upload/export packages
-outputs/results_json/        trusted BookResult JSON
-outputs/reports_html/        generated HTML reports
-outputs/reports_pdf/         generated PDF reports
-outputs/reports_docx/        generated DOCX reports
-outputs/upload_packages/     ZIP or folder packages ready to share/upload
-outputs/logs/                run and validation logs
-```
-
-Use `templates/implementation/import_export_contract.md` and `templates/implementation/data_package_manifest.yaml`.
-
-## Upload Package Flow
-
-Required flow:
-
-```text
-upload ZIP or files
--> store in data/staging/
--> compute hashes and inspect manifest
--> classify inputs, reports, references, and outputs
--> normalize accepted inputs into BookInput JSON
--> show validation and diff summary
--> run_book only after case selection or batch approval
--> save BookResult JSON
--> render requested reports
--> export package with manifest and hashes
-```
-
-Imported reports are review artifacts. They may support comparison or regression evidence, but they must not inject formulas or override official status.
-
-## Batch Flow
-
-Use this sequence:
+## Artifacts
 
 ```text
-read batch_control.csv or package manifest
--> load case input
--> validate
--> run_book()
--> save normalized input JSON
--> save BookResult JSON
--> render report if requested
--> write batch summary CSV/HTML
--> export upload package if requested
--> write logs
+implementation/04_interfaces/import_export_contract.md   (templates/implementation/import_export_contract.md)
+implementation/04_interfaces/batch_flow.md               (templates/implementation/batch_flow.md)
+data/{input,imported,staging,normalized/cases,packages}/...
+outputs/{results_json,reports_*,upload_packages,logs}/...
+data_package_manifest.yaml  (templates/implementation/data_package_manifest.yaml)
 ```
 
-Use `templates/implementation/batch_flow.md`.
+## Exit gate
 
-## Manifest and Hash Rules
-
-Every package should record:
-
-```text
-package id
-schema version
-created timestamp
-project/book name
-input files and hashes
-result files and hashes
-report files and hashes
-runner version
-template version
-source basis references
-validation status
-known limitations
-```
-
-Do not accept a package as trusted if required hashes, runner version, source basis, or validation status are missing.
-
-## CLI/API Rules
-
-Batch CLI and API endpoints may:
-
-```text
-load package manifests
-validate files and hashes
-normalize BookInput JSON
-call run_book()
-save BookResult JSON
-render reports
-write summaries
-export packages
-```
-
-They must not:
-
-```text
-implement formulas
-recalculate pass/fail status
-silently override saved final inputs
-hide warnings/errors
-treat imported reports as source of truth
-```
-
-## Required Final Response
-
-Provide:
-
-```text
-managed data paths
-package manifest fields
-import/export flow
-batch sequence
-hash and trust rules
-created or updated artifacts
-proof that batch/import layers do not calculate
-smoke test
-run command
-```
+Batch uses `run_book` once per case; reproducible inputs exist. See `shared/lifecycle.md` row 12c.
+Next path: 13 for verification.

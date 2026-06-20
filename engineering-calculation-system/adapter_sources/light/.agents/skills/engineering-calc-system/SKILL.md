@@ -26,8 +26,8 @@ Then read only the parent and child skill files selected by the router.
 Before implementation or release work, also read:
 
 ```text
-../../../shared/delivery-contract.md
-../../../shared/lifecycle-matrix.md
+../../../shared/lifecycle.md
+../../../shared/lifecycle.md
 ```
 
 If the package shape does not include `skills/`, `shared/`, `templates/`,

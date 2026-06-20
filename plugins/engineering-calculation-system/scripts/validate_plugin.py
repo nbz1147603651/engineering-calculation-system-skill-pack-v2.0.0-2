@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
@@ -34,6 +35,8 @@ REQUIRED_SKILL_PATHS = [
     "skills/00-engineering-calculation-router.skill.md",
     "shared/codex-plugin-adapter.md",
     "shared/quality-gates.md",
+    "shared/delivery-contract.md",
+    "shared/lifecycle-matrix.md",
     "shared/multi-agent-orchestration.md",
     "templates/orchestration/parallel_work_plan.yaml",
     "templates/orchestration/agent_result_packet.yaml",
@@ -135,7 +138,8 @@ def run_skill_validation(errors: list[str]) -> None:
         "--profile",
         "core",
     ]
-    completed = subprocess.run(command, text=True, capture_output=True)
+    env = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
+    completed = subprocess.run(command, text=True, capture_output=True, env=env)
     if completed.returncode != 0:
         errors.append(
             "bundled skill validation failed:\n"

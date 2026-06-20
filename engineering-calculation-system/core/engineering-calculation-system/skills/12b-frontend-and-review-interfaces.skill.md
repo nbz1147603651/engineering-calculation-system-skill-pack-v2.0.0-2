@@ -5,245 +5,88 @@ description: Build production web UIs, API routes, form-to-model mapping, fronte
 
 # Frontend and Review Interfaces
 
-Use this skill when the user needs an operational UI, API, review notebook, or module review surface.
+## When to use
 
-## Goal
+When the user needs an operational UI, API, review notebook, or module-review surface. Interfaces
+make engineering review efficient while remaining thin over trusted calculation modules. Do not
+strip useful workflow features (input grouping/validation, fast feedback, governing status,
+trace review, report preview/export, import/export, charts, Marimo review) just to keep the
+frontend small — keep formulas out of the UI, but make the UI complete for repeated engineering
+use. The static-HTML guard and `run_book()` contract live in `shared/lifecycle.md`.
 
-Create interfaces that make engineering review efficient while remaining thin over trusted calculation modules.
+## Steps
 
-Prioritize operator quality and convenience:
+1. Pick the frontend format. Default: browser web app served from `webapp/` — Jinja2 shell, Bootstrap
+   5 + `webapp/static/css/style.css`, vanilla JS modules under `webapp/static/js/`, JSON endpoints
+   under `/api/`, server-rendered shell with API-driven interactions. Use React/Vue/SPA only when
+   interaction complexity justifies it and the handoff records build/routing/API/testing/deployment
+   consequences.
+2. Make the web app deployment-ready: `webapp/app.py` or application factory, `create_app()` for
+   gunicorn, `GET /health`, environment-based host/port/secret/debug/data/output paths, local run
+   `python -m webapp.app`, production run `gunicorn "webapp.app:create_app()"`. Report HTML lives
+   under report/export outputs — it is never the application runtime. A single `.html`/exported
+   report/mockup is not a production system; allowed only as an explicit static prototype labeled
+   `prototype`/`draft`/`not_production_ready`.
+3. Apply the unified frontend layout (`templates/implementation/ui_layout_spec.md`) unless an
+   existing product design overrides it: top bar (title, case selector, report status, import/
+   export, report preview, language switch); left input panel (grouped BookInput forms, units,
+   validation, sticky run/save); right review workbench (governing summary, warnings/errors,
+   result tables/cards, charts, source/formula traces); modal/drawer (report preview, imported-
+   report comparison, traces, package validation, input/result diff); status strip (input hash,
+   result hash, runner version, report-template version, package id, timestamp).
+4. Use the low-freedom UI kit (`templates/implementation/ui_design_system.md`) before generating/
+   modifying production UI. Keep `webapp/templates/partials/_topbar.html`, `_report_modal.html`,
+   `webapp/static/css/{tokens,components,style}.css` stable; vary only BookInput fields, BookResult
+   sections, charts, and trace content. Do not replace the standard top bar, input/review split,
+   status strip, report modal, language switch, automatic final-report download, or LaTeX template
+   selector/export action unless the handoff records a justified override.
+5. Build the form/API contract in a dedicated mapping module: `form_to_model(data)->BookInput`,
+   `model_to_form(model)->dict`, `result_to_ui(result)->dict`. Keep route handlers thin, map
+   field-by-field, validate required fields before runner calls, sanitize NaN/Infinity before JSON
+   responses, preserve unit conversion at boundaries only, record decisions in
+   `templates/implementation/form_mapping_spec.md` (and `api_route_skeleton.md`).
+6. Structure frontend JS (`webapp/static/js/`): `forms.js` (collect/populate/reset/validate/
+   dynamic lists), `results.js` (summaries, status badges, utilization bars, trace expansion),
+   `i18n.js` (language switching, `data-i18n` replacement), `main.js` (API calls, events, loading,
+   orchestration). Do not calculate engineering results in JS.
+7. Add i18n when multilingual engineers/clients are served (`templates/implementation/i18n_pattern.md`):
+   single translation dictionary, `data-i18n` attributes, `/api/i18n/<lang>`, visible
+   Chinese/English toggle, persisted preference, `document.documentElement.lang` + `data-lang`
+   update on switch, selected lang included in calculate/report-preview/report-download calls,
+   bilingual chart variants when needed. Use a recursive sanitizer for non-finite numerics
+   (`src/<pkg>/core/sanitize.py`) — display as `--`/`N/A`, preserve warnings.
+8. Generate charts from already-computed `BookResult` values (`templates/implementation/chart_integration.md`,
+   `src/<pkg>/books/<book_name>/charts.py`). Prefer structured `BookResult.charts`/`ChartSpec` with
+   source result paths and recommended locations. Charts visualize; they never calculate, override
+   pass/fail, or do official unit conversion.
+9. Add a Marimo review app when reviewers need module-level inspection, under
+   `apps/review/<book_name>_review.py` and `apps/review/modules/<module_name>_review.py`
+   (`templates/implementation/marimo_review_spec.md`): case/package loader, module selector,
+   editable draft inputs, run module or full `run_book()`, governing result + warnings/errors,
+   input/result diff, formula/source traces, review notes/decision, save draft or module-review
+   log. Label exploratory edits `draft`/`review`/`prototype` until rerun through the official path
+   and verified. Embedded admin review (`templates/implementation/admin_marimo_review_spec.md`):
+   main app at `/`, Marimo at `/admin/review/` as a separate service behind nginx/proxy, shared
+   `data/formula_registry/`, run with `marimo run` (not `edit`), env-provided admin token + HTTPS,
+   declaration-based formula rules only (no arbitrary Python editing), publish only after
+   validation + smoke tests pass.
 
-```text
-clear input grouping and validation
-fast calculation feedback
-visible governing status, warnings, and errors
-source and formula trace review
-report preview and export
-import/export packages for repeatable work
-charts only when they improve engineering judgment
-Marimo review when module-level inspection or formula publishing is valuable
-```
-
-Do not strip useful workflow features just to keep the frontend small. Keep formulas out of the UI, but make the UI comfortable and complete for repeated engineering use.
-
-Recommended interface families:
-
-```text
-production frontend: browser UI for inputs, calculation, report preview, import/export, and review
-Marimo review app: Python-native module inspection, draft edits, traces, and what-if review
-API route layer: thin parse -> model -> run_book -> UI/result conversion endpoints
-```
-
-## Primary Frontend Format
-
-The default frontend is a browser web app served from `webapp/`:
-
-```text
-page shell: Jinja2 templates in webapp/templates/
-styling: Bootstrap 5 plus webapp/static/css/style.css
-JavaScript: vanilla modules in webapp/static/js/
-API style: JSON endpoints under /api/
-interaction model: server-rendered shell with API-driven calculation/review interactions
-```
-
-Use this default format for most calculation books. Use React, Vue, a separate SPA build, or another frontend format when interaction complexity, maintainability, or operator convenience justifies it and the handoff records the build, routing, API, testing, and deployment consequences.
-
-## Deployment-Ready Web App Minimum
-
-For production web delivery, include:
-
-```text
-webapp/app.py or equivalent application factory
-create_app() entrypoint for gunicorn or platform runtime
-GET /health endpoint for deployment smoke tests
-environment-based host, port, secret, debug, data, and output paths
-local run command such as python -m webapp.app
-production run command such as gunicorn "webapp.app:create_app()"
-```
-
-## Static HTML Delivery Guard
-
-A single `.html` file, exported report HTML, or static mockup is not a production web calculation system. It may be delivered only when the user explicitly asks for a static prototype, and then it must be labeled `prototype`, `draft`, or `not_production_ready`.
-
-For production frontend work, the browser page must be backed by the same backend/API path used in tests and deployment: form data maps to `BookInput`, API routes call `run_book()`, and the frontend renders returned `BookResult`/UI data.
-
-Report HTML belongs under report/export outputs. It must not be treated as the application runtime.
-
-## Unified Frontend Layout
-
-Use this layout unless an existing product design overrides it:
-
-```text
-top bar:
-  book/project title, case selector, report status, import/export, report preview, Chinese/English language switch
-
-left input panel:
-  grouped BookInput forms, units, validation feedback, sticky run/save controls
-
-right review workbench:
-  governing summary, warnings/errors, result tables/cards, charts, source traces, formula traces
-
-modal or drawer:
-  report preview, imported report comparison, source trace, formula trace, package validation, input/result diff
-
-status strip:
-  input hash, result hash, runner version, report template version, package id, timestamp
-```
-
-Use `templates/implementation/ui_layout_spec.md`.
-
-## Low-Freedom UI Kit
-
-Use `templates/implementation/ui_design_system.md` before generating or modifying production UI. This is the default constraint layer for Qoder and other code generators.
-
-Keep the global structure, token files, shared partials, and action placement stable. Vary only the BookInput fields, BookResult sections, charts, and trace content required by the calculation book.
-
-Required UI kit assets:
+## Artifacts
 
 ```text
-webapp/templates/partials/_topbar.html
-webapp/templates/partials/_report_modal.html
-webapp/static/css/tokens.css
-webapp/static/css/components.css
-webapp/static/css/style.css
+webapp/{app.py, routes.py, config.py, form_utils.py}
+webapp/templates/{base.html,index.html,partials/_topbar.html,partials/_report_modal.html}
+webapp/static/js/{main,forms,results,i18n}.js
+webapp/static/css/{tokens,components,style}.css
+src/<pkg>/core/sanitize.py
+apps/review/...
+implementation/04_interfaces/{ui_layout_spec,ui_design_system,form_mapping_spec,
+  api_route_skeleton,i18n_pattern,chart_integration,marimo_review_spec,
+  admin_marimo_review_spec,formula_registry_spec}.md  (templates/implementation/)
 ```
 
-Do not replace the standard top bar, input/review split, status strip, report modal, language switch, automatic final report download, or LaTeX template selector/export action unless the implementation handoff explicitly records a justified design-system override.
+## Exit gate
 
-## Form and API Contract
-
-Create explicit conversion functions:
-
-```text
-form_to_model(data: dict) -> BookInput
-model_to_form(model: BookInput) -> dict
-result_to_ui(result: BookResult) -> dict
-```
-
-Rules:
-
-```text
-place conversion in a dedicated mapping module
-keep route handlers thin
-use explicit field-by-field mapping
-validate required fields before runner calls
-sanitize NaN and Infinity before JSON responses
-preserve unit conversion at input/output boundaries only
-record mapping decisions in form_mapping_spec.md
-```
-
-Use `templates/implementation/form_mapping_spec.md` and `templates/implementation/api_route_skeleton.md`.
-
-## Frontend JavaScript
-
-Keep JavaScript focused:
-
-```text
-forms.js: collect, populate, reset, validate, dynamic lists
-results.js: render summaries, status badges, utilization bars, trace expansion
-i18n.js: language switching and data-i18n replacement
-main.js: API calls, event binding, loading states, orchestration
-```
-
-Do not calculate engineering results in JavaScript.
-
-## i18n, Sanitization, and Charts
-
-Use i18n when the project serves multilingual engineers or clients:
-
-```text
-single translation dictionary
-data-i18n attributes
-/api/i18n/<lang> endpoint
-visible Chinese/English toggle in the interactive UI
-localStorage or equivalent persisted language preference
-document.documentElement.lang and data-lang update on every switch
-selected lang included in calculate/report preview/report download calls when backend text can vary
-bilingual chart variants when needed
-```
-
-Use a recursive sanitizer for non-finite numeric values. Display sanitized values as `--` or `N/A` and preserve warnings.
-
-Generate charts from already-computed `BookResult` values. Prefer structured `BookResult.charts` / `ChartSpec` entries built in the book layer, with source result paths and recommended UI/report locations. Charts visualize; they do not calculate, recalculate utilization, override pass/fail status, or perform official unit conversion.
-
-Use:
-
-```text
-templates/implementation/i18n_pattern.md
-templates/implementation/chart_integration.md
-src/<pkg>/books/<book_name>/charts.py
-src/<pkg>/core/sanitize.py or equivalent
-```
-
-## Marimo Review Apps
-
-Use Marimo when reviewers need interactive module-level inspection.
-
-Create apps under:
-
-```text
-apps/review/<book_name>_review.py
-apps/review/modules/<module_name>_review.py
-```
-
-Each review app should expose:
-
-```text
-case/package loader
-module selector
-editable draft inputs
-run selected module or full run_book()
-governing result and warnings/errors
-input/result diff
-formula traces and source references
-review notes and decision
-save draft input or module review log
-```
-
-Label exploratory edits as `draft`, `review`, or `prototype` until saved, rerun through the official path, and verified.
-
-Use `templates/implementation/marimo_review_spec.md`.
-
-## Embedded Admin Review
-
-When Marimo is embedded in the main deployed site, use this production shape:
-
-```text
-main web app at /
-Marimo admin review at /admin/review/
-Marimo runs as a separate service behind nginx or the platform proxy
-shared formula registry at data/formula_registry/
-```
-
-Run Marimo with `marimo run`, not `marimo edit`, in production. Protect it with an environment-provided admin token/password and HTTPS. The admin page may edit declaration-based formula rules, but it must not provide arbitrary Python source editing. Publishing may update production only after validation and smoke tests pass.
-
-Use:
-
-```text
-templates/implementation/admin_marimo_review_spec.md
-templates/implementation/formula_registry_spec.md
-templates/implementation/formula_rule_schema.yaml
-templates/implementation/formula_publish_log.csv
-```
-
-## Required Final Response
-
-Provide:
-
-```text
-layout summary
-UI design system files used
-operator convenience and review-quality decisions
-mapping module and functions
-API route table
-frontend module breakdown
-frontend format and file layout
-i18n/sanitization/chart decisions
-Marimo review scope if used
-embedded admin review route and token strategy if used
-proof that UI and review layers do not calculate
-proof that the delivery is not static-HTML-only when production delivery is expected
-smoke test
-run command
-deployment-ready entrypoint when final delivery is expected
-```
+API/UI calculate through `run_book` and render real results; delivery is not static-HTML-only when
+production delivery is expected. See `shared/lifecycle.md` row 12b. Next path: 12c if batch/
+import-export is needed, else 13.

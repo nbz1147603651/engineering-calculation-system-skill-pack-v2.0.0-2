@@ -28,9 +28,12 @@ const requiredFiles = [
   "templates/.opencode/commands/engineering-calc-status.md",
   "templates/.opencode/commands/engineering-calc-config.md",
   "templates/.opencode/commands/engineering-calc-validate.md",
+  "templates/.opencode/commands/engineering-calc-doctor.md",
   "templates/.opencode/commands/engineering-calc-orchestrate.md",
   "templates/.opencode/commands/engineering-calc-worker-packet.md",
   "templates/.opencode/commands/engineering-calc-merge-review.md",
+  "templates/.opencode/commands/engineering-calc-handoff.md",
+  "templates/.opencode/commands/engineering-calc-release.md",
   "templates/.opencode/agents/engineering-calc-supervisor.md",
   "templates/.opencode/agents/engineering-calc-reference-acquirer.md",
   "templates/.opencode/agents/engineering-calc-source-intake.md",
@@ -45,6 +48,9 @@ const requiredFiles = [
 const requiredSkillFiles = [
   "SKILL.md",
   "skills/00-engineering-calculation-router.skill.md",
+  "shared/quality-gates.md",
+  "shared/delivery-contract.md",
+  "shared/lifecycle-matrix.md",
   "shared/multi-agent-orchestration.md",
   "templates/orchestration/parallel_work_plan.yaml",
   "templates/orchestration/agent_result_packet.yaml",
@@ -127,6 +133,21 @@ async function main() {
   assert(skillTemplate.includes("{{SKILL_ROOT_RELATIVE}}/SKILL.md"), "Skill template placeholder is missing");
   assert(skillTemplate.includes("multi-agent-orchestration.md"), "Skill template missing orchestration contract");
   assert(skillTemplate.includes("templates/orchestration/"), "Skill template missing orchestration templates");
+  assert(skillTemplate.includes("strict JSON object arguments"), "Skill template missing strict JSON tool-call guidance");
+
+  const commandDir = path.join(pluginRoot, "templates/.opencode/commands");
+  const commandTemplates = await Promise.all(
+    readdirSync(commandDir)
+      .filter((entry) => entry.endsWith(".md"))
+      .map(async (entry) => [entry, await fs.readFile(path.join(commandDir, entry), "utf8")]),
+  );
+  const shorthandPattern = /\b(?:phase|artifact|parallel|full|mode|validate|profile)=/;
+  const shorthandMatch = commandTemplates.find(([, text]) => shorthandPattern.test(text));
+  assert(!shorthandMatch, `Command template uses non-JSON tool argument shorthand: ${shorthandMatch?.[0]}`);
+  assert(
+    commandTemplates.some(([, text]) => text.includes("strict JSON object arguments")),
+    "Command templates should include strict JSON tool-call guidance",
+  );
 
   const indexSource = await fs.readFile(path.join(pluginRoot, "src/index.ts"), "utf8");
   assert(indexSource.includes("createPluginModule"), "Index should export the plugin module factory");
@@ -136,6 +157,8 @@ async function main() {
   assert(toolSource.includes("engineering_calc_orchestration"), "Orchestration tool is missing");
   assert(toolSource.includes("engineering_calc_status"), "Status tool is missing");
   assert(toolSource.includes("engineering_calc_config_example"), "Config example tool is missing");
+  assert(toolSource.includes("STRICT_JSON_ARGUMENTS_NOTE"), "Tool descriptions should include strict JSON compatibility notes");
+  assert(toolSource.includes("key=value"), "Tool descriptions should warn against key=value shorthand");
 
   const domainSource = await fs.readFile(path.join(pluginRoot, "src/domain.ts"), "utf8");
   assert(domainSource.includes("\"orchestration\""), "Orchestration phase is missing");

@@ -5,23 +5,16 @@ description: Package and verify a production-ready engineering calculation web a
 
 # Cloud Web Release and Deployment
 
-Use this skill as the final delivery stage for engineering calculation software.
+## When to use
 
-## Goal
+Final delivery stage. Produce a runnable, traceable, reviewable, modifiable, and Linux-deployable
+web calculation program. The release is not complete until a fresh operator can run the app
+locally, inspect traces and source basis, modify decoupled calculation modules, and deploy the
+same calculation path to a Linux server. Default runtime: Python 3.9+ with Flask/FastAPI app
+factory, gunicorn (or equivalent WSGI/ASGI), a `webapp/` browser frontend, optional Marimo review
+service. The static-HTML guard and `run_book()` contract live in `shared/lifecycle.md`.
 
-Produce a runnable, traceable, reviewable, modifiable, and Linux-deployable web calculation program.
-
-The release is not complete until a fresh operator can run the app locally, inspect traces and source basis, modify decoupled calculation modules, and deploy the same calculation path to a Linux server.
-
-Default release runtime is Python 3.9+ with a Flask or FastAPI application factory, gunicorn or equivalent WSGI/ASGI server, a `webapp/` browser frontend, and optional Marimo review service.
-
-## Static HTML Delivery Guard
-
-Do not package or describe a deliverable as complete, deployable, or production-ready if it is only a static `.html` file, exported report HTML, or a UI mockup.
-
-Final web delivery must include backend runtime files, API routes, frontend assets, calculation modules, the official `run_book()` path, tests, deployment files, and run commands. Static HTML can be included as a report/export artifact or explicit prototype only.
-
-## Required Inputs
+## Inputs
 
 ```text
 handoff/implementation_handoff.yaml
@@ -32,123 +25,56 @@ webapp/ or src/<pkg>/interfaces/webapp/
 tests/
 ```
 
-Do not package as production-ready if verification failed, source basis is missing, or the web/API layer calculates outside `run_book()`.
+Do not package as production-ready if verification failed, source basis is missing, or the web/API
+layer calculates outside `run_book()`.
 
-## Release Targets
+## Steps
 
-Provide both targets unless the user explicitly narrows scope:
+1. Provide both release targets unless the user narrows scope: a local web client (runs on the
+   user's machine, opens in a browser) and a cloud Linux web service (behind gunicorn on a Linux
+   server, optionally nginx/systemd/Docker). For a desktop installer add Electron/Tauri/PyInstaller
+   only when a true desktop client is requested.
+2. Build the production-web minimum: application factory `create_app()`; `GET /health` for
+   deployment smoke; thin API routes calling `run_book()`; explicit `form_to_model` and
+   `result_to_ui` mapping; static/templates or SPA bundle for the browser UI; Chinese/English
+   language switch with `/api/i18n/<lang>`, persisted selection, selected-language report calls;
+   environment-based configuration; non-debug production defaults; structured error responses that
+   preserve server logs.
+3. When Marimo admin review is embedded, deploy it as a separate service proxied under
+   `/admin/review/`: Docker Compose services for the main web app + Marimo review, shared
+   `data/formula_registry/` volume, admin-token env var, nginx proxy rules for websocket/long
+   sessions.
+4. Create/update deployment files: `deploy/env.example`, `deploy/Dockerfile` or
+   `deploy/systemd/*.service`, `deploy/nginx/*.conf` when reverse-proxying, `deploy/docker-compose.yml`
+   when Docker is used, `apps/review/admin_formula_review.py` when embedded admin review is used,
+   `release/release_checklist.md`, `release/runbook.md` when operational handoff is needed. Document:
+   local run command, Linux production run command, required env vars, port/host binding,
+   data/output persistence paths, log location, backup/export strategy, health-check command,
+   rollback/stop command.
+5. Confirm module assets are release-ready: each module has stable module_id + public function,
+   typed inputs/options/results, owns formulas/lookup behavior only, no web/report/batch/FS/DB
+   dependency, source references + formula traces recorded, unit + regression tests cover it,
+   reuse status in `module_asset_registry.csv`.
+6. Apply Linux deployment rules: gunicorn or equivalent production WSGI/ASGI; bind to internal
+   host/port unless intentionally exposed; TLS/compression/public routing in nginx or platform
+   proxy; secrets from env or server secret storage; outputs only to configured data/output dirs;
+   logs to journald/container logs/configured files; debug off.
+7. Run smoke tests: `python -m webapp.app` (or equivalent local start); `GET /health`; `GET /`;
+   `POST /api/calculate` with a known input; `GET /api/i18n/en` and `GET /api/i18n/zh` + main-page
+   language-toggle shell; report preview/export when present; Marimo admin `/admin/review/` when
+   present; Docker build/run or systemd command syntax when provided; artifact-validation script.
+   If the environment cannot start Docker/systemd/nginx, still validate file presence and command
+   syntax where possible, and provide the exact unrun command plus the reason it was not executed.
 
-```text
-local web client: runs on the user's machine and opens in a browser
-cloud Linux web service: runs behind gunicorn on a Linux server, optionally with nginx, systemd, or Docker
-```
-
-For a desktop installer, add Electron, Tauri, PyInstaller, or a native wrapper only when the user requests a true desktop client. Otherwise the local client is the same browser UI served locally.
-
-## Production Web Minimum
-
-The application must include:
-
-```text
-application factory such as create_app()
-health endpoint for deployment smoke tests
-thin API routes that call run_book()
-explicit form_to_model and result_to_ui mapping
-static/templates or SPA bundle needed by the browser UI
-Chinese/English language switch with /api/i18n/<lang>, persisted selection, and selected-language report calls
-environment-based configuration
-non-debug production defaults
-structured error responses that preserve server logs
-```
-
-When Marimo admin review is embedded in the main site, deploy it as a separate service and proxy it under `/admin/review/`. The release should include Docker Compose service definitions for the main web app and Marimo review app, a shared `data/formula_registry/` volume, an admin token environment variable, and nginx proxy rules for websocket or long-running review sessions.
-
-## Deployment Package Contents
-
-Create or update:
-
-```text
-deploy/env.example
-deploy/Dockerfile or deploy/systemd/*.service
-deploy/nginx/*.conf when reverse proxy is expected
-deploy/docker-compose.yml when Docker is used
-apps/review/admin_formula_review.py when embedded Marimo admin review is used
-release/release_checklist.md
-release/runbook.md when operational handoff is needed
-```
-
-The release package must document:
+## Artifacts
 
 ```text
-local run command
-Linux production run command
-required environment variables
-port and host binding
-data/output persistence paths
-log location
-backup/export strategy for inputs, results, reports, and packages
-health check command
-rollback or stop command
+deploy/{env.example, Dockerfile, docker-compose.yml, systemd/*.service, nginx/*.conf}
+apps/review/admin_formula_review.py   (when embedded admin review used)
+release/{release_checklist.md, runbook.md}
 ```
 
-## Module Asset Requirements
+## Exit gate
 
-Before release, confirm reusable calculation modules are asset-ready:
-
-```text
-each module has stable module_id and public function
-inputs/options/results are typed
-module owns formulas and lookup behavior only
-module has no web, report, batch, file-system, or database dependency
-source references and formula traces are recorded
-unit and regression tests cover the module
-reuse status is recorded in module_asset_registry.csv
-```
-
-## Linux Deployment Rules
-
-For Linux server deployment:
-
-```text
-run with gunicorn or an equivalent production WSGI/ASGI server
-bind the app service to an internal host/port unless intentionally exposed
-put TLS, compression, and public routing in nginx or the platform proxy
-read secrets from environment variables or server secret storage
-write generated outputs only to configured data/output directories
-make logs visible to journald, container logs, or configured log files
-disable debug mode
-```
-
-## Smoke Tests
-
-Run or define smoke tests for:
-
-```text
-python -m webapp.app or equivalent local start
-GET /health
-GET /
-POST /api/calculate with a known input
-GET /api/i18n/en and GET /api/i18n/zh plus main-page language-toggle shell
-report preview or export when present
-Marimo admin route /admin/review/ when present
-Docker build/run or systemd command syntax when provided
-artifact validation script
-```
-
-If the current environment cannot start Docker, systemd, or nginx, still validate file presence, command syntax where possible, and provide the exact unrun command plus the reason it was not executed.
-
-## Required Final Response
-
-Provide:
-
-```text
-release targets produced
-local run command
-cloud Linux deployment command
-deployment files created or updated
-module asset registry status
-traceability and review evidence
-static HTML delivery guard result
-smoke test results
-remaining deployment assumptions
-```
+Runnable local + Linux-cloud path exists; deployment artifacts present for production completion.
+See `shared/lifecycle.md` row 14. Next path: none — delivery closes at the Web-Complete Exit Gate.

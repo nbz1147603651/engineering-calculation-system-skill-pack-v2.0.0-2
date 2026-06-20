@@ -20,7 +20,7 @@ This OpenCode wrapper points to the installed Engineering Calculation System ski
 4. For explicit multi-agent or parallel work, read `{{SKILL_ROOT_RELATIVE}}/shared/multi-agent-orchestration.md` and use `{{SKILL_ROOT_RELATIVE}}/templates/orchestration/`.
 5. Use `{{SKILL_ROOT_RELATIVE}}/templates/`, `{{SKILL_ROOT_RELATIVE}}/shared/`, and `{{SKILL_ROOT_RELATIVE}}/schemas/` only when generating or validating artifacts.
 
-If the plugin tool is available, call `engineering_calc_route` with the closest phase before loading detailed files. For explicit parallel work, pass `parallel: true` or use `engineering_calc_orchestration` to generate draft orchestration artifacts as text.
+If the plugin tool is available, call `engineering_calc_route` with strict JSON object arguments before loading detailed files, for example `{"phase":"router"}`. Do not use shorthand such as `phase=router`, comments, trailing commas, or single-quoted JSON. For explicit parallel work, call `engineering_calc_route` with `{"phase":"orchestration","parallel":true}` or use `engineering_calc_orchestration` with JSON object arguments to generate draft orchestration artifacts as text.
 
 ## Non-Negotiable Rules
 

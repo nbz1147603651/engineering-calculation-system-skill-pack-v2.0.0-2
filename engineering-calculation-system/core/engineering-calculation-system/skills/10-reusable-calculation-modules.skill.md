@@ -5,89 +5,49 @@ description: Implement or design decoupled reusable engineering calculation modu
 
 # Reusable Calculation Modules
 
-Use this skill to implement domain formulas and lookup logic.
+## When to use
 
-## Goal
+To implement domain formulas and lookup logic. Each module is an accumulating engineering asset
+reused by later books, web apps, batch jobs, and reports through the same public interface.
 
-Build reusable, independently testable engineering modules.
+## Steps
 
-Treat each module as an accumulating engineering asset that can be reused by later books, web apps, batch jobs, and reports through the same public interface.
-
-## Primary Runtime
-
-Reusable calculation modules are Python modules by default.
-
-```text
-language: Python 3.9+
-location: src/<pkg>/libraries/<domain>/<category>/
-public API: typed Python input/options/result models plus one stable public function
-tests: pytest unit/regression tests
-review: Marimo can inspect Python modules directly when review apps are enabled
-```
-
-Use a non-Python calculation module only when explicitly requested and when the handoff defines a Python wrapper, CLI adapter, or API adapter for `run_book()` and review workflows.
-
-## Module Rules
-
-Every reusable module must:
-
-```text
-have typed input
-have typed output
-expose one stable public function
-avoid hidden global state
-avoid file I/O
-avoid UI dependencies
-avoid report dependencies
-avoid batch-specific behavior
-validate module-specific assumptions
-return intermediate values needed for audit
-return warnings instead of silently clipping values
-be independently testable
-be recorded in module_asset_registry.csv
-```
-
-When administrator-editable formulas are required, expose formulas through a declaration-based formula registry instead of editable Python code. The reusable module should load only the active, validated registry version and preserve registry version/hash metadata in results.
+1. Implement each module as a Python package (default: language Python 3.9+, location
+   `src/<pkg>/libraries/<domain>/<category>/`, public API = typed input/options/result models +
+   one stable public function, tests = pytest unit/regression). Use a non-Python module only when
+   explicitly requested and the handoff defines a Python wrapper / CLI adapter / API adapter for
+   `run_book()` and review.
+2. Enforce module rules: typed input + typed output; one stable public function; no hidden global
+   state; no file I/O; no UI/report/batch/web-framework/env-var dependencies; validate
+   module-specific assumptions; return intermediate values needed for audit; return warnings
+   instead of silently clipping values; independently testable; recorded in
+   `module_asset_registry.csv`. Example: `def check_bearing_capacity(input_data: BearingInput,
+   options: BearingOptions) -> BearingResult: ...`.
+3. When admin-editable formulas are required, expose them through a declaration-based formula
+   registry (not editable Python code); the module loads only the active validated registry
+   version and preserves registry version/hash in results.
+4. Write the module interface spec, formula-trace spec, lookup-module spec, and formula-registry
+   spec from `templates/implementation/`.
+5. Add unit tests `tests/unit/test_<module>.py` and regression tests
+   `tests/regression/test_<module>_<reference>.py` where references exist.
+6. Record each module in `module_asset_registry.csv`: module_id, domain & category, module name,
+   stable public function, input/options/result models, source references, formula-trace path,
+   unit/regression test paths, reuse status (draft/reviewed/stable/deprecated), asset owner.
 
 ## Forbidden
 
-Do not read CSV, render reports, access UI state, write batch summaries, call a book runner, open deployment files, read environment variables, or depend on a web framework from a reusable formula module.
+Reading CSV, rendering reports, accessing UI state, writing batch summaries, calling a book
+runner, opening deployment files, reading env vars, or depending on a web framework from a
+reusable formula module.
 
-## Asset Registry
-
-Record every reusable module with:
-
-```text
-module_id
-domain and category
-module name
-stable public function
-input/options/result models
-source references
-formula trace path
-unit and regression test paths
-reuse status: draft / reviewed / stable / deprecated
-asset owner or maintainer
-```
-
-## Example Interface
-
-```python
-def check_bearing_capacity(
-    input_data: BearingInput,
-    options: BearingOptions,
-) -> BearingResult:
-    ...
-```
-
-## Required Output Artifacts
+## Artifacts
 
 ```text
-implementation/02_modules/module_interface_spec.md
-implementation/02_modules/module_asset_registry.csv
-implementation/02_modules/formula_trace_spec.md
-implementation/02_modules/lookup_module_spec.md
-implementation/02_modules/formula_registry_spec.md
+implementation/02_modules/module_interface_spec.md   (templates/implementation/module_interface_spec.md)
+implementation/02_modules/module_asset_registry.csv  (templates/implementation/module_asset_registry.csv)
+implementation/02_modules/formula_trace_spec.md      (templates/implementation/formula_trace_spec.md)
+implementation/02_modules/lookup_module_spec.md      (templates/implementation/lookup_module_spec.md)
+implementation/02_modules/formula_registry_spec.md   (templates/implementation/formula_registry_spec.md)
 data/formula_registry/active_versions.yaml
 data/formula_registry/modules/<module_id>/versions/<version_id>.yaml
 src/<pkg>/libraries/<domain>/<category>/
@@ -95,20 +55,7 @@ tests/unit/test_<module>.py
 tests/regression/test_<module>_<reference>.py
 ```
 
-## Required Final Response
+## Exit gate
 
-Provide:
-
-```text
-module location
-input/options/result models
-public function signatures
-formula and source references
-active formula registry version and hash when used
-intermediate values returned
-warning/error behavior
-unit tests
-regression tests if references exist
-example usage
-asset registry row
-```
+Modules are independently testable and traceable; formula traces and module tests exist. See
+`shared/lifecycle.md` row 10. Next path: 11 for the book runner.
