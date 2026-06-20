@@ -35,6 +35,15 @@ def test_capabilities_route_and_review_shell():
     assert "marimo_review" in payload["capabilities"]
     assert "latex" in payload["capabilities"]
 
+    page = client.get("/admin/review/")
+    assert page.status_code == 200
+    html = page.get_data(as_text=True)
+    assert 'id="adminReviewPage"' in html
+    assert "Formula Review Admin" in html
+    assert "ADMIN_REVIEW_TOKEN" in html
+    assert "marimo run apps/review/admin_formula_review.py" in html
+    assert "/static/js/i18n.js" in html
+
 
 def test_import_report_and_batch_routes():
     client = create_app().test_client()

@@ -60,6 +60,7 @@
     "project_template/engineering_calc_project/webapp/routes.py",
     "project_template/engineering_calc_project/webapp/templates/partials/_topbar.html",
     "project_template/engineering_calc_project/webapp/templates/partials/_report_modal.html",
+    "project_template/engineering_calc_project/webapp/templates/admin_review.html",
     "project_template/engineering_calc_project/webapp/static/css/tokens.css",
     "project_template/engineering_calc_project/webapp/static/css/components.css",
     "project_template/engineering_calc_project/latex/templates/default_engineering_calcbook/main.tex.j2",
@@ -488,6 +489,7 @@
     "webapp/i18n.py",
     "webapp/templates/base.html",
     "webapp/templates/index.html",
+    "webapp/templates/admin_review.html",
     "webapp/templates/partials/_topbar.html",
     "webapp/templates/partials/_report_modal.html",
     "webapp/static/js/main.js",
@@ -596,7 +598,9 @@
       "/api/batch/run",
       "build_case_input_from_form",
       "run_book",
-      "case_result_to_ui"
+      "case_result_to_ui",
+      "/admin/review/",
+      "admin_review"
     ],
     "webapp/i18n.py": [
       "I18N",
@@ -606,11 +610,12 @@
       "get_translations"
     ],
     "webapp/templates/base.html": [
-      "static/css/tokens.css",
-      "static/css/components.css",
       "partials/_topbar.html",
       "partials/_report_modal.html",
-      "static/js/i18n.js"
+      "url_for('static'",
+      "filename='css/tokens.css'",
+      "filename='css/components.css'",
+      "filename='js/i18n.js'"
     ],
     "webapp/templates/partials/_topbar.html": [
       "id=\"langToggle\"",
@@ -672,7 +677,8 @@
       "renderCharts",
       "renderChecksTable",
       "renderFormulaTraces",
-      "configureReviewAdmin"
+      "configureReviewAdmin",
+      "shell_url"
     ],
     "src/pkg/core/capabilities.py": [
       "detect_capabilities",
@@ -779,6 +785,14 @@
     "handoff/coding_go_no_go.md": [
       "status:",
       "Semantic production gate checklist"
+    ],
+    "webapp/templates/admin_review.html": [
+      "id=\"adminReviewPage\"",
+      "Formula Review Admin",
+      "ADMIN_REVIEW_TOKEN",
+      "active_versions.yaml",
+      "run_book()",
+      "review.run_command"
     ]
   }
 }

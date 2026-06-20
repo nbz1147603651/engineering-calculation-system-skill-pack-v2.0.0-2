@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section id="adminReviewPage" class="container-xxl">
+    <div class="row g-3">
+        <div class="col-12">
+            <div class="alert alert-info border-0 shadow-sm">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                    <div>
+                        <h1 class="h4 mb-1">Formula Review Admin</h1>
+                        <p class="mb-0">
+                            Marimo publishes declaration-based formula rules only after validation and smoke tests pass.
+                        </p>
+                    </div>
+                    <span class="badge text-bg-{{ 'success' if review.status == 'configured' else 'warning' if review.status == 'available' else 'secondary' }}">
+                        {{ review.status }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card review-card h-100">
+                <div class="card-header fw-semibold">Runtime</div>
+                <div class="card-body">
+                    <dl class="mb-0">
+                        <dt>Python</dt>
+                        <dd>{{ capabilities.python.version }} · {{ capabilities.python.implementation }}</dd>
+                        <dt>Marimo</dt>
+                        <dd>{{ capabilities.marimo.version or "not installed" }}</dd>
+                        <dt>ADMIN_REVIEW_TOKEN</dt>
+                        <dd>{{ "set" if review.admin_token_set else "not set" }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card review-card h-100">
+                <div class="card-header fw-semibold">Open Review Page</div>
+                <div class="card-body">
+                    <p>{{ review.message }}</p>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a class="btn btn-primary{% if not review.available %} disabled{% endif %}"
+                           href="{{ review.admin_url }}"
+                           target="_blank"
+                           rel="noopener">
+                            Open proxied review
+                        </a>
+                        <a class="btn btn-outline-primary{% if not review.available %} disabled{% endif %}"
+                           href="{{ review.service_url }}"
+                           target="_blank"
+                           rel="noopener">
+                            Open local Marimo service
+                        </a>
+                    </div>
+                    <p class="text-muted small mt-3 mb-0">
+                        In production, nginx or the platform router should proxy {{ review.admin_url }} to the Marimo service.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="card review-card">
+                <div class="card-header fw-semibold">Start Command</div>
+                <div class="card-body">
+                    <pre class="mb-0"><code>{{ review.run_command }}</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="card review-card">
+                <div class="card-header fw-semibold">Publish Boundary</div>
+                <div class="card-body">
+                    <ul class="mb-0">
+                        <li>Draft edits do not affect production formula selection.</li>
+                        <li>Publishing writes a versioned rule, updates active_versions.yaml, and appends the publish log.</li>
+                        <li>The web UI and report templates remain presentation-only; official calculations still flow through run_book().</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

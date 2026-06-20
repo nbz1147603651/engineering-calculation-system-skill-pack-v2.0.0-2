@@ -54,6 +54,22 @@ def _tool_capability(names: list[str], install_hint: str) -> dict[str, Any]:
     }
 
 
+def _path_url(value: str, fallback: str) -> str:
+    candidate = (value or fallback).strip() or fallback
+    if not candidate.startswith("/"):
+        candidate = f"/{candidate}"
+    if not candidate.endswith("/"):
+        candidate = f"{candidate}/"
+    return candidate
+
+
+def _service_url(value: str, fallback: str) -> str:
+    candidate = (value or fallback).strip() or fallback
+    if not candidate.endswith("/"):
+        candidate = f"{candidate}/"
+    return candidate
+
+
 def detect_capabilities(env: Mapping[str, str] | None = None) -> dict[str, Any]:
     """Detect optional runtime capabilities without installing anything."""
     env = os.environ if env is None else env
@@ -68,13 +84,22 @@ def detect_capabilities(env: Mapping[str, str] | None = None) -> dict[str, Any]:
     )
 
     admin_token_set = bool(env.get("ADMIN_REVIEW_TOKEN"))
-    marimo_base_url = env.get("MARIMO_BASE_URL", "/admin/review/")
+    review_shell_url = "/admin/review/"
+    marimo_base_url = _path_url(env.get("MARIMO_BASE_URL", ""), review_shell_url)
+    marimo_service_url = _service_url(env.get("MARIMO_SERVICE_URL", ""), "http://127.0.0.1:2718/")
     if marimo["available"] and admin_token_set:
         review_status = "configured"
     elif marimo["available"]:
         review_status = "available"
     else:
         review_status = "missing"
+
+    if review_status == "configured":
+        review_message = "Marimo review is configured. Start or proxy the review service to open the admin page."
+    elif marimo["available"]:
+        review_message = "Marimo is installed. Set ADMIN_REVIEW_TOKEN and start the review service."
+    else:
+        review_message = "Install Marimo and set ADMIN_REVIEW_TOKEN to enable the review admin."
 
     return {
         "status": "ok",
@@ -93,16 +118,15 @@ def detect_capabilities(env: Mapping[str, str] | None = None) -> dict[str, Any]:
                 "configured": review_status == "configured",
                 "admin_token_set": admin_token_set,
                 "admin_url": marimo_base_url,
+                "shell_url": review_shell_url,
+                "service_url": marimo_service_url,
                 "install_command": "python -m pip install marimo",
                 "run_command": (
                     "marimo run apps/review/admin_formula_review.py "
-                    "--base-url /admin/review --token --token-password <ADMIN_REVIEW_TOKEN>"
+                    f"--host 127.0.0.1 --port 2718 --base-url {marimo_base_url.rstrip('/')} "
+                    "--headless --token --token-password <ADMIN_REVIEW_TOKEN>"
                 ),
-                "message": (
-                    "Marimo review is configured."
-                    if review_status == "configured"
-                    else "Install Marimo and set ADMIN_REVIEW_TOKEN to enable the review admin."
-                ),
+                "message": review_message,
             },
             "latex": latex,
             "docker": docker,

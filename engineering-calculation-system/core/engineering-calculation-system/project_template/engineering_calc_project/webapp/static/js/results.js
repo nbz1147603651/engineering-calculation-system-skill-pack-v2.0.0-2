@@ -393,10 +393,12 @@ function configureReviewAdmin(marimoReview) {
         return;
     }
 
-    link.classList.add("disabled");
-    link.removeAttribute("href");
-    link.setAttribute("title", marimoReview.message || "Marimo review is not enabled.");
+    link.classList.remove("disabled");
+    link.setAttribute("href", marimoReview.shell_url || "/admin/review/");
+    link.setAttribute("title", marimoReview.message || "Open review admin setup.");
     if (note) {
-        note.textContent = `Marimo review is not enabled. Install with: ${marimoReview.install_command || "python -m pip install marimo"}`;
+        note.textContent = status === "available"
+            ? "Marimo installed; review token/service setup needed."
+            : `Review setup needed. Install with: ${marimoReview.install_command || "python -m pip install marimo"}`;
     }
 }

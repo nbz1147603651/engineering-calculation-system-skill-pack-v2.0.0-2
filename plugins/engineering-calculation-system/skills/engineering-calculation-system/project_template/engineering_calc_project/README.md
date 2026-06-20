@@ -69,6 +69,8 @@ docker compose up -d --build
 
 Main app: `http://127.0.0.1:5000/`
 
+Review setup shell: `http://127.0.0.1:5000/admin/review/`
+
 Marimo admin review: `http://127.0.0.1:2718/`
 
 Behind nginx, expose the admin page at `https://example.com/admin/review/`.

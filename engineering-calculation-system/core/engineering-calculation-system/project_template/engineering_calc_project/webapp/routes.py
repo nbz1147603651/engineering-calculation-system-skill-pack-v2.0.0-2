@@ -71,6 +71,24 @@ def index():
     return render_template("index.html")
 
 
+@bp.route("/admin/review/")
+def admin_review():
+    """Serve the local review-admin status and launch page.
+
+    In production this path is normally proxied to Marimo. During local
+    development the Flask page explains the required token and run command.
+    """
+    from pkg.core.capabilities import detect_capabilities
+
+    payload = detect_capabilities()
+    capabilities = payload["capabilities"]
+    return render_template(
+        "admin_review.html",
+        capabilities=capabilities,
+        review=capabilities["marimo_review"],
+    )
+
+
 # ---------------------------------------------------------------------------
 # API routes
 # ---------------------------------------------------------------------------
