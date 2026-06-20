@@ -9,6 +9,25 @@ export const RoleOverrideSchema = z.object({
   disabled: z.boolean().optional(),
 });
 
+export const GateEnforcementSchema = z.enum(["off", "warn", "strict"]);
+export type GateEnforcement = z.infer<typeof GateEnforcementSchema>;
+
+export const GatesConfigSchema = z
+  .object({
+    enabled: z.boolean().default(true),
+    enforcement: GateEnforcementSchema.default("warn"),
+    runtimeHook: z.boolean().default(false),
+    disable: z.array(z.string()).default([]),
+  })
+  .default(() => ({
+    enabled: true,
+    enforcement: "warn" as const,
+    runtimeHook: false,
+    disable: [],
+  }));
+
+export type GatesConfig = z.infer<typeof GatesConfigSchema>;
+
 export const EngineeringCalcConfigSchema = z.object({
   $schema: z.string().optional(),
   skillRoot: z.string().optional(),
@@ -20,6 +39,7 @@ export const EngineeringCalcConfigSchema = z.object({
       timeoutMs: z.number().int().positive().default(30_000),
     })
     .default({ validateOnStartup: false, timeoutMs: 30_000 }),
+  gates: GatesConfigSchema,
   orchestration: z
     .object({
       enabled: z.boolean().default(true),

@@ -3,6 +3,7 @@ import { loadConfig } from "../config/loader.js";
 import { createHooks } from "../create-hooks.js";
 import { createTools } from "../create-tools.js";
 import { runDoctor } from "../doctor/runner.js";
+import { loadGateState } from "../gates.js";
 import { resolveSkillRoot } from "../paths.js";
 
 export function createPluginModule(): PluginModule {
@@ -14,42 +15,67 @@ export function createPluginModule(): PluginModule {
       configuredSkillRoot: loaded.config.skillRoot,
     });
 
-    await ctx.client.app
-      .log({
-        body: {
-          service: "engineering-calculation-system-opencode-plugin",
-          level: rootStatus.missingRequiredPaths.length === 0 ? "info" : "warn",
-          message: "Plugin initialized",
-          extra: {
-            configPath: loaded.path,
-            configMessages: loaded.messages,
-            skillRoot: rootStatus.root,
-            source: rootStatus.source,
-            schemaVersion: rootStatus.schemaVersion,
-            missingRequiredPaths: rootStatus.missingRequiredPaths,
+    const log = (level: "info" | "warn" | "error", message: string, extra?: Record<string, unknown>) => {
+      void ctx.client.app
+        .log({
+          body: {
+            service: "engineering-calculation-system-opencode-plugin",
+            level,
+            message,
+            extra,
           },
-        },
-      })
-      .catch(() => undefined);
+        })
+        .catch(() => undefined);
+    };
+
+    await log(
+      rootStatus.missingRequiredPaths.length === 0 ? "info" : "warn",
+      "Plugin initialized",
+      {
+        configPath: loaded.path,
+        configMessages: loaded.messages,
+        skillRoot: rootStatus.root,
+        source: rootStatus.source,
+        schemaVersion: rootStatus.schemaVersion,
+        missingRequiredPaths: rootStatus.missingRequiredPaths,
+        gateDiagnostics: loaded.config.gates.enforcement,
+        runtimeGateHook: loaded.config.gates.runtimeHook,
+      },
+    );
 
     if (loaded.config.doctor.validateOnStartup) {
-      runDoctor({ target: ctx.directory, includeValidation: true })
+      runDoctor({
+        target: ctx.directory,
+        overrides: { skillRoot: loaded.config.skillRoot },
+        includeValidation: true,
+      })
         .then((doctor) => {
-          void ctx.client.app.log({
-            body: {
-              service: "engineering-calculation-system-opencode-plugin",
-              level: doctor.exitCode === 0 ? "info" : "warn",
-              message: "Startup doctor completed",
-              extra: { ...doctor.summary },
-            },
-          });
+          log(
+            doctor.exitCode === 0 ? "info" : "warn",
+            "Startup doctor completed",
+            { ...doctor.summary },
+          );
         })
         .catch(() => undefined);
     }
 
     return {
-      ...createHooks({ config: loaded.config, rootStatus }),
-      tool: createTools({ config: loaded.config }),
+      ...createHooks({
+        config: loaded.config,
+        rootStatus,
+        target: ctx.directory,
+        worktree: ctx.worktree,
+        log,
+      }),
+      tool: createTools({
+        config: loaded.config,
+        rootStatus: loadGateState({
+          target: ctx.directory,
+          worktree: ctx.worktree,
+          config: loaded.config,
+          rootStatus,
+        }),
+      }),
     };
   };
 

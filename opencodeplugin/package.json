@@ -1,6 +1,6 @@
 {
   "name": "engineering-calculation-system-opencode-plugin",
-  "version": "0.3.0",
+  "version": "0.5.0",
   "description": "OpenCode plugin and project templates for the Engineering Calculation System skill pack.",
   "type": "module",
   "main": "./dist/index.js",
@@ -20,8 +20,8 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "build:schema": "tsc -p tsconfig.json && node scripts/build-schema.mjs",
+    "build": "node scripts/clean-dist.mjs && tsc -p tsconfig.json",
+    "build:schema": "npm run build && node scripts/build-schema.mjs",
     "doctor:local": "node dist/cli/index.js doctor --target ..",
     "install:dry-run": "node dist/cli/index.js install --target .. --dry-run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
@@ -44,7 +44,6 @@
   "dependencies": {
     "@opencode-ai/plugin": "^1.17.7",
     "commander": "^14.0.3",
-    "jsonc-parser": "^3.3.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {

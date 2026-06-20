@@ -8,7 +8,7 @@ export function createConfigJsonSchema(): Record<string, unknown> {
     properties: {
       $schema: { type: "string" },
       skillRoot: { type: "string" },
-      strictGateMode: { type: "boolean", default: true },
+      strictGateMode: { type: "boolean", default: true, description: "Legacy prompt-only gate policy flag. Runtime enforcement is controlled by gates.runtimeHook." },
       defaultPhase: {
         type: "string",
         enum: [
@@ -30,6 +30,16 @@ export function createConfigJsonSchema(): Record<string, unknown> {
         properties: {
           validateOnStartup: { type: "boolean", default: false },
           timeoutMs: { type: "integer", minimum: 1, default: 30000 },
+        },
+      },
+      gates: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          enabled: { type: "boolean", default: true },
+          enforcement: { type: "string", enum: ["off", "warn", "strict"], default: "warn" },
+          runtimeHook: { type: "boolean", default: false },
+          disable: { type: "array", items: { type: "string" }, default: [] },
         },
       },
       orchestration: {
@@ -78,4 +88,3 @@ export function createConfigJsonSchema(): Record<string, unknown> {
     },
   };
 }
-

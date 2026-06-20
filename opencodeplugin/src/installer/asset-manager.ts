@@ -1,14 +1,24 @@
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { EngineeringCalcConfig } from "../config/schema.js";
+import {
+  computeSha256,
+  diffManifests,
+  emptyManifest,
+  readManifest,
+  writeManifest,
+  type InstallManifest,
+} from "../manifest.js";
 import { resolveSkillRoot, toPosixPath } from "../paths.js";
+import { readPluginMeta } from "../plugin-meta.js";
 
 export const MANAGED_MARKER = "engineering-calc-opencode-managed";
 const OPENCODE_PACKAGE_REL_PATH = ".opencode/package.json";
 const OPENCODE_PLUGIN_DEPENDENCY = "@opencode-ai/plugin";
 const OPENCODE_PACKAGE_MANAGED_KEY = "engineeringCalcOpenCodeManaged";
+const OPENCODE_PLUGIN_DEPENDENCY_VERSION = "^1.17.7";
 
 const moduleFile = fileURLToPath(import.meta.url);
 const distDir = path.dirname(moduleFile);
@@ -19,6 +29,19 @@ const legacyAssets = [
   ".opencode/agents/engineering-calc-architect.md",
   ".opencode/agents/engineering-calc-builder.md",
 ];
+
+/**
+ * Paths that the OpenCode plugin must never write to, regardless of
+ * configuration. These protect the Codex plugin and the shared skill pack.
+ */
+const CROSS_PLATFORM_PROTECTED_PREFIXES = [
+  "plugins/engineering-calculation-system",
+  "engineering-calculation-system/core",
+];
+
+interface OpenCodePackageManagedMeta {
+  opencodePluginDependencyAdded?: boolean;
+}
 
 export interface InstallOptions {
   target: string;
@@ -31,17 +54,23 @@ export interface InstallOptions {
 export interface InstallReport {
   target: string;
   skillRoot: string;
+  pluginVersion: string;
+  skillPackSchemaVersion: string;
   installed: string[];
+  modified: string[];
   skipped: string[];
   backups: string[];
   removedLegacy: string[];
   dryRun: boolean;
+  diff: { added: string[]; modified: string[]; removed: string[] };
 }
 
 export interface UninstallReport {
   target: string;
   removed: string[];
   skipped: string[];
+  manifestRemoved: boolean;
+  backupDir: string | null;
 }
 
 export interface AssetStatus {
@@ -49,6 +78,7 @@ export interface AssetStatus {
   present: string[];
   missing: string[];
   unmanagedPresent: string[];
+  manifest: { pluginVersion: string; installedAt: string } | null;
 }
 
 async function walkFiles(root: string): Promise<string[]> {
@@ -78,7 +108,8 @@ function hasManagedMarker(relPath: string, content: string): boolean {
   if (toPosixPath(relPath) !== OPENCODE_PACKAGE_REL_PATH) return content.includes(MANAGED_MARKER);
   try {
     const parsed = JSON.parse(content) as Record<string, unknown>;
-    return parsed[OPENCODE_PACKAGE_MANAGED_KEY] === true;
+    return parsed[OPENCODE_PACKAGE_MANAGED_KEY] === true ||
+      (typeof parsed[OPENCODE_PACKAGE_MANAGED_KEY] === "object" && parsed[OPENCODE_PACKAGE_MANAGED_KEY] !== null);
   } catch {
     return false;
   }
@@ -93,6 +124,29 @@ async function backupExisting(filePath: string): Promise<string> {
   const backupPath = `${filePath}.bak-${new Date().toISOString().replace(/[:.]/g, "-")}`;
   await fs.copyFile(filePath, backupPath);
   return backupPath;
+}
+
+function isCrossPlatformProtected(relPath: string): boolean {
+  const normalized = toPosixPath(relPath).replace(/^\.\//, "");
+  return CROSS_PLATFORM_PROTECTED_PREFIXES.some(
+    (prefix) => normalized === prefix || normalized.startsWith(`${prefix}/`),
+  );
+}
+
+function isProtectedTarget(target: string): boolean {
+  const normalized = toPosixPath(path.resolve(target));
+  return CROSS_PLATFORM_PROTECTED_PREFIXES.some((prefix) => {
+    const boundary = `/${prefix}`;
+    return normalized.endsWith(boundary) || normalized.includes(`${boundary}/`);
+  });
+}
+
+function assertTargetAllowed(target: string): void {
+  if (!isProtectedTarget(target)) return;
+  throw new Error(
+    `Refusing to manage OpenCode assets inside cross-platform protected target '${target}'. ` +
+      `Install the OpenCode adapter at a project root, not inside the Codex plugin or shared core skill pack.`,
+  );
 }
 
 function shouldSkipTemplate(relPath: string, config: EngineeringCalcConfig): boolean {
@@ -137,14 +191,24 @@ async function managedAssetPaths(): Promise<string[]> {
   return files.map((filePath) => toPosixPath(path.relative(templateRoot, filePath)));
 }
 
-async function writeManagedFile(args: {
+interface WriteManagedArgs {
   destination: string;
   relPath: string;
   content: string;
   force?: boolean;
   dryRun?: boolean;
   report: InstallReport;
-}): Promise<void> {
+  manifest: InstallManifest;
+}
+
+async function writeManagedFile(args: WriteManagedArgs): Promise<void> {
+  const { destination, relPath, content, report, manifest } = args;
+  if (isCrossPlatformProtected(relPath)) {
+    throw new Error(
+      `Refusing to write cross-platform protected path '${relPath}'. ` +
+        `The OpenCode plugin installer must not modify the Codex plugin or shared skill pack.`,
+    );
+  }
   const existing = await readTextIfExists(args.destination);
   if (existing && !existing.includes(MANAGED_MARKER) && !args.force) {
     args.report.skipped.push(toPosixPath(args.relPath));
@@ -153,13 +217,20 @@ async function writeManagedFile(args: {
   if (existing && !existing.includes(MANAGED_MARKER) && args.force && !args.dryRun) {
     args.report.backups.push(await backupExisting(args.destination));
   }
+  const finalContent = injectMarker(relPath, content);
+  const sha = computeSha256(finalContent);
+  const size = Buffer.byteLength(finalContent, "utf8");
+  const wasPresent = Boolean(existing);
   args.report.installed.push(toPosixPath(args.relPath));
-  if (args.dryRun) return;
-  await fs.mkdir(path.dirname(args.destination), { recursive: true });
-  await fs.writeFile(args.destination, injectMarker(args.relPath, args.content), "utf8");
+  if (wasPresent) args.report.modified.push(toPosixPath(args.relPath));
+  if (!args.dryRun) {
+    await fs.mkdir(path.dirname(args.destination), { recursive: true });
+    await fs.writeFile(args.destination, finalContent, "utf8");
+  }
+  manifest.files[toPosixPath(args.relPath)] = { relPath: toPosixPath(args.relPath), sha256: sha, size };
 }
 
-async function writePluginShim(args: InstallOptions & { skillRoot: string; report: InstallReport }): Promise<void> {
+async function writePluginShim(args: InstallOptions & { skillRoot: string; report: InstallReport; manifest: InstallManifest }): Promise<void> {
   const pluginDir = path.join(args.target, ".opencode", "plugins");
   const destination = path.join(pluginDir, "engineering-calc-system.ts");
   const distEntry = path.join(packageRoot, "dist", "index.js");
@@ -179,31 +250,54 @@ async function writePluginShim(args: InstallOptions & { skillRoot: string; repor
     force: args.force,
     dryRun: args.dryRun,
     report: args.report,
+    manifest: args.manifest,
   });
 }
 
-async function mergeOpenCodePackage(args: InstallOptions & { report: InstallReport }): Promise<void> {
+async function mergeOpenCodePackage(
+  args: InstallOptions & { report: InstallReport; manifest: InstallManifest },
+): Promise<void> {
   const relPath = OPENCODE_PACKAGE_REL_PATH;
   const destination = path.join(args.target, relPath);
   let packageJson: Record<string, unknown> = {};
   const existing = await readTextIfExists(destination);
   if (existing) packageJson = JSON.parse(existing);
+  const existingDependencies = (packageJson.dependencies as Record<string, string> | undefined) ?? {};
+  const hadDependency = Object.prototype.hasOwnProperty.call(existingDependencies, OPENCODE_PLUGIN_DEPENDENCY);
   packageJson.dependencies = {
-    ...((packageJson.dependencies as Record<string, string> | undefined) ?? {}),
-    [OPENCODE_PLUGIN_DEPENDENCY]: "^1.17.7",
+    ...existingDependencies,
+    [OPENCODE_PLUGIN_DEPENDENCY]: existingDependencies[OPENCODE_PLUGIN_DEPENDENCY] ?? OPENCODE_PLUGIN_DEPENDENCY_VERSION,
   };
-  packageJson[OPENCODE_PACKAGE_MANAGED_KEY] = true;
+  const existingManaged = packageJson[OPENCODE_PACKAGE_MANAGED_KEY];
+  const previousAdded =
+    (typeof existingManaged === "object" &&
+      existingManaged !== null &&
+      (existingManaged as OpenCodePackageManagedMeta).opencodePluginDependencyAdded === true);
+  packageJson[OPENCODE_PACKAGE_MANAGED_KEY] = {
+    opencodePluginDependencyAdded: previousAdded || !hadDependency,
+  } satisfies OpenCodePackageManagedMeta;
   args.report.installed.push(relPath);
-  if (args.dryRun) return;
-  await fs.mkdir(path.dirname(destination), { recursive: true });
-  await fs.writeFile(destination, `${JSON.stringify(packageJson, null, 2)}\n`, "utf8");
+  if (!args.dryRun) {
+    await fs.mkdir(path.dirname(destination), { recursive: true });
+    await fs.writeFile(destination, `${JSON.stringify(packageJson, null, 2)}\n`, "utf8");
+  }
+  args.manifest.files[relPath] = {
+    relPath,
+    sha256: computeSha256(JSON.stringify(packageJson, null, 2) + "\n"),
+    size: 0,
+  };
 }
 
-async function uninstallOpenCodePackage(root: string, report: UninstallReport): Promise<void> {
+async function uninstallOpenCodePackage(
+  root: string,
+  report: UninstallReport,
+  manifest: InstallManifest | null,
+): Promise<void> {
   const fullPath = path.join(root, OPENCODE_PACKAGE_REL_PATH);
   const content = await readTextIfExists(fullPath);
   if (!content) return;
-  if (!hasManagedMarker(OPENCODE_PACKAGE_REL_PATH, content)) {
+  const inManifest = manifest?.files[OPENCODE_PACKAGE_REL_PATH];
+  if (!hasManagedMarker(OPENCODE_PACKAGE_REL_PATH, content) && !inManifest) {
     report.skipped.push(OPENCODE_PACKAGE_REL_PATH);
     return;
   }
@@ -217,7 +311,12 @@ async function uninstallOpenCodePackage(root: string, report: UninstallReport): 
   }
 
   const dependencies = packageJson.dependencies as Record<string, unknown> | undefined;
-  if (dependencies) {
+  const managed = packageJson[OPENCODE_PACKAGE_MANAGED_KEY];
+  const shouldRemoveDependency =
+    typeof managed === "object" &&
+    managed !== null &&
+    (managed as OpenCodePackageManagedMeta).opencodePluginDependencyAdded === true;
+  if (dependencies && shouldRemoveDependency) {
     delete dependencies[OPENCODE_PLUGIN_DEPENDENCY];
     if (Object.keys(dependencies).length === 0) delete packageJson.dependencies;
   }
@@ -241,8 +340,13 @@ async function removeLegacyAssets(args: InstallOptions & { report: InstallReport
   }
 }
 
+function readPackageMeta(): { version: string; schemaVersion: string } {
+  return readPluginMeta();
+}
+
 export async function installAssets(options: InstallOptions): Promise<InstallReport> {
   const target = path.resolve(options.target);
+  assertTargetAllowed(target);
   const resolved = resolveSkillRoot({
     directory: target,
     worktree: target,
@@ -252,14 +356,22 @@ export async function installAssets(options: InstallOptions): Promise<InstallRep
     throw new Error(`Skill root is incomplete: ${resolved.root}\nMissing:\n- ${resolved.missingRequiredPaths.join("\n- ")}`);
   }
 
+  const meta = readPackageMeta();
+  const previous = await readManifest(target);
+  const manifest = emptyManifest(meta.version, meta.schemaVersion);
+
   const report: InstallReport = {
     target,
     skillRoot: resolved.root,
+    pluginVersion: meta.version,
+    skillPackSchemaVersion: meta.schemaVersion,
     installed: [],
+    modified: [],
     skipped: [],
     backups: [],
     removedLegacy: [],
     dryRun: Boolean(options.dryRun),
+    diff: { added: [], modified: [], removed: [] },
   };
 
   await removeLegacyAssets({ ...options, target, report });
@@ -273,6 +385,10 @@ export async function installAssets(options: InstallOptions): Promise<InstallRep
 
   for (const source of await walkFiles(templateRoot)) {
     const relPath = toPosixPath(path.relative(templateRoot, source));
+    if (isCrossPlatformProtected(relPath)) {
+      // Templates should never include cross-platform paths, but defend in depth.
+      throw new Error(`Template path is cross-platform protected: ${relPath}`);
+    }
     if (shouldSkipTemplate(relPath, options.config)) continue;
     const raw = await fs.readFile(source, "utf8");
     const rendered = applyRoleOverrides(relPath, renderTemplate(raw, replacements), options.config);
@@ -283,47 +399,93 @@ export async function installAssets(options: InstallOptions): Promise<InstallRep
       force: options.force,
       dryRun: options.dryRun,
       report,
+      manifest,
     });
   }
 
-  await writePluginShim({ ...options, target, skillRoot: resolved.root, report });
-  await mergeOpenCodePackage({ ...options, target, report });
+  await writePluginShim({ ...options, target, skillRoot: resolved.root, report, manifest });
+  await mergeOpenCodePackage({ ...options, target, report, manifest });
+
+  // Compute the diff AFTER all writes so it reflects the actual change set
+  // compared to the previously installed manifest.
+  const finalManifest: InstallManifest = { ...manifest, installedAt: new Date().toISOString() };
+  report.diff = diffManifests(previous, finalManifest);
+
+  if (!options.dryRun) {
+    await writeManifest(target, finalManifest);
+  }
+
   return report;
 }
 
 export async function uninstallAssets(target: string): Promise<UninstallReport> {
   const root = path.resolve(target);
-  const report: UninstallReport = { target: root, removed: [], skipped: [] };
-  const relPaths = [
+  assertTargetAllowed(root);
+  const report: UninstallReport = {
+    target: root,
+    removed: [],
+    skipped: [],
+    manifestRemoved: false,
+    backupDir: null,
+  };
+  const manifest = await readManifest(root);
+  const backupDir = path.join(root, ".opencode", ".engineering-calc-backup");
+  if (manifest) {
+    await fs.mkdir(backupDir, { recursive: true });
+    report.backupDir = toPosixPath(path.relative(root, backupDir));
+  }
+
+  const relPaths = new Set<string>([
     ...await managedAssetPaths(),
     ".opencode/plugins/engineering-calc-system.ts",
     OPENCODE_PACKAGE_REL_PATH,
-  ];
+  ]);
+  if (manifest) {
+    for (const relPath of Object.keys(manifest.files)) relPaths.add(relPath);
+  }
+
   for (const relPath of relPaths) {
     if (relPath === OPENCODE_PACKAGE_REL_PATH) {
-      await uninstallOpenCodePackage(root, report);
+      await uninstallOpenCodePackage(root, report, manifest);
       continue;
     }
     const fullPath = path.join(root, relPath);
     const content = await readTextIfExists(fullPath);
     if (!content) continue;
-    if (!hasManagedMarker(relPath, content)) {
+    const inManifest = manifest?.files[relPath];
+    if (!hasManagedMarker(relPath, content) && !inManifest) {
       report.skipped.push(relPath);
       continue;
+    }
+    if (manifest && !existsSync(backupDir)) {
+      await fs.mkdir(backupDir, { recursive: true });
+    }
+    if (manifest) {
+      const backupPath = path.join(backupDir, relPath.replace(/\//g, "__"));
+      await fs.copyFile(fullPath, backupPath).catch(() => undefined);
     }
     await fs.rm(fullPath, { force: true });
     report.removed.push(relPath);
   }
+
+  if (manifest) {
+    const manifestPath = path.join(root, ".opencode", ".engineering-calc-manifest.json");
+    if (existsSync(manifestPath)) {
+      await fs.rm(manifestPath, { force: true });
+      report.manifestRemoved = true;
+    }
+  }
+
   return report;
 }
 
 export async function inspectAssets(target: string): Promise<AssetStatus> {
   const root = path.resolve(target);
-  const relPaths = [
+  const relPaths = new Set<string>([
     ...await managedAssetPaths(),
     ".opencode/plugins/engineering-calc-system.ts",
     OPENCODE_PACKAGE_REL_PATH,
-  ];
+  ]);
   const present: string[] = [];
   const missing: string[] = [];
   const unmanagedPresent: string[] = [];
@@ -337,10 +499,14 @@ export async function inspectAssets(target: string): Promise<AssetStatus> {
     present.push(relPath);
     if (!hasManagedMarker(relPath, content)) unmanagedPresent.push(relPath);
   }
+  const manifest = await readManifest(root);
   return {
     installed: missing.length === 0 && unmanagedPresent.length === 0,
     present,
     missing,
     unmanagedPresent,
+    manifest: manifest
+      ? { pluginVersion: manifest.pluginVersion, installedAt: manifest.installedAt }
+      : null,
   };
 }

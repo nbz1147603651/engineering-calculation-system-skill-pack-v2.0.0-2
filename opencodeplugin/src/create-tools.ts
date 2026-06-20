@@ -19,6 +19,7 @@ import {
 import { fullConfigExample } from "./config/loader.js";
 import { formatDoctor } from "./doctor/format.js";
 import { runDoctor } from "./doctor/runner.js";
+import type { GateState } from "./gates.js";
 import { getStatus } from "./status.js";
 import { resolveSkillRoot, TARGET_SCHEMA_VERSION, toPosixPath } from "./paths.js";
 import type { EngineeringCalcConfig } from "./config/schema.js";
@@ -55,11 +56,31 @@ function arrayArg(description: string) {
   return tool.schema.array(tool.schema.string()).default([]).describe(argDescription(description, "[\"path/or/command\"] or []"));
 }
 
-export function createTools(args: { config: EngineeringCalcConfig }): NonNullable<Hooks["tool"]> {
+function formatGateState(state: GateState, agentOrder: string[]): string {
+  const planLine = state.activePlan
+    ? `${state.activePlan.planId} (status=${state.activePlan.status}, tasks=${state.activePlan.tasks.length})`
+    : "none";
+  return [
+    "# Engineering Gate State",
+    "",
+    `Advisory mode: ${state.mode}`,
+    `Enabled diagnostics: ${state.enabledGates.join(", ") || "none"}`,
+    `Handoff status: ${state.handoffStatus}`,
+    `Handoff frozen: ${state.handoffFrozen ? "yes" : "no"}`,
+    `Active plan: ${planLine}`,
+    `Preferred agent order: ${agentOrder.length > 0 ? agentOrder.join(", ") : "(unset)"}`,
+    "Runtime blocking is experimental and only active when gates.runtimeHook is true.",
+  ].join("\n");
+}
+
+export function createTools(args: {
+  config: EngineeringCalcConfig;
+  rootStatus?: GateState;
+}): NonNullable<Hooks["tool"]> {
   return {
     engineering_calc_route: tool({
       description: toolDescription(
-        "Return the Engineering Calculation System OpenCode routing prompt, load order, and phase-specific gates.",
+        "Return the Engineering Calculation System OpenCode routing prompt, load order, and phase-specific advisory diagnostics.",
         "{\"phase\":\"router\",\"parallel\":false}",
       ),
       args: {
@@ -117,7 +138,16 @@ export function createTools(args: { config: EngineeringCalcConfig }): NonNullabl
           );
         }
 
-        sections.push("", "## Gates", "", gateSummary(args.config.strictGateMode));
+        if (args.config.agentOrder.length > 0) {
+          sections.push(
+            "",
+            "## Preferred agent order",
+            "",
+            args.config.agentOrder.map((name) => `- ${name}`).join("\n"),
+          );
+        }
+
+        sections.push("", "## Gates", "", gateSummary());
         return sections.join("\n");
       },
     }),
@@ -205,14 +235,37 @@ export function createTools(args: { config: EngineeringCalcConfig }): NonNullabl
 
     engineering_calc_config_example: tool({
       description: toolDescription(
-        "Return a minimal or full JSONC config example for the plugin.",
+        "Return a minimal or full JSON config example for the plugin.",
         "{\"full\":false}",
       ),
       args: {
         full: tool.schema.boolean().default(false).describe(argDescription("Return the full config example.", "true or false")),
       },
       async execute(exampleArgs) {
-        return `\`\`\`jsonc\n${exampleArgs.full ? fullConfigExample() : minimalConfigExample()}\n\`\`\``;
+        return `\`\`\`json\n${exampleArgs.full ? fullConfigExample() : minimalConfigExample()}\n\`\`\``;
+      },
+    }),
+
+    engineering_calc_gate_status: tool({
+      description: toolDescription(
+        "Return the current advisory gate diagnostic state, handoff status, active plan, and preferred agent order.",
+        "{}",
+      ),
+      args: {},
+      async execute(_gateArgs, context) {
+        const { loadGateState } = await import("./gates.js");
+        const rootStatus = resolveSkillRoot({
+          directory: context.directory,
+          worktree: context.worktree,
+          configuredSkillRoot: args.config.skillRoot,
+        });
+        const state = loadGateState({
+          target: context.directory,
+          worktree: context.worktree,
+          config: args.config,
+          rootStatus,
+        });
+        return formatGateState(state, args.config.agentOrder);
       },
     }),
   };

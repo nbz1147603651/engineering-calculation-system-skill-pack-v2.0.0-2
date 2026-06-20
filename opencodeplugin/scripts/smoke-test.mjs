@@ -26,6 +26,8 @@ const requiredFiles = [
   "src/installer/asset-manager.ts",
   "src/cli/index.ts",
   "src/paths.ts",
+  "src/profiles.ts",
+  "src/mcp-presets.ts",
   "templates/.opencode/AGENTS.md",
   "templates/.opencode/skills/engineering-calc-system/SKILL.md",
   "templates/.opencode/commands/engineering-calc-start.md",
@@ -46,7 +48,15 @@ const requiredFiles = [
   "templates/.opencode/agents/engineering-calc-interface-worker.md",
   "templates/.opencode/agents/engineering-calc-verification-worker.md",
   "scripts/install-project.mjs",
+  "scripts/clean-dist.mjs",
   "docs/optimization-assessment.md",
+  "src/gates.ts",
+  "src/gate-enforcer.ts",
+  "src/manifest.ts",
+  "src/plugin-meta.ts",
+  "docs/distribution.md",
+  "docs/gates.md",
+  "docs/mcp-presets.md",
 ];
 
 const requiredSkillFiles = [
@@ -121,11 +131,11 @@ async function main() {
   assert(!existsSync(path.join(pluginRoot, "templates/.opencode/agents/engineering-calc-builder.md")), "Legacy builder agent template is still present");
 
   const packageJson = pluginPackageJson;
-  assert(packageJson.version === "0.3.0", "Plugin package version should be 0.3.0");
+  assert(packageJson.version === "0.5.0", "Plugin package version should be 0.5.0");
   assert(packageJson.skillPack?.schemaVersion === targetSchemaVersion, `Plugin package should declare skill pack schema ${targetSchemaVersion}`);
   assert(packageJson.bin?.["engineering-calc-opencode"], "Missing CLI bin");
   assert(packageJson.dependencies?.zod, "Missing zod dependency");
-  assert(packageJson.dependencies?.["jsonc-parser"], "Missing jsonc-parser dependency");
+  assert(!packageJson.dependencies?.["jsonc-parser"], "Plugin config should not depend on jsonc-parser");
   assert(packageJson.dependencies?.commander, "Missing commander dependency");
   assert(packageJson.dependencies?.["@opencode-ai/plugin"], "Missing @opencode-ai/plugin dependency");
   assert(packageJson.scripts?.build, "Missing build script");
@@ -170,6 +180,54 @@ async function main() {
   assert(domainSource.includes("parallel_work_plan"), "Parallel work plan artifact is missing");
   assert(domainSource.includes("agent_result_packet"), "Agent result packet artifact is missing");
   assert(domainSource.includes("merge_review"), "Merge review artifact is missing");
+
+  assert(!existsSync(path.join(pluginRoot, "src/jsonc.ts")), "Plugin should not ship a self-maintained JSONC parser");
+
+  const gatesSource = await fs.readFile(path.join(pluginRoot, "src/gates.ts"), "utf8");
+  assert(gatesSource.includes("loadGateState"), "Gates module should export loadGateState");
+  assert(gatesSource.includes("evaluateEdit"), "Gates module should export evaluateEdit");
+  assert(gatesSource.includes("cross-platform-boundary"), "Gates module should include cross-platform boundary gate");
+  assert(gatesSource.includes("handoff-freeze"), "Gates module should include handoff-freeze gate");
+
+  const gateEnforcerSource = await fs.readFile(path.join(pluginRoot, "src/gate-enforcer.ts"), "utf8");
+  assert(gateEnforcerSource.includes("tool.execute.before"), "Gate enforcer should target tool.execute.before");
+  assert(gateEnforcerSource.includes("EditToolNames"), "Gate enforcer should reference EditToolNames");
+
+  const hooksSource = await fs.readFile(path.join(pluginRoot, "src/create-hooks.ts"), "utf8");
+  assert(hooksSource.includes("tool.execute.before"), "create-hooks should wire tool.execute.before");
+  assert(hooksSource.includes("runtimeHook"), "create-hooks should gate runtime enforcement behind an explicit runtimeHook flag");
+
+  const toolSource2 = await fs.readFile(path.join(pluginRoot, "src/create-tools.ts"), "utf8");
+  assert(toolSource2.includes("engineering_calc_gate_status"), "Tools should include engineering_calc_gate_status");
+
+  const manifestSource = await fs.readFile(path.join(pluginRoot, "src/manifest.ts"), "utf8");
+  assert(manifestSource.includes("computeSha256"), "Manifest module should hash file contents");
+  assert(manifestSource.includes("diffManifests"), "Manifest module should compute diffs");
+
+  const pluginMetaSource = await fs.readFile(path.join(pluginRoot, "src/plugin-meta.ts"), "utf8");
+  assert(pluginMetaSource.includes("readPluginMeta"), "plugin-meta module should export readPluginMeta");
+  assert(pluginMetaSource.includes("findPackageJson"), "plugin-meta module should walk up to find package.json");
+
+  const profilesSource = await fs.readFile(path.join(pluginRoot, "src/profiles.ts"), "utf8");
+  assert(profilesSource.includes("implementation"), "Profiles should include implementation");
+  assert(profilesSource.includes("web-complete"), "Profiles should include web-complete");
+  assert(profilesSource.includes("parseOpenCodeProfile"), "Profiles should validate profile names");
+
+  const mcpSource = await fs.readFile(path.join(pluginRoot, "src/mcp-presets.ts"), "utf8");
+  assert(mcpSource.includes("https://mcp.context7.com/mcp"), "MCP catalog should include Context7");
+  assert(mcpSource.includes("https://mcp.grep.app"), "MCP catalog should include gh_grep");
+  assert(mcpSource.includes("@playwright/mcp@latest"), "MCP catalog should include Playwright MCP");
+  assert(mcpSource.includes("https://mcp.sentry.dev/mcp"), "MCP catalog should include disabled Sentry example");
+  assert(mcpSource.includes("enabled"), "Generated MCP configs should set enabled explicitly");
+
+  const cliSource = await fs.readFile(path.join(pluginRoot, "src/cli/index.ts"), "utf8");
+  assert(cliSource.includes("opencode-json"), "CLI should expose opencode-json command");
+  assert(cliSource.includes("profiles"), "CLI should expose profiles command");
+  assert(cliSource.includes("--profile"), "opencode-json should accept a profile");
+  assert(cliSource.includes("--mcp"), "opencode-json should accept an MCP mode");
+  assert(cliSource.includes("permission"), "opencode-json should emit OpenCode-native permission recommendations");
+  assert(cliSource.includes("readPluginMeta"), "CLI should use readPluginMeta for version sync");
+  assert(!cliSource.includes('version("0.'), "CLI version should not be hardcoded");
 
   const skillRoot = findSkillRoot();
   assert(skillRoot, `Could not find a ${targetSchemaVersion} skill root`);

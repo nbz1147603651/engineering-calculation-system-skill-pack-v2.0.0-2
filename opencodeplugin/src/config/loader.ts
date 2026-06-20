@@ -1,7 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
-import { parse as parseJsonc } from "jsonc-parser";
 import {
   EngineeringCalcConfigSchema,
   USER_ONLY_CONFIG_KEYS,
@@ -38,7 +37,7 @@ function userConfigDirs(): string[] {
 }
 
 function configPathIn(dir: string): string | null {
-  for (const extension of [".jsonc", ".json"]) {
+  for (const extension of [".json", ".jsonc"]) {
     const candidate = path.join(dir, `${CONFIG_BASENAME}${extension}`);
     if (existsSync(candidate)) return candidate;
   }
@@ -69,7 +68,10 @@ function stripProjectOnlySensitiveFields(raw: Record<string, unknown>, messages:
 function parseConfigFile(filePath: string, scope: ConfigLayer["scope"]): ConfigLayer {
   const messages: string[] = [];
   try {
-    const raw = parseJsonc(readFileSync(filePath, "utf8"));
+    if (filePath.endsWith(".jsonc")) {
+      messages.push(`${filePath}: .jsonc plugin configs are deprecated; use strict JSON in ${CONFIG_BASENAME}.json`);
+    }
+    const raw = JSON.parse(readFileSync(filePath, "utf8"));
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
       return { path: filePath, scope, config: {}, messages: [`${filePath}: expected object config`] };
     }
@@ -88,7 +90,7 @@ function parseConfigFile(filePath: string, scope: ConfigLayer["scope"]): ConfigL
       path: filePath,
       scope,
       config: {},
-      messages: [`${filePath}: ${error instanceof Error ? error.message : String(error)}`],
+      messages: [...messages, `${filePath}: ${error instanceof Error ? error.message : String(error)}`],
     };
   }
 }
@@ -122,7 +124,6 @@ export function loadConfig(directory: string, overrides: Partial<EngineeringCalc
 export function minimalConfigExample(): string {
   return `{
   "$schema": "./engineering-calc-system.schema.json",
-  "strictGateMode": true,
   "defaultPhase": "router"
 }`;
 }
@@ -131,11 +132,16 @@ export function fullConfigExample(): string {
   return `{
   "$schema": "./engineering-calc-system.schema.json",
   "skillRoot": "../engineering-calculation-system/core/engineering-calculation-system",
-  "strictGateMode": true,
   "defaultPhase": "router",
   "doctor": {
     "validateOnStartup": false,
     "timeoutMs": 30000
+  },
+  "gates": {
+    "enabled": true,
+    "enforcement": "warn",
+    "runtimeHook": false,
+    "disable": []
   },
   "orchestration": {
     "enabled": true,

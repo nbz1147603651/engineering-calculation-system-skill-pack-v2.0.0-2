@@ -13,7 +13,8 @@
     },
     "strictGateMode": {
       "type": "boolean",
-      "default": true
+      "default": true,
+      "description": "Legacy prompt-only gate policy flag. Runtime enforcement is controlled by gates.runtimeHook."
     },
     "defaultPhase": {
       "type": "string",
@@ -42,6 +43,36 @@
           "type": "integer",
           "minimum": 1,
           "default": 30000
+        }
+      }
+    },
+    "gates": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "enforcement": {
+          "type": "string",
+          "enum": [
+            "off",
+            "warn",
+            "strict"
+          ],
+          "default": "warn"
+        },
+        "runtimeHook": {
+          "type": "boolean",
+          "default": false
+        },
+        "disable": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
         }
       }
     },

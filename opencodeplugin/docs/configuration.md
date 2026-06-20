@@ -1,18 +1,18 @@
 # Configuration
 
-The plugin reads JSONC config from user and project scopes.
+The plugin reads strict JSON config from user and project scopes.
 
 User config:
 
 ```text
-%APPDATA%/opencode/engineering-calc-system.jsonc
-~/.config/opencode/engineering-calc-system.jsonc
+%APPDATA%/opencode/engineering-calc-system.json
+~/.config/opencode/engineering-calc-system.json
 ```
 
 Project config:
 
 ```text
-.opencode/engineering-calc-system.jsonc
+.opencode/engineering-calc-system.json
 ```
 
 Precedence:
@@ -31,11 +31,28 @@ npm run build:schema
 
 Minimal config:
 
-```jsonc
+```json
 {
   "$schema": "./engineering-calc-system.schema.json",
-  "strictGateMode": true,
   "defaultPhase": "router"
 }
 ```
 
+Gate diagnostics are advisory by default:
+
+```json
+{
+  "gates": {
+    "enabled": true,
+    "enforcement": "warn",
+    "runtimeHook": false,
+    "disable": []
+  }
+}
+```
+
+OpenCode's own `opencode.json` or `opencode.jsonc` is still parsed by
+OpenCode. This file is only for plugin-specific settings.
+
+Optional MCP presets are generated through `opencode-json --mcp ...`,
+not through this plugin config file. See [mcp-presets.md](mcp-presets.md).
