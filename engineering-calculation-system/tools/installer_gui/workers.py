@@ -25,6 +25,7 @@ from typing import Any, Callable
 
 from . import deployer
 from .agents import AgentSpec
+from .i18n import t
 
 
 class EventKind(str, Enum):
@@ -153,7 +154,7 @@ class Worker:
 
 def _wrap_agent_action(
     spec: AgentSpec,
-    action_name: str,
+    action_key: str,
     action_fn: Callable[[deployer.DeployContext], Any],
     install_root_provider: Callable[[], "Path | None"],
 ) -> Job:
@@ -176,20 +177,20 @@ def _wrap_agent_action(
         # worker's queue directly is not possible from here. Instead the UI
         # re-runs detection on DONE for the targeted agent. We keep it simple.
 
-    title = f"{action_name} {spec.display_name}"
+    title = f"{t(action_key)} {spec.display_name}"
     return Job(title=title, fn=fn, agent_name=spec.name)
 
 
 def make_deploy_job(spec: AgentSpec, install_root_provider: Callable[[], "Path | None"]) -> Job:
-    return _wrap_agent_action(spec, "Deploy", spec.deploy_fn, install_root_provider)
+    return _wrap_agent_action(spec, "job_deploy", spec.deploy_fn, install_root_provider)
 
 
 def make_verify_job(spec: AgentSpec, install_root_provider: Callable[[], "Path | None"]) -> Job:
-    return _wrap_agent_action(spec, "Verify", spec.verify_fn, install_root_provider)
+    return _wrap_agent_action(spec, "job_verify", spec.verify_fn, install_root_provider)
 
 
 def make_uninstall_job(spec: AgentSpec, install_root_provider: Callable[[], "Path | None"]) -> Job:
-    return _wrap_agent_action(spec, "Uninstall", spec.uninstall_fn, install_root_provider)
+    return _wrap_agent_action(spec, "job_uninstall", spec.uninstall_fn, install_root_provider)
 
 
 def make_build_all_job(profiles: tuple[str, ...]) -> Job:
@@ -198,4 +199,4 @@ def make_build_all_job(profiles: tuple[str, ...]) -> Job:
     def fn(log: deployer.LogFn, progress: deployer.ProgressFn, cancel: CancelToken) -> None:
         deployer.build_profiles(profiles, log=log, progress=progress)
 
-    return Job(title="Build all profiles", fn=fn, agent_name=None)
+    return Job(title=t("job_build_all"), fn=fn, agent_name=None)

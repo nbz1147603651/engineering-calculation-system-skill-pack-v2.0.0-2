@@ -7,6 +7,8 @@ typography on top.
 
 from __future__ import annotations
 
+import platform
+
 # Accent palette - a single calm blue-green family so the UI reads as one product.
 ACCENT = "#2E7D6B"          # primary action (deploy buttons, progress)
 ACCENT_HOVER = "#246556"
@@ -25,21 +27,32 @@ COLOR_NOT_DEPLOYED = NEUTRAL
 COLOR_ERROR = DANGER
 
 # Typography - rely on system fonts; these are CTk font tuples (family, size, weight).
-FONT_FAMILY = "Segoe UI"        # ships on Windows; falls back gracefully elsewhere
+# Support Chinese characters on Windows/macOS/Linux.
+def _get_font_family() -> str:
+    """Return a font family that supports both Latin and CJK characters."""
+    system = platform.system()
+    if system == "Windows":
+        return "Microsoft YaHei"  # 微软雅黑 - ships on all modern Windows
+    elif system == "Darwin":
+        return "PingFang SC"      # 苹方 - ships on macOS
+    else:
+        return "Noto Sans CJK SC"  # Linux - may need installation, falls back gracefully
+
+FONT_FAMILY = _get_font_family()
 FONT_TITLE = (FONT_FAMILY, 18, "bold")
 FONT_SUBTITLE = (FONT_FAMILY, 13, "bold")
 FONT_BODY = (FONT_FAMILY, 12)
 FONT_SMALL = (FONT_FAMILY, 11)
-FONT_MONO = ("Consolas", 11)    # log panel
+FONT_MONO = ("Consolas", 11)    # log panel (monospace, Latin only)
 
 # Layout spacing.
 PAD = 12
 PAD_SM = 6
-CARD_W = 220
-CARD_H = 150
+CARD_W = 260
+CARD_H = 160
 CARD_RADIUS = 14
 
 # Window.
 WINDOW_TITLE = "Engineering Calculation System - Deployment Console"
-WINDOW_MIN_W = 1040
-WINDOW_MIN_H = 760
+WINDOW_MIN_W = 1100
+WINDOW_MIN_H = 780

@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import Callable
 
 from . import detector
+from .i18n import t
 
 
 # --------------------------------------------------------------------------- #
@@ -88,7 +89,7 @@ def _build_specs() -> list[AgentSpec]:
             display_name="Codex",
             icon="C",
             kind="user",
-            summary="OpenAI Codex skill folder install",
+            summary=t("summary_codex"),
             default_root_fn=_codex_root,
             deploy_fn=deployer.deploy_codex,
             verify_fn=deployer.verify_codex,
@@ -100,7 +101,7 @@ def _build_specs() -> list[AgentSpec]:
             display_name="MiniMax Code",
             icon="M",
             kind="user",
-            summary="Mavis skills repository layout",
+            summary=t("summary_minimax"),
             default_root_fn=_mavis_root,
             deploy_fn=deployer.deploy_minimax,
             verify_fn=deployer.verify_minimax,
@@ -110,10 +111,10 @@ def _build_specs() -> list[AgentSpec]:
         ),
         AgentSpec(
             name="qoder",
-            display_name="Qoder (user)",
+            display_name=t("name_qoder_user"),
             icon="Q",
             kind="user",
-            summary="~/.qoder overlay (supervisor + workers)",
+            summary=t("summary_qoder"),
             default_root_fn=_qoder_root,
             deploy_fn=deployer.deploy_qoder_user,
             verify_fn=deployer.verify_qoder_user,
@@ -122,10 +123,10 @@ def _build_specs() -> list[AgentSpec]:
         ),
         AgentSpec(
             name="qoder-project",
-            display_name="Qoder Project",
+            display_name=t("name_qoder_project"),
             icon="Q+",
             kind="project",
-            summary="Project-root .qoder/ overlay (recommended)",
+            summary=t("summary_qoder_project"),
             default_root_fn=_no_default,
             deploy_fn=deployer.deploy_qoder_project,
             verify_fn=deployer.verify_qoder_project,
@@ -137,7 +138,7 @@ def _build_specs() -> list[AgentSpec]:
             display_name="Trae",
             icon="T",
             kind="project",
-            summary="Project-root .trae/ + AGENTS.md overlay",
+            summary=t("summary_trae"),
             default_root_fn=_no_default,
             deploy_fn=deployer.deploy_trae,
             verify_fn=deployer.verify_trae,
@@ -149,7 +150,7 @@ def _build_specs() -> list[AgentSpec]:
             display_name="OpenCode",
             icon="O",
             kind="project",
-            summary="Project-root .opencode/ overlay",
+            summary=t("summary_opencode"),
             default_root_fn=_no_default,
             deploy_fn=deployer.deploy_opencode,
             verify_fn=deployer.verify_opencode,
@@ -158,10 +159,10 @@ def _build_specs() -> list[AgentSpec]:
         ),
         AgentSpec(
             name="agents-generic",
-            display_name="AGENTS Generic",
+            display_name=t("name_agents_generic"),
             icon="A",
             kind="project",
-            summary="AGENTS.md + .agents/skills convention",
+            summary=t("summary_agents_generic"),
             default_root_fn=_no_default,
             deploy_fn=deployer.deploy_agents_generic,
             verify_fn=deployer.verify_agents_generic,
@@ -187,3 +188,10 @@ def get(name: str) -> AgentSpec | None:
         if spec.name == name:
             return spec
     return None
+
+
+def rebuild_specs() -> list[AgentSpec]:
+    """Rebuild specs with current language (call after language switch)."""
+    global _SPECS
+    _SPECS = None
+    return all_agents()

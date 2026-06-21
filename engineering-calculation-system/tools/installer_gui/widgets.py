@@ -16,6 +16,7 @@ import customtkinter as ctk
 from . import styles
 from .agents import AgentSpec
 from .detector import Detection
+from .i18n import t
 
 
 # --------------------------------------------------------------------------- #
@@ -28,7 +29,7 @@ class StatusBadge(ctk.CTkFrame):
     def __init__(self, master: tk.Misc, **kwargs) -> None:
         super().__init__(master, fg_color="transparent", **kwargs)
         self._prog_dot = ctk.CTkLabel(self, text="●", width=14, font=styles.FONT_SMALL)
-        self._prog_label = ctk.CTkLabel(self, text="checking…", font=styles.FONT_SMALL, anchor="w")
+        self._prog_label = ctk.CTkLabel(self, text=t("checking"), font=styles.FONT_SMALL, anchor="w")
         self._dep_dot = ctk.CTkLabel(self, text="●", width=14, font=styles.FONT_SMALL)
         self._dep_label = ctk.CTkLabel(self, text="—", font=styles.FONT_SMALL, anchor="w")
         self._prog_dot.grid(row=0, column=0, padx=(0, 2))
@@ -39,22 +40,22 @@ class StatusBadge(ctk.CTkFrame):
     def update(self, detection: Detection | None) -> None:  # type: ignore[override]
         if detection is None:
             self._prog_dot.configure(text_color=styles.NEUTRAL)
-            self._prog_label.configure(text="checking…")
+            self._prog_label.configure(text=t("checking"))
             self._dep_dot.configure(text_color=styles.NEUTRAL)
             self._dep_label.configure(text="—")
             return
         if detection.program:
             self._prog_dot.configure(text_color=styles.COLOR_INSTALLED)
-            self._prog_label.configure(text="program installed")
+            self._prog_label.configure(text=t("program_installed"))
         else:
             self._prog_dot.configure(text_color=styles.COLOR_NOT_INSTALLED)
-            self._prog_label.configure(text="program not found")
+            self._prog_label.configure(text=t("program_not_found"))
         if detection.deployed:
             self._dep_dot.configure(text_color=styles.COLOR_DEPLOYED)
-            self._dep_label.configure(text="deployed")
+            self._dep_label.configure(text=t("deployed"))
         else:
             self._dep_dot.configure(text_color=styles.COLOR_NOT_DEPLOYED)
-            self._dep_label.configure(text="not deployed")
+            self._dep_label.configure(text=t("not_deployed"))
 
 
 # --------------------------------------------------------------------------- #
@@ -100,21 +101,21 @@ class AgentCard(ctk.CTkFrame):
         icon = ctk.CTkLabel(
             header,
             text=spec.icon,
-            width=30,
-            height=30,
-            corner_radius=15,
+            width=32,
+            height=32,
+            corner_radius=16,
             fg_color=styles.ACCENT,
             text_color="white",
-            font=(styles.FONT_FAMILY, 13, "bold"),
+            font=(styles.FONT_FAMILY, 14, "bold"),
         )
         icon.grid(row=0, column=0, padx=(0, styles.PAD_SM))
         name = ctk.CTkLabel(header, text=spec.display_name, font=styles.FONT_SUBTITLE, anchor="w")
         name.grid(row=0, column=1, sticky="ew")
-        kind_text = "project" if spec.kind == "project" else "user"
+        kind_text = t("kind_project") if spec.kind == "project" else t("kind_user")
         kind_tag = ctk.CTkLabel(
             header,
             text=kind_text,
-            width=52,
+            width=56,
             corner_radius=8,
             fg_color=("#D7DEE6", "#3A3F4B"),
             text_color=("#41505E", "#C7CED6"),
@@ -131,7 +132,7 @@ class AgentCard(ctk.CTkFrame):
         self._badge.grid(row=2, column=0, sticky="w", padx=styles.PAD, pady=(2, 2))
 
         self._root_label = ctk.CTkLabel(
-            self, text="root: (not set)", font=styles.FONT_SMALL, anchor="w",
+            self, text=t("root_not_set"), font=styles.FONT_SMALL, anchor="w",
             text_color=("#6B7480", "#9AA5B1"),
         )
         self._root_label.grid(row=3, column=0, sticky="ew", padx=styles.PAD)
@@ -142,14 +143,14 @@ class AgentCard(ctk.CTkFrame):
         actions.grid_columnconfigure(0, weight=1)
 
         self._deploy_btn = ctk.CTkButton(
-            actions, text="Deploy", height=26, font=styles.FONT_SMALL,
+            actions, text=t("btn_deploy"), height=28, font=styles.FONT_SMALL,
             fg_color=styles.ACCENT, hover_color=styles.ACCENT_HOVER,
             command=self._do_deploy,
         )
         self._deploy_btn.grid(row=0, column=0, sticky="ew", padx=(0, 4))
 
         self._verify_btn = ctk.CTkButton(
-            actions, text="Verify", height=26, width=60, font=styles.FONT_SMALL,
+            actions, text=t("btn_verify"), height=28, width=64, font=styles.FONT_SMALL,
             fg_color=("#5B6B79", "#3F4753"), hover_color=("#4A5865", "#343B45"),
             command=self._do_verify,
         )
@@ -157,7 +158,7 @@ class AgentCard(ctk.CTkFrame):
 
         if spec.kind == "project":
             self._root_btn = ctk.CTkButton(
-                actions, text="Folder…", height=26, width=64, font=styles.FONT_SMALL,
+                actions, text=t("btn_folder"), height=28, width=68, font=styles.FONT_SMALL,
                 fg_color=("#5B6B79", "#3F4753"), hover_color=("#4A5865", "#343B45"),
                 command=self._do_pick_root,
             )
@@ -165,7 +166,7 @@ class AgentCard(ctk.CTkFrame):
             self._uninstall_btn = None
         else:
             self._uninstall_btn = ctk.CTkButton(
-                actions, text="Remove", height=26, width=64, font=styles.FONT_SMALL,
+                actions, text=t("btn_remove"), height=28, width=68, font=styles.FONT_SMALL,
                 fg_color=styles.DANGER, hover_color=styles.DANGER_HOVER,
                 command=self._do_uninstall,
             )
@@ -179,12 +180,12 @@ class AgentCard(ctk.CTkFrame):
 
     def set_root_label(self, path: Path | None) -> None:
         if path is None:
-            self._root_label.configure(text="root: (not set)")
+            self._root_label.configure(text=t("root_not_set"))
         else:
             display = str(path)
             if len(display) > 42:
                 display = "…" + display[-41:]
-            self._root_label.configure(text=f"root: {display}")
+            self._root_label.configure(text=f"{t('root_prefix')}{display}")
 
     def set_busy(self, busy: bool) -> None:
         state = "disabled" if busy else "normal"
@@ -194,6 +195,34 @@ class AgentCard(ctk.CTkFrame):
             self._uninstall_btn.configure(state=state)
         if self._root_btn is not None:
             self._root_btn.configure(state=state)
+
+    def refresh_texts(self) -> None:
+        """Re-apply translated strings (called after language switch)."""
+        kind_text = t("kind_project") if self._spec.kind == "project" else t("kind_user")
+        # Update kind tag
+        for child in self.winfo_children():
+            if isinstance(child, ctk.CTkFrame) and child.grid_info().get("row") == 0:
+                for sub in child.winfo_children():
+                    if isinstance(sub, ctk.CTkLabel) and sub.cget("width") == 56:
+                        sub.configure(text=kind_text)
+                        break
+                break
+        # Update buttons
+        self._deploy_btn.configure(text=t("btn_deploy"))
+        self._verify_btn.configure(text=t("btn_verify"))
+        if self._uninstall_btn is not None:
+            self._uninstall_btn.configure(text=t("btn_remove"))
+        if self._root_btn is not None:
+            self._root_btn.configure(text=t("btn_folder"))
+        # Re-apply root label
+        current_text = self._root_label.cget("text")
+        if current_text == t("root_not_set"):
+            pass  # already correct
+        else:
+            prefix = t("root_prefix")
+            if current_text.startswith(prefix):
+                path_str = current_text[len(prefix):]
+                self._root_label.configure(text=f"{prefix}{path_str}")
 
     # ----- internal button handlers ----- #
 
@@ -263,7 +292,7 @@ class LogPanel(ctk.CTkFrame):
             return "error"
         if "[verify]" in lower or "[done]" in lower or "complete" in lower or "✓" in line:
             return "ok"
-        if "[backup]" in lower or "[skip]" in lower or "warning" in lower:
+        if "[backup]" in lower or "[skip]" in lower or "warning" in lower or "[警告]" in line:
             return "warn"
         return None
 
@@ -279,7 +308,7 @@ class ProgressRow(ctk.CTkFrame):
         self._bar = ctk.CTkProgressBar(self, height=10, progress_color=styles.ACCENT)
         self._bar.set(0.0)
         self._bar.grid(row=0, column=0, sticky="ew", padx=(0, styles.PAD))
-        self._label = ctk.CTkLabel(self, text="idle", font=styles.FONT_SMALL, anchor="w", width=320)
+        self._label = ctk.CTkLabel(self, text=t("progress_idle"), font=styles.FONT_SMALL, anchor="w", width=320)
         self._label.grid(row=0, column=1, sticky="w")
 
     def set(self, fraction: float, label: str) -> None:

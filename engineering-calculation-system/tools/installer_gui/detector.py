@@ -22,6 +22,9 @@ from dataclasses import dataclass
 from pathlib import Path
 
 
+from .i18n import t
+
+
 @dataclass(frozen=True)
 class Detection:
     """Result of probing one agent."""
@@ -73,7 +76,7 @@ def detect_codex_program() -> tuple[bool, str]:
     home = _home() / ".codex"
     if _dir_exists(home):
         return True, f"home dir found: {home}"
-    return False, "codex CLI not on PATH and ~/.codex absent"
+    return False, t("detector_codex_not_found")
 
 
 def detect_mavis_program() -> tuple[bool, str]:
@@ -87,7 +90,7 @@ def detect_mavis_program() -> tuple[bool, str]:
         return True, f"bin dir found: {bin_dir}"
     if _dir_exists(_home() / ".mavis"):
         return True, f"home dir found: {_home() / '.mavis'}"
-    return False, "mavis CLI not on PATH and ~/.mavis absent"
+    return False, t("detector_mavis_not_found")
 
 
 def detect_qoder_program() -> tuple[bool, str]:
@@ -98,7 +101,7 @@ def detect_qoder_program() -> tuple[bool, str]:
     home = Path(os.environ.get("QODER_HOME", "")).expanduser() if os.environ.get("QODER_HOME") else _home() / ".qoder"
     if _dir_exists(home):
         return True, f"home dir found: {home}"
-    return False, "qoder CLI not on PATH and ~/.qoder absent"
+    return False, t("detector_qoder_not_found")
 
 
 def detect_trae_program() -> tuple[bool, str]:
@@ -106,7 +109,7 @@ def detect_trae_program() -> tuple[bool, str]:
     exe = _exe_on_path("trae")
     if exe:
         return True, f"CLI found: {exe}"
-    return False, "trae CLI not on PATH (project-overlay install only)"
+    return False, t("detector_trae_not_found")
 
 
 def detect_opencode_program() -> tuple[bool, str]:
@@ -114,7 +117,7 @@ def detect_opencode_program() -> tuple[bool, str]:
     exe = _exe_on_path("opencode")
     if exe:
         return True, f"CLI found: {exe}"
-    return False, "opencode CLI not on PATH (project-overlay install only)"
+    return False, t("detector_opencode_not_found")
 
 
 def detect_agents_generic_program() -> tuple[bool, str]:
@@ -137,7 +140,7 @@ PROGRAM_DETECTORS = {
 def program_installed(agent_name: str) -> tuple[bool, str]:
     detector = PROGRAM_DETECTORS.get(agent_name)
     if detector is None:
-        return False, f"unknown agent: {agent_name}"
+        return False, f"{t('detector_unknown_agent')}: {agent_name}"
     return detector()
 
 
@@ -153,7 +156,7 @@ def skill_deployed(agent_name: str, install_root: Path | None) -> tuple[bool, st
     chosen yet", which we report as not deployed.
     """
     if install_root is None:
-        return False, "no install root selected"
+        return False, t("detector_no_root_selected")
 
     root = Path(install_root).expanduser()
 
@@ -182,12 +185,12 @@ def skill_deployed(agent_name: str, install_root: Path | None) -> tuple[bool, st
     }
     candidates = sentinels.get(agent_name, [])
     if not candidates:
-        return False, f"no sentinel defined for {agent_name}"
+        return False, f"{t('detector_no_sentinel')}: {agent_name}"
 
     present = [p for p in candidates if _file_exists(p)]
     if present:
         return True, f"sentinel found: {present[0]}"
-    return False, f"sentinel missing under {root}"
+    return False, f"{t('detector_sentinel_missing')} {root}"
 
 
 def detect(agent_name: str, install_root: Path | None) -> Detection:

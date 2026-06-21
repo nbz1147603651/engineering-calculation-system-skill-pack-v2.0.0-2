@@ -29,6 +29,7 @@ from pathlib import Path
 from typing import Callable
 
 from . import detector
+from .i18n import t
 
 
 # --------------------------------------------------------------------------- #
@@ -83,8 +84,7 @@ def set_repo_root(path: Path | None) -> None:
     candidate = Path(path).expanduser() if path else None
     if candidate is not None and not (candidate / "tools" / "build_release.py").exists():
         raise DeployError(
-            f"selected folder does not look like the skill-pack repo "
-            f"(tools/build_release.py missing): {candidate}"
+            t("deployer_invalid_repo", path=candidate)
         )
     REPO_ROOT = candidate
     TOOLS_DIR = (REPO_ROOT / "tools") if REPO_ROOT else Path("tools")
@@ -109,9 +109,7 @@ def resolve_python() -> str:
     if found:
         return found
     raise DeployError(
-        "no system Python found on PATH. The deployment exe needs Python 3.9+ "
-        "installed on the target machine to build the skill pack "
-        "(it runs tools/build_release.py). Install Python or run from source."
+        t("deployer_no_python")
     )
 
 
@@ -119,9 +117,7 @@ def require_repo_root() -> Path:
     """Return the resolved repo root, raising a clear error if unset."""
     if REPO_ROOT is None:
         raise DeployError(
-            "skill-pack repository location is not set. "
-            + ("Select the repo folder in the UI first." if is_frozen()
-               else "ECS_REPO_ROOT is unset and the source layout was not detected.")
+            t("deployer_no_repo_root")
         )
     return REPO_ROOT
 
@@ -269,7 +265,7 @@ def _copy_tree(src: Path, dst: Path, *, log: LogFn, merge: bool = False) -> None
       produces zero backups).
     """
     if not src.exists():
-        raise DeployError(f"source missing: {src} (run build first)")
+        raise DeployError(t("deployer_source_missing", src=src))
     dst.parent.mkdir(parents=True, exist_ok=True)
     if merge:
         backed = 0
@@ -292,7 +288,7 @@ def _copy_tree(src: Path, dst: Path, *, log: LogFn, merge: bool = False) -> None
 
 def _copy_file(src: Path, dst: Path, *, log: LogFn) -> None:
     if not src.exists():
-        raise DeployError(f"source file missing: {src}")
+        raise DeployError(t("deployer_source_file_missing", src=src))
     if dst.exists():
         if _files_equal(src, dst):
             log(f"[skip] {dst} unchanged")
@@ -341,7 +337,7 @@ class DeployContext:
 
 def _resolve_root(ctx: DeployContext) -> Path:
     if ctx.install_root is None:
-        raise DeployError("no install root selected (pick a directory first)")
+        raise DeployError(t("deployer_no_install_root"))
     return Path(ctx.install_root).expanduser()
 
 
@@ -354,7 +350,7 @@ def deploy_codex(ctx: DeployContext) -> None:
     ensure_profiles(("core",), log=ctx.log, progress=ctx.progress)
     ctx.progress(0.7, "copying core skill")
     _copy_tree(DIST_CORE, root, log=ctx.log)
-    ctx.progress(1.0, "Codex deploy complete")
+    ctx.progress(1.0, t("deploy_codex_done"))
 
 
 def verify_codex(ctx: DeployContext) -> bool:
@@ -367,7 +363,7 @@ def verify_codex(ctx: DeployContext) -> bool:
 def uninstall_codex(ctx: DeployContext) -> None:
     root = _resolve_root(ctx)
     _remove_managed(root, log=ctx.log)
-    ctx.log("[done] Codex skill removed")
+    ctx.log(t("uninstall_codex_done"))
 
 
 # --------------------------------------------------------------------------- #
@@ -386,7 +382,7 @@ def deploy_minimax(ctx: DeployContext) -> None:
     ensure_profiles(("core",), log=ctx.log, progress=ctx.progress)
     ctx.progress(0.7, "copying skill into skills/engineering-calculation-system/")
     _copy_tree(DIST_CORE, target, log=ctx.log)
-    ctx.progress(1.0, "MiniMax deploy complete")
+    ctx.progress(1.0, t("deploy_minimax_done"))
 
 
 def verify_minimax(ctx: DeployContext) -> bool:
@@ -413,7 +409,7 @@ def uninstall_minimax(ctx: DeployContext) -> None:
     root = _resolve_root(ctx)
     skills_root = root.parent if root.name == "engineering-calculation-system" else root
     _remove_managed(_mavis_target(skills_root), log=ctx.log)
-    ctx.log("[done] MiniMax skill removed")
+    ctx.log(t("uninstall_minimax_done"))
 
 
 # --------------------------------------------------------------------------- #
@@ -437,7 +433,7 @@ def deploy_qoder_user(ctx: DeployContext) -> None:
     )
     if rc != 0:
         raise DeployError(f"install_qoder_user.py failed (exit {rc})")
-    ctx.progress(1.0, "Qoder user overlay installed")
+    ctx.progress(1.0, t("deploy_qoder_user_done"))
 
 
 def verify_qoder_user(ctx: DeployContext) -> bool:
@@ -468,7 +464,7 @@ def uninstall_qoder_user(ctx: DeployContext) -> None:
     )
     if rc != 0:
         raise DeployError(f"install_qoder_user.py --uninstall failed (exit {rc})")
-    ctx.log("[done] Qoder user overlay removed")
+    ctx.log(t("uninstall_qoder_user_done"))
 
 
 # --------------------------------------------------------------------------- #
@@ -512,7 +508,7 @@ def _deploy_project_overlay(
         else:
             _copy_file(src, dst, log=ctx.log)
         ctx.progress(0.6 + 0.35 * (index + 1) / steps, f"copied {rel}")
-    ctx.progress(1.0, f"{agent_name} project overlay deployed")
+    ctx.progress(1.0, t("deploy_project_done", agent=agent_name))
 
 
 # ---- Qoder Project ---- #
@@ -536,7 +532,7 @@ def verify_qoder_project(ctx: DeployContext) -> bool:
 def uninstall_qoder_project(ctx: DeployContext) -> None:
     root = _resolve_root(ctx)
     _remove_managed_and_backups(".qoder", root, log=ctx.log)
-    ctx.log("[done] .qoder overlay removed (core skill left intact)")
+    ctx.log(t("uninstall_qoder_project_done"))
 
 
 # ---- Trae ---- #
@@ -564,7 +560,7 @@ def uninstall_trae(ctx: DeployContext) -> None:
     root = _resolve_root(ctx)
     _remove_managed_and_backups(".trae", root, log=ctx.log)
     _remove_managed_and_backups("AGENTS.md", root, log=ctx.log)
-    ctx.log("[done] .trae overlay removed")
+    ctx.log(t("uninstall_trae_done"))
 
 
 # ---- OpenCode ---- #
@@ -592,7 +588,7 @@ def uninstall_opencode(ctx: DeployContext) -> None:
     root = _resolve_root(ctx)
     _remove_managed_and_backups(".opencode", root, log=ctx.log)
     _remove_managed_and_backups("AGENTS.md", root, log=ctx.log)
-    ctx.log("[done] .opencode overlay removed")
+    ctx.log(t("uninstall_opencode_done"))
 
 
 # ---- AGENTS Generic ---- #
@@ -620,4 +616,4 @@ def uninstall_agents_generic(ctx: DeployContext) -> None:
     root = _resolve_root(ctx)
     _remove_managed_and_backups(".agents", root, log=ctx.log)
     _remove_managed_and_backups("AGENTS.md", root, log=ctx.log)
-    ctx.log("[done] AGENTS.md + .agents overlay removed")
+    ctx.log(t("uninstall_agents_generic_done"))
