@@ -100,7 +100,7 @@ class App(ctk.CTk):
         """Ensure deployer.REPO_ROOT is set before any deploy/verify runs.
 
         Source mode: deployer auto-detected it at import; nothing to do.
-        Frozen mode: honor ECS_REPO_ROOT, then persisted config, else prompt.
+        Frozen mode: honor ECS_REPO_ROOT, then try exe directory, then persisted config, else prompt.
         """
         if not deployer.is_frozen():
             return
@@ -113,7 +113,19 @@ class App(ctk.CTk):
             except deployer.DeployError:
                 pass  # env value was stale; fall through
 
-        # 2. Try persisted config (this is the fix for always prompting!)
+        # 2. Try exe directory (default location when running from exe)
+        exe_dir = Path(sys.executable).parent if getattr(sys, 'frozen', False) else None
+        if exe_dir:
+            try:
+                deployer.set_repo_root(exe_dir)
+                # Successfully set from exe directory, save to config
+                self._app_config.repo_root = str(exe_dir)
+                self._app_config.save()
+                return
+            except deployer.DeployError:
+                pass  # exe dir doesn't have the required files; fall through
+
+        # 3. Try persisted config
         if self._app_config.repo_root:
             try:
                 deployer.set_repo_root(Path(self._app_config.repo_root))
@@ -121,7 +133,7 @@ class App(ctk.CTk):
             except deployer.DeployError:
                 pass  # persisted path is stale; fall through to prompt
 
-        # 3. Defer the prompt until the window is fully up
+        # 4. Defer the prompt until the window is fully up
         self.after(50, self._prompt_for_repo_root)
 
     def _prompt_for_repo_root(self) -> None:
@@ -328,42 +340,21 @@ class App(ctk.CTk):
         # Update window title
         self.title(f"{t('window_title')}  v{self.version}")
 
+        # Reset specs with new language
+        agents.rebuild_specs()
+
         # Destroy and rebuild all frames
         for widget in self.winfo_children():
             widget.destroy()
 
-        # Rebuild layout
-        self._build_layout()
+        # Reset card dict before rebuild
+        self._cards = {}
 
-        # Rebuild agent cards with new specs
-        specs = agents.rebuild_specs()
-        scroll = self._find_scrollable_frame()
-        if scroll:
-            for index, spec in enumerate(specs):
-                r, c = divmod(index, 4)
-                card = widgets.AgentCard(
-                    scroll,
-                    spec,
-                    on_deploy=self._on_deploy,
-                    on_verify=self._on_verify,
-                    on_uninstall=self._on_uninstall,
-                    on_pick_root=self._on_pick_root,
-                )
-                card.grid(row=r, column=c, padx=8, pady=8, sticky="nsew")
-                card.set_root_label(self._roots.get(spec.name))
-                self._cards[spec.name] = card
+        # Rebuild layout (includes card creation via _build_main)
+        self._build_layout()
 
         # Refresh detection
         self._refresh_all_detection()
-
-    def _find_scrollable_frame(self):
-        """Find the scrollable frame in the main area."""
-        for child in self.winfo_children():
-            if isinstance(child, ctk.CTkFrame):
-                for sub in child.winfo_children():
-                    if isinstance(sub, ctk.CTkScrollableFrame):
-                        return sub
-        return None
 
     # ------------------------------------------------------------------ #
     # Detection refresh

@@ -315,9 +315,9 @@ class ProgressRow(ctk.CTkFrame):
         self._bar.set(max(0.0, min(1.0, fraction)))
         self._label.configure(text=label)
 
-    def reset(self, text: str = "idle") -> None:
+    def reset(self, text: str | None = None) -> None:
         self._bar.set(0.0)
-        self._label.configure(text=text)
+        self._label.configure(text=text if text is not None else t("progress_idle"))
 
     def set_error(self, text: str) -> None:
         self._bar.configure(progress_color=styles.DANGER)

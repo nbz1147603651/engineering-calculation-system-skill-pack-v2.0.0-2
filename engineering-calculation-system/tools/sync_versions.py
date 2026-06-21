@@ -28,6 +28,7 @@ LIGHT_ADAPTER_ROOT = REPO_ROOT / "adapter_sources" / "light"
 QODER_ADAPTER_ROOT = REPO_ROOT / "adapter_sources" / "qoder"
 PLUGIN_ROOT = WORKSPACE_ROOT / "plugins" / "engineering-calculation-system"
 OPENCODE_ROOT = WORKSPACE_ROOT / "opencodeplugin"
+INSTALLER_GUI_INIT = REPO_ROOT / "tools" / "installer_gui" / "__init__.py"
 
 
 VERSIONED_DOC_PATTERNS = [
@@ -70,11 +71,26 @@ def sync_current_docs(version: str) -> None:
             path.write_text(updated, encoding="utf-8")
 
 
+def sync_installer_gui_version(version: str) -> None:
+    """Sync __version__ in installer_gui/__init__.py."""
+    if not INSTALLER_GUI_INIT.exists():
+        return
+    text = INSTALLER_GUI_INIT.read_text(encoding="utf-8")
+    updated = re.sub(
+        r'__version__\s*=\s*"[^"]+"',
+        f'__version__ = "{version}"',
+        text,
+    )
+    if updated != text:
+        INSTALLER_GUI_INIT.write_text(updated, encoding="utf-8")
+
+
 def sync_versions(version: str, created_at: str) -> None:
     sync_json_version(CORE_SKILL_ROOT / "schemas" / "artifact_contracts.json", version)
     sync_skill_frontmatter_versions(CORE_SKILL_ROOT, version)
     sync_skill_frontmatter_versions(LIGHT_ADAPTER_ROOT, version)
     sync_skill_frontmatter_versions(QODER_ADAPTER_ROOT, version)
+    sync_installer_gui_version(version)
     sync_opencode_package(version)
     sync_codex_manifest(version, created_at)
     sync_current_docs(version)

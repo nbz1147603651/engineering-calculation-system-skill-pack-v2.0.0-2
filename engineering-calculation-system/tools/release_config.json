@@ -42,7 +42,7 @@
     ".gitignore"
   ],
   "ui_client": {
-    "entry_module": "tools.installer_gui.app",
+    "entry_module": "installer_gui.app",
     "exe_name_template": "engineering-calc-system-installer-v{version}",
     "collect_all": [
       "customtkinter"

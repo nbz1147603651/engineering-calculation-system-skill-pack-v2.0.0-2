@@ -14,59 +14,93 @@ _TRANSLATIONS: dict[Language, dict[str, str]] = {
     "en": {
         # Window title
         "window_title": "Engineering Calculation System - Deployment Console",
+        "window_title_zh": "工程计算系统 - 部署控制台",
         # Top bar
         "title": "Engineering Calculation System — Deployment Console",
+        "title_zh": "工程计算系统 — 部署控制台",
         "theme_light": "Light",
+        "theme_light_zh": "浅色",
         "theme_dark": "Dark",
+        "theme_dark_zh": "深色",
         "theme_system": "System",
+        "theme_system_zh": "跟随系统",
         "lang_en": "EN",
         "lang_zh": "中文",
         # Scrollable frame
         "target_agents": "Target Agents",
+        "target_agents_zh": "目标代理",
         # Status badge
         "checking": "checking…",
+        "checking_zh": "检测中…",
         "program_installed": "program installed",
+        "program_installed_zh": "程序已安装",
         "program_not_found": "program not found",
+        "program_not_found_zh": "未找到程序",
         "deployed": "deployed",
+        "deployed_zh": "已部署",
         "not_deployed": "not deployed",
+        "not_deployed_zh": "未部署",
         # Kind tags
         "kind_user": "user",
+        "kind_user_zh": "用户级",
         "kind_project": "project",
+        "kind_project_zh": "项目级",
         # Root label
         "root_not_set": "root: (not set)",
+        "root_not_set_zh": "根目录：（未设置）",
         "root_prefix": "root: ",
+        "root_prefix_zh": "根目录：",
         # Action buttons
         "btn_deploy": "Deploy",
+        "btn_deploy_zh": "部署",
         "btn_verify": "Verify",
+        "btn_verify_zh": "验证",
         "btn_remove": "Remove",
+        "btn_remove_zh": "移除",
         "btn_folder": "Folder…",
+        "btn_folder_zh": "文件夹…",
         # Bottom action row
         "btn_rescan": "Re-scan",
+        "btn_rescan_zh": "重新扫描",
         "btn_build_all": "Build all profiles",
+        "btn_build_all_zh": "构建所有配置",
         "btn_repo": "Repo…",
+        "btn_repo_zh": "仓库…",
         "repo_not_set": "repo: (not set)",
+        "repo_not_set_zh": "仓库：（未设置）",
         "repo_prefix": "repo: ",
+        "repo_prefix_zh": "仓库：",
         "status_ready": "ready",
+        "status_ready_zh": "就绪",
         # Bottom controls
         "btn_clear_log": "Clear log",
+        "btn_clear_log_zh": "清除日志",
         "btn_stop": "Stop",
+        "btn_stop_zh": "停止",
         # Progress
         "progress_idle": "idle",
+        "progress_idle_zh": "空闲",
         "progress_starting": "starting…",
+        "progress_starting_zh": "启动中…",
         "progress_done": "done",
+        "progress_done_zh": "完成",
         "progress_failed": "failed",
+        "progress_failed_zh": "失败",
         # Dialogs
         "dlg_select_repo_title": "Select the Engineering Calculation System skill-pack repository folder\n(contains tools/build_release.py)",
         "dlg_select_repo_title_zh": "选择工程计算系统技能包仓库文件夹\n(包含 tools/build_release.py)",
         "dlg_invalid_repo": "Invalid repo folder",
+        "dlg_invalid_repo_zh": "无效的仓库文件夹",
         "dlg_no_repo_warn": "[warn] no repo root selected. Pick one with the 'Repo…' button before deploying.",
         "dlg_no_repo_warn_zh": "[警告] 未选择仓库根目录。部署前请使用 '仓库…' 按钮选择一个。",
         "dlg_select_project_root": "Select project root for {name}",
         "dlg_select_project_root_zh": "为 {name} 选择项目根目录",
         "dlg_select_root_title": "Select project root",
+        "dlg_select_root_title_zh": "选择项目根目录",
         "dlg_select_root_msg": "Pick a project root for {name} first (Folder… button).",
         "dlg_select_root_msg_zh": "请先为 {name} 选择项目根目录（使用 文件夹… 按钮）。",
         "dlg_confirm_uninstall": "Confirm uninstall",
+        "dlg_confirm_uninstall_zh": "确认卸载",
         "dlg_confirm_uninstall_msg": (
             "Remove the Engineering Calculation System files for {name}?\n"
             "Existing files are backed up; only this package's managed files are removed."
@@ -91,7 +125,9 @@ _TRANSLATIONS: dict[Language, dict[str, str]] = {
         "log_cancel": "[warn] cancel requested; finishing current step…",
         "log_cancel_zh": "[警告] 已请求取消，正在完成当前步骤…",
         "log_done": "[done] {msg}",
+        "log_done_zh": "[完成] {msg}",
         "log_error": "[error] {msg}",
+        "log_error_zh": "[错误] {msg}",
         "log_repo_set": "[repo] skill-pack root set to {path}",
         "log_repo_set_zh": "[仓库] 技能包根目录已设为 {path}",
         # Job titles
@@ -190,6 +226,9 @@ def _build_zh() -> dict[str, str]:
     en = _TRANSLATIONS["en"]
     zh: dict[str, str] = {}
     for key, val in en.items():
+        # Skip _zh variant keys; they are translation sources, not real keys.
+        if key.endswith("_zh"):
+            continue
         # If there's a _zh variant, use it; otherwise keep the English value
         zh_key = key + "_zh"
         if zh_key in en:
