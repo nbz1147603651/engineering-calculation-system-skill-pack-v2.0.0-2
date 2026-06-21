@@ -1,6 +1,6 @@
 # Engineering Calculation System Agent Rules
 
-Use these repository rules for OpenCode and other AGENTS.md-compatible coding agents.
+Use these repository rules for ZCode, OpenCode, and other AGENTS.md-compatible coding agents.
 
 ## Entrypoint
 
@@ -27,7 +27,6 @@ templates/orchestration/merge_review.md
 For implementation or release work, read:
 
 ```text
-shared/lifecycle.md
 shared/lifecycle.md
 ```
 
@@ -59,6 +58,8 @@ fallback before claiming `web-complete`.
 ## Platform Notes
 
 - OpenCode should discover the wrapper skill at `.opencode/skills/engineering-calc-system/SKILL.md`.
+- ZCode should install the core skill folder at `~/.zcode/skills/engineering-calculation-system/` and invoke it with `$engineering-calculation-system`.
+- ZCode project-specific guardrails belong in the workspace `AGENTS.md`; keep the root `SKILL.md` as the skill entrypoint.
 - Cross-tool skill clients may use `.agents/skills/engineering-calc-system/SKILL.md`.
 - MiniMax Code can use the `MiniMaxCode` release zip or the standard root `SKILL.md` package.
 - Qoder-specific files come from the separate `dist/qoder-addon/` overlay.

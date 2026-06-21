@@ -104,6 +104,17 @@ def detect_qoder_program() -> tuple[bool, str]:
     return False, t("detector_qoder_not_found")
 
 
+def detect_zcode_program() -> tuple[bool, str]:
+    """ZCode desktop app: ``zcode`` on PATH, or a ``~/.zcode`` home directory."""
+    exe = _exe_on_path("zcode")
+    if exe:
+        return True, f"CLI found: {exe}"
+    home = _home() / ".zcode"
+    if _dir_exists(home):
+        return True, f"home dir found: {home}"
+    return False, t("detector_zcode_not_found")
+
+
 def detect_trae_program() -> tuple[bool, str]:
     """Trae: ``trae`` on PATH (best-effort; Trae is mostly an IDE)."""
     exe = _exe_on_path("trae")
@@ -129,6 +140,7 @@ def detect_agents_generic_program() -> tuple[bool, str]:
 PROGRAM_DETECTORS = {
     "codex": detect_codex_program,
     "minimax": detect_mavis_program,
+    "zcode": detect_zcode_program,
     "qoder": detect_qoder_program,
     "qoder-project": detect_qoder_program,
     "trae": detect_trae_program,
@@ -164,6 +176,7 @@ def skill_deployed(agent_name: str, install_root: Path | None) -> tuple[bool, st
     sentinels = {
         "codex": [root / "SKILL.md"],
         "minimax": [root / "engineering-calculation-system" / "SKILL.md"],
+        "zcode": [root / "SKILL.md"],
         "qoder": [
             root / "agents" / "engineering-calc-system.md",
             root / "skills" / "engineering-calc-system" / "SKILL.md",

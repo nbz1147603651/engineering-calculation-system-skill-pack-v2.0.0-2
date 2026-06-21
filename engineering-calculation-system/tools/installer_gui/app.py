@@ -100,10 +100,15 @@ class App(ctk.CTk):
         """Ensure deployer.REPO_ROOT is set before any deploy/verify runs.
 
         Source mode: deployer auto-detected it at import; nothing to do.
-        Frozen mode: honor ECS_REPO_ROOT, then try exe directory, then persisted config, else prompt.
+        Frozen mode resolution order:
+          1. ECS_REPO_ROOT environment variable
+          2. Walk up from exe directory (max 5 levels) looking for the repo
+          3. Persisted config from a previous session
+          4. Create a workspace folder next to the exe (no popup ever)
         """
         if not deployer.is_frozen():
             return
+
         # 1. Try environment variable
         env_root = os.environ.get("ECS_REPO_ROOT")
         if env_root:
@@ -111,19 +116,23 @@ class App(ctk.CTk):
                 deployer.set_repo_root(Path(env_root))
                 return
             except deployer.DeployError:
-                pass  # env value was stale; fall through
+                pass
 
-        # 2. Try exe directory (default location when running from exe)
+        # 2. Walk up from exe directory looking for tools/build_release.py
         exe_dir = Path(sys.executable).parent if getattr(sys, 'frozen', False) else None
         if exe_dir:
-            try:
-                deployer.set_repo_root(exe_dir)
-                # Successfully set from exe directory, save to config
-                self._app_config.repo_root = str(exe_dir)
-                self._app_config.save()
-                return
-            except deployer.DeployError:
-                pass  # exe dir doesn't have the required files; fall through
+            candidate = exe_dir
+            for _ in range(5):
+                try:
+                    deployer.set_repo_root(candidate)
+                    self._app_config.repo_root = str(candidate)
+                    self._app_config.save()
+                    return
+                except deployer.DeployError:
+                    parent = candidate.parent
+                    if parent == candidate:
+                        break
+                    candidate = parent
 
         # 3. Try persisted config
         if self._app_config.repo_root:
@@ -131,10 +140,16 @@ class App(ctk.CTk):
                 deployer.set_repo_root(Path(self._app_config.repo_root))
                 return
             except deployer.DeployError:
-                pass  # persisted path is stale; fall through to prompt
+                pass
 
-        # 4. Defer the prompt until the window is fully up
-        self.after(50, self._prompt_for_repo_root)
+        # 4. Create workspace folder next to the exe — no popup ever.
+        #    Deploy/build will show a clear error if the user hasn't pointed
+        #    to a real skill-pack source via the "Repo" button.
+        workspace = (exe_dir or Path.cwd()) / "workspace"
+        workspace.mkdir(parents=True, exist_ok=True)
+        deployer.set_repo_root(workspace, validate=False)
+        self._app_config.repo_root = str(workspace)
+        self._app_config.save()
 
     def _prompt_for_repo_root(self) -> None:
         chosen = filedialog.askdirectory(

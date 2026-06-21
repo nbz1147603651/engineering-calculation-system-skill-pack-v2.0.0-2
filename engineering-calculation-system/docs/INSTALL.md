@@ -6,7 +6,7 @@ Build releases from the source checkout:
 python tools/build_release.py
 ```
 
-With no arguments, the build creates every release profile plus seven publish-ready platform zips under `dist/release/`.
+With no arguments, the build creates every release profile plus eight publish-ready platform zips under `dist/release/`.
 
 ## Version Management
 
@@ -56,22 +56,25 @@ dist/ui-client/
   Produced by `python tools/build_release.py --profile ui-client`. See docs/INSTALLER_GUI.md.
 
 dist/release/
-  CODEX, MiniMaxCode, QODER Skill, QODER project, TRAE, OpenCode, and AGENTS Generic release zips, checksums, and RELEASE_INDEX.md.
+  CODEX, MiniMaxCode, ZCode, QODER Skill, QODER project, TRAE, OpenCode, and AGENTS Generic release zips, checksums, and RELEASE_INDEX.md.
 ```
 
 The `ui-client` profile builds a self-contained `engineering-calc-system-installer-v<version>.exe`
 (~28 MB) that detects installed agents and deploys the skill pack to each in one
 click. It is included in the default `build_release.py` run; pass `--no-ui-client`
 to skip the PyInstaller step during fast iteration. The exe needs a system Python
-3.9+ on PATH (to run build_release.py) and the skill-pack repo path (prompted on
-first launch, or set via `ECS_REPO_ROOT`). See `docs/INSTALLER_GUI.md` for full
-details.
+3.9+ on PATH (to run build_release.py) and the skill-pack repo path. It honors
+`ECS_REPO_ROOT`, searches parent folders near the exe, then uses any saved repo
+path; if none is valid, it starts without a popup and creates a local `workspace/`
+placeholder until the user chooses the repo with the **Repo...** button. See
+`docs/INSTALLER_GUI.md` for full details.
 
 Publish files:
 
 ```text
 dist/release/engineering-calculation-system-CODEX-v2.4.1.zip
 dist/release/engineering-calculation-system-MiniMaxCode-v2.4.1.zip
+dist/release/engineering-calculation-system-ZCode-v2.4.1.zip
 dist/release/engineering-calculation-system-QODER-v2.4.1.zip
 dist/release/engineering-calculation-system-QODER-Project-v2.4.1.zip
 dist/release/engineering-calculation-system-TRAE-v2.4.1.zip
@@ -84,6 +87,7 @@ Each zip contains one install folder plus `INSTALL.md`, except MiniMaxCode which
 ```text
 CODEX zip:         copy engineering-calculation-system/ to the Codex skills directory
 MiniMaxCode zip:   local install by copying skills/engineering-calculation-system/ to %USERPROFILE%/.mavis/skills/engineering-calculation-system/; Github import remains supported
+ZCode zip:         copy engineering-calculation-system/ to ~/.zcode/skills/engineering-calculation-system/, refresh Settings -> Skills, then invoke with $engineering-calculation-system
 QODER zip:         upload the zip directly in QODER Skills / Install Skill; this is a lightweight skill/resource entrypoint
 QODER Project zip: copy copy-to-project-root/ contents to the QODER project root; this is the recommended Qoder Smart Agent setup
 TRAE zip:          copy copy-to-project-root/ contents to the TRAE project root
@@ -102,6 +106,16 @@ If a future MiniMax Code / Mavis build reports a different user skill root, copy
 the skill folder to the reported root. The repository-style layout
 `skills/engineering-calculation-system/SKILL.md` is still used when importing
 from Github.
+
+ZCode local verification:
+
+```powershell
+Test-Path "$env:USERPROFILE\.zcode\skills\engineering-calculation-system\SKILL.md"
+```
+
+After copying the folder, refresh ZCode Settings -> Skills and keep the skill
+enabled. ZCode project-specific guardrails belong in the workspace `AGENTS.md`;
+the reusable engineering-calculation workflow remains in the skill folder.
 
 For QODER web-complete generation, prefer the QODER Project zip. The direct
 QODER zip keeps `SKILL.md` at the archive root for QODER skill-import
@@ -192,7 +206,7 @@ Update that file first when changing the package version, release date, publish 
 
 ## Overlay Usage
 
-The platform release zips are the recommended install path. Use the MiniMaxCode zip for MiniMax Code standard skill import or discovery. Use the QODER zip for direct QODER Skill upload; use the QODER Project, TRAE, and OpenCode packages when copying an overlay into a project root. Use raw overlays only when developing or debugging a release profile:
+The platform release zips are the recommended install path. Use the MiniMaxCode zip for MiniMax Code standard skill import or discovery. Use the ZCode zip for ZCode user-skill installation or Skills UI import. Use the QODER zip for direct QODER Skill upload; use the QODER Project, TRAE, and OpenCode packages when copying an overlay into a project root. Use raw overlays only when developing or debugging a release profile:
 
 ```text
 core install root: dist/core/engineering-calculation-system/

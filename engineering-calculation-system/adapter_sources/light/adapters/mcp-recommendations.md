@@ -1,6 +1,6 @@
 # Optional MCP Recommendations
 
-Use this file when adapting the Engineering Calculation System skill pack to agents with MCP support, including Codex-like environments, Qoder, OpenCode, Trae, and generic MCP clients.
+Use this file when adapting the Engineering Calculation System skill pack to agents with MCP support, including Codex-like environments, ZCode, Qoder, OpenCode, Trae, and generic MCP clients.
 
 MCP servers are optional accelerators. The skill pack must remain useful without MCP. Do not make evidence gates, handoff gates, formula correctness, or validation depend on one vendor-specific MCP server.
 

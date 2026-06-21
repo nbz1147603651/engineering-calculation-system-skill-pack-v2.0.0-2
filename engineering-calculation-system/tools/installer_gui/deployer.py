@@ -71,18 +71,20 @@ def is_frozen() -> bool:
     return getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS")
 
 
-def set_repo_root(path: Path | None) -> None:
+def set_repo_root(path: Path | None, *, validate: bool = True) -> None:
     """Override the repo root (used by app.py when the exe prompts the user).
 
     Re-derives every dependent path so callers keep using the module-level
     constants without needing to plumb a parameter through every function.
 
-    Validates the new root *before* mutating any global so a rejected path
-    leaves the previously-set (or source-detected) root intact.
+    When *validate* is True (default), the new root is checked for
+    ``tools/build_release.py`` before any globals are mutated.  Set it to
+    False when pointing at a workspace directory that may not yet contain
+    the full skill-pack source (deploy / build will fail gracefully later).
     """
     global REPO_ROOT, TOOLS_DIR, BUILD_SCRIPT, QODER_INSTALL_SCRIPT, DIST_ROOT, DIST_CORE, DIST_ADAPTERS_LIGHT, DIST_QODER_ADDON
     candidate = Path(path).expanduser() if path else None
-    if candidate is not None and not (candidate / "tools" / "build_release.py").exists():
+    if validate and candidate is not None and not (candidate / "tools" / "build_release.py").exists():
         raise DeployError(
             t("deployer_invalid_repo", path=candidate)
         )
@@ -120,6 +122,13 @@ def require_repo_root() -> Path:
             t("deployer_no_repo_root")
         )
     return REPO_ROOT
+
+
+def require_build_script() -> Path:
+    repo = require_repo_root()
+    if not BUILD_SCRIPT.exists():
+        raise DeployError(t("deployer_invalid_repo", path=repo))
+    return repo
 
 
 LogFn = Callable[[str], None]
@@ -192,7 +201,7 @@ def build_profiles(
     """
     if not profiles:
         return
-    repo = require_repo_root()
+    repo = require_build_script()
     python = resolve_python()
     total = len(profiles)
     for index, profile in enumerate(profiles):
@@ -413,6 +422,31 @@ def uninstall_minimax(ctx: DeployContext) -> None:
 
 
 # --------------------------------------------------------------------------- #
+# ZCode - user skills under ~/.zcode/skills/<skill-name>/
+# --------------------------------------------------------------------------- #
+
+def deploy_zcode(ctx: DeployContext) -> None:
+    root = _resolve_root(ctx)
+    ensure_profiles(("core",), log=ctx.log, progress=ctx.progress)
+    ctx.progress(0.7, "copying ZCode skill")
+    _copy_tree(DIST_CORE, root, log=ctx.log)
+    ctx.progress(1.0, t("deploy_zcode_done"))
+
+
+def verify_zcode(ctx: DeployContext) -> bool:
+    root = _resolve_root(ctx)
+    ok, detail = detector.skill_deployed("zcode", root)
+    ctx.log(f"[verify] {detail}")
+    return ok
+
+
+def uninstall_zcode(ctx: DeployContext) -> None:
+    root = _resolve_root(ctx)
+    _remove_managed(root, log=ctx.log)
+    ctx.log(t("uninstall_zcode_done"))
+
+
+# --------------------------------------------------------------------------- #
 # Qoder (user-level) - delegate to install_qoder_user.py
 # --------------------------------------------------------------------------- #
 
@@ -423,7 +457,7 @@ def _qoder_home(ctx: DeployContext) -> Path:
 
 def deploy_qoder_user(ctx: DeployContext) -> None:
     home = _qoder_home(ctx)
-    repo = require_repo_root()
+    repo = require_build_script()
     python = resolve_python()
     ctx.progress(0.2, "building qoder-addon + installing overlay")
     rc = _run_streaming(
@@ -442,7 +476,7 @@ def verify_qoder_user(ctx: DeployContext) -> bool:
     ctx.log(f"[verify] {detail}")
     if ok:
         # Run the script's own audit for a thorough check.
-        repo = require_repo_root()
+        repo = require_build_script()
         python = resolve_python()
         rc = _run_streaming(
             [python, str(QODER_INSTALL_SCRIPT), "--audit", "--qoder-home", str(home)],
@@ -455,7 +489,7 @@ def verify_qoder_user(ctx: DeployContext) -> bool:
 
 def uninstall_qoder_user(ctx: DeployContext) -> None:
     home = _qoder_home(ctx)
-    repo = require_repo_root()
+    repo = require_build_script()
     python = resolve_python()
     rc = _run_streaming(
         [python, str(QODER_INSTALL_SCRIPT), "--uninstall", "--qoder-home", str(home)],

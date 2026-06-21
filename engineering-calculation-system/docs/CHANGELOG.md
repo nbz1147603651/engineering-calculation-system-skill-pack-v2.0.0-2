@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased - ZCode skill adaptation
+
+### Added - ZCode Target
+
+- Added a ZCode release target that packages the core `SKILL.md` skill folder for `~/.zcode/skills/engineering-calculation-system/`.
+- Added ZCode to the deployment console as a user-level target with conservative program and sentinel detection.
+- Documented ZCode loading behavior, `$engineering-calculation-system` invocation, and workspace `AGENTS.md` guardrails in adapter and install docs.
+
 ## v2.4.1 release version unification - 2026-06-20
 
 ### Changed - Single Source Versioning

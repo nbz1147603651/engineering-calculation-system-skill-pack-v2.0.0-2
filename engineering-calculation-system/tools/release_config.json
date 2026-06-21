@@ -27,6 +27,7 @@
   "publish_targets": [
     "CODEX",
     "MiniMaxCode",
+    "ZCode",
     "QODER",
     "QODER Project",
     "TRAE",
@@ -100,6 +101,17 @@
         "Local user-skill install root observed on Windows MiniMax Code / Mavis builds: `%USERPROFILE%/.mavis/skills/`.",
         "If `mavis skill list` reports a different `agent_skills_dir` or user skill root, copy the folder to that reported root instead.",
         "For Github import, publish the unzipped archive contents as the repository root rather than uploading the zip file itself."
+      ]
+    },
+    {
+      "name": "ZCode",
+      "path": "ZCode/engineering-calculation-system",
+      "install_text": "Copy this folder to `~/.zcode/skills/engineering-calculation-system/`, then refresh and enable the skill from ZCode Settings -> Skills. You can also import/copy it through ZCode's Skills UI. Invoke it in chat with `$engineering-calculation-system` and keep project-specific guardrails in the workspace `AGENTS.md`.",
+      "include_adapter_docs": true,
+      "notes": [
+        "ZCode user skills use the directory shape `~/.zcode/skills/<skill-name>/SKILL.md`.",
+        "The root `SKILL.md` remains the authoritative entrypoint; ZCode does not need a separate hidden project overlay for the core skill.",
+        "For project-level behavior, place `AGENTS.md` in the ZCode workspace root; ZCode reads workspace `AGENTS.md` as the primary project instruction source."
       ]
     },
     {

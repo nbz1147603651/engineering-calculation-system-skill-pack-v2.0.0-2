@@ -1,4 +1,4 @@
-"""Agent metadata: the single source of truth for the 7 deployment targets.
+"""Agent metadata: the single source of truth for the 8 deployment targets.
 
 Each :class:`AgentSpec` knows how to:
 
@@ -34,6 +34,10 @@ def _codex_root() -> Path:
 
 def _mavis_root() -> Path:
     return Path.home() / ".mavis" / "skills" / "engineering-calculation-system"
+
+
+def _zcode_root() -> Path:
+    return Path.home() / ".zcode" / "skills" / "engineering-calculation-system"
 
 
 def _qoder_root() -> Path:
@@ -108,6 +112,18 @@ def _build_specs() -> list[AgentSpec]:
             uninstall_fn=deployer.uninstall_minimax,
             needs_profiles=("core",),
             cli_verify_fn=mavis_cli_verify,
+        ),
+        AgentSpec(
+            name="zcode",
+            display_name="ZCode",
+            icon="Z",
+            kind="user",
+            summary=t("summary_zcode"),
+            default_root_fn=_zcode_root,
+            deploy_fn=deployer.deploy_zcode,
+            verify_fn=deployer.verify_zcode,
+            uninstall_fn=deployer.uninstall_zcode,
+            needs_profiles=("core",),
         ),
         AgentSpec(
             name="qoder",

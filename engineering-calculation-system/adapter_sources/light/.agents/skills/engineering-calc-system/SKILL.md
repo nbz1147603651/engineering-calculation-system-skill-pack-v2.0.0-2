@@ -27,7 +27,6 @@ Before implementation or release work, also read:
 
 ```text
 ../../../shared/lifecycle.md
-../../../shared/lifecycle.md
 ```
 
 If the package shape does not include `skills/`, `shared/`, `templates/`,

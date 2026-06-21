@@ -6,7 +6,7 @@ Calculation System skill pack / plugin to each of them in one click.
 ```text
 engineering-calculation-system/tools/installer_gui/
 ├── app.py        # main window (entry point)
-├── agents.py     # 7 target agents metadata (single source of truth)
+├── agents.py     # 8 target agents metadata (single source of truth)
 ├── detector.py   # program + deployment detection
 ├── deployer.py   # build + copy + backup + verify (reuses build_release.py)
 ├── workers.py    # background thread + event queue
@@ -38,13 +38,15 @@ python tools/build_release.py --profile ui-client
 This produces `dist/ui-client/engineering-calc-system-installer-v<version>.exe`
 (~28 MB). Double-click to run, or copy it to any Windows machine and run there.
 
-Because the exe is a *deployment tool* and does not bundle the skill source, the
-first launch prompts for the **skill-pack repository folder** (the one containing
-`tools/build_release.py`). Pick it once; use the **Repo…** button to change it
-later. The exe still needs a system Python 3.9+ on `PATH` to run
-`build_release.py` for skill-pack builds (the exe itself only orchestrates
-copies/deploys). Set `ECS_REPO_ROOT` to pre-fill the repo path and skip the
-prompt:
+Because the exe is a *deployment tool* and does not bundle the skill source, it
+needs the **skill-pack repository folder** (the one containing
+`tools/build_release.py`) before it can build release profiles. On startup it
+honors `ECS_REPO_ROOT`, searches parent folders near the exe, then uses any
+saved repo path. If none is valid, it starts without a popup and creates a local
+`workspace/` placeholder; use the **Repo...** button to select the real repo
+before building or deploying. The exe still needs a system Python 3.9+ on `PATH`
+to run `build_release.py` for skill-pack builds (the exe itself only
+orchestrates copies/deploys). Set `ECS_REPO_ROOT` to pre-fill the repo path:
 
 ```powershell
 $env:ECS_REPO_ROOT = "C:\path\to\engineering-calculation-system"
@@ -65,7 +67,7 @@ explaining `pip install pyinstaller` instead of failing the whole release.
 
 ## What it does
 
-The console targets seven agents. Each is shown as a card with two status dots:
+The console targets eight agents. Each is shown as a card with two status dots:
 
 - **program** — is the agent's CLI / home directory present on this machine?
 - **deployed** — is the skill already installed at that agent's root?
@@ -74,6 +76,7 @@ The console targets seven agents. Each is shown as a card with two status dots:
 | --- | --- | --- | --- |
 | Codex | user | `~/.codex/skills/engineering-calculation-system/` | `SKILL.md` sentinel |
 | MiniMax Code | user | `~/.mavis/skills/engineering-calculation-system/` | `mavis skill show …` |
+| ZCode | user | `~/.zcode/skills/engineering-calculation-system/` | `SKILL.md` sentinel |
 | Qoder (user) | user | `QODER_HOME` or `~/.qoder` | `install_qoder_user.py --audit` |
 | Qoder Project | project | pick a project root | `.qoder/agents/engineering-calc-system.md` |
 | Trae | project | pick a project root | `.trae/project_rules.md` |

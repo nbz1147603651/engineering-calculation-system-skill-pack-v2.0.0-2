@@ -34,7 +34,6 @@ Before implementation or release work, also read:
 
 ```text
 shared/lifecycle.md
-shared/lifecycle.md
 ```
 
 If the install lacks `skills/`, `shared/`, `templates/`, `schemas/`,

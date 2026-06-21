@@ -31,7 +31,6 @@ For implementation or release work, also load:
 
 ```text
 shared/lifecycle.md
-shared/lifecycle.md
 ```
 
 Before implementing, declare `core-only`, `report-only`, `prototype-web`, or
@@ -118,6 +117,27 @@ Behavior:
 Fallback:
 
 - Use `dist/singlefile/engineering-calculation-system.all-in-one.md` when the environment cannot traverse the multi-file skill package.
+
+## ZCode
+
+Preferred setup:
+
+1. Use `dist/release/engineering-calculation-system-ZCode-v2.4.1.zip`, or copy `dist/core/engineering-calculation-system/` to `~/.zcode/skills/engineering-calculation-system/`.
+2. In ZCode, open Settings -> Skills, refresh the skill list, and keep `engineering-calculation-system` enabled.
+3. Invoke the skill in chat with `$engineering-calculation-system`; use `@` file references and `/goal` for long tasks when useful.
+4. Put project-specific operating rules in the workspace `AGENTS.md`. If you need a starter file, copy `dist/adapters-light/AGENTS.md` into the workspace root.
+
+Behavior:
+
+- ZCode skills are standard directories with a `SKILL.md` entrypoint, so the core package is the authoritative skill payload.
+- ZCode Agent should still start from `SKILL.md` and `skills/00-engineering-calculation-router.skill.md`, then load only the selected parent and child files.
+- Use ZCode's workspace context, file references, review panel, and model/execution controls as platform conveniences; do not bypass evidence gates, coding gates, handoff freeze, or `run_book(BookInput) -> BookResult`.
+- ZCode reads user and workspace `AGENTS.md` instructions separately from skills. Keep persistent project guardrails in `AGENTS.md`, and keep reusable engineering-calculation workflow rules in the skill.
+
+Fallback:
+
+- If ZCode cannot traverse the multi-file skill directory, use `dist/singlefile/engineering-calculation-system.all-in-one.md` as the attached/pasted fallback.
+- If only project instructions are available, use `AGENTS.md` plus the routing prompt below.
 
 ## Qoder
 
@@ -239,7 +259,6 @@ Do not load all child skills at once. Load only the parent and child skills sele
 During 02-reference-discovery-and-acquisition, use available internet search/browser tools actively for missing, insufficient, stale, or jurisdiction-specific references, and log meaningful searches in references/acquisition/search_log.csv.
 Use templates/ for output artifacts and scripts/validate_artifacts.py before considering the work complete.
 For implementation or release work, read shared/lifecycle.md.
-Also read shared/lifecycle.md.
 Declare delivery mode before implementation: core-only, report-only, prototype-web, or web-complete. Default to web-complete.
 For web-complete, follow 08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14.
 For web-complete, deliver both a readable calculation book with non-empty BookResult.checks and a complete web system with API/UI, import/export, batch, deployment, and smoke tests.
