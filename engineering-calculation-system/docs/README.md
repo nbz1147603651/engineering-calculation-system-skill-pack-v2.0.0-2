@@ -151,14 +151,14 @@ Each package contains one install folder plus `INSTALL.md`, except MiniMaxCode w
 ```text
 CODEX:         engineering-calculation-system/
 MiniMaxCode:   skills/engineering-calculation-system/ for Github import, or copy that folder to %USERPROFILE%/.mavis/skills/engineering-calculation-system/ for local install
-QODER:         SKILL.md at zip root for direct QODER Skill upload (lightweight entrypoint)
-QODER Project: copy-to-project-root/
+QODER:         SKILL.md at zip root for direct QODER Skill upload (lightweight skill/resource entrypoint)
+QODER Project: copy-to-project-root/ with Qoder Smart Agent supervisor and skill/resource layer
 TRAE:          copy-to-project-root/
 OpenCode:      copy-to-project-root/
 AGENTS Generic: copy-to-project-root/
 ```
 
-The MiniMaxCode package follows MiniMax's skills repository layout with `skills/engineering-calculation-system/SKILL.md`. For this machine, the local MiniMax Code / Mavis user skill root is `%USERPROFILE%/.mavis/skills/`; for sharing, the same archive can be published as a Github repository root and imported through MiniMax Code. The QODER package is for direct QODER Skill upload and is intentionally lightweight. For QODER web-complete generation, prefer QODER Project because it includes the core runtime files, templates, schemas, validator, project scaffold, and `.qoder/` overlay. The QODER Project, TRAE, OpenCode, and AGENTS Generic packages are already merged with the core runtime files, so users can copy the matching package contents directly. Use the raw core and overlay profiles only when debugging or repackaging.
+The MiniMaxCode package follows MiniMax's skills repository layout with `skills/engineering-calculation-system/SKILL.md`. For this machine, the local MiniMax Code / Mavis user skill root is `%USERPROFILE%/.mavis/skills/`; for sharing, the same archive can be published as a Github repository root and imported through MiniMax Code. The QODER package is for direct QODER Skill upload and is intentionally lightweight. For Qoder Smart Agent workflows and QODER web-complete generation, prefer QODER Project because it includes the custom agent supervisor, delegated worker agents, skill/resource layer, core runtime files, templates, schemas, validator, project scaffold, and `.qoder/` overlay. The QODER Project, TRAE, OpenCode, and AGENTS Generic packages are already merged with the core runtime files, so users can copy the matching package contents directly. Use the raw core and overlay profiles only when debugging or repackaging.
 
 Release metadata and classified install targets are maintained in:
 
@@ -170,7 +170,9 @@ Change that file when updating the version, release date, publish targets, singl
 
 ## Agent entrypoints
 
-Use `dist/core/engineering-calculation-system/SKILL.md` as the root skill entrypoint for Codex-compatible and MiniMax Code standard-skill environments. Qoder-compatible files are distributed through `dist/qoder-addon/`. OpenCode, AGENTS.md-compatible, and Trae-compatible entries are distributed through `dist/adapters-light/`.
+Use `dist/core/engineering-calculation-system/SKILL.md` as the root skill entrypoint for Codex-compatible and MiniMax Code standard-skill environments. Qoder-compatible files are distributed through `dist/qoder-addon/`. In Qoder, `.qoder/agents/engineering-calc-system.md` is the Smart Agent supervisor, `.qoder/agents/engineering-calc-*.md` are delegated worker agents, `.qoder/skills/engineering-calc-system/` is the skill/resource layer, and `.qoder/references/` holds long non-agent references. OpenCode, AGENTS.md-compatible, and Trae-compatible entries are distributed through `dist/adapters-light/`.
+
+For Qoder, one `python tools/build_release.py` run packages the direct Skill zip and the multi-agent QODER Project zip. Use the QODER Project zip when you want the supervisor plus worker agents installed together; use the direct QODER zip only for Qoder Skill import. From a source checkout, `python tools/install_qoder_user.py --build` builds the Qoder overlay and syncs the supervisor, worker agents, skill resources, and references into `QODER_HOME` or `~/.qoder`. Use `python tools/install_qoder_user.py --audit` to check for missing or redundant managed Qoder files, and `python tools/install_qoder_user.py --uninstall` to remove only this package's Qoder files.
 
 For adapter details, see:
 

@@ -1,5 +1,7 @@
 # 工程计算系统 — 详细参考
 
+> This is a Qoder reference file, not a Qoder agent. Keep it outside `.qoder/agents/` so Qoder does not list it as a disabled custom agent.
+
 本文件包含各技能的完整字段定义、产物清单和执行细节。主文件路由后按需读取对应章节。
 
 ---

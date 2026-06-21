@@ -125,16 +125,38 @@ Preferred setup:
 
 1. For project-root installation, use `dist/release/engineering-calculation-system-QODER-Project-v2.4.1.zip`.
 2. Apply `dist/qoder-addon/` on top of the core package when composing manually.
-3. Use `.qoder/skills/engineering-calc-system/SKILL.md` as the project skill.
-4. Use `.qoder/agents/engineering-calc-system.md` when the environment supports custom agents.
-5. Keep `.qoder/skills/engineering-calc-system/reference.md` and assets with the Qoder skill wrapper.
+3. Use `.qoder/agents/engineering-calc-system.md` as the Smart Agent supervisor when the environment supports custom agents.
+4. Use `.qoder/skills/engineering-calc-system/SKILL.md` as the project skill and direct-skill fallback.
+5. Keep `.qoder/skills/engineering-calc-system/reference.md`, `.qoder/references/engineering-calc-system.md`, and assets with the Qoder wrapper.
+
+Recommended Qoder architecture:
+
+- Use agent-first routing. The Qoder Smart Agent owns model/tool selection, expert-team orchestration, lifecycle routing, gate decisions, and final acceptance.
+- Use the skill wrapper as the reusable knowledge/resource layer, not as the only production template.
+- Keep `.qoder/agents/` clean: only real agent Markdown files belong there. Store long references under `.qoder/references/` or `.qoder/skills/engineering-calc-system/reference.md` so Qoder does not list them as disabled custom agents.
+- If both agent and skill are present, the agent is the supervisor and the skill is the resource layer. If only the direct QODER Skill zip is installed, treat it as a lightweight entrypoint.
+- A single `python tools/build_release.py` run packages all Qoder custom agents into the QODER Project zip. The direct QODER Skill zip remains root-`SKILL.md` only for Skill import compatibility.
+- From a source checkout, `python tools/install_qoder_user.py --build` installs the Qoder overlay into `QODER_HOME` or `~/.qoder` and verifies the supervisor plus worker agents. Use `python tools/install_qoder_user.py --audit` to check for redundant legacy files, and `python tools/install_qoder_user.py --uninstall` to remove only this package's managed Qoder files.
+
+Packaged Qoder custom agents:
+
+```text
+.qoder/agents/engineering-calc-system.md
+.qoder/agents/engineering-calc-reference-acquirer.md
+.qoder/agents/engineering-calc-source-intake.md
+.qoder/agents/engineering-calc-logic-extractor.md
+.qoder/agents/engineering-calc-module-worker.md
+.qoder/agents/engineering-calc-interface-worker.md
+.qoder/agents/engineering-calc-verification-worker.md
+.qoder/agents/engineering-calc-release-worker.md
+```
 
 Behavior:
 
 - Qoder should still route to the package router rather than reading every child file.
 - Widget or custom UI features are optional. If unavailable, continue with text artifacts and validation scripts.
 - The direct QODER Skill zip is a lightweight entrypoint. For web-complete generation, prefer QODER Project because it includes the core skill, templates, schemas, validator, project scaffold, and `.qoder/` overlay.
-- Qoder custom agents should use the roles in `shared/multi-agent-orchestration.md`: supervisor, reference-acquirer, source-intake, logic-extractor, module-worker, interface-worker, and verification-worker.
+- Qoder custom agents should map expert-team roles to the roles in `shared/multi-agent-orchestration.md`: supervisor, reference-acquirer, source-intake, logic-extractor, module-worker, interface-worker, and verification-worker.
 
 Fallback:
 

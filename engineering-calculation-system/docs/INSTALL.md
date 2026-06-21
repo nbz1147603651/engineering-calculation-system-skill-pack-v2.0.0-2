@@ -51,9 +51,21 @@ dist/singlefile/engineering-calculation-system.all-in-one.md
 dist/source-dev/
   Development/reference source bundle, not the default install target.
 
+dist/ui-client/
+  One-click deployment console as a Windows single-file exe (PyInstaller --onefile).
+  Produced by `python tools/build_release.py --profile ui-client`. See docs/INSTALLER_GUI.md.
+
 dist/release/
   CODEX, MiniMaxCode, QODER Skill, QODER project, TRAE, OpenCode, and AGENTS Generic release zips, checksums, and RELEASE_INDEX.md.
 ```
+
+The `ui-client` profile builds a self-contained `engineering-calc-system-installer-v<version>.exe`
+(~28 MB) that detects installed agents and deploys the skill pack to each in one
+click. It is included in the default `build_release.py` run; pass `--no-ui-client`
+to skip the PyInstaller step during fast iteration. The exe needs a system Python
+3.9+ on PATH (to run build_release.py) and the skill-pack repo path (prompted on
+first launch, or set via `ECS_REPO_ROOT`). See `docs/INSTALLER_GUI.md` for full
+details.
 
 Publish files:
 
@@ -72,8 +84,8 @@ Each zip contains one install folder plus `INSTALL.md`, except MiniMaxCode which
 ```text
 CODEX zip:         copy engineering-calculation-system/ to the Codex skills directory
 MiniMaxCode zip:   local install by copying skills/engineering-calculation-system/ to %USERPROFILE%/.mavis/skills/engineering-calculation-system/; Github import remains supported
-QODER zip:         upload the zip directly in QODER Skills / Install Skill; this is a lightweight entrypoint
-QODER Project zip: copy copy-to-project-root/ contents to the QODER project root
+QODER zip:         upload the zip directly in QODER Skills / Install Skill; this is a lightweight skill/resource entrypoint
+QODER Project zip: copy copy-to-project-root/ contents to the QODER project root; this is the recommended Qoder Smart Agent setup
 TRAE zip:          copy copy-to-project-root/ contents to the TRAE project root
 OpenCode zip:      copy copy-to-project-root/ contents to the OpenCode project root
 AGENTS Generic zip: copy copy-to-project-root/ contents to an AGENTS.md-compatible project root
@@ -96,6 +108,68 @@ QODER zip keeps `SKILL.md` at the archive root for QODER skill-import
 compatibility, but it does not contain the core templates, schemas, validator,
 or project scaffold by itself.
 
+Qoder import mode check:
+
+```text
+Shown under Qoder Smart Agents / agents: .qoder/agents/engineering-calc-system.md, agent import
+Uploaded through QODER Skills / Install Skill: root SKILL.md, skill import
+Copied from QODER Project zip: hybrid project; agent is supervisor, skill is resource layer
+```
+
+Recommended Qoder architecture is agent-first and skill-backed. Keep only real
+agent files under `.qoder/agents/`. Long references belong in
+`.qoder/references/` or `.qoder/skills/engineering-calc-system/reference.md` so
+Qoder does not list them as disabled custom agents.
+
+One-click build behavior:
+
+```text
+python tools/build_release.py
+```
+
+This command builds every platform package (and the UI deployment exe). Pass
+`--no-ui-client` to skip the PyInstaller exe build when iterating quickly. For
+Qoder, it creates:
+
+```text
+engineering-calculation-system-QODER-v2.4.1.zip
+  Direct Skill import package with root SKILL.md, reference.md, and assets/.
+
+engineering-calculation-system-QODER-Project-v2.4.1.zip
+  Project-root package with the supervisor agent, delegated worker agents,
+  skill/resource layer, references, core templates, schemas, validator, and
+  project scaffold.
+```
+
+Use QODER Project when you want multiple Qoder custom agents installed together.
+Use the direct QODER Skill zip only when the target flow is Qoder Skill import.
+
+For a local user-level Qoder install from this source checkout:
+
+```bash
+python tools/install_qoder_user.py --build
+```
+
+This builds `dist/qoder-addon/`, copies `.qoder/agents`, `.qoder/skills`, and
+`.qoder/references` into `QODER_HOME` or `~/.qoder`, removes the deprecated
+`.qoder/agents/reference.md` file if present, and verifies that all packaged
+Qoder worker agents are installed.
+
+Useful local Qoder maintenance commands:
+
+```bash
+python tools/install_qoder_user.py --audit
+python tools/install_qoder_user.py --uninstall
+python tools/install_qoder_user.py --uninstall --dry-run
+```
+
+`--audit` checks for missing managed files and redundant legacy files such as
+`.qoder/agents/reference.md` or an old `.qoder/skills/engineering-calculation-system/`
+directory. `--uninstall` removes only this package's managed Qoder agents,
+skill directory, reference file, and deprecated reference-agent file; it does
+not remove unrelated Qoder cache, extensions, project history, or other custom
+content. Use `--dry-run` to preview filesystem changes without writing.
+
 To build only one layer during development:
 
 ```bash
@@ -103,6 +177,7 @@ python tools/build_release.py --profile core
 python tools/build_release.py --profile adapters-light
 python tools/build_release.py --profile qoder-addon
 python tools/build_release.py --profile singlefile
+python tools/build_release.py --profile ui-client
 ```
 
 ## Maintenance
@@ -138,6 +213,23 @@ The Qoder addon provides:
 
 ```text
 .qoder/
+```
+
+Inside `.qoder/`, the Smart Agent entrypoint is
+`.qoder/agents/engineering-calc-system.md`; the skill/resource layer is
+`.qoder/skills/engineering-calc-system/`; long non-agent reference material is
+stored under `.qoder/references/`.
+
+The QODER Project package also includes delegated worker agents:
+
+```text
+.qoder/agents/engineering-calc-reference-acquirer.md
+.qoder/agents/engineering-calc-source-intake.md
+.qoder/agents/engineering-calc-logic-extractor.md
+.qoder/agents/engineering-calc-module-worker.md
+.qoder/agents/engineering-calc-interface-worker.md
+.qoder/agents/engineering-calc-verification-worker.md
+.qoder/agents/engineering-calc-release-worker.md
 ```
 
 Do not merge Qoder files into the default core package unless the target environment specifically needs them.

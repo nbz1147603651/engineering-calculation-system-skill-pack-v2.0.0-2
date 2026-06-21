@@ -19,6 +19,28 @@ python scripts/validate_artifacts.py --package-root . --profile core --project <
 
 你是资深工程计算软件开发专家，管理从参考资料获取到计算书实现的完整生命周期。
 
+## Qoder Architecture
+
+Use an **agent-first, skill-backed** architecture when Qoder custom agents are available.
+
+- If `.qoder/agents/engineering-calc-system.md` exists, treat it as the supervisor and this skill as the reusable skill/resource layer.
+- If this skill is imported directly through QODER Skills / Install Skill, treat it as a lightweight entrypoint. It can route and guide work, but it is not the full project template by itself.
+- Keep long references in `reference.md` or `.qoder/references/engineering-calc-system.md`. Do not place non-agent reference files in `.qoder/agents/`, because Qoder scans Markdown files there as custom agents.
+- For `web-complete`, prefer the QODER Project package with the core skill, templates, schemas, validator, project scaffold, and `.qoder` overlay.
+- `python tools/build_release.py` packages all Qoder worker agents into the QODER Project archive. The direct QODER Skill archive remains skill-only for Qoder Skill import compatibility.
+
+Packaged Qoder worker agents in QODER Project:
+
+| Agent file | Delegation scope |
+|------|------|
+| `.qoder/agents/engineering-calc-reference-acquirer.md` | 01-03 reference acquisition |
+| `.qoder/agents/engineering-calc-source-intake.md` | 04 source intake |
+| `.qoder/agents/engineering-calc-logic-extractor.md` | 05-07 logic extraction and handoff drafts |
+| `.qoder/agents/engineering-calc-module-worker.md` | 08-11 modules and runner support |
+| `.qoder/agents/engineering-calc-interface-worker.md` | 12/12a/12b/12c API, report, frontend, batch |
+| `.qoder/agents/engineering-calc-verification-worker.md` | 13 verification |
+| `.qoder/agents/engineering-calc-release-worker.md` | 14 release/deployment |
+
 ## 安装形态与完整交付契约
 
 开始任何实现或发布任务前，先检查当前安装形态：
@@ -33,7 +55,7 @@ scripts/validate_artifacts.py
 project_template/
 ```
 
-如果当前 Qoder 安装只有 `SKILL.md`、`reference.md` 和 `assets/`，这只是 direct skill 轻量入口，不是完整项目模板。要产出 `web-complete` 交付物，优先使用 `engineering-calculation-system-QODER-Project-v2.4.0.zip` 的 `copy-to-project-root/`，或加载完整 single-file fallback。
+如果当前 Qoder 安装只有 `SKILL.md`、`reference.md` 和 `assets/`，这只是 direct skill 轻量入口，不是完整项目模板。要产出 `web-complete` 交付物，优先使用 `engineering-calculation-system-QODER-Project-v2.4.1.zip` 的 `copy-to-project-root/`，或加载完整 single-file fallback。
 
 若 `../../../shared/lifecycle.md` 可用，必须先读取它。否则按本文件和 `reference.md` 中的同名契约执行。
 
@@ -397,7 +419,7 @@ show_widget(
   widget_path: "engineering-calc-system/assets/lifecycle-console.html",
   data: {
     project_name: "<项目名称>",
-    version: "2.4.0",
+    version: "2.4.1",
     current_stage: "<当前技能ID，如 02>",
     completed_stages: ["01"],
     gate_status: {

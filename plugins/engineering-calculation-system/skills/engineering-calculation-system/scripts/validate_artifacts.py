@@ -23,6 +23,16 @@ YAML_KEY_RE = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*):")
 
 PROFILE_CHOICES = {"core", "adapters-light", "qoder-addon", "singlefile"}
 DELIVERY_CHOICES = {"standard", "web-complete"}
+QODER_AGENT_FILES = [
+    ".qoder/agents/engineering-calc-system.md",
+    ".qoder/agents/engineering-calc-reference-acquirer.md",
+    ".qoder/agents/engineering-calc-source-intake.md",
+    ".qoder/agents/engineering-calc-logic-extractor.md",
+    ".qoder/agents/engineering-calc-module-worker.md",
+    ".qoder/agents/engineering-calc-interface-worker.md",
+    ".qoder/agents/engineering-calc-verification-worker.md",
+    ".qoder/agents/engineering-calc-release-worker.md",
+]
 PRODUCTION_ALLOWED = "production_allowed"
 ANALYSIS_ALLOWED = "analysis_allowed"
 BLOCKING_COVERAGE_VALUES = {"", "not_covered", "partially_covered", "conflicting", "unknown"}
@@ -993,6 +1003,41 @@ def check_skill_frontmatter(
             )
 
 
+def check_qoder_agent_frontmatter(root: Path, rel_path: str, errors: list[str]) -> None:
+    path = root / rel_path
+    if not path.exists():
+        errors.append(f"missing Qoder agent file: {rel_path}")
+        return
+    text = read_text(path)
+    match = FRONTMATTER_RE.match(text)
+    if not match:
+        errors.append(f"missing YAML frontmatter at file start in Qoder agent: {rel_path}")
+        return
+    body = match.group("body")
+    for key in ("name", "description", "tools"):
+        if not re.search(rf"^{key}:\s*.+", body, re.MULTILINE):
+            errors.append(f"missing frontmatter {key} in Qoder agent: {rel_path}")
+
+
+def check_qoder_agents(root: Path, errors: list[str]) -> None:
+    agents_dir = root / ".qoder" / "agents"
+    if not agents_dir.exists():
+        errors.append("missing Qoder agents directory: .qoder/agents")
+        return
+    expected = set(QODER_AGENT_FILES)
+    found = {
+        path.relative_to(root).as_posix()
+        for path in agents_dir.glob("*.md")
+        if path.is_file()
+    }
+    for rel_path in sorted(expected - found):
+        errors.append(f"missing Qoder agent file: {rel_path}")
+    for rel_path in sorted(found - expected):
+        errors.append(f"unexpected Qoder agent Markdown file: {rel_path}")
+    for rel_path in sorted(found & expected):
+        check_qoder_agent_frontmatter(root, rel_path, errors)
+
+
 def validate_package(package_root: Path, contract: dict) -> list[str]:
     errors: list[str] = []
     expected_version = clean_scalar(contract.get("version"))
@@ -1059,11 +1104,12 @@ def validate_qoder_addon_profile(package_root: Path) -> list[str]:
         ".qoder/skills/engineering-calc-system/SKILL.md",
         ".qoder/skills/engineering-calc-system/reference.md",
         ".qoder/skills/engineering-calc-system/assets/lifecycle-console.html",
-        ".qoder/agents/engineering-calc-system.md",
-        ".qoder/agents/reference.md",
+        ".qoder/references/engineering-calc-system.md",
+        *QODER_AGENT_FILES,
     ]
     for rel_path in required:
         check_exists(package_root, rel_path, errors)
+    check_qoder_agents(package_root, errors)
     check_skill_frontmatter(
         package_root,
         ".qoder/skills/engineering-calc-system/SKILL.md",
@@ -1073,15 +1119,20 @@ def validate_qoder_addon_profile(package_root: Path) -> list[str]:
     check_text_required_phrases(
         package_root,
         {
-            ".qoder/skills/engineering-calc-system/SKILL.md": ["Stable ASCII Contract", "shared/lifecycle.md", "dual closure"],
+            ".qoder/skills/engineering-calc-system/SKILL.md": ["Qoder Architecture", "agent-first", "shared/lifecycle.md", "dual closure"],
             ".qoder/skills/engineering-calc-system/reference.md": ["/api/i18n/<lang>"],
-            ".qoder/agents/engineering-calc-system.md": ["Stable ASCII Contract", "shared/lifecycle.md", "dual closure"],
-            ".qoder/agents/reference.md": ["/api/i18n/<lang>"],
+            ".qoder/agents/engineering-calc-system.md": ["Qoder Architecture", "agent-first", "Stable ASCII Contract", "shared/lifecycle.md", "dual closure"],
+            ".qoder/agents/engineering-calc-module-worker.md": ["Qoder Worker Contract", "run_book(BookInput) -> BookResult"],
+            ".qoder/agents/engineering-calc-interface-worker.md": ["Qoder Worker Contract", "/api/i18n/<lang>"],
+            ".qoder/agents/engineering-calc-verification-worker.md": ["Qoder Worker Contract", "web-complete"],
+            ".qoder/agents/engineering-calc-release-worker.md": ["Qoder Worker Contract", "/health"],
+            ".qoder/references/engineering-calc-system.md": ["/api/i18n/<lang>"],
         },
         errors,
     )
     check_absent(package_root, "SKILL.md", errors)
     check_absent(package_root, "core", errors)
+    check_absent(package_root, ".qoder/agents/reference.md", errors)
     check_no_cache_artifacts(package_root, errors)
     return errors
 

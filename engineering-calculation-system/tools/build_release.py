@@ -7,6 +7,8 @@ import argparse
 from dataclasses import dataclass
 import hashlib
 import shutil
+import subprocess
+import sys
 import tempfile
 import zipfile
 from pathlib import Path
@@ -160,6 +162,7 @@ DEFAULT_ALL_PROFILES = tuple(CONFIG.get("default_all_profiles", PROFILE_CHOICES)
 RELEASE_REQUIRED_PROFILES = tuple(CONFIG.get("release_required_profiles", PROFILE_CHOICES))
 SINGLEFILE_PREFIXES = tuple(CONFIG["singlefile_prefixes"])
 SOURCE_DEV_INCLUDES = tuple(CONFIG["source_dev_includes"])
+UI_CLIENT_CONFIG = CONFIG.get("ui_client", {})
 CLASSIFIED_TARGETS = tuple(parse_bundle_target(target) for target in CONFIG["classified_targets"])
 PUBLISH_TARGET_NAMES = tuple(CONFIG.get("publish_targets", (target.name for target in CLASSIFIED_TARGETS)))
 validate_release_config(CONFIG, CLASSIFIED_TARGETS)
@@ -376,6 +379,97 @@ def build_source_dev() -> Path:
     return profile_root
 
 
+def build_ui_client() -> Path:
+    """Build the one-click deployment console as a Windows single-file exe.
+
+    Driven by the ``ui_client`` block in release_config.json. Uses PyInstaller
+    ``--onefile`` so the result is a self-contained exe that needs no Python on
+    the target machine. If PyInstaller is not installed, this is a soft failure:
+    we emit a README explaining how to install it, so the rest of the release
+    build is not blocked.
+    """
+    profile_root = DIST_ROOT / "ui-client"
+    clean_dir(profile_root)
+
+    if not UI_CLIENT_CONFIG:
+        raise RuntimeError("ui_client config missing from release_config.json")
+
+    exe_name = UI_CLIENT_CONFIG["exe_name_template"].format(version=VERSION)
+    entry_module = UI_CLIENT_CONFIG["entry_module"]            # e.g. tools.installer_gui.app
+    collect_all = tuple(UI_CLIENT_CONFIG.get("collect_all", ()))
+    collect_submodules = tuple(UI_CLIENT_CONFIG.get("collect_submodules", ()))
+    onefile = bool(UI_CLIENT_CONFIG.get("onefile", True))
+    windowed = bool(UI_CLIENT_CONFIG.get("windowed", True))
+
+    try:
+        import PyInstaller  # noqa: F401
+    except ImportError:
+        readme = profile_root / "README.md"
+        readme.write_text(
+            "# UI client not built\n\n"
+            "PyInstaller is not installed in this environment, so the deployment\n"
+            "console exe was skipped. Install it and re-run:\n\n"
+            "```bash\npip install pyinstaller\npython tools/build_release.py --profile ui-client\n```\n",
+            encoding="utf-8",
+        )
+        print(f"ui-client: PyInstaller not installed; wrote {readme.relative_to(REPO_ROOT)}")
+        return profile_root
+
+    # PyInstaller must import the installer_gui package, which lives under
+    # tools/ (not an installed distribution). We give it an entry script that
+    # puts tools/ on sys.path before importing the real entry module.
+    tools_dir = REPO_ROOT / "tools"
+    bootstrap = profile_root / "_entry_bootstrap.py"
+    bootstrap.write_text(
+        "import sys\n"
+        "from pathlib import Path\n"
+        f"sys.path.insert(0, r'{tools_dir}')\n"
+        f"from {entry_module} import main\n"
+        "main()\n",
+        encoding="utf-8",
+    )
+
+    argv: list[str] = [
+        sys.executable,
+        "-m",
+        "PyInstaller",
+        str(bootstrap),
+        f"--name={exe_name}",
+        f"--distpath={profile_root}",
+        f"--workpath={(profile_root / '_build').as_posix()}",
+        f"--specpath={(profile_root / '_spec').as_posix()}",
+        "--noconfirm",
+        "--clean",
+    ]
+    if onefile:
+        argv.append("--onefile")
+    if windowed:
+        argv.append("--windowed")
+    for pkg in collect_all:
+        argv.append(f"--collect-all={pkg}")
+    for mod in collect_submodules:
+        argv.append(f"--collect-submodules={mod}")
+
+    print(f"ui-client: running PyInstaller -> {exe_name}")
+    result = subprocess.run(argv, cwd=str(REPO_ROOT))
+    # Clean up build scratch dirs PyInstaller leaves behind.
+    for scratch in ("_build", "_spec"):
+        scratch_dir = profile_root / scratch
+        if scratch_dir.exists():
+            shutil.rmtree(scratch_dir, ignore_errors=True)
+    bootstrap.unlink(missing_ok=True)
+
+    if result.returncode != 0:
+        raise RuntimeError(f"PyInstaller failed (exit {result.returncode})")
+
+    exe_path = profile_root / (exe_name + ".exe")
+    if not exe_path.exists():
+        raise RuntimeError(f"PyInstaller reported success but {exe_path} was not produced")
+
+    write_indexes(profile_root, "engineering-calculation-system-ui-client")
+    return profile_root
+
+
 def build_profile(profile: str) -> Path:
     builders = {
         "core": build_core,
@@ -383,6 +477,7 @@ def build_profile(profile: str) -> Path:
         "qoder-addon": build_qoder_addon,
         "singlefile": build_singlefile,
         "source-dev": build_source_dev,
+        "ui-client": build_ui_client,
     }
     return builders[profile]()
 
@@ -695,7 +790,14 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
             ".qoder/skills/engineering-calc-system/SKILL.md",
             ".qoder/skills/engineering-calc-system/reference.md",
             ".qoder/agents/engineering-calc-system.md",
-            ".qoder/agents/reference.md",
+            ".qoder/agents/engineering-calc-reference-acquirer.md",
+            ".qoder/agents/engineering-calc-source-intake.md",
+            ".qoder/agents/engineering-calc-logic-extractor.md",
+            ".qoder/agents/engineering-calc-module-worker.md",
+            ".qoder/agents/engineering-calc-interface-worker.md",
+            ".qoder/agents/engineering-calc-verification-worker.md",
+            ".qoder/agents/engineering-calc-release-worker.md",
+            ".qoder/references/engineering-calc-system.md",
         ],
         "TRAE": [
             ".trae/project_rules.md",
@@ -862,6 +964,12 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Also create legacy per-profile zip archives under dist/release/split-archives",
     )
+    parser.add_argument(
+        "--no-ui-client",
+        action="store_true",
+        help="Skip the ui-client profile (the PyInstaller exe build) when building all profiles. "
+        "Has no effect when --profile ui-client is passed explicitly.",
+    )
     args = parser.parse_args(argv)
 
     if args.profile and args.all:
@@ -871,6 +979,10 @@ def main(argv: list[str] | None = None) -> int:
 
     default_publish = not args.profile and not args.all
     profiles = DEFAULT_ALL_PROFILES if args.all or default_publish else tuple(args.profile or ())
+    # --no-ui-client drops the (slow, PyInstaller-dependent) exe build from the
+    # default all-profiles set, but never blocks an explicit --profile ui-client.
+    if args.no_ui_client and not args.profile:
+        profiles = tuple(p for p in profiles if p != "ui-client")
     create_archives = args.archives or ((args.all or default_publish) and not args.no_archives)
 
     if default_publish:

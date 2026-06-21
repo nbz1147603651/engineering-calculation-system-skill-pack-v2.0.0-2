@@ -6,14 +6,16 @@
     "adapters-light",
     "qoder-addon",
     "singlefile",
-    "source-dev"
+    "source-dev",
+    "ui-client"
   ],
   "default_all_profiles": [
     "core",
     "adapters-light",
     "qoder-addon",
     "singlefile",
-    "source-dev"
+    "source-dev",
+    "ui-client"
   ],
   "release_required_profiles": [
     "core",
@@ -39,6 +41,18 @@
     "tools",
     ".gitignore"
   ],
+  "ui_client": {
+    "entry_module": "tools.installer_gui.app",
+    "exe_name_template": "engineering-calc-system-installer-v{version}",
+    "collect_all": [
+      "customtkinter"
+    ],
+    "collect_submodules": [
+      "installer_gui"
+    ],
+    "onefile": true,
+    "windowed": true
+  },
   "singlefile_prefixes": [
     "SKILL.md",
     "agents/",
@@ -91,7 +105,7 @@
     {
       "name": "QODER",
       "path": ".",
-      "install_text": "Upload this zip directly from QODER's Skills / Install Skill flow.",
+      "install_text": "Upload this zip directly from QODER's Skills / Install Skill flow. This is the direct skill/resource entrypoint; for Qoder Smart Agent workflows, prefer the QODER Project package so the custom agent and supporting skill resources are installed together.",
       "include_core": false,
       "payload_at_root": true,
       "include_install_guide": false,
@@ -105,7 +119,9 @@
       "notes": [
         "This archive places SKILL.md at the zip root for QODER skill import compatibility.",
         "For web-complete generation, prefer the QODER Project package because it includes the core skill, templates, schemas, validator, project scaffold, and .qoder overlay.",
-        "If only this direct skill is installed, it is a lightweight entrypoint, not the complete project template."
+        "If only this direct skill is installed, it is a lightweight entrypoint, not the complete project template.",
+        "Qoder Smart Agent mode should use `.qoder/agents/engineering-calc-system.md` as the supervisor and keep long references outside `.qoder/agents/`.",
+        "Multiple Qoder worker agents are packaged by the QODER Project archive, not by the direct Skill archive."
       ]
     },
     {
@@ -121,7 +137,11 @@
         }
       ],
       "notes": [
-        "This directory already merges the core skill, shared adapter docs, and `.qoder/` files."
+        "This directory already merges the core skill, shared adapter docs, and `.qoder/` files.",
+        "Recommended Qoder architecture: `.qoder/agents/engineering-calc-system.md` is the Smart Agent supervisor; `.qoder/agents/engineering-calc-*.md` are delegated worker agents; `.qoder/skills/engineering-calc-system/` is the skill/resource layer; `.qoder/references/` stores long references so they are not listed as disabled agents.",
+        "A single `python tools/build_release.py` run packages the full Qoder multi-agent program into the QODER Project archive.",
+        "From a source checkout, `python tools/install_qoder_user.py --build` syncs the packaged Qoder overlay into `QODER_HOME` or `~/.qoder` and verifies all worker agents.",
+        "Use `python tools/install_qoder_user.py --audit` to detect missing or redundant managed Qoder files, and `python tools/install_qoder_user.py --uninstall` to remove only this package's Qoder files."
       ]
     },
     {
