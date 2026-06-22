@@ -316,7 +316,7 @@ assert(existsSync(skillRoot), `Expected local v${targetSchemaVersion} skill root
     root: project,
     source: "directory",
     exists: true,
-    schemaVersion: "2.4.1",
+    schemaVersion: targetSchemaVersion,
     missingRequiredPaths: [],
   };
   const baseConfig = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
@@ -405,7 +405,7 @@ assert(existsSync(skillRoot), `Expected local v${targetSchemaVersion} skill root
 
   // Manifest round-trip.
   const project = await fs.mkdtemp(path.join(os.tmpdir(), "ecs-manifest-test-"));
-  const m = emptyManifest("0.3.0", "2.4.1");
+  const m = emptyManifest("0.3.0", targetSchemaVersion);
   m.files[".opencode/AGENTS.md"] = { relPath: ".opencode/AGENTS.md", sha256: computeSha256("hello"), size: 5 };
   await writeManifest(project, m);
   const back = await readManifest(project);
@@ -414,7 +414,7 @@ assert(existsSync(skillRoot), `Expected local v${targetSchemaVersion} skill root
   assert.equal(back.files[".opencode/AGENTS.md"].sha256, computeSha256("hello"));
 
   // Diff: added / modified / removed.
-  const next = emptyManifest("0.3.0", "2.4.1");
+  const next = emptyManifest("0.3.0", targetSchemaVersion);
   next.files[".opencode/AGENTS.md"] = { relPath: ".opencode/AGENTS.md", sha256: computeSha256("changed"), size: 7 };
   next.files[".opencode/new.md"] = { relPath: ".opencode/new.md", sha256: computeSha256("new"), size: 3 };
   const d = diffManifests(m, next);

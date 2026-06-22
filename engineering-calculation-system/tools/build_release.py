@@ -702,9 +702,9 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
             context=context,
         )
         require_text(
-            payload_root / "assets" / "lifecycle-console.html",
-            [
-                "v2.4.1",
+                payload_root / "assets" / "lifecycle-console.html",
+                [
+                f"v{VERSION}",
                 "12a",
                 "12b",
                 "12c",
@@ -841,7 +841,7 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
         if target.name == "QODER Project":
             require_text(
                 payload_root / ".qoder" / "skills" / "engineering-calc-system" / "assets" / "lifecycle-console.html",
-                ["v2.4.1", "12a", "12b", "12c", "14"],
+                [f"v{VERSION}", "12a", "12b", "12c", "14"],
                 context=context,
             )
 

@@ -5,7 +5,7 @@ compatibility: opencode
 metadata:
   package: engineering-calculation-system-skill-pack
   entrypoint: ../../../SKILL.md
-version: 2.4.1
+version: 2.4.2
 ---
 
 # Engineering Calculation System

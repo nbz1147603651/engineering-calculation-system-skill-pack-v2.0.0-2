@@ -38,7 +38,7 @@
   "license": "UNLICENSED",
   "skillPack": {
     "name": "engineering-calculation-system",
-    "schemaVersion": "2.4.1",
+    "schemaVersion": "2.4.2",
     "pluginCompatibility": "opencode"
   },
   "dependencies": {

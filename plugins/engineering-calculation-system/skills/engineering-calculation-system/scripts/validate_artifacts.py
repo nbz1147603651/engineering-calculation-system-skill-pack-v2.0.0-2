@@ -1147,7 +1147,7 @@ def validate_qoder_addon_profile(package_root: Path) -> list[str]:
             ".qoder/skills/engineering-calc-system/SKILL.md": ["Qoder Architecture", "agent-first", "shared/lifecycle.md", "dual closure", "qoder_quickstart.md"],
             ".qoder/skills/engineering-calc-system/reference.md": ["/api/i18n/<lang>"],
             ".qoder/skills/engineering-calc-system/qoder_quickstart.md": ["Qoder Package Self-Check", "Direct QODER Skill", "QODER Project overlay", "Complete core project", "validate_artifacts.py --package-root"],
-            ".qoder/skills/engineering-calc-system/assets/lifecycle-console.html": ["v2.4.1", "12a", "12b", "12c", "14", "route_confirmed", "batch_import"],
+            ".qoder/skills/engineering-calc-system/assets/lifecycle-console.html": [f"v{expected_version}", "12a", "12b", "12c", "14", "route_confirmed", "batch_import"],
             ".qoder/agents/engineering-calc-system.md": ["Qoder Architecture", "agent-first", "Stable ASCII Contract", "shared/lifecycle.md", "dual closure"],
             ".qoder/agents/engineering-calc-module-worker.md": ["Qoder Worker Contract", "run_book(BookInput) -> BookResult"],
             ".qoder/agents/engineering-calc-interface-worker.md": ["Qoder Worker Contract", "/api/i18n/<lang>"],

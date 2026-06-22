@@ -1,6 +1,6 @@
 {
   "name": "engineering-calculation-system",
-  "version": "2.4.1+codex.20260620",
+  "version": "2.4.2+codex.20260622",
   "description": "Codex plugin wrapper for the Engineering Calculation System skill pack.",
   "license": "UNLICENSED",
   "keywords": [

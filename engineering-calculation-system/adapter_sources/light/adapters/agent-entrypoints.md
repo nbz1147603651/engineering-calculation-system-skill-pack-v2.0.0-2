@@ -104,7 +104,7 @@ Multi-agent note:
 
 Preferred setup:
 
-1. Use `dist/release/engineering-calculation-system-MiniMaxCode-v2.4.1.zip`, or expose `dist/core/engineering-calculation-system/` as a standard `SKILL.md` skill folder.
+1. Use `dist/release/engineering-calculation-system-MiniMaxCode-v2.4.2.zip`, or expose `dist/core/engineering-calculation-system/` as a standard `SKILL.md` skill folder.
 2. Let MiniMax Code import or auto-discover the root `SKILL.md`.
 3. Start with `SKILL.md` and `skills/00-engineering-calculation-router.skill.md`.
 
@@ -122,7 +122,7 @@ Fallback:
 
 Preferred setup:
 
-1. Use `dist/release/engineering-calculation-system-ZCode-v2.4.1.zip`, or copy `dist/core/engineering-calculation-system/` to `~/.zcode/skills/engineering-calculation-system/`.
+1. Use `dist/release/engineering-calculation-system-ZCode-v2.4.2.zip`, or copy `dist/core/engineering-calculation-system/` to `~/.zcode/skills/engineering-calculation-system/`.
 2. In ZCode, open Settings -> Skills, refresh the skill list, and keep `engineering-calculation-system` enabled.
 3. Invoke the skill in chat with `$engineering-calculation-system`; use `@` file references and `/goal` for long tasks when useful.
 4. Put project-specific operating rules in the workspace `AGENTS.md`. If you need a starter file, copy `dist/adapters-light/AGENTS.md` into the workspace root.
@@ -143,7 +143,7 @@ Fallback:
 
 Preferred setup:
 
-1. For project-root installation, use `dist/release/engineering-calculation-system-QODER-Project-v2.4.1.zip`.
+1. For project-root installation, use `dist/release/engineering-calculation-system-QODER-Project-v2.4.2.zip`.
 2. Apply `dist/qoder-addon/` on top of the core package when composing manually.
 3. Use `.qoder/agents/engineering-calc-system.md` as the Smart Agent supervisor when the environment supports custom agents.
 4. Use `.qoder/skills/engineering-calc-system/SKILL.md` as the project skill and direct-skill fallback.

@@ -8,6 +8,15 @@
 - Added ZCode to the deployment console as a user-level target with conservative program and sentinel detection.
 - Documented ZCode loading behavior, `$engineering-calculation-system` invocation, and workspace `AGENTS.md` guardrails in adapter and install docs.
 
+## v2.4.2 unified release sync - 2026-06-22
+
+### Changed - Version Management
+
+- Bumped the canonical release version in `tools/release_config.json` to `2.4.2`.
+- Extended `tools/sync_versions.py` so the Codex plugin bundled skill is refreshed from the canonical core package during version synchronization.
+- Removed fixed release-version checks from Qoder lifecycle-console validation and OpenCode tests.
+- Added the installer GUI executable example to the synchronized versioned documentation set.
+
 ## v2.4.1 release version unification - 2026-06-20
 
 ### Changed - Single Source Versioning
@@ -15,7 +24,7 @@
 - Added shared version helpers and a `tools/sync_versions.py` release command so the skill pack version is driven from `tools/release_config.json`.
 - Synchronized schema contracts, skill frontmatter, platform adapter manifests, OpenCode package metadata, and current install docs from the central release version.
 - Updated OpenCode runtime checks and tests to read the target skill schema from package metadata instead of hard-coded version strings.
-- Kept historical migration/changelog references intact while current release documentation now points at v2.4.1 packages.
+- Kept historical migration/changelog references intact while current release documentation for that release pointed at v2.4.1 packages.
 
 ## v2.4.0 multi-agent orchestration - 2026-06-17
 

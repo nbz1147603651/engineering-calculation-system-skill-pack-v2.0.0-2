@@ -7,6 +7,8 @@ import argparse
 from datetime import date
 import json
 import re
+import subprocess
+import sys
 from pathlib import Path
 
 from versioning import (
@@ -39,8 +41,24 @@ VERSIONED_DOC_PATTERNS = [
     (REPO_ROOT / "docs" / "README.zh-CN.md", re.compile(r"version: \d+\.\d+\.\d+"), "version: {version}"),
     (REPO_ROOT / "docs" / "README.zh-CN.md", re.compile(r"created_at: \d{4}-\d{2}-\d{2}"), "created_at: {created_at}"),
     (REPO_ROOT / "docs" / "INSTALL.md", re.compile(r"engineering-calculation-system-([A-Za-z-]+)-v\d+\.\d+\.\d+\.zip"), r"engineering-calculation-system-\1-v{version}.zip"),
+    (REPO_ROOT / "docs" / "INSTALLER_GUI.md", re.compile(r"engineering-calc-system-installer-v\d+\.\d+\.\d+\.exe"), r"engineering-calc-system-installer-v{version}.exe"),
     (REPO_ROOT / "docs" / "SKILL_PACKAGE_SUMMARY.md", re.compile(r"engineering-calculation-system-([A-Za-z-]+)-v\d+\.\d+\.\d+\.zip"), r"engineering-calculation-system-\1-v{version}.zip"),
     (REPO_ROOT / "adapter_sources" / "light" / "adapters" / "agent-entrypoints.md", re.compile(r"engineering-calculation-system-([A-Za-z-]+)-v\d+\.\d+\.\d+\.zip"), r"engineering-calculation-system-\1-v{version}.zip"),
+    (
+        REPO_ROOT / "adapter_sources" / "qoder" / ".qoder" / "skills" / "engineering-calc-system" / "assets" / "lifecycle-console.html",
+        re.compile(r'(<span class="hdr-badge" id="verBadge">)v\d+\.\d+\.\d+(</span>)'),
+        r"\g<1>v{version}\g<2>",
+    ),
+    (
+        REPO_ROOT / "adapter_sources" / "qoder" / ".qoder" / "skills" / "engineering-calc-system" / "assets" / "lifecycle-console.html",
+        re.compile(r'(version:\s*")\d+\.\d+\.\d+(")'),
+        r"\g<1>{version}\g<2>",
+    ),
+    (
+        REPO_ROOT / "adapter_sources" / "qoder" / ".qoder" / "skills" / "engineering-calc-system" / "assets" / "lifecycle-console.html",
+        re.compile(r"(version:\s*D\.version\s*\|\|\s*')\d+\.\d+\.\d+(')"),
+        r"\g<1>{version}\g<2>",
+    ),
     (OPENCODE_ROOT / "README.md", re.compile(r"Target skill pack schema: `[^`]+`"), "Target skill pack schema: `{version}`"),
     (OPENCODE_ROOT / "docs" / "installation.md", re.compile(r"schema version `[^`]+`"), "schema version `{version}`"),
 ]
@@ -58,6 +76,24 @@ def sync_codex_manifest(version: str, created_at: str) -> None:
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     manifest["version"] = codex_plugin_version(version, created_at)
     write_json_lf(manifest_path, manifest)
+
+
+def sync_codex_bundled_skill() -> None:
+    """Refresh the Codex plugin's bundled skill from the canonical core package."""
+    script = PLUGIN_ROOT / "scripts" / "sync_from_core.py"
+    if not script.exists():
+        return
+    subprocess.run(
+        [
+            sys.executable,
+            str(script),
+            "--source",
+            str(CORE_SKILL_ROOT),
+            "--no-validate",
+        ],
+        cwd=str(PLUGIN_ROOT),
+        check=True,
+    )
 
 
 def sync_current_docs(version: str) -> None:
@@ -90,6 +126,7 @@ def sync_versions(version: str, created_at: str) -> None:
     sync_skill_frontmatter_versions(CORE_SKILL_ROOT, version)
     sync_skill_frontmatter_versions(LIGHT_ADAPTER_ROOT, version)
     sync_skill_frontmatter_versions(QODER_ADAPTER_ROOT, version)
+    sync_codex_bundled_skill()
     sync_installer_gui_version(version)
     sync_opencode_package(version)
     sync_codex_manifest(version, created_at)
