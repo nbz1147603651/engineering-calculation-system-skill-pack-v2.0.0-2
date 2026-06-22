@@ -1,10 +1,11 @@
 # Engineering Gate Diagnostics
 
 The "non-negotiable" rules of the Engineering Calculation System live in
-the shared skill pack, especially `shared/quality-gates.md`,
+the shared skill pack, especially `shared/lifecycle.md`,
 `shared/multi-agent-orchestration.md`, and the lifecycle router. The
-OpenCode plugin exposes a diagnostic view of those rules; it is not a
-second governance kernel.
+legacy gate files redirect readers to `shared/lifecycle.md`; the OpenCode
+plugin exposes a diagnostic view of those rules, not a second governance
+kernel.
 
 ## What is hard
 

@@ -674,6 +674,7 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
             [
                 "SKILL.md",
                 "reference.md",
+                "qoder_quickstart.md",
                 "assets/lifecycle-console.html",
             ],
             context=context,
@@ -686,6 +687,28 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
                 "Stable ASCII Contract",
                 "shared/lifecycle.md",
                 "dual closure",
+                "qoder_quickstart.md",
+            ],
+            context=context,
+        )
+        require_text(
+            payload_root / "qoder_quickstart.md",
+            [
+                "Qoder Package Self-Check",
+                "Direct QODER Skill",
+                "QODER Project overlay",
+                "Complete core project",
+            ],
+            context=context,
+        )
+        require_text(
+            payload_root / "assets" / "lifecycle-console.html",
+            [
+                "v2.4.1",
+                "12a",
+                "12b",
+                "12c",
+                "14",
             ],
             context=context,
         )
@@ -789,6 +812,8 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
         "QODER Project": [
             ".qoder/skills/engineering-calc-system/SKILL.md",
             ".qoder/skills/engineering-calc-system/reference.md",
+            ".qoder/skills/engineering-calc-system/qoder_quickstart.md",
+            ".qoder/skills/engineering-calc-system/assets/lifecycle-console.html",
             ".qoder/agents/engineering-calc-system.md",
             ".qoder/agents/engineering-calc-reference-acquirer.md",
             ".qoder/agents/engineering-calc-source-intake.md",
@@ -813,6 +838,12 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
     }
     if target.name in platform_required:
         require_paths(payload_root, platform_required[target.name], context=context)
+        if target.name == "QODER Project":
+            require_text(
+                payload_root / ".qoder" / "skills" / "engineering-calc-system" / "assets" / "lifecycle-console.html",
+                ["v2.4.1", "12a", "12b", "12c", "14"],
+                context=context,
+            )
 
     if target.include_adapter_docs:
         require_paths(

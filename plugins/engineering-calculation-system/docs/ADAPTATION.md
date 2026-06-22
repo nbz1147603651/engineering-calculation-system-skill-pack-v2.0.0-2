@@ -25,8 +25,9 @@ plugin wrapper
 - `.codex-plugin/plugin.json` exposes the package to Codex as one plugin.
 - `shared/codex-plugin-adapter.md` maps the skill pack to Codex workspace,
   web/search, CodeGraph, edit, validation, and multi-agent conventions.
-- `scripts/validate_plugin.py` validates both the plugin wrapper and bundled
-  core skill package.
+- `scripts/validate_plugin.py` validates the plugin wrapper, local marketplace
+  entry, overlay synchronization, bundled-source drift, and bundled core skill
+  package.
 - `scripts/sync_from_core.py` refreshes the bundled skill from the source core
   package and reapplies the Codex overlay.
 - `overlays/` stores plugin-only additions so future syncs do not lose them.
@@ -44,4 +45,3 @@ The plugin currently declares skills only. It does not declare hooks, MCP
 servers, or apps because there are no Codex-native implementations for those
 integration points yet. They can be added later without changing the bundled
 skill root.
-

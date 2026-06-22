@@ -40,6 +40,7 @@ latex/
   templates/
     default_engineering_calcbook/
       main.tex.j2
+      template_manifest.yaml
       cover.tex.j2
       page_style.sty
       latexmkrc
@@ -82,6 +83,7 @@ conditionals
 formatting
 section visibility logic
 source and formula trace display
+formula expression display from `FormulaTrace.expression_tex`
 cross-references
 ```
 
@@ -109,6 +111,7 @@ input summary
 calculation checks table
 engineering charts when BookResult.charts is present
 formula logic trace
+calculation review cards or sections with formula expression, explanation, variable definitions, substitutions, source reference, and result path
 sources
 assumptions
 warnings and errors
@@ -135,6 +138,27 @@ is available, choose the A4 HTML report path from `html_report_spec.md`.
 Still provide an Overleaf-compatible zip for collaborative editing/import when
 requested.
 
+## Replaceable Template Contract
+
+Every report style is a folder under `latex/templates/<template_id>/`. A style
+change should replace files in that folder, not report renderer code. The
+folder may include `template_manifest.yaml` with:
+
+```text
+template_id
+label
+version
+owner
+required_assets
+section_order
+supports_formula_trace: true
+```
+
+Template sections must render the same `ReportContext` fields used by the web
+and HTML preview. Formula displays must read `FormulaTrace.expression_tex` or
+`FormulaTrace.expression_plain`; domain formulas must not be hardcoded in
+template files.
+
 ## Overleaf Use
 
 Use Overleaf as a collaborative editor/import target for the generated project, not as the default rendering dependency. If a deployment explicitly uses self-hosted Overleaf, document trust boundaries, compile permissions, storage, and operations separately from the calculation app.
@@ -145,6 +169,7 @@ The project validator should require:
 
 ```text
 latex/templates/default_engineering_calcbook/main.tex.j2
+latex/templates/default_engineering_calcbook/template_manifest.yaml
 latex/templates/default_engineering_calcbook/cover.tex.j2
 latex/templates/default_engineering_calcbook/page_style.sty
 src/pkg/report/latex_renderer.py

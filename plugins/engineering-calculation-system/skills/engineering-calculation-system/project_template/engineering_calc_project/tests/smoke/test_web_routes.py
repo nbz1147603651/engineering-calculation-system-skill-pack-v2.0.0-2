@@ -39,13 +39,16 @@ def test_capabilities_route_and_review_shell():
     assert page.status_code == 200
     html = page.get_data(as_text=True)
     assert 'id="adminReviewPage"' in html
-    assert "Formula Review Admin" in html
+    assert "Marimo Calculation Review" in html
     assert "ADMIN_REVIEW_TOKEN" in html
+    assert "marimo run apps/review/calculation_review.py" in html
     assert "marimo run apps/review/admin_formula_review.py" in html
+    assert "/api/review/session" in html
     assert "/static/js/i18n.js" in html
 
 
-def test_import_report_and_batch_routes():
+def test_import_report_and_batch_routes(monkeypatch, tmp_path):
+    monkeypatch.setattr(cfg, "REVIEW_SESSION_DIR", tmp_path / "review")
     client = create_app().test_client()
     case = cfg.DEFAULTS
 
@@ -73,6 +76,16 @@ def test_import_report_and_batch_routes():
     assert decision_response.status_code == 200
     decision = decision_response.get_json()["decision"]
     assert decision["output_format"] in {"latex_pdf", "html_a4"}
+
+    review_response = client.post("/api/review/session", json=case)
+    assert review_response.status_code == 200
+    review = review_response.get_json()["review"]
+    assert review["session_id"]
+    assert review["admin_url"].startswith("/admin/review/?session_id=")
+
+    state_response = client.get(f"/api/review/state/{review['session_id']}")
+    assert state_response.status_code == 200
+    assert state_response.get_json()["review"]["status"] == "ready_for_review"
 
     batch_response = client.post("/api/batch/run", json={"cases": [case, case]})
     assert batch_response.status_code == 200

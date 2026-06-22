@@ -14,6 +14,7 @@ Use an **agent-first, skill-backed** architecture in Qoder.
 
 - `.qoder/agents/engineering-calc-system.md` is the primary Qoder Smart Agent entrypoint. It owns routing, tool use, expert-team orchestration, gate decisions, and final acceptance.
 - `.qoder/skills/engineering-calc-system/SKILL.md` is the reusable skill/resource layer. Use it for direct Qoder Skill import, project skill discovery, assets, widget guidance, and detailed references.
+- `.qoder/skills/engineering-calc-system/qoder_quickstart.md` is the short operator entrypoint for install shape checks, first prompts, and validation commands.
 - `.qoder/references/engineering-calc-system.md` and `.qoder/skills/engineering-calc-system/reference.md` hold long reference material. Do not put non-agent reference files under `.qoder/agents/`; Qoder treats every Markdown file there as a candidate agent.
 - If both the agent and the skill are installed, the agent is the supervisor and the skill is the knowledge/tooling layer. If only the direct skill zip is installed, treat it as a lightweight entrypoint.
 - For `web-complete`, prefer the QODER Project package because it includes the core skill, templates, schemas, validator, project scaffold, and `.qoder` overlay.
@@ -55,9 +56,9 @@ The `engineering-calc-system` agent remains the supervisor. Keep gate decisions,
 
 ## Stable ASCII Contract
 
-This Qoder agent must treat direct `.qoder` files as a lightweight entrypoint unless the complete core package is present. For `web-complete`, use the complete core package, project template, shared lifecycle matrix, and validator.
+This Qoder agent must treat direct `.qoder` files as a lightweight entrypoint unless the complete core package is present. For `web-complete`, use the complete core package, project template, shared lifecycle, and validator.
 
-Read `shared/lifecycle.md` and `shared/lifecycle.md` before implementation or release work when they are available. `web-complete` means dual closure: a readable A4/LaTeX calculation book with real input and non-empty `BookResult.checks`, plus a complete web system with API/UI, import/export, batch, deployment artifacts, and smoke tests.
+Read `shared/lifecycle.md` before implementation or release work when it is available. Also read `qoder_quickstart.md` at the start of a new Qoder project to classify the install shape. `web-complete` means dual closure: a readable A4/LaTeX calculation book with real input and non-empty `BookResult.checks`, plus a complete web system with API/UI, import/export, batch, deployment artifacts, and smoke tests.
 
 Before claiming completion, run `python scripts/validate_artifacts.py --package-root . --profile core --project <project-root> --delivery web-complete`.
 
@@ -76,6 +77,8 @@ project_template/
 ```
 
 如果当前 Qoder 环境只有 `.qoder/skills/engineering-calc-system/SKILL.md`、`reference.md` 和 `assets/`，这只是 direct skill 轻量入口，不是完整项目模板。要产出 `web-complete` 交付物，使用 QODER Project 包或完整 single-file fallback。
+
+若存在 `.qoder/skills/engineering-calc-system/qoder_quickstart.md`，先按其中的 **Qoder Package Self-Check** 判断当前是 direct skill、project overlay 还是完整 core 包。
 
 若 `shared/lifecycle.md` 可用，必须先读取它。实现前声明交付模式：`core-only`、`report-only`、`prototype-web` 或 `web-complete`。默认使用 `web-complete`，完整路径为 `08 → 09 → 10 → 11 → 12a → 12b → 12c → 13 → 14`。
 

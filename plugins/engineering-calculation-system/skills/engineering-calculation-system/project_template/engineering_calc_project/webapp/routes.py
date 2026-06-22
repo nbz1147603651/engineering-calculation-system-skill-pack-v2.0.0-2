@@ -26,6 +26,28 @@ bp = Blueprint("main", __name__)
 LATEX_TEMPLATE_ID_PATTERN = re.compile(r"^[A-Za-z0-9_.-]+$")
 
 
+def _read_latex_template_manifest(template_dir: Path) -> dict[str, object]:
+    """Read simple scalar metadata without adding a YAML dependency."""
+    manifest_path = template_dir / "template_manifest.yaml"
+    if not manifest_path.exists():
+        return {}
+
+    metadata: dict[str, object] = {}
+    for line in manifest_path.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#") or stripped.startswith("-") or ":" not in stripped:
+            continue
+        key, raw_value = stripped.split(":", 1)
+        value = raw_value.strip().strip("\"'")
+        if value.lower() == "true":
+            metadata[key.strip()] = True
+        elif value.lower() == "false":
+            metadata[key.strip()] = False
+        elif value:
+            metadata[key.strip()] = value
+    return metadata
+
+
 def _available_latex_templates() -> list[dict[str, object]]:
     """List importable LaTeX templates. A template is a folder with main.tex.j2."""
     if not cfg.LATEX_TEMPLATE_DIR.exists():
@@ -36,6 +58,7 @@ def _available_latex_templates() -> list[dict[str, object]]:
         if not path.is_dir() or not (path / "main.tex.j2").exists():
             continue
         template_id = path.name
+        metadata = _read_latex_template_manifest(path)
         label = (
             "Default engineering calculation book"
             if template_id == cfg.DEFAULT_LATEX_TEMPLATE_ID
@@ -43,8 +66,10 @@ def _available_latex_templates() -> list[dict[str, object]]:
         )
         templates.append({
             "id": template_id,
-            "label": label,
+            "label": str(metadata.get("label") or label),
+            "version": str(metadata.get("version") or f"{template_id}-v1"),
             "is_default": template_id == cfg.DEFAULT_LATEX_TEMPLATE_ID,
+            "supports_formula_trace": bool(metadata.get("supports_formula_trace", False)),
         })
     return templates
 
@@ -113,6 +138,52 @@ def api_capabilities():
     from pkg.core.capabilities import detect_capabilities
 
     return jsonify(detect_capabilities())
+
+
+@bp.route("/api/review/session", methods=["POST"])
+def api_review_session():
+    """Create a Marimo review session from the current frontend case."""
+    try:
+        data = request.get_json(force=True)
+        lang = data.pop("lang", "en")
+        book_input = build_case_input_from_form(data)
+
+        from pkg.books.example_book.book_runner import run_book
+        from pkg.books.example_book.report_context import build_report_context
+        from pkg.review.bridge import write_review_session
+
+        result = run_book(book_input)
+        report_context = build_report_context(result)
+        session = write_review_session(
+            book_input,
+            result,
+            report_context,
+            root=cfg.REVIEW_SESSION_DIR,
+        )
+        session["lang"] = lang
+        session["admin_url"] = f"/admin/review/?session_id={session['session_id']}"
+        return jsonify({"status": "ok", "review": session})
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e) if cfg.DEBUG else "Review session creation failed.",
+        }), 400
+
+
+@bp.route("/api/review/state/<session_id>")
+def api_review_state(session_id: str):
+    """Return current review state for frontend polling or audit display."""
+    try:
+        from pkg.review.bridge import read_review_session
+
+        session = read_review_session(session_id, root=cfg.REVIEW_SESSION_DIR)
+        return jsonify({"status": "ok", "review": session["state"]})
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e) if cfg.DEBUG else "Review session not found.",
+        }), 404
 
 
 @bp.route("/api/report/templates")
@@ -216,12 +287,16 @@ def api_report_latex():
 
         result = run_book(book_input)
         report_context = build_report_context(result)
+        template_version = str(
+            _read_latex_template_manifest(template_dir).get("version")
+            or f"{template_id}-v1"
+        )
         latex_context = build_latex_report_context(
             book_input,
             result,
             report_context,
             lang=lang,
-            template_version=f"{template_id}-v1",
+            template_version=template_version,
         )
         package_bytes = render_latex_project_zip(latex_context, template_dir)
 
@@ -265,12 +340,16 @@ def api_report_final():
 
         if decision.output_format == "latex_pdf":
             template_id, template_dir = _resolve_latex_template_dir(template_request)
+            template_version = str(
+                _read_latex_template_manifest(template_dir).get("version")
+                or f"{template_id}-v1"
+            )
             latex_context = build_latex_report_context(
                 book_input,
                 result,
                 report_context,
                 lang=lang,
-                template_version=f"{template_id}-v1",
+                template_version=template_version,
             )
             with TemporaryDirectory(prefix="engineering_calc_latex_") as tmp:
                 compiled = compile_latex_project(latex_context, template_dir, Path(tmp))

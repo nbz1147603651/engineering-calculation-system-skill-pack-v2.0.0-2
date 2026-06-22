@@ -36,6 +36,7 @@ input summary
 engineering charts when BookResult.charts is present
 calculation checks
 formula logic trace
+calculation review cards with formula boxes, explanations, variables, substitutions, result paths, and source references
 sources
 assumptions
 warnings and errors
@@ -49,6 +50,9 @@ HTML templates may contain formatting, tables, value references, loops, and
 visibility logic. They must not contain engineering formulas, lookup rules,
 official unit conversion, load-combination generation, optimization logic, or
 independent pass/fail recalculation.
+
+Formula expressions shown in HTML must come from `FormulaTrace.expression_tex`
+or `FormulaTrace.expression_plain` and follow `calculation_review_card_spec.md`.
 
 ## Required Project Shape
 
@@ -71,6 +75,9 @@ Generated projects should verify:
 HTML contains @page size: A4
 HTML contains Engineering Charts when chart specs exist
 HTML contains Formula Logic Trace
+HTML contains formula-box
+HTML contains engineering explanation
+HTML contains result_path
 HTML contains Sources
 HTML contains Assumptions
 HTML contains Template Boundary Statement

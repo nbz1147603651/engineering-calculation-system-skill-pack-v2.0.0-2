@@ -95,11 +95,11 @@ def detect_capabilities(env: Mapping[str, str] | None = None) -> dict[str, Any]:
         review_status = "missing"
 
     if review_status == "configured":
-        review_message = "Marimo review is configured. Start or proxy the review service to open the admin page."
+        review_message = "Marimo review is configured. Start or proxy the calculation review service."
     elif marimo["available"]:
         review_message = "Marimo is installed. Set ADMIN_REVIEW_TOKEN and start the review service."
     else:
-        review_message = "Install Marimo and set ADMIN_REVIEW_TOKEN to enable the review admin."
+        review_message = "Install Marimo and set ADMIN_REVIEW_TOKEN to enable calculation review."
 
     return {
         "status": "ok",
@@ -122,8 +122,13 @@ def detect_capabilities(env: Mapping[str, str] | None = None) -> dict[str, Any]:
                 "service_url": marimo_service_url,
                 "install_command": "python -m pip install marimo",
                 "run_command": (
-                    "marimo run apps/review/admin_formula_review.py "
+                    "marimo run apps/review/calculation_review.py "
                     f"--host 127.0.0.1 --port 2718 --base-url {marimo_base_url.rstrip('/')} "
+                    "--headless --token --token-password <ADMIN_REVIEW_TOKEN>"
+                ),
+                "formula_admin_run_command": (
+                    "marimo run apps/review/admin_formula_review.py "
+                    f"--host 127.0.0.1 --port 2719 --base-url {marimo_base_url.rstrip('/')} "
                     "--headless --token --token-password <ADMIN_REVIEW_TOKEN>"
                 ),
                 "message": review_message,

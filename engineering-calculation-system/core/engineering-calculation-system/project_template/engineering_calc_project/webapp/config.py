@@ -11,6 +11,7 @@ SRC_DIR = PROJECT_ROOT / "src"
 DATA_DIR = PROJECT_ROOT / "data"
 OUTPUT_DIR = PROJECT_ROOT / "outputs"
 LATEX_TEMPLATE_DIR = PROJECT_ROOT / "latex" / "templates"
+REVIEW_SESSION_DIR = OUTPUT_DIR / "review"
 
 # Flask settings
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-key-change-in-production")
@@ -25,6 +26,7 @@ DATA_DIR = Path(os.environ.get("DATA_DIR", DATA_DIR))
 OUTPUT_DIR = Path(os.environ.get("OUTPUT_DIR", OUTPUT_DIR))
 FORMULA_REGISTRY_DIR = Path(os.environ.get("FORMULA_REGISTRY_DIR", DATA_DIR / "formula_registry"))
 LATEX_TEMPLATE_DIR = Path(os.environ.get("LATEX_TEMPLATE_DIR", LATEX_TEMPLATE_DIR))
+REVIEW_SESSION_DIR = Path(os.environ.get("REVIEW_SESSION_DIR", REVIEW_SESSION_DIR))
 DEFAULT_LATEX_TEMPLATE_ID = os.environ.get("DEFAULT_LATEX_TEMPLATE_ID", "default_engineering_calcbook")
 
 # Default calculation parameters served on page load so the user can calculate

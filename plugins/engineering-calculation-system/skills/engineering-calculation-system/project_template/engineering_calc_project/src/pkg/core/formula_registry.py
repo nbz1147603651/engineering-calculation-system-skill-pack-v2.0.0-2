@@ -252,6 +252,54 @@ def get_active_module(root: Path | None, module_id: str) -> dict[str, Any] | Non
     return rule
 
 
+def get_formula_display(
+    module_id: str,
+    formula_id: str,
+    *,
+    root: Path | None = None,
+) -> dict[str, Any]:
+    """Return presentation metadata declared in the active formula registry."""
+    rule = get_active_module(root, module_id)
+    formulas = rule.get("formulas", []) if rule else []
+    for formula in formulas:
+        if formula.get("formula_id") != formula_id:
+            continue
+        variable_definitions: dict[str, str] = {}
+        for variable in formula.get("variables", []) or []:
+            if not isinstance(variable, dict):
+                continue
+            name = str(variable.get("symbol") or variable.get("name") or "").strip()
+            if not name:
+                continue
+            unit = str(variable.get("unit") or "").strip()
+            description = str(variable.get("description") or "").strip()
+            variable_definitions[name] = (
+                f"{description} [{unit}]" if unit and description else description or unit
+            )
+        source_refs = formula.get("source_refs") or []
+        source_reference = ", ".join(str(item) for item in source_refs if item) or ""
+        return {
+            "formula_id": formula_id,
+            "formula_name": formula.get("name") or formula_id,
+            "source_reference": source_reference,
+            "expression_plain": formula.get("expression"),
+            "expression_tex": formula.get("expression_tex"),
+            "engineering_explanation": formula.get("engineering_explanation"),
+            "variable_definitions": variable_definitions,
+            "display_icon": formula.get("display_icon"),
+        }
+    return {
+        "formula_id": formula_id,
+        "formula_name": formula_id,
+        "source_reference": "",
+        "expression_plain": None,
+        "expression_tex": None,
+        "engineering_explanation": None,
+        "variable_definitions": {},
+        "display_icon": None,
+    }
+
+
 def active_registry_metadata(root: Path | None = None) -> dict[str, Any]:
     data = load_active_versions(root)
     active = data.get("active", {})

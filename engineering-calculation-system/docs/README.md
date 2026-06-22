@@ -244,5 +244,5 @@ Run the scaffold smoke test:
 
 ```bash
 cd dist/core/engineering-calculation-system/project_template/engineering_calc_project
-python -m pytest -q
+python -B -m pytest -q -p no:cacheprovider
 ```

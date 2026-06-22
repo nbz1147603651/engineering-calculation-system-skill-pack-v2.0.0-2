@@ -199,14 +199,14 @@ python core/engineering-calculation-system/scripts/validate_artifacts.py --packa
 校验内置工程模板：
 
 ```bash
-python core/engineering-calculation-system/scripts/validate_artifacts.py --package-root dist/core/engineering-calculation-system --profile core --project dist/core/engineering-calculation-system/project_template/engineering_calc_project
+python core/engineering-calculation-system/scripts/validate_artifacts.py --package-root dist/core/engineering-calculation-system --profile core --project dist/core/engineering-calculation-system/project_template/engineering_calc_project --delivery web-complete
 ```
 
 运行模板测试：
 
 ```bash
 cd dist/core/engineering-calculation-system/project_template/engineering_calc_project
-python -m pytest -q
+python -B -m pytest -q -p no:cacheprovider
 ```
 
 ## 版本

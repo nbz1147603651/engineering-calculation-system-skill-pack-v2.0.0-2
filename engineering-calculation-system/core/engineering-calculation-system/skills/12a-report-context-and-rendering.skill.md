@@ -21,7 +21,10 @@ structured `ReportContext` that wraps trusted results without recalculating.
    summary; assumptions and limitations; module summaries; governing summary; checks and stable
    result paths; chart specs and recommended report locations; selected intermediate values for
    audit; warnings/errors; formula/source trace references; imported-report comparison metadata;
-   data-package metadata; appendix data; traceability metadata.
+   data-package metadata; appendix data; traceability metadata. For every production check, include
+   reviewer-facing formula display data from `FormulaTrace`: `expression_tex` or `expression_plain`,
+   engineering explanation, variable definitions, substitutions, source reference, display icon,
+   and stable result path. Use `templates/implementation/calculation_review_card_spec.md`.
 3. Choose the simplest renderer that satisfies the output: HTML (preview/browser review) | LaTeX
    project zip (Overleaf-compatible + PDF-ready) | PDF (frozen deliverable) | DOCX (editable
    client/report) | XLSX (tabular audit) | JSON (machine-readable). The renderer must preserve
@@ -30,18 +33,23 @@ structured `ReportContext` that wraps trusted results without recalculating.
    formatting filters, section-visibility logic, unit-display formatting, cross-references.
    Templates MUST NOT contain engineering formulas, lookup rules, load-combination generation,
    optimization logic, independent unit conversion, or independent pass/fail logic.
+   Templates may render formula expressions only when the expression is supplied by
+   source-backed `FormulaTrace`/formula-registry data.
 5. Make the automatic report-output decision before claiming completion:
    if `latexmk`/`pdflatex` is available locally → choose LaTeX/PDF, compile locally, completion
    requires exit code 0 AND `main.pdf` exists; else → choose A4 HTML (`templates/implementation/
    html_report_spec.md`, `@page size: A4`, print-safe margins, cover/title block, governing
    summary, input summary, charts when `BookResult.charts` present, check tables, formula-logic
-   trace, warnings/errors, traceability metadata, template-boundary statement). A failed LaTeX
+   trace with readable calculation review cards, warnings/errors, traceability metadata,
+   template-boundary statement). A failed LaTeX
    compile is a blocking failure, not a silent downgrade to HTML.
 6. For LaTeX/Overleaf export (`templates/implementation/latex_report_spec.md`): before first
    generation ask whether the user has a preferred template/`.cls`/`.sty`/cover/page format/
    section order; if none supplied use `latex/templates/default_engineering_calcbook/`. Record the
    interaction as `user_selected` / `user_declined` / `no_response_default`. Generate an
-   Overleaf-compatible zip by default (no self-hosted Overleaf required). Generated web apps must
+   Overleaf-compatible zip by default (no self-hosted Overleaf required). Keep each report style
+   replaceable under `latex/templates/<template_id>/`; style changes must not require report
+   renderer code changes. Generated web apps must
    expose `GET /api/report/decision`, `GET /api/report/templates`, `POST /api/report/latex`
    (sending `latex_template_id`, defaulting to `default_engineering_calcbook` when missing),
    `POST /api/report/final`. Required files: `src/pkg/report/{latex_renderer,html_renderer,
@@ -68,6 +76,7 @@ tests/smoke/test_latex_report.py
 
 ## Exit gate
 
-Readable A4/LaTeX book with required sections (Formula Logic Trace + Template Boundary Statement +
-input summary + governing result + detailed checks + charts + sources + assumptions). See
+Readable A4/LaTeX book with required sections (Formula Logic Trace with formula boxes/explanations
++ Template Boundary Statement + input summary + governing result + detailed checks + charts +
+sources + assumptions). See
 `shared/lifecycle.md` row 12a. Next path: 12b if a frontend/review UI is needed, else 12c/13.

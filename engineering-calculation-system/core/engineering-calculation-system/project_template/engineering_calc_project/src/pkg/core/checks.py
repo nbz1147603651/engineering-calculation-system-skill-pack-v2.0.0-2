@@ -16,6 +16,13 @@ class FormulaTrace:
     result_symbol: str
     result_value: Any
     unit: str | None = None
+    expression_tex: str | None = None
+    expression_plain: str | None = None
+    engineering_explanation: str | None = None
+    variable_definitions: dict[str, str] = field(default_factory=dict)
+    substitutions: dict[str, Any] = field(default_factory=dict)
+    result_path: str | None = None
+    display_icon: str | None = None
     notes: list[str] = field(default_factory=list)
 
 

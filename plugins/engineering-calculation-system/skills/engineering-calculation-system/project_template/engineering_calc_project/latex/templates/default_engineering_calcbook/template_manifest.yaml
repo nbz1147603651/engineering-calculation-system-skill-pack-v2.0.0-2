@@ -1,0 +1,19 @@
+template_id: default_engineering_calcbook
+label: Default engineering calculation book
+version: default_engineering_calcbook-v1
+owner: engineering-calculation-system
+required_assets:
+  - main.tex.j2
+  - cover.tex.j2
+  - page_style.sty
+  - sections/01_summary.tex.j2
+  - sections/02_inputs.tex.j2
+  - sections/03_results.tex.j2
+  - sections/90_traceability.tex.j2
+section_order:
+  - cover
+  - summary
+  - inputs
+  - results
+  - traceability
+supports_formula_trace: true

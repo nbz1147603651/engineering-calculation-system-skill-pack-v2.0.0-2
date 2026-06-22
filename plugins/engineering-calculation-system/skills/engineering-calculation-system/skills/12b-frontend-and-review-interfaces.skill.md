@@ -40,13 +40,17 @@ use. The static-HTML guard and `run_book()` contract live in `shared/lifecycle.m
    sections, charts, and trace content. Do not replace the standard top bar, input/review split,
    status strip, report modal, language switch, automatic final-report download, or LaTeX template
    selector/export action unless the handoff records a justified override.
+   Result and trace displays must follow `templates/implementation/calculation_review_card_spec.md`:
+   check-family icon, engineering explanation, formula box, variable/substitution tables, source
+   reference, status, and stable result path from `FormulaTrace`.
 5. Build the form/API contract in a dedicated mapping module: `form_to_model(data)->BookInput`,
    `model_to_form(model)->dict`, `result_to_ui(result)->dict`. Keep route handlers thin, map
    field-by-field, validate required fields before runner calls, sanitize NaN/Infinity before JSON
    responses, preserve unit conversion at boundaries only, record decisions in
    `templates/implementation/form_mapping_spec.md` (and `api_route_skeleton.md`).
 6. Structure frontend JS (`webapp/static/js/`): `forms.js` (collect/populate/reset/validate/
-   dynamic lists), `results.js` (summaries, status badges, utilization bars, trace expansion),
+   dynamic lists), `results.js` (summaries, status badges, utilization bars, trace expansion,
+   formula review cards from trace data using KaTeX/MathJax with plain-text fallback),
    `i18n.js` (language switching, `data-i18n` replacement), `main.js` (API calls, events, loading,
    orchestration). Do not calculate engineering results in JS.
 7. Add i18n when multilingual engineers/clients are served (`templates/implementation/i18n_pattern.md`):
@@ -61,9 +65,16 @@ use. The static-HTML guard and `run_book()` contract live in `shared/lifecycle.m
    pass/fail, or do official unit conversion.
 9. Add a Marimo review app when reviewers need module-level inspection, under
    `apps/review/<book_name>_review.py` and `apps/review/modules/<module_name>_review.py`
-   (`templates/implementation/marimo_review_spec.md`): case/package loader, module selector,
+   (`templates/implementation/marimo_review_spec.md`). For frontend-connected review, add the
+   generic bridge from `templates/implementation/marimo_frontend_bridge_spec.md`: `/api/review/session`,
+   `/api/review/state/<session_id>`, `src/<pkg>/review/bridge.py`, and
+   `apps/review/calculation_review.py`. The Marimo app loads saved BookInput/BookResult/
+   ReportContext sessions from `outputs/review/`, then supports live Python review in
+   `marimo edit` and controlled token-protected `marimo run` behind `/admin/review/`.
+   Module review pages include: case/package loader, module selector,
    editable draft inputs, run module or full `run_book()`, governing result + warnings/errors,
-   input/result diff, formula/source traces, review notes/decision, save draft or module-review
+   input/result diff, formula/source traces with the same formula-card fields used by web/report,
+   review notes/decision, save draft or module-review
    log. Label exploratory edits `draft`/`review`/`prototype` until rerun through the official path
    and verified. Embedded admin review (`templates/implementation/admin_marimo_review_spec.md`):
    main app at `/`, Marimo at `/admin/review/` as a separate service behind nginx/proxy, shared

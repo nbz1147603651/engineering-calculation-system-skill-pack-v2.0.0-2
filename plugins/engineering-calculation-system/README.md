@@ -71,8 +71,9 @@ From this plugin folder:
 python scripts/validate_plugin.py
 ```
 
-The plugin doctor checks the manifest, required Codex adapter files, and the
-bundled core skill package.
+The plugin doctor checks the manifest, local marketplace discoverability,
+required Codex adapter files, overlay synchronization, bundled-source drift,
+and the bundled core skill package.
 
 ## Refresh From Core
 

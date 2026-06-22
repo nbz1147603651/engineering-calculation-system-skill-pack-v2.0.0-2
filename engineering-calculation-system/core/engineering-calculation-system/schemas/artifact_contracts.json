@@ -44,7 +44,9 @@
     "templates/implementation/latex_report_spec.md",
     "templates/implementation/html_report_spec.md",
     "templates/implementation/import_export_contract.md",
+    "templates/implementation/calculation_review_card_spec.md",
     "templates/implementation/marimo_review_spec.md",
+    "templates/implementation/marimo_frontend_bridge_spec.md",
     "templates/implementation/admin_marimo_review_spec.md",
     "templates/implementation/review_readability_checklist.md",
     "templates/implementation/module_asset_registry.csv",
@@ -124,7 +126,7 @@
     "templates/implementation/formula_publish_log.csv": "timestamp,admin,module_id,version_id,status,sha256,notes",
     "templates/implementation/module_asset_registry.csv": "module_id,domain,category,module_name,public_function,input_model,options_model,result_model,source_references,formula_trace_path,unit_tests,regression_tests,reuse_status,asset_owner,notes",
     "templates/implementation/result_path_registry.csv": "result_path,meaning,unit,source_module,report_visibility,regression_check",
-    "templates/implementation/review_schema.csv": "field_path,label,unit,input_type,required,validation,help_text",
+    "templates/implementation/review_schema.csv": "field_path,label,unit,input_type,required,validation,help_text,check_family,display_icon,result_path,formula_trace_required,marimo_section,report_visibility",
     "templates/verification/test_matrix.csv": "test_id,target,type,reference_basis,input_case,expected_result,tolerance,priority,notes"
   },
   "yaml_required_keys": {
@@ -353,10 +355,21 @@
       "Report Import Rules",
       "Export Package Contents"
     ],
+    "templates/implementation/calculation_review_card_spec.md": [
+      "FormulaTrace",
+      "formula-box",
+      "Display Registry"
+    ],
     "templates/implementation/marimo_review_spec.md": [
       "marimo edit",
       "marimo run",
-      "Module Review Rules"
+      "Module Review Rules",
+      "Frontend Bridge Rules"
+    ],
+    "templates/implementation/marimo_frontend_bridge_spec.md": [
+      "/api/review/session",
+      "apps/review/calculation_review.py",
+      "outputs/review/review_decisions.jsonl"
     ],
     "templates/implementation/admin_marimo_review_spec.md": [
       "Deployment Shape",

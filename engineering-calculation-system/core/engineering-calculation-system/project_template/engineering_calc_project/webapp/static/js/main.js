@@ -200,6 +200,33 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ── Import JSON button ────────────────────────────────────────────
+    // Marimo review session button: save current frontend case, then open Marimo.
+    const btnAdminReview = document.getElementById("btnAdminReview");
+    if (btnAdminReview) {
+        btnAdminReview.addEventListener("click", async (event) => {
+            event.preventDefault();
+            const fallbackUrl = btnAdminReview.getAttribute("href") || "/admin/review/";
+            try {
+                const data = collectFormData();
+                data.lang = getCurrentLang();
+
+                const resp = await fetch("/api/review/session", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify(data),
+                });
+                const payload = await resp.json();
+                if (!resp.ok || payload.status !== "ok") {
+                    throw new Error(payload.message || "Review session creation failed.");
+                }
+                window.open(payload.review.admin_url || fallbackUrl, "_blank", "noopener");
+            } catch (e) {
+                console.warn("Could not create Marimo review session", e);
+                window.open(fallbackUrl, "_blank", "noopener");
+            }
+        });
+    }
+
     const btnImport = document.getElementById("btnImportJson");
     const fileInput = document.getElementById("fileImport");
 

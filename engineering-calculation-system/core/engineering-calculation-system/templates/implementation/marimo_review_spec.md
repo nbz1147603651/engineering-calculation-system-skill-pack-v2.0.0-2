@@ -1,12 +1,13 @@
 # Marimo Review Specification
 
-Use Marimo for Python-native, reactive engineering review pages when module-level checking, editable inputs, or exploratory scenarios are useful.
+Use Marimo for Python-native, reactive engineering review pages when module-level checking, editable inputs, exploratory scenarios, or frontend-connected review sessions are useful.
 
 ## App Locations
 
 ```text
 apps/review/<book_name>_review.py
 apps/review/modules/<module_name>_review.py
+apps/review/calculation_review.py
 ```
 
 ## Launch Commands
@@ -20,12 +21,15 @@ Use `marimo edit` for authoring and engineering development. Use `marimo run` fo
 
 For deployed admin review under the main site, use `marimo run` with token protection and a base URL such as `/admin/review`. Do not expose `marimo edit` in production.
 
+For web-connected review sessions, use `templates/implementation/marimo_frontend_bridge_spec.md`.
+
 ## Standard Review Page
 
 | Section | Required content |
 | --- | --- |
 | Header | project, case, package id, report status, source basis, runner version |
 | Package loader | file upload or file browser for data packages and final inputs |
+| Frontend session loader | saved sessions from `outputs/review/sessions/<session_id>/` |
 | Module selector | module list from handoff/module registry |
 | Editable input | BookInput group or module input model using form controls or data editor |
 | Run cell | call selected trusted module or run_book() |
@@ -34,6 +38,14 @@ For deployed admin review under the main site, use `marimo run` with token prote
 | Diff review | current draft vs final input/result/imported report |
 | Notes and decision | reviewer notes, accepted/rejected/needs change |
 | Save/export | draft input, review log row, BookResult JSON, upload package |
+
+## Frontend Bridge Rules
+
+- Browser UI creates sessions through `/api/review/session`; Marimo reads session files.
+- The bridge must save plain `BookInput`, `BookResult`, `ReportContext`, and review state JSON.
+- Marimo may run draft Python cells in `marimo edit`, but production calculations still flow through `run_book()`.
+- Review decisions append to `outputs/review/review_decisions.jsonl` and never silently overwrite final inputs.
+- Do not use Quarto as the review runtime; it is only a possible visual reference for readable reports.
 
 ## Module Review Rules
 

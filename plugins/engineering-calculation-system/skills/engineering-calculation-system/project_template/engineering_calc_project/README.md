@@ -23,7 +23,7 @@ Report export: automatic final report at /api/report/final, HTML preview/downloa
 Report decision: /api/report/decision selects latex_pdf when latexmk or pdflatex is available, otherwise html_a4
 LaTeX templates: list via /api/report/templates; send latex_template_id when downloading, or omit it to use the default template
 Charts: structured BookResult.charts from src/pkg/books/example_book/charts.py, rendered by reports and UI without recalculating engineering results
-Review/admin: Marimo when enabled
+Review/admin: Marimo calculation review when enabled; formula rule publishing remains a separate admin flow
 ```
 
 The browser UI is a web application served by the Python backend. It is not a standalone static HTML deliverable, and it must not contain engineering formulas.
@@ -41,7 +41,7 @@ LaTeX report templates live under `latex/templates/default_engineering_calcbook/
 From this directory:
 
 ```bash
-python3 -m pytest -q
+python3 -B -m pytest -q -p no:cacheprovider
 ```
 
 ## Run Locally
@@ -71,7 +71,7 @@ Main app: `http://127.0.0.1:5000/`
 
 Review setup shell: `http://127.0.0.1:5000/admin/review/`
 
-Marimo admin review: `http://127.0.0.1:2718/`
+Marimo calculation review: `http://127.0.0.1:2718/`
 
 Behind nginx, expose the admin page at `https://example.com/admin/review/`.
 
@@ -89,7 +89,9 @@ data/formula_registry/modules/<module_id>/versions/<version_id>.yaml
 outputs/logs/formula_publish_log.csv
 ```
 
-The Marimo admin app may publish declaration-based formulas only after validation passes. The browser UI and report templates must not contain engineering formulas.
+The browser can create a Marimo review session through `/api/review/session`, which saves BookInput, BookResult, ReportContext, and FormulaTrace data under `outputs/review/`. The Marimo calculation review app reads those sessions for live Python review and appends decisions to `outputs/review/review_decisions.jsonl`.
+
+The separate Formula Review Admin may publish declaration-based formulas only after validation passes. The browser UI and report templates must not contain engineering formulas.
 
 From the skill pack root:
 

@@ -48,7 +48,9 @@ def test_capabilities_marimo_configured(monkeypatch):
     assert payload["capabilities"]["marimo_review"]["status"] == "configured"
     assert payload["capabilities"]["marimo_review"]["admin_url"] == "/admin/review/"
     assert payload["capabilities"]["marimo_review"]["service_url"] == "http://127.0.0.1:2718/"
+    assert "apps/review/calculation_review.py" in payload["capabilities"]["marimo_review"]["run_command"]
     assert "--token-password <ADMIN_REVIEW_TOKEN>" in payload["capabilities"]["marimo_review"]["run_command"]
+    assert "admin_formula_review.py" in payload["capabilities"]["marimo_review"]["formula_admin_run_command"]
 
 
 def test_capabilities_marimo_available_without_token(monkeypatch):

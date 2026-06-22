@@ -21,14 +21,29 @@ This section displays source-backed formula traces from BookResult only. It does
 {% set trace_count.value = trace_count.value + 1 %}
 \subsection{ {{ trace.formula_id | latex_escape }} -- {{ trace.formula_name | latex_escape }} }
 
+{% if trace.expression_tex %}
+\[
+{{ trace.expression_tex }}
+\]
+{% elif trace.expression_plain %}
+\noindent\textbf{Formula expression:} {{ trace.expression_plain | latex_escape }}
+{% else %}
+\noindent\textit{Formula expression not recorded in FormulaTrace.}
+{% endif %}
+
 \begin{longtable}{p{0.30\linewidth}p{0.60\linewidth}}
 \toprule
 Item & Value \\
 \midrule
+Check & {{ check.check_id | latex_escape }} \\
 Source & {{ trace.source_reference | latex_escape }} \\
+Engineering explanation & {{ trace.engineering_explanation | default("") | latex_escape }} \\
+Variables & {{ trace.variable_definitions | latex_escape }} \\
 Inputs & {{ trace.inputs | latex_escape }} \\
+Substitutions & {{ trace.substitutions | latex_escape }} \\
 Intermediates & {{ trace.intermediates | latex_escape }} \\
 Result & {{ trace.result_symbol | latex_escape }} = {{ trace.result_value | latex_escape }} {{ trace.unit | default("") | latex_escape }} \\
+Result path & {{ trace.result_path | default("") | latex_escape }} \\
 Notes & {{ trace.notes | latex_escape }} \\
 \bottomrule
 \end{longtable}

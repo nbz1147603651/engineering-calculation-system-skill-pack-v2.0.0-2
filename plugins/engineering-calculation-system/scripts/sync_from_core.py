@@ -28,6 +28,10 @@ multi-agent boundaries, and user-facing completion rules.
 
 
 def copy_tree(source: Path, destination: Path) -> None:
+    resolved_destination = destination.resolve()
+    resolved_plugin = PLUGIN_ROOT.resolve()
+    if not resolved_destination.is_relative_to(resolved_plugin):
+        raise RuntimeError(f"refusing to replace path outside plugin root: {destination}")
     if destination.exists():
         shutil.rmtree(destination)
     shutil.copytree(source, destination)
@@ -76,6 +80,8 @@ def main() -> int:
     args = parser.parse_args()
 
     source = args.source.resolve()
+    if source == DESTINATION.resolve():
+        raise SystemExit("source and bundled destination must be different paths")
     if not source.exists():
         raise SystemExit(f"source skill root does not exist: {source}")
     if not (source / "SKILL.md").exists():
@@ -97,4 +103,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

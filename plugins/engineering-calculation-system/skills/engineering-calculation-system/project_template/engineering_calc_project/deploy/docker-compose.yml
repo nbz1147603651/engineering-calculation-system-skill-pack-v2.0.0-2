@@ -21,7 +21,7 @@ services:
     command: >
       sh -c 'test -n "$${ADMIN_REVIEW_TOKEN}" ||
       (echo "ADMIN_REVIEW_TOKEN is required" >&2; exit 1);
-      marimo run apps/review/admin_formula_review.py
+      marimo run apps/review/calculation_review.py
       --host 0.0.0.0
       --port "$${MARIMO_PORT:-2718}"
       --base-url "$${MARIMO_BASE_URL:-/admin/review}"

@@ -33,6 +33,8 @@ webapp/static/js/main.js
 - Do not create a landing page, marketing hero, unrelated dashboard layout, or decorative theme.
 - Do not introduce a frontend framework unless the handoff records a justified stack change.
 - Do not calculate engineering values in templates or JavaScript.
+- Render calculation formulas, explanations, substitutions, and source references through
+  `calculation_review_card_spec.md`; do not hardcode domain formulas in UI files.
 
 ## Component Patterns
 
@@ -41,6 +43,7 @@ webapp/static/js/main.js
 | Top bar | project/book title, import/export, report preview, LaTeX template selector/export, language switch | `_topbar.html`, `main.js`, `i18n.py` |
 | Input card | grouped BookInput fields, units, inline validation, conditional visibility | `index.html`, `forms.js` |
 | Result card | conclusion first, status badge, trace expansion, stable result path | `index.html`, `results.js` |
+| Calculation review card | check icon, engineering explanation, formula box, variable/substitution tables, result path, source reference | `results.js`, `components.css` |
 | Status strip | input hash, result hash, runner version, template version, package id, timestamp | `index.html`, `results.js` |
 | Report modal | preview frame and renderer-specific downloads | `_report_modal.html`, `main.js` |
 
@@ -54,7 +57,7 @@ templates/implementation/review_schema.csv
 templates/implementation/result_path_registry.csv
 ```
 
-When adding a field, record the field path, label, unit, group, editability, source, and validation note. When adding a result card, record the BookResult path, purpose, display values, trace visibility, and report visibility.
+When adding a field, record the field path, label, unit, group, editability, source, and validation note. When adding a result card, record the BookResult path, purpose, display values, trace visibility, report visibility, Marimo review section, and display icon. Do not put project-specific icon or label mappings directly in JavaScript.
 
 ## Visual Guardrails
 
@@ -63,7 +66,9 @@ When adding a field, record the field path, label, unit, group, editability, sou
 - Keep compact tables for comparable checks.
 - Use metric boxes for headline values.
 - Keep warnings and errors visible and textual, not color-only.
-- Keep long formula traces behind expansion or a drawer.
+- Keep long formula traces behind expansion or a drawer, but each production check must expose a
+  readable formula card with icon, explanation, source, expression, variables, substitutions, and
+  stable result path.
 - On mobile, stack input first, governing summary second, result details third.
 
 ## Validation Targets
@@ -83,6 +88,11 @@ GET /api/report/templates
 /api/report/decision
 /api/report/final
 latex_template_id
+calculation_review_card_spec.md
+formula-box
+review-icon
+expression_tex
+result_path
 ```
 
 Treat missing UI kit files as a `prototype` or `incomplete` delivery.

@@ -8,7 +8,7 @@ version: 2.4.1
 
 This Qoder skill is a lightweight entrypoint unless the project also contains the complete core package: `SKILL.md`, `skills/`, `shared/`, `templates/`, `schemas/`, `scripts/validate_artifacts.py`, and `project_template/`.
 
-Before implementation or release work, read `shared/lifecycle.md` and `shared/lifecycle.md` from the complete core package. Default delivery is `web-complete`, which means dual closure: a readable A4/LaTeX calculation book with real input and non-empty `BookResult.checks`, plus a complete web system with API/UI, import/export, batch, deployment artifacts, and smoke tests.
+Before implementation or release work, read `shared/lifecycle.md` from the complete core package when it is available. At the start of a Qoder project, read `qoder_quickstart.md` for the Qoder Package Self-Check. Default delivery is `web-complete`, which means dual closure: a readable A4/LaTeX calculation book with real input and non-empty `BookResult.checks`, plus a complete web system with API/UI, import/export, batch, deployment artifacts, and smoke tests.
 
 Do not claim production completion from the direct Qoder skill alone. Use the complete core/template/validator package and run:
 
@@ -25,6 +25,7 @@ Use an **agent-first, skill-backed** architecture when Qoder custom agents are a
 
 - If `.qoder/agents/engineering-calc-system.md` exists, treat it as the supervisor and this skill as the reusable skill/resource layer.
 - If this skill is imported directly through QODER Skills / Install Skill, treat it as a lightweight entrypoint. It can route and guide work, but it is not the full project template by itself.
+- Read `qoder_quickstart.md` first when a Qoder user asks how to install, start, audit, or validate this package.
 - Keep long references in `reference.md` or `.qoder/references/engineering-calc-system.md`. Do not place non-agent reference files in `.qoder/agents/`, because Qoder scans Markdown files there as custom agents.
 - For `web-complete`, prefer the QODER Project package with the core skill, templates, schemas, validator, project scaffold, and `.qoder` overlay.
 - `python tools/build_release.py` packages all Qoder worker agents into the QODER Project archive. The direct QODER Skill archive remains skill-only for Qoder Skill import compatibility.

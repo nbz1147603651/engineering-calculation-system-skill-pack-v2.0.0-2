@@ -59,6 +59,66 @@ body {
     font-weight: 700;
 }
 
+.review-icon {
+    align-items: center;
+    background: var(--ecs-color-surface-muted);
+    border: 1px solid var(--ecs-color-border);
+    border-radius: var(--ecs-radius-md);
+    color: var(--ecs-color-primary);
+    display: inline-flex;
+    flex: 0 0 auto;
+    height: 2.25rem;
+    justify-content: center;
+    width: 2.25rem;
+}
+
+.trace-card {
+    border: 1px solid var(--ecs-color-border);
+    border-left: 4px solid var(--ecs-color-primary);
+    border-radius: var(--ecs-radius-md);
+    margin-bottom: 1rem;
+    padding: 1rem;
+}
+
+.trace-card-header {
+    align-items: flex-start;
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.trace-explanation {
+    color: var(--ecs-color-text);
+    margin-bottom: 0.75rem;
+}
+
+.formula-box {
+    background: var(--ecs-color-surface-muted);
+    border: 1px solid var(--ecs-color-border);
+    border-radius: var(--ecs-radius-md);
+    margin: 0.75rem 0;
+    overflow-x: auto;
+    padding: 0.75rem;
+}
+
+.trace-subtable {
+    margin-top: 0.75rem;
+}
+
+.trace-subtitle {
+    color: var(--ecs-color-muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+}
+
+.trace-result {
+    border-top: 1px solid var(--ecs-color-border);
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+}
+
 .report-frame {
     min-height: 80vh;
 }

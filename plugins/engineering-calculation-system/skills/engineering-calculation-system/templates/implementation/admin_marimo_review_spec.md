@@ -1,6 +1,6 @@
 # Admin Marimo Review Specification
 
-Use this template for an embedded-admin Marimo review surface deployed behind the main site.
+Use this template for the embedded-admin Marimo formula-publishing surface deployed behind the main site. General calculation review uses `marimo_frontend_bridge_spec.md` and `apps/review/calculation_review.py`.
 
 ## Deployment Shape
 

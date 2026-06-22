@@ -163,6 +163,7 @@ WEB_COMPLETE_REQUIRED_PROJECT_PATHS = [
     "webapp/static/css/components.css",
     "webapp/static/css/style.css",
     "src/pkg/core/capabilities.py",
+    "src/pkg/review/bridge.py",
     "src/pkg/report/latex_renderer.py",
     "src/pkg/report/html_renderer.py",
     "src/pkg/report/report_selector.py",
@@ -170,6 +171,7 @@ WEB_COMPLETE_REQUIRED_PROJECT_PATHS = [
     "latex/templates/default_engineering_calcbook/cover.tex.j2",
     "latex/templates/default_engineering_calcbook/page_style.sty",
     "latex/templates/default_engineering_calcbook/latexmkrc",
+    "apps/review/calculation_review.py",
     "deploy/env.example",
     "deploy/Dockerfile",
     "deploy/docker-compose.yml",
@@ -185,6 +187,7 @@ WEB_COMPLETE_REQUIRED_PROJECT_PATHS = [
     "outputs/reports_latex/.gitkeep",
     "outputs/reports_pdf/.gitkeep",
     "outputs/logs/.gitkeep",
+    "outputs/review/.gitkeep",
     "tests/smoke/test_latex_report.py",
 ]
 WEB_COMPLETE_TEXT_REQUIRED_PHRASES = {
@@ -202,6 +205,8 @@ WEB_COMPLETE_TEXT_REQUIRED_PHRASES = {
         "/api/report/templates",
         "/api/report/latex",
         "/api/capabilities",
+        "/api/review/session",
+        "/api/review/state/<session_id>",
         "/admin/review/",
         "admin_review",
         "detect_capabilities",
@@ -234,9 +239,11 @@ WEB_COMPLETE_TEXT_REQUIRED_PHRASES = {
     ],
     "webapp/templates/admin_review.html": [
         "id=\"adminReviewPage\"",
-        "Formula Review Admin",
+        "Marimo Calculation Review",
         "ADMIN_REVIEW_TOKEN",
         "review.run_command",
+        "apps/review/calculation_review.py",
+        "/api/review/session",
         "active_versions.yaml",
         "run_book()",
     ],
@@ -272,6 +279,7 @@ WEB_COMPLETE_TEXT_REQUIRED_PHRASES = {
         "/api/report/final",
         "/api/report/templates",
         "/api/report/latex",
+        "/api/review/session",
         "/api/capabilities",
         "renderCapabilities",
         "getSelectedLatexTemplateId",
@@ -292,8 +300,16 @@ WEB_COMPLETE_TEXT_REQUIRED_PHRASES = {
     "src/pkg/core/capabilities.py": [
         "detect_capabilities",
         "marimo_review",
+        "calculation_review.py",
         "latex",
         "docker",
+    ],
+    "src/pkg/review/bridge.py": [
+        "write_review_session",
+        "read_review_session",
+        "append_review_decision",
+        "outputs",
+        "review",
     ],
     "src/pkg/report/html_renderer.py": [
         "build_html_report_context",
@@ -343,6 +359,7 @@ WEB_COMPLETE_TEXT_REQUIRED_PHRASES = {
         "/api/report/html",
         "/api/report/decision",
         "/api/capabilities",
+        "/api/review/session",
         "/api/batch/run",
         "langToggle",
         "capabilityStrip",
@@ -353,6 +370,13 @@ WEB_COMPLETE_TEXT_REQUIRED_PHRASES = {
         "Formula Logic Trace",
         "Sources",
         "Assumptions",
+    ],
+    "apps/review/calculation_review.py": [
+        "marimo.App",
+        "list_review_sessions",
+        "read_review_session",
+        "append_review_decision",
+        "FormulaTrace",
     ],
     "tests/smoke/test_latex_report.py": [
         "/api/report/latex",
@@ -1103,6 +1127,7 @@ def validate_qoder_addon_profile(package_root: Path) -> list[str]:
     required = [
         ".qoder/skills/engineering-calc-system/SKILL.md",
         ".qoder/skills/engineering-calc-system/reference.md",
+        ".qoder/skills/engineering-calc-system/qoder_quickstart.md",
         ".qoder/skills/engineering-calc-system/assets/lifecycle-console.html",
         ".qoder/references/engineering-calc-system.md",
         *QODER_AGENT_FILES,
@@ -1119,8 +1144,10 @@ def validate_qoder_addon_profile(package_root: Path) -> list[str]:
     check_text_required_phrases(
         package_root,
         {
-            ".qoder/skills/engineering-calc-system/SKILL.md": ["Qoder Architecture", "agent-first", "shared/lifecycle.md", "dual closure"],
+            ".qoder/skills/engineering-calc-system/SKILL.md": ["Qoder Architecture", "agent-first", "shared/lifecycle.md", "dual closure", "qoder_quickstart.md"],
             ".qoder/skills/engineering-calc-system/reference.md": ["/api/i18n/<lang>"],
+            ".qoder/skills/engineering-calc-system/qoder_quickstart.md": ["Qoder Package Self-Check", "Direct QODER Skill", "QODER Project overlay", "Complete core project", "validate_artifacts.py --package-root"],
+            ".qoder/skills/engineering-calc-system/assets/lifecycle-console.html": ["v2.4.1", "12a", "12b", "12c", "14", "route_confirmed", "batch_import"],
             ".qoder/agents/engineering-calc-system.md": ["Qoder Architecture", "agent-first", "Stable ASCII Contract", "shared/lifecycle.md", "dual closure"],
             ".qoder/agents/engineering-calc-module-worker.md": ["Qoder Worker Contract", "run_book(BookInput) -> BookResult"],
             ".qoder/agents/engineering-calc-interface-worker.md": ["Qoder Worker Contract", "/api/i18n/<lang>"],
@@ -1198,7 +1225,7 @@ def capability_report_lines() -> list[str]:
     if marimo_configured:
         marimo_line = "marimo_review: configured"
     elif marimo_available:
-        marimo_line = "marimo_review: available (set ADMIN_REVIEW_TOKEN to enable admin)"
+        marimo_line = "marimo_review: available (set ADMIN_REVIEW_TOKEN to enable review)"
     else:
         marimo_line = "marimo_review: disabled (install with: python -m pip install marimo)"
 

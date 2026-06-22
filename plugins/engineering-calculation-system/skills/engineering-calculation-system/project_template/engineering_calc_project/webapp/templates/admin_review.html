@@ -7,9 +7,9 @@
             <div class="alert alert-info border-0 shadow-sm">
                 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
                     <div>
-                        <h1 class="h4 mb-1">Formula Review Admin</h1>
+                        <h1 class="h4 mb-1">Marimo Calculation Review</h1>
                         <p class="mb-0">
-                            Marimo publishes declaration-based formula rules only after validation and smoke tests pass.
+                            Marimo reviews frontend-created calculation sessions with live Python cells, traces, and review decisions.
                         </p>
                     </div>
                     <span class="badge text-bg-{{ 'success' if review.status == 'configured' else 'warning' if review.status == 'available' else 'secondary' }}">
@@ -37,7 +37,7 @@
 
         <div class="col-lg-8">
             <div class="card review-card h-100">
-                <div class="card-header fw-semibold">Open Review Page</div>
+                <div class="card-header fw-semibold">Open Calculation Review</div>
                 <div class="card-body">
                     <p>{{ review.message }}</p>
                     <div class="d-flex flex-wrap gap-2">
@@ -55,7 +55,7 @@
                         </a>
                     </div>
                     <p class="text-muted small mt-3 mb-0">
-                        In production, nginx or the platform router should proxy {{ review.admin_url }} to the Marimo service.
+                        In production, nginx or the platform router should proxy {{ review.admin_url }} to the Marimo calculation review service.
                     </p>
                 </div>
             </div>
@@ -65,6 +65,7 @@
             <div class="card review-card">
                 <div class="card-header fw-semibold">Start Command</div>
                 <div class="card-body">
+                    <p class="text-muted small mb-2">Default app: <code>apps/review/calculation_review.py</code></p>
                     <pre class="mb-0"><code>{{ review.run_command }}</code></pre>
                 </div>
             </div>
@@ -72,13 +73,26 @@
 
         <div class="col-12">
             <div class="card review-card">
-                <div class="card-header fw-semibold">Publish Boundary</div>
+                <div class="card-header fw-semibold">Review Boundary</div>
                 <div class="card-body">
                     <ul class="mb-0">
-                        <li>Draft edits do not affect production formula selection.</li>
-                        <li>Publishing writes a versioned rule, updates active_versions.yaml, and appends the publish log.</li>
+                        <li>Frontend creates review sessions through <code>/api/review/session</code>; Marimo reads the saved BookInput, BookResult, ReportContext, and FormulaTrace data.</li>
+                        <li>Draft Python edits in <code>marimo edit</code> are exploratory until they are implemented in source modules and rerun through <code>run_book()</code>.</li>
                         <li>The web UI and report templates remain presentation-only; official calculations still flow through run_book().</li>
                     </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="card review-card">
+                <div class="card-header fw-semibold">Formula Rule Admin</div>
+                <div class="card-body">
+                    <p class="mb-2">
+                        Use the separate Formula Review Admin only for declaration-based formula registry publishing.
+                        Publishing writes a versioned rule, updates <code>active_versions.yaml</code>, and appends the publish log after validation and smoke tests pass.
+                    </p>
+                    <pre class="mb-0"><code>{{ review.formula_admin_run_command }}</code></pre>
                 </div>
             </div>
         </div>

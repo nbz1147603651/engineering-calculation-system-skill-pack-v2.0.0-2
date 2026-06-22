@@ -364,18 +364,59 @@ def _engineering_charts(charts: list[dict[str, Any]]) -> str:
     """
 
 
+def _trace_mapping_table(title: str, data: dict[str, Any] | None) -> str:
+    if not data:
+        return ""
+    rows = "\n".join(
+        f"<tr><th>{_fmt(key)}</th><td>{_fmt(value)}</td></tr>"
+        for key, value in data.items()
+    )
+    return f"""
+    <h4>{escape(title)}</h4>
+    <table class="data-table trace-data">
+        <tbody>{rows}</tbody>
+    </table>
+    """
+
+
+def _trace_formula_box(trace: dict[str, Any]) -> str:
+    expression = trace.get("expression_tex") or trace.get("expression_plain")
+    if not expression:
+        return '<div class="formula-box muted">Formula expression not recorded in FormulaTrace.</div>'
+    return f'<div class="formula-box">{_fmt(expression)}</div>'
+
+
 def _formula_logic_trace(checks: list[dict[str, Any]]) -> str:
     trace_blocks: list[str] = []
     for check in checks:
         for trace in check.get("formula_traces", []) or []:
+            explanation = trace.get("engineering_explanation")
+            explanation_block = (
+                f'<p class="explanation">{_fmt(explanation)}</p>'
+                if explanation
+                else ""
+            )
+            result_path = trace.get("result_path")
+            result_path_block = (
+                f'<p><strong>Result path:</strong> <code>{_fmt(result_path)}</code></p>'
+                if result_path
+                else ""
+            )
             trace_blocks.append(
                 f"""
                 <article class="trace-block">
                     <h3>{_fmt(trace.get('formula_id'))} - {_fmt(trace.get('formula_name'))}</h3>
-                    <p><strong>Source:</strong> {_fmt(trace.get('source_reference'))}</p>
-                    <p><strong>Inputs:</strong> {_fmt(trace.get('inputs'))}</p>
-                    <p><strong>Intermediates:</strong> {_fmt(trace.get('intermediates'))}</p>
+                    <p><strong>Check:</strong> {_fmt(check.get('check_id'))} |
+                    <strong>Status:</strong> {_fmt(check.get('status'))} |
+                    <strong>Source:</strong> {_fmt(trace.get('source_reference'))}</p>
+                    {explanation_block}
+                    {_trace_formula_box(trace)}
+                    {_trace_mapping_table('Variables', trace.get('variable_definitions'))}
+                    {_trace_mapping_table('Inputs', trace.get('inputs'))}
+                    {_trace_mapping_table('Substitutions', trace.get('substitutions'))}
+                    {_trace_mapping_table('Intermediates', trace.get('intermediates'))}
                     <p><strong>Result:</strong> {_fmt(trace.get('result_symbol'))} = {_fmt(trace.get('result_value'))} {_fmt(trace.get('unit'))}</p>
+                    {result_path_block}
                     <p><strong>Notes:</strong> {_fmt(trace.get('notes'))}</p>
                 </article>
                 """
@@ -501,6 +542,25 @@ def render_a4_html_report(context: dict[str, Any]) -> str:
             margin: 4mm 0;
             padding: 3mm 4mm;
             page-break-inside: avoid;
+        }}
+        .formula-box {{
+            border: 1px solid #bfdbfe;
+            background: #eff6ff;
+            color: #172554;
+            font-family: "Courier New", monospace;
+            margin: 3mm 0;
+            padding: 3mm;
+            word-break: break-word;
+        }}
+        .explanation {{
+            color: #334155;
+        }}
+        .trace-data th {{
+            width: 30%;
+        }}
+        code {{
+            color: #1d4ed8;
+            font-family: "Courier New", monospace;
         }}
         .section-note, .muted {{
             color: #64748b;

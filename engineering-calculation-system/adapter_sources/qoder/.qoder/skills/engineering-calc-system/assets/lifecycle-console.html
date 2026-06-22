@@ -177,13 +177,13 @@
   <h1 id="projTitle">工程计算系统 · 全生命周期控制台</h1>
   <div style="display:flex;align-items:center;gap:6px">
     <button class="btn btn-s" onclick="swTab('im')" style="font-size:10px;padding:4px 10px"><span style="margin-right:4px">⬆</span>导入数据</button>
-    <span class="hdr-badge" id="verBadge">v2.2.0</span>
+    <span class="hdr-badge" id="verBadge">v2.4.1</span>
   </div>
 </div>
 
 <div class="sum-bar">
   <div class="sum-item"><div class="sum-val" id="sStg" style="color:var(--accent)">--</div><div class="sum-lbl">当前阶段</div></div>
-  <div class="sum-item"><div class="sum-val" id="sProg" style="color:var(--gate-prod)">0/13</div><div class="sum-lbl">完成进度</div></div>
+  <div class="sum-item"><div class="sum-val" id="sProg" style="color:var(--gate-prod)">0/17</div><div class="sum-lbl">完成进度</div></div>
   <div class="sum-item"><div class="sum-val" id="sGate" style="color:var(--gate-search)">--</div><div class="sum-lbl">证据门禁</div></div>
   <div class="sum-item"><div class="sum-val" id="sHand" style="color:var(--gate-proto)">--</div><div class="sum-lbl">交接门禁</div></div>
 </div>
@@ -207,7 +207,7 @@
     <div class="stage-grid" id="g2"></div>
   </div>
   <div class="phase-grp">
-    <div class="phase-hdr"><div class="phase-dot" style="background:var(--p3)"></div><span class="phase-title">第三阶段：实现验证</span><span class="phase-sub">— 架构 · 模型 · 模块 · 运行器 · 接口 · 验证</span></div>
+    <div class="phase-hdr"><div class="phase-dot" style="background:var(--p3)"></div><span class="phase-title">第三阶段：实现验证发布</span><span class="phase-sub">— 架构 · 模型 · 模块 · 运行器 · 接口 · 验证 · 部署</span></div>
     <div class="stage-grid" id="g3"></div>
   </div>
 </div>
@@ -349,8 +349,12 @@ const STAGES = [
   {id:'09',name:'数据模型',desc:'Input/Result模型定义',phase:3,inputs:'架构文档',outputs:'模型代码',gate:'impl'},
   {id:'10',name:'可复用模块',desc:'公式隔离+纯计算',phase:3,inputs:'公式清单',outputs:'模块代码',gate:'impl'},
   {id:'11',name:'运行器',desc:'run_book序列编排',phase:3,inputs:'模块+模型',outputs:'BookResult',gate:'impl'},
-  {id:'12',name:'接口层',desc:'报告/审查/批量/API',phase:3,inputs:'BookResult',outputs:'UI/报告',gate:'impl'},
-  {id:'13',name:'验证追溯',desc:'10类测试+回归+哈希',phase:3,inputs:'全部代码',outputs:'测试报告',gate:'impl'}
+  {id:'12',name:'接口路由',desc:'选择报告/前端/批量路径',phase:3,inputs:'BookResult',outputs:'接口决策',gate:'impl'},
+  {id:'12a',name:'报告渲染',desc:'ReportContext+A4/LaTeX',phase:3,inputs:'BookResult',outputs:'计算书报告',gate:'production'},
+  {id:'12b',name:'前端审查',desc:'API/UI/i18n/图表/Marimo',phase:3,inputs:'BookResult',outputs:'Web审查界面',gate:'production'},
+  {id:'12c',name:'批量包',desc:'导入导出+manifest+batch',phase:3,inputs:'BookInput/Package',outputs:'批量结果包',gate:'production'},
+  {id:'13',name:'验证追溯',desc:'测试+回归+哈希+验收',phase:3,inputs:'全部代码',outputs:'测试报告',gate:'production'},
+  {id:'14',name:'发布部署',desc:'本地运行+Linux/cloud部署',phase:3,inputs:'已验证Web系统',outputs:'部署包/Runbook',gate:'production'}
 ];
 
 // ── Material States ──
@@ -359,8 +363,8 @@ const STATES = [
   {id:'insufficient',label:'资料不足',desc:'有资料但覆盖不全或权威性不足',route:['01','02','03'],note:'执行充分性评估后，针对缺口联网搜索补充。'},
   {id:'untrusted',label:'有资料但不可信',desc:'来源不明或非官方渠道',route:['04'],note:'先验证权威性，可能需要01→02→03补充官方来源。'},
   {id:'evidence_ok',label:'证据库可用',desc:'已有本地持久化的可信来源',route:['04','05','06','07'],note:'建议02联网补充验证：勘误检查、公式完整性、最新修订。'},
-  {id:'analysis_ok',label:'分析交接可用',desc:'已完成逻辑蓝图和交接契约',route:['08','09','10','11','13'],note:'直接进入实现阶段，需时加12接口。'},
-  {id:'codebase_ok',label:'代码库可用',desc:'已有计算书代码',route:['08','13'],note:'按层级分类路由到08-13，优先验证。'}
+  {id:'analysis_ok',label:'分析交接可用',desc:'已完成逻辑蓝图和交接契约',route:['08','09','10','11','12','12a','12b','12c','13','14'],note:'web-complete 默认走完整实现、接口、验证和部署路径。'},
+  {id:'codebase_ok',label:'代码库可用',desc:'已有计算书代码',route:['08','09','10','11','12','12a','12b','12c','13','14'],note:'按层级分类路由到08-14；先验证现有实现，再按缺口补接口或发布。'}
 ];
 
 // ── Gate Definitions ──
@@ -416,8 +420,9 @@ function init() {
 }
 
 function renderSummary(doneCount, current, gateStatus) {
-  document.getElementById('sProg').textContent = doneCount + '/13';
-  const pct = Math.round(doneCount / 13 * 100);
+  const total = STAGES.length;
+  document.getElementById('sProg').textContent = doneCount + '/' + total;
+  const pct = Math.round(doneCount / total * 100);
   document.getElementById('sProg').textContent = pct + '%';
   if (current) {
     const s = STAGES.find(x => x.id === current);
@@ -570,7 +575,7 @@ function setFmt(el, fmt) {
 function loadTemplate() {
   const tpl = {
     project_name: "示例工程项目",
-    version: "2.2.0",
+    version: "2.4.1",
     completed_stages: ["01"],
     current_stage: "02",
     gate_status: {
@@ -597,7 +602,7 @@ function loadTemplate() {
 function exportCurrent() {
   const data = {
     project_name: D.project_name || '未命名项目',
-    version: D.version || '2.2.0',
+    version: D.version || '2.4.1',
     completed_stages: STAGES.filter(s => stageStatus[s.id] === 'done').map(s => s.id),
     current_stage: STAGES.find(s => stageStatus[s.id] === 'current')?.id || null,
     gate_status: D.gate_status || {},

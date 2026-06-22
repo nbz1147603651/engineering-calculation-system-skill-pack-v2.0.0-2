@@ -1,1 +1,1 @@
-field_path,label,unit,input_type,required,validation,help_text
+field_path,label,unit,input_type,required,validation,help_text,check_family,display_icon,result_path,formula_trace_required,marimo_section,report_visibility

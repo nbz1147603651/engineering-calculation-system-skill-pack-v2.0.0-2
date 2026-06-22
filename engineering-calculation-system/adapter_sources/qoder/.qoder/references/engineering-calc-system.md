@@ -20,7 +20,7 @@
 08 → 09 → 10 → 11 → 12a → 12b → 12c → 13 → 14
 ```
 
-不得把 `run_book.py`、静态 HTML、报告 HTML、notebook demo 或界面 mockup 标记为完成、可部署或 `web-complete`。如果当前安装只有 Qoder direct skill 的 3 个文件，它只是轻量入口；完整生成应使用 QODER Project 包或完整 single-file fallback。
+不得把 `run_book.py`、静态 HTML、报告 HTML、notebook demo 或界面 mockup 标记为完成、可部署或 `web-complete`。如果当前安装只有 Qoder direct skill 的轻量文件组（`SKILL.md`、`reference.md`、`qoder_quickstart.md`、`assets/`），它只是轻量入口；完整生成应使用 QODER Project 包或完整 single-file fallback。
 
 ---
 

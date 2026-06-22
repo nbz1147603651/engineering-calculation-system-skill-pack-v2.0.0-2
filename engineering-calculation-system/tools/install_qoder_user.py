@@ -23,6 +23,15 @@ EXPECTED_AGENT_FILES = (
     "engineering-calc-verification-worker.md",
     "engineering-calc-release-worker.md",
 )
+EXPECTED_SKILL_FILES = (
+    "SKILL.md",
+    "reference.md",
+    "qoder_quickstart.md",
+    "assets/lifecycle-console.html",
+)
+EXPECTED_REFERENCE_FILES = (
+    "engineering-calc-system.md",
+)
 MANAGED_SKILL_DIR = "engineering-calc-system"
 MANAGED_REFERENCE_FILE = "engineering-calc-system.md"
 DEPRECATED_AGENT_FILES = ("reference.md",)
@@ -73,20 +82,38 @@ def install_qoder_overlay(source: Path, target: Path, *, dry_run: bool) -> None:
 
 def verify_qoder_overlay(target: Path, *, dry_run: bool) -> None:
     agents_dir = target / "agents"
+    skill_dir = target / "skills" / MANAGED_SKILL_DIR
+    references_dir = target / "references"
     missing = [name for name in EXPECTED_AGENT_FILES if not (agents_dir / name).exists()]
+    missing_skill_files = [name for name in EXPECTED_SKILL_FILES if not (skill_dir / name).exists()]
+    missing_reference_files = [name for name in EXPECTED_REFERENCE_FILES if not (references_dir / name).exists()]
     if dry_run:
         print("expected Qoder agents:")
         for name in EXPECTED_AGENT_FILES:
             print(f"  {name}")
+        print("expected Qoder skill files:")
+        for name in EXPECTED_SKILL_FILES:
+            print(f"  skills/{MANAGED_SKILL_DIR}/{name}")
+        print("expected Qoder reference files:")
+        for name in EXPECTED_REFERENCE_FILES:
+            print(f"  references/{name}")
         return
     if missing:
         missing_text = ", ".join(missing)
         raise FileNotFoundError(f"Qoder install is incomplete; missing agents: {missing_text}")
+    if missing_skill_files:
+        missing_text = ", ".join(missing_skill_files)
+        raise FileNotFoundError(f"Qoder install is incomplete; missing skill files: {missing_text}")
+    if missing_reference_files:
+        missing_text = ", ".join(missing_reference_files)
+        raise FileNotFoundError(f"Qoder install is incomplete; missing references: {missing_text}")
     for name in DEPRECATED_AGENT_FILES:
         deprecated = agents_dir / name
         if deprecated.exists():
             raise RuntimeError(f"Deprecated Qoder agent reference remains: {deprecated}")
     print(f"installed {len(EXPECTED_AGENT_FILES)} Qoder agents into {agents_dir}")
+    print(f"verified {len(EXPECTED_SKILL_FILES)} Qoder skill files under {skill_dir}")
+    print(f"verified {len(EXPECTED_REFERENCE_FILES)} Qoder reference files under {references_dir}")
 
 
 def remove_empty_directory(path: Path, *, dry_run: bool) -> None:
@@ -145,6 +172,14 @@ def audit_qoder_overlay(target: Path) -> int:
     references_dir = target / "references"
 
     missing_agents = [name for name in EXPECTED_AGENT_FILES if not (agents_dir / name).exists()]
+    missing_skill_files = [
+        name for name in EXPECTED_SKILL_FILES
+        if not (skills_dir / MANAGED_SKILL_DIR / name).exists()
+    ]
+    missing_reference_files = [
+        name for name in EXPECTED_REFERENCE_FILES
+        if not (references_dir / name).exists()
+    ]
     expected_agents = set(EXPECTED_AGENT_FILES)
     extra_calc_agents = []
     if agents_dir.exists():
@@ -156,15 +191,22 @@ def audit_qoder_overlay(target: Path) -> int:
     deprecated_agents = [name for name in DEPRECATED_AGENT_FILES if (agents_dir / name).exists()]
     deprecated_skills = [name for name in DEPRECATED_SKILL_DIRS if (skills_dir / name).exists()]
 
-    missing_skill = not (skills_dir / MANAGED_SKILL_DIR / "SKILL.md").exists()
-    missing_reference = not (references_dir / MANAGED_REFERENCE_FILE).exists()
-
     print(f"Qoder home: {target}")
     print(f"expected agents installed: {len(EXPECTED_AGENT_FILES) - len(missing_agents)}/{len(EXPECTED_AGENT_FILES)}")
+    print(f"expected skill files installed: {len(EXPECTED_SKILL_FILES) - len(missing_skill_files)}/{len(EXPECTED_SKILL_FILES)}")
+    print(f"expected reference files installed: {len(EXPECTED_REFERENCE_FILES) - len(missing_reference_files)}/{len(EXPECTED_REFERENCE_FILES)}")
     if missing_agents:
         print("missing agents:")
         for name in missing_agents:
             print(f"  {name}")
+    if missing_skill_files:
+        print("missing skill files:")
+        for name in missing_skill_files:
+            print(f"  skills/{MANAGED_SKILL_DIR}/{name}")
+    if missing_reference_files:
+        print("missing reference files:")
+        for name in missing_reference_files:
+            print(f"  references/{name}")
     if extra_calc_agents:
         print("extra engineering calculation agents:")
         for name in extra_calc_agents:
@@ -177,19 +219,14 @@ def audit_qoder_overlay(target: Path) -> int:
         print("deprecated skill directories:")
         for name in deprecated_skills:
             print(f"  {name}")
-    if missing_skill:
-        print(f"missing skill entry: skills/{MANAGED_SKILL_DIR}/SKILL.md")
-    if missing_reference:
-        print(f"missing reference entry: references/{MANAGED_REFERENCE_FILE}")
-
     clean = not any(
         (
             missing_agents,
+            missing_skill_files,
+            missing_reference_files,
             extra_calc_agents,
             deprecated_agents,
             deprecated_skills,
-            missing_skill,
-            missing_reference,
         )
     )
     print("audit: clean" if clean else "audit: issues found")

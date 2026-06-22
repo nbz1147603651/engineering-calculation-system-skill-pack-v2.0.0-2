@@ -83,6 +83,60 @@ function statusBadge(status) {
     return `<span class="badge ${cls}">${escapeHtml(normalized)}</span>`;
 }
 
+function traceIconClass(value) {
+    const raw = String(value || "bi-braces");
+    return /^bi-[a-z0-9-]+$/i.test(raw) ? raw : "bi-braces";
+}
+
+function traceValue(value) {
+    if (value === null || value === undefined || value === "") return "-";
+    if (typeof value === "object") return JSON.stringify(value);
+    return String(value);
+}
+
+function renderMappingTable(title, data) {
+    const entries = Object.entries(data || {});
+    if (!entries.length) return "";
+
+    const rows = entries.map(([key, value]) => `
+        <tr>
+            <th scope="row">${escapeHtml(key)}</th>
+            <td>${escapeHtml(traceValue(value))}</td>
+        </tr>
+    `).join("");
+
+    return `
+        <div class="trace-subtable">
+            <div class="trace-subtitle">${escapeHtml(title)}</div>
+            <div class="table-responsive">
+                <table class="table table-sm mb-0">
+                    <tbody>${rows}</tbody>
+                </table>
+            </div>
+        </div>
+    `;
+}
+
+function renderFormulaExpression(trace) {
+    const expression = trace.expression_tex || trace.expression_plain;
+    if (!expression) {
+        return `<div class="formula-box text-muted">Formula expression not recorded in FormulaTrace.</div>`;
+    }
+
+    if (trace.expression_tex && window.katex && typeof window.katex.renderToString === "function") {
+        try {
+            return `<div class="formula-box">${window.katex.renderToString(trace.expression_tex, {
+                displayMode: true,
+                throwOnError: false,
+            })}</div>`;
+        } catch (error) {
+            return `<div class="formula-box"><code>${escapeHtml(expression)}</code></div>`;
+        }
+    }
+
+    return `<div class="formula-box"><code>${escapeHtml(expression)}</code></div>`;
+}
+
 function chartValue(chart, series, index) {
     const values = Array.isArray(series.values) ? series.values : [];
     return index < values.length ? values[index] : null;
@@ -288,15 +342,38 @@ function renderFormulaTraces(checks) {
         return;
     }
 
-    body.innerHTML = traces.map(({check, trace}) => `
-        <div class="border-start border-primary ps-3 mb-3">
-            <div class="fw-bold">${escapeHtml(trace.formula_id || "-")} - ${escapeHtml(trace.formula_name || "-")}</div>
-            <div class="small text-muted">Check: ${escapeHtml(check.check_id || "-")} | Source: ${escapeHtml(trace.source_reference || "-")}</div>
-            <div class="small">Inputs: ${escapeHtml(JSON.stringify(trace.inputs || {}))}</div>
-            <div class="small">Intermediates: ${escapeHtml(JSON.stringify(trace.intermediates || {}))}</div>
-            <div class="small">Result: ${escapeHtml(trace.result_symbol || "-")} = ${escapeHtml(trace.result_value ?? "-")} ${escapeHtml(trace.unit || "")}</div>
-        </div>
-    `).join("");
+    body.innerHTML = traces.map(({check, trace}) => {
+        const notes = (trace.notes || []).map(note => `<li>${escapeHtml(note)}</li>`).join("");
+        const icon = traceIconClass(trace.display_icon || check.display_icon);
+        return `
+            <article class="trace-card review-card">
+                <div class="trace-card-header">
+                    <span class="review-icon" aria-hidden="true"><i class="bi ${icon}"></i></span>
+                    <div>
+                        <div class="fw-bold">${escapeHtml(trace.formula_id || "-")} - ${escapeHtml(trace.formula_name || "-")}</div>
+                        <div class="small text-muted">
+                            Check: ${escapeHtml(check.check_id || "-")} |
+                            Source: ${escapeHtml(trace.source_reference || "-")}
+                        </div>
+                    </div>
+                    <div class="ms-auto">${statusBadge(check.status)}</div>
+                </div>
+                ${trace.engineering_explanation ? `<p class="trace-explanation">${escapeHtml(trace.engineering_explanation)}</p>` : ""}
+                ${renderFormulaExpression(trace)}
+                ${renderMappingTable("Variables", trace.variable_definitions)}
+                ${renderMappingTable("Inputs", trace.inputs)}
+                ${renderMappingTable("Substitutions", trace.substitutions)}
+                ${renderMappingTable("Intermediates", trace.intermediates)}
+                <div class="trace-result">
+                    <strong>Result:</strong>
+                    ${escapeHtml(trace.result_symbol || "-")} =
+                    ${escapeHtml(trace.result_value ?? "-")} ${escapeHtml(trace.unit || "")}
+                    ${trace.result_path ? `<span class="ms-2">Path: <code>${escapeHtml(trace.result_path)}</code></span>` : ""}
+                </div>
+                ${notes ? `<ul class="small text-muted mb-0">${notes}</ul>` : ""}
+            </article>
+        `;
+    }).join("");
 }
 
 function renderWarningsErrors(warnings, errors) {
@@ -388,7 +465,7 @@ function configureReviewAdmin(marimoReview) {
     if (status === "configured") {
         link.classList.remove("disabled");
         link.setAttribute("href", marimoReview.admin_url || "/admin/review/");
-        link.setAttribute("title", "Open Marimo review admin");
+        link.setAttribute("title", "Create a review session and open Marimo");
         if (note) note.textContent = "";
         return;
     }

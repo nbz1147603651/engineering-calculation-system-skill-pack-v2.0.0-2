@@ -25,7 +25,7 @@ I18N: dict[str, tuple[str, str]] = {
     "nav_download_latex": ("LaTeX", "LaTeX"),
     "latex_template_label": ("LaTeX template", "LaTeX template"),
     "latex_template_default": ("Default template", "Default template"),
-    "nav_admin_review": ("Review Admin", "审查后台"),
+    "nav_admin_review": ("Marimo Review", "Marimo 审查"),
 
     # ── Section titles ───────────────────────────────────────────────
     "section_project": ("Project Information", "工程信息"),

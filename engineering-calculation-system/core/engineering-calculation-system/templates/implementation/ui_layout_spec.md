@@ -35,6 +35,12 @@ Use this template for production frontend, review UI, or app-like engineering ca
 | --- | --- | --- | --- | --- | --- |
 | governing | governing | conclusion first | status, governing check, utilization/margin | true | summary |
 | warnings_errors | warnings/errors | review blockers | warnings, errors, unresolved assumptions | true | summary |
+| load_state | load_state / load_cases / combinations | load path review | `bi-arrow-down-up`, governing load, combination, source path | true | detail |
+| bearing | bearing / capacity checks | bearing or capacity review | `bi-shield-check`, demand/capacity, formula card, source reference | true | detail |
+| layered_soil | soil_layers / layered checks | stratigraphy review | `bi-layers-half`, governing layer, branch/lookup trace | true | detail |
+| settlement | settlement / deflection checks | serviceability review | `bi-arrow-down`, settlement value, limit, formula card | true | detail |
+| sliding | sliding / lateral checks | lateral stability review | `bi-arrows-move`, horizontal demand, resistance, formula card | true | detail |
+| uplift | uplift / buoyancy checks | uplift stability review | `bi-arrow-up`, uplift demand, resistance, formula card | true | detail |
 
 ## Interaction States
 
@@ -53,7 +59,9 @@ Use this template for production frontend, review UI, or app-like engineering ca
 - Put inputs on the left and results on the right for desktop layouts.
 - On mobile, stack input first, then governing summary, then result details.
 - Use clear status text in addition to color.
-- Keep formulas and long traces behind expandable detail sections.
+- Keep formulas and long traces behind expandable detail sections. Formula display must follow
+  `calculation_review_card_spec.md`: icon, explanation, formula box, variables, substitutions,
+  result path, and source reference from `FormulaTrace`.
 - Use tables for comparable engineering checks and compact metric boxes for headline values.
 - Provide chart containers only when figures improve engineering review.
 - Use `ui_design_system.md` for token, component, and partial-file rules.
@@ -80,7 +88,7 @@ Use this template for production frontend, review UI, or app-like engineering ca
 | i18n strategy | visible Chinese/English toggle + data-i18n + `/api/i18n/<lang>` endpoint + persisted language preference | see `i18n_pattern.md` |
 | Chart contract | BookResult.charts / ChartSpec | default | see `chart_integration.md` |
 | Chart renderer | inline SVG / matplotlib SVG / plotly / D3 | to_be_defined | renderer consumes ChartSpec values only |
-| Formula rendering | KaTeX / MathJax / none | to_be_defined | for report preview |
+| Formula rendering | KaTeX in browser, LaTeX display math in report, plain-text fallback | required | render `expression_tex`/`expression_plain` only |
 
 ## Frontend File Layout
 

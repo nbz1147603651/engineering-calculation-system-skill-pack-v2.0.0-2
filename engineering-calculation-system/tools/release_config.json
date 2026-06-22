@@ -130,6 +130,7 @@
       ],
       "notes": [
         "This archive places SKILL.md at the zip root for QODER skill import compatibility.",
+        "Read qoder_quickstart.md first to run the Qoder Package Self-Check and decide whether the current install is direct skill, project overlay, or complete core package.",
         "For web-complete generation, prefer the QODER Project package because it includes the core skill, templates, schemas, validator, project scaffold, and .qoder overlay.",
         "If only this direct skill is installed, it is a lightweight entrypoint, not the complete project template.",
         "Qoder Smart Agent mode should use `.qoder/agents/engineering-calc-system.md` as the supervisor and keep long references outside `.qoder/agents/`.",
@@ -151,6 +152,7 @@
       "notes": [
         "This directory already merges the core skill, shared adapter docs, and `.qoder/` files.",
         "Recommended Qoder architecture: `.qoder/agents/engineering-calc-system.md` is the Smart Agent supervisor; `.qoder/agents/engineering-calc-*.md` are delegated worker agents; `.qoder/skills/engineering-calc-system/` is the skill/resource layer; `.qoder/references/` stores long references so they are not listed as disabled agents.",
+        "Start new Qoder projects by reading `.qoder/skills/engineering-calc-system/qoder_quickstart.md`, then let the supervisor classify install shape, material state, delivery mode, lifecycle path, and gate status.",
         "A single `python tools/build_release.py` run packages the full Qoder multi-agent program into the QODER Project archive.",
         "From a source checkout, `python tools/install_qoder_user.py --build` syncs the packaged Qoder overlay into `QODER_HOME` or `~/.qoder` and verifies all worker agents.",
         "Use `python tools/install_qoder_user.py --audit` to detect missing or redundant managed Qoder files, and `python tools/install_qoder_user.py --uninstall` to remove only this package's Qoder files."

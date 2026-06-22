@@ -8,7 +8,7 @@ from .book_models import BookInput, BookResult, GoverningSummary
 from .charts import build_book_charts
 from pkg.core.checks import CheckResult, FormulaTrace
 from pkg.core.enums import Status
-from pkg.core.formula_registry import active_registry_metadata
+from pkg.core.formula_registry import active_registry_metadata, get_formula_display
 
 
 def _safe_float(value: Any, default: float | None = None) -> float | None:
@@ -39,15 +39,23 @@ def _build_check(index: int, payload: dict[str, Any]) -> CheckResult:
     name = str(payload.get("name") or "Template demand/capacity check")
     unit = payload.get("unit") or "unit"
     source_reference = str(payload.get("source_reference") or "S01")
+    formula_display = get_formula_display("example_module", "F-EXAMPLE-001")
     trace = FormulaTrace(
-        formula_id="F001",
-        formula_name="Template demand-capacity utilization",
-        source_reference=source_reference,
+        formula_id=str(formula_display["formula_id"]),
+        formula_name=str(formula_display["formula_name"]),
+        source_reference=source_reference or str(formula_display["source_reference"]),
         inputs={"demand": demand, "capacity": capacity, "limit": limit},
         intermediates={"abs_demand": abs(demand or 0.0), "abs_capacity": abs(capacity or 0.0)},
         result_symbol="utilization",
         result_value=utilization,
         unit="ratio",
+        expression_tex=formula_display.get("expression_tex"),
+        expression_plain=formula_display.get("expression_plain"),
+        engineering_explanation=formula_display.get("engineering_explanation"),
+        variable_definitions=formula_display.get("variable_definitions") or {},
+        substitutions={"D": demand, "C": capacity, "eta": utilization},
+        result_path=f"checks[{index - 1}].utilization",
+        display_icon=formula_display.get("display_icon"),
         notes=[
             "Template demonstration logic for validation closure.",
             "Replace this example module with source-backed engineering formulas before project use.",
