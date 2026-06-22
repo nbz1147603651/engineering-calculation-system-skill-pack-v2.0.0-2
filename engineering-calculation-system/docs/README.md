@@ -116,7 +116,7 @@ Build release profiles from the source checkout:
 python tools/build_release.py
 ```
 
-Running the command with no arguments builds every release profile and creates eight publish-ready platform zips in `dist/release/`. Use `--profile <name>` when you only need one layer during development.
+Running the command with no arguments builds every release profile and creates ten publish-ready platform zips in `dist/release/`. Use `--profile <name>` when you only need one layer during development.
 
 Default installation target:
 
@@ -128,10 +128,10 @@ Optional overlays:
 
 ```text
 dist/adapters-light/   AGENTS.md, .agents, .opencode, .trae, and adapter guidance
-dist/qoder-addon/      Qoder-specific files
+dist/qoder-addon/      Qoder/Qoder CN-specific files
 dist/singlefile/       generated all-in-one fallback
 dist/source-dev/       development/reference source bundle
-dist/release/          CODEX, MiniMaxCode, ZCode, QODER Skill, QODER project, TRAE, OpenCode, and AGENTS Generic release zips
+dist/release/          CODEX, MiniMaxCode, ZCode, QODER Skill, QODER project, QoderCN, QoderCN project, TRAE, OpenCode, and AGENTS Generic release zips
 ```
 
 For publishing or manual installation, use the package for the target tool:
@@ -142,6 +142,8 @@ dist/release/engineering-calculation-system-MiniMaxCode-v2.4.3.zip
 dist/release/engineering-calculation-system-ZCode-v2.4.3.zip
 dist/release/engineering-calculation-system-QODER-v2.4.3.zip
 dist/release/engineering-calculation-system-QODER-Project-v2.4.3.zip
+dist/release/engineering-calculation-system-QoderCN-v2.4.3.zip
+dist/release/engineering-calculation-system-QoderCN-Project-v2.4.3.zip
 dist/release/engineering-calculation-system-TRAE-v2.4.3.zip
 dist/release/engineering-calculation-system-OpenCode-v2.4.3.zip
 dist/release/engineering-calculation-system-AGENTS-Generic-v2.4.3.zip
@@ -155,12 +157,14 @@ MiniMaxCode:   skills/engineering-calculation-system/ for Github import, or copy
 ZCode:         engineering-calculation-system/ for ~/.zcode/skills/engineering-calculation-system/ and $engineering-calculation-system invocation
 QODER:         SKILL.md at zip root for direct QODER Skill upload (lightweight skill/resource entrypoint)
 QODER Project: copy-to-project-root/ with Qoder Smart Agent supervisor and skill/resource layer
+QoderCN:       copy-to-user-home/ with user-level ~/.lingma agents, skills, and references
+QoderCN Project: copy-to-project-root/ with project-level .lingma supervisor and skill/resource layer
 TRAE:          copy-to-project-root/
 OpenCode:      copy-to-project-root/
 AGENTS Generic: copy-to-project-root/
 ```
 
-The MiniMaxCode package follows MiniMax's skills repository layout with `skills/engineering-calculation-system/SKILL.md`. For this machine, the local MiniMax Code / Mavis user skill root is `%USERPROFILE%/.mavis/skills/`; for sharing, the same archive can be published as a Github repository root and imported through MiniMax Code. The ZCode package follows ZCode's user skill directory shape: copy `engineering-calculation-system/` to `%USERPROFILE%/.zcode/skills/engineering-calculation-system/`, refresh Settings -> Skills, keep the skill enabled, and invoke it with `$engineering-calculation-system`. Put persistent ZCode project guardrails in the workspace `AGENTS.md`. The QODER package is for direct QODER Skill upload and is intentionally lightweight. For Qoder Smart Agent workflows and QODER web-complete generation, prefer QODER Project because it includes the custom agent supervisor, delegated worker agents, skill/resource layer, core runtime files, templates, schemas, validator, project scaffold, and `.qoder/` overlay. The QODER Project, TRAE, OpenCode, and AGENTS Generic packages are already merged with the core runtime files, so users can copy the matching package contents directly. Use the raw core and overlay profiles only when debugging or repackaging.
+The MiniMaxCode package follows MiniMax's skills repository layout with `skills/engineering-calculation-system/SKILL.md`. For this machine, the local MiniMax Code / Mavis user skill root is `%USERPROFILE%/.mavis/skills/`; for sharing, the same archive can be published as a Github repository root and imported through MiniMax Code. The ZCode package follows ZCode's user skill directory shape: copy `engineering-calculation-system/` to `%USERPROFILE%/.zcode/skills/engineering-calculation-system/`, refresh Settings -> Skills, keep the skill enabled, and invoke it with `$engineering-calculation-system`. Put persistent ZCode project guardrails in the workspace `AGENTS.md`. The QODER package is for direct QODER Skill upload and is intentionally lightweight. For Qoder Smart Agent workflows and QODER web-complete generation, prefer QODER Project because it includes the custom agent supervisor, delegated worker agents, skill/resource layer, core runtime files, templates, schemas, validator, project scaffold, and `.qoder/` overlay. Qoder CN uses the same Qoder supervisor/worker skill resources, remapped to user-level `~/.lingma` or project-root `.lingma/` for Qoder CN IDE custom Skills and Agents. The QODER Project, QoderCN Project, TRAE, OpenCode, and AGENTS Generic packages are already merged with the core runtime files, so users can copy the matching package contents directly. Use the raw core and overlay profiles only when debugging or repackaging.
 
 Release metadata and classified install targets are maintained in:
 
@@ -172,9 +176,9 @@ Change that file when updating the version, release date, publish targets, singl
 
 ## Agent entrypoints
 
-Use `dist/core/engineering-calculation-system/SKILL.md` as the root skill entrypoint for Codex-compatible, MiniMax Code standard-skill, and ZCode user-skill environments. Qoder-compatible files are distributed through `dist/qoder-addon/`. In Qoder, `.qoder/agents/engineering-calc-system.md` is the Smart Agent supervisor, `.qoder/agents/engineering-calc-*.md` are delegated worker agents, `.qoder/skills/engineering-calc-system/` is the skill/resource layer, and `.qoder/references/` holds long non-agent references. OpenCode, AGENTS.md-compatible, and Trae-compatible entries are distributed through `dist/adapters-light/`.
+Use `dist/core/engineering-calculation-system/SKILL.md` as the root skill entrypoint for Codex-compatible, MiniMax Code standard-skill, and ZCode user-skill environments. Qoder-compatible files are distributed through `dist/qoder-addon/`. In Qoder, `.qoder/agents/engineering-calc-system.md` is the Smart Agent supervisor, `.qoder/agents/engineering-calc-*.md` are delegated worker agents, `.qoder/skills/engineering-calc-system/` is the skill/resource layer, and `.qoder/references/` holds long non-agent references. In Qoder CN IDE packages, the same resources are placed under `~/.lingma/agents|skills|references` for user-level install or project-root `.lingma/` for project-level install. OpenCode, AGENTS.md-compatible, and Trae-compatible entries are distributed through `dist/adapters-light/`.
 
-For Qoder, one `python tools/build_release.py` run packages the direct Skill zip and the multi-agent QODER Project zip. Use the QODER Project zip when you want the supervisor plus worker agents installed together; use the direct QODER zip only for Qoder Skill import. From a source checkout, `python tools/install_qoder_user.py --build` builds the Qoder overlay and syncs the supervisor, worker agents, skill resources, and references into `QODER_HOME` or `~/.qoder`. Use `python tools/install_qoder_user.py --audit` to check for missing or redundant managed Qoder files, and `python tools/install_qoder_user.py --uninstall` to remove only this package's Qoder files.
+For Qoder, one `python tools/build_release.py` run packages the direct Skill zip and the multi-agent QODER Project zip. Use the QODER Project zip when you want the supervisor plus worker agents installed together; use the direct QODER zip only for Qoder Skill import. From a source checkout, `python tools/install_qoder_user.py --build` builds the Qoder overlay and syncs the supervisor, worker agents, skill resources, and references into `QODER_HOME` or `~/.qoder`. For Qoder CN, use `python tools/install_qoder_user.py --product qodercn --build` to sync the same resources into `QODER_CN_HOME`, `QODERCN_HOME`, `LINGMA_HOME`, or `~/.lingma`. Use `python tools/install_qoder_user.py --audit` (or add `--product qodercn`) to check for missing or redundant managed files, and `--uninstall` to remove only this package's files.
 
 For adapter details, see:
 

@@ -67,7 +67,7 @@ explaining `pip install pyinstaller` instead of failing the whole release.
 
 ## What it does
 
-The console targets eight agents. Each is shown as a card with two status dots:
+The console targets ten agents. Each is shown as a card with two status dots:
 
 - **program** — is the agent's CLI / home directory present on this machine?
 - **deployed** — is the skill already installed at that agent's root?
@@ -79,6 +79,8 @@ The console targets eight agents. Each is shown as a card with two status dots:
 | ZCode | user | `~/.zcode/skills/engineering-calculation-system/` | `SKILL.md` sentinel |
 | Qoder (user) | user | `QODER_HOME` or `~/.qoder` | `install_qoder_user.py --audit` |
 | Qoder Project | project | pick a project root | `.qoder/agents/engineering-calc-system.md` |
+| Qoder CN (user) | user | `QODER_CN_HOME`, `QODERCN_HOME`, `LINGMA_HOME`, or `~/.lingma` | `install_qoder_user.py --product qodercn --audit` |
+| Qoder CN Project | project | pick a project root | `.lingma/agents/engineering-calc-system.md` |
 | Trae | project | pick a project root | `.trae/project_rules.md` |
 | OpenCode | project | pick a project root | `.opencode/skills/.../SKILL.md` |
 | AGENTS Generic | project | pick a project root | `AGENTS.md` + `.agents/skills/...` |
@@ -89,9 +91,9 @@ The console targets eight agents. Each is shown as a card with two status dots:
   then copies the right overlay into the agent's install root. Existing files
   are backed up to `<name>.bak.<timestamp>` before being overwritten.
 - **Verify** — re-checks the sentinel file (and runs `mavis skill show` for
-  MiniMax, or `install_qoder_user.py --audit` for Qoder user-level).
+  MiniMax, or `install_qoder_user.py --audit` for Qoder/Qoder CN user-level).
 - **Remove** — uninstalls only this package's managed files (Qoder user-level
-  delegates to `install_qoder_user.py --uninstall`).
+  and Qoder CN user-level delegate to `install_qoder_user.py --uninstall`).
 - **Folder…** (project agents) — choose the project root to overlay into.
 - **Build all profiles** — runs every release profile in `release_config.json`
   so subsequent deploys skip the build step.
@@ -113,8 +115,9 @@ The console does **not** reimplement build or install logic:
 
 - `deployer.build_profiles()` shells out to `python tools/build_release.py
   --profile <p>` for each required profile.
-- The Qoder user-level deploy/verify/uninstall shells out to
+- The Qoder and Qoder CN user-level deploy/verify/uninstall shells out to
   `python tools/install_qoder_user.py` with `--build` / `--audit` / `--uninstall`.
+  Qoder CN passes `--product qodercn` and defaults to `~/.lingma`.
 - Version and profile list are read from `tools/release_config.json`.
 
 So any change to `release_config.json`, `build_release.py`, or

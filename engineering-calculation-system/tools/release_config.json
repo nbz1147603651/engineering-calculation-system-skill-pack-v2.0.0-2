@@ -30,6 +30,8 @@
     "ZCode",
     "QODER",
     "QODER Project",
+    "QoderCN",
+    "QoderCN Project",
     "TRAE",
     "OpenCode",
     "AGENTS Generic"
@@ -156,6 +158,52 @@
         "A single `python tools/build_release.py` run packages the full Qoder multi-agent program into the QODER Project archive.",
         "From a source checkout, `python tools/install_qoder_user.py --build` syncs the packaged Qoder overlay into `QODER_HOME` or `~/.qoder` and verifies all worker agents.",
         "Use `python tools/install_qoder_user.py --audit` to detect missing or redundant managed Qoder files, and `python tools/install_qoder_user.py --uninstall` to remove only this package's Qoder files."
+      ]
+    },
+    {
+      "name": "QoderCN",
+      "path": "QoderCN/copy-to-user-home",
+      "install_text": "Copy the contents of this folder into the Qoder CN user resource directory, typically `~/.lingma/` for Qoder CN IDE custom Skills and Agents. You can also deploy from source with `python tools/install_qoder_user.py --product qodercn --build`.",
+      "include_core": false,
+      "copies": [
+        {
+          "profile": "qoder-addon",
+          "source": ".qoder/agents",
+          "target": "agents"
+        },
+        {
+          "profile": "qoder-addon",
+          "source": ".qoder/skills",
+          "target": "skills"
+        },
+        {
+          "profile": "qoder-addon",
+          "source": ".qoder/references",
+          "target": "references"
+        }
+      ],
+      "notes": [
+        "Alibaba Cloud Qoder CN docs describe user-level custom agents under `~/.lingma/agents/<agentName>.md` and user-level skills under `~/.lingma/skills/{skill-name}/SKILL.md` for IDE use.",
+        "Qoder CN was formerly Tongyi Lingma; current IDE process/cache paths may still include `.qodercn`, while custom Skill/Agent resources remain compatible with the Lingma resource layout.",
+        "This package reuses the Qoder supervisor, worker agents, skill resources, and references without renaming internal agent IDs."
+      ]
+    },
+    {
+      "name": "QoderCN Project",
+      "path": "QoderCN/copy-to-project-root",
+      "install_text": "Copy the contents of this folder into the root of the Qoder CN project.",
+      "include_adapter_docs": true,
+      "copies": [
+        {
+          "profile": "qoder-addon",
+          "source": ".qoder",
+          "target": ".lingma"
+        }
+      ],
+      "notes": [
+        "This directory already merges the core skill, shared adapter docs, and `.lingma/` files.",
+        "Qoder CN IDE custom agents are documented at `${project}/.lingma/agents/<agentName>.md`; project-level Skills are documented at `.lingma/skills/{skill-name}/SKILL.md`.",
+        "Use `.lingma/agents/engineering-calc-system.md` as the supervisor and `.lingma/skills/engineering-calc-system/` as the skill/resource layer."
       ]
     },
     {

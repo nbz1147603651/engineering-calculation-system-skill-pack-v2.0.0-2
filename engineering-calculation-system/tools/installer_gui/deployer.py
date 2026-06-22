@@ -502,7 +502,61 @@ def uninstall_qoder_user(ctx: DeployContext) -> None:
 
 
 # --------------------------------------------------------------------------- #
-# Project-overlay agents (Qoder Project / Trae / OpenCode / AGENTS Generic)
+# Qoder CN (user-level) - same overlay shape, Qoder CN/Lingma user directory
+# --------------------------------------------------------------------------- #
+
+def _qodercn_home(ctx: DeployContext) -> Path:
+    root = _resolve_root(ctx)
+    return root
+
+
+def deploy_qodercn_user(ctx: DeployContext) -> None:
+    home = _qodercn_home(ctx)
+    repo = require_build_script()
+    python = resolve_python()
+    ctx.progress(0.2, "building qoder-addon + installing Qoder CN overlay")
+    rc = _run_streaming(
+        [python, str(QODER_INSTALL_SCRIPT), "--product", "qodercn", "--build", "--qoder-home", str(home)],
+        log=ctx.log,
+        cwd=repo,
+    )
+    if rc != 0:
+        raise DeployError(f"install_qoder_user.py --product qodercn failed (exit {rc})")
+    ctx.progress(1.0, t("deploy_qodercn_user_done"))
+
+
+def verify_qodercn_user(ctx: DeployContext) -> bool:
+    home = _qodercn_home(ctx)
+    ok, detail = detector.skill_deployed("qodercn", home)
+    ctx.log(f"[verify] {detail}")
+    if ok:
+        repo = require_build_script()
+        python = resolve_python()
+        rc = _run_streaming(
+            [python, str(QODER_INSTALL_SCRIPT), "--product", "qodercn", "--audit", "--qoder-home", str(home)],
+            log=ctx.log,
+            cwd=repo,
+        )
+        return rc == 0
+    return False
+
+
+def uninstall_qodercn_user(ctx: DeployContext) -> None:
+    home = _qodercn_home(ctx)
+    repo = require_build_script()
+    python = resolve_python()
+    rc = _run_streaming(
+        [python, str(QODER_INSTALL_SCRIPT), "--product", "qodercn", "--uninstall", "--qoder-home", str(home)],
+        log=ctx.log,
+        cwd=repo,
+    )
+    if rc != 0:
+        raise DeployError(f"install_qoder_user.py --product qodercn --uninstall failed (exit {rc})")
+    ctx.log(t("uninstall_qodercn_user_done"))
+
+
+# --------------------------------------------------------------------------- #
+# Project-overlay agents (Qoder / Qoder CN / Trae / OpenCode / AGENTS Generic)
 # --------------------------------------------------------------------------- #
 
 def _deploy_project_overlay(
@@ -567,6 +621,30 @@ def uninstall_qoder_project(ctx: DeployContext) -> None:
     root = _resolve_root(ctx)
     _remove_managed_and_backups(".qoder", root, log=ctx.log)
     ctx.log(t("uninstall_qoder_project_done"))
+
+
+# ---- Qoder CN Project ---- #
+
+def deploy_qodercn_project(ctx: DeployContext) -> None:
+    _deploy_project_overlay(
+        ctx,
+        agent_name="Qoder CN Project",
+        overlay_copies=[(DIST_QODER_ADDON / ".qoder", Path(".lingma"))],
+        include_core=True,
+    )
+
+
+def verify_qodercn_project(ctx: DeployContext) -> bool:
+    root = _resolve_root(ctx)
+    ok, detail = detector.skill_deployed("qodercn-project", root)
+    ctx.log(f"[verify] {detail}")
+    return ok
+
+
+def uninstall_qodercn_project(ctx: DeployContext) -> None:
+    root = _resolve_root(ctx)
+    _remove_managed_and_backups(".lingma", root, log=ctx.log)
+    ctx.log(t("uninstall_qodercn_project_done"))
 
 
 # ---- Trae ---- #

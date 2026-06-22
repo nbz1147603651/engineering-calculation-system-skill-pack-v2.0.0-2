@@ -1,4 +1,4 @@
-"""Agent metadata: the single source of truth for the 8 deployment targets.
+"""Agent metadata: the single source of truth for the deployment targets.
 
 Each :class:`AgentSpec` knows how to:
 
@@ -45,6 +45,14 @@ def _qoder_root() -> Path:
     if configured:
         return Path(configured).expanduser()
     return Path.home() / ".qoder"
+
+
+def _qodercn_root() -> Path:
+    for env_name in ("QODER_CN_HOME", "QODERCN_HOME", "LINGMA_HOME"):
+        configured = os.environ.get(env_name)
+        if configured:
+            return Path(configured).expanduser()
+    return Path.home() / ".lingma"
 
 
 # Project-overlay agents have no default root; the user picks one.
@@ -147,6 +155,30 @@ def _build_specs() -> list[AgentSpec]:
             deploy_fn=deployer.deploy_qoder_project,
             verify_fn=deployer.verify_qoder_project,
             uninstall_fn=deployer.uninstall_qoder_project,
+            needs_profiles=("core", "qoder-addon"),
+        ),
+        AgentSpec(
+            name="qodercn",
+            display_name=t("name_qodercn_user"),
+            icon="CN",
+            kind="user",
+            summary=t("summary_qodercn"),
+            default_root_fn=_qodercn_root,
+            deploy_fn=deployer.deploy_qodercn_user,
+            verify_fn=deployer.verify_qodercn_user,
+            uninstall_fn=deployer.uninstall_qodercn_user,
+            needs_profiles=("qoder-addon",),
+        ),
+        AgentSpec(
+            name="qodercn-project",
+            display_name=t("name_qodercn_project"),
+            icon="CN+",
+            kind="project",
+            summary=t("summary_qodercn_project"),
+            default_root_fn=_no_default,
+            deploy_fn=deployer.deploy_qodercn_project,
+            verify_fn=deployer.verify_qodercn_project,
+            uninstall_fn=deployer.uninstall_qodercn_project,
             needs_profiles=("core", "qoder-addon"),
         ),
         AgentSpec(

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install or uninstall the Qoder overlay in the current user's .qoder directory."""
+"""Install or uninstall the Qoder/Qoder CN overlay in a user agent directory."""
 
 from __future__ import annotations
 
@@ -13,6 +13,10 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DIST_QODER = REPO_ROOT / "dist" / "qoder-addon" / ".qoder"
+PRODUCT_LABELS = {
+    "qoder": "Qoder",
+    "qodercn": "Qoder CN",
+}
 EXPECTED_AGENT_FILES = (
     "engineering-calc-system.md",
     "engineering-calc-reference-acquirer.md",
@@ -38,7 +42,14 @@ DEPRECATED_AGENT_FILES = ("reference.md",)
 DEPRECATED_SKILL_DIRS = ("engineering-calculation-system",)
 
 
-def default_qoder_home() -> Path:
+def default_qoder_home(product: str) -> Path:
+    if product == "qodercn":
+        for env_name in ("QODER_CN_HOME", "QODERCN_HOME", "LINGMA_HOME"):
+            configured = os.environ.get(env_name)
+            if configured:
+                return Path(configured).expanduser()
+        return Path.home() / ".lingma"
+
     configured = os.environ.get("QODER_HOME")
     if configured:
         return Path(configured).expanduser()
@@ -53,10 +64,11 @@ def build_qoder_addon() -> None:
     )
 
 
-def install_qoder_overlay(source: Path, target: Path, *, dry_run: bool) -> None:
+def install_qoder_overlay(source: Path, target: Path, *, dry_run: bool, product: str) -> None:
+    label = PRODUCT_LABELS[product]
     if not source.exists():
         raise FileNotFoundError(
-            f"Qoder overlay not found: {source}. Run with --build or build releases first."
+            f"{label} overlay not found: {source}. Run with --build or build releases first."
         )
     for name in ("agents", "skills", "references"):
         src_dir = source / name
@@ -80,7 +92,8 @@ def install_qoder_overlay(source: Path, target: Path, *, dry_run: bool) -> None:
             shutil.rmtree(deprecated)
 
 
-def verify_qoder_overlay(target: Path, *, dry_run: bool) -> None:
+def verify_qoder_overlay(target: Path, *, dry_run: bool, product: str) -> None:
+    label = PRODUCT_LABELS[product]
     agents_dir = target / "agents"
     skill_dir = target / "skills" / MANAGED_SKILL_DIR
     references_dir = target / "references"
@@ -88,32 +101,32 @@ def verify_qoder_overlay(target: Path, *, dry_run: bool) -> None:
     missing_skill_files = [name for name in EXPECTED_SKILL_FILES if not (skill_dir / name).exists()]
     missing_reference_files = [name for name in EXPECTED_REFERENCE_FILES if not (references_dir / name).exists()]
     if dry_run:
-        print("expected Qoder agents:")
+        print(f"expected {label} agents:")
         for name in EXPECTED_AGENT_FILES:
             print(f"  {name}")
-        print("expected Qoder skill files:")
+        print(f"expected {label} skill files:")
         for name in EXPECTED_SKILL_FILES:
             print(f"  skills/{MANAGED_SKILL_DIR}/{name}")
-        print("expected Qoder reference files:")
+        print(f"expected {label} reference files:")
         for name in EXPECTED_REFERENCE_FILES:
             print(f"  references/{name}")
         return
     if missing:
         missing_text = ", ".join(missing)
-        raise FileNotFoundError(f"Qoder install is incomplete; missing agents: {missing_text}")
+        raise FileNotFoundError(f"{label} install is incomplete; missing agents: {missing_text}")
     if missing_skill_files:
         missing_text = ", ".join(missing_skill_files)
-        raise FileNotFoundError(f"Qoder install is incomplete; missing skill files: {missing_text}")
+        raise FileNotFoundError(f"{label} install is incomplete; missing skill files: {missing_text}")
     if missing_reference_files:
         missing_text = ", ".join(missing_reference_files)
-        raise FileNotFoundError(f"Qoder install is incomplete; missing references: {missing_text}")
+        raise FileNotFoundError(f"{label} install is incomplete; missing references: {missing_text}")
     for name in DEPRECATED_AGENT_FILES:
         deprecated = agents_dir / name
         if deprecated.exists():
-            raise RuntimeError(f"Deprecated Qoder agent reference remains: {deprecated}")
-    print(f"installed {len(EXPECTED_AGENT_FILES)} Qoder agents into {agents_dir}")
-    print(f"verified {len(EXPECTED_SKILL_FILES)} Qoder skill files under {skill_dir}")
-    print(f"verified {len(EXPECTED_REFERENCE_FILES)} Qoder reference files under {references_dir}")
+            raise RuntimeError(f"Deprecated {label} agent reference remains: {deprecated}")
+    print(f"installed {len(EXPECTED_AGENT_FILES)} {label} agents into {agents_dir}")
+    print(f"verified {len(EXPECTED_SKILL_FILES)} {label} skill files under {skill_dir}")
+    print(f"verified {len(EXPECTED_REFERENCE_FILES)} {label} reference files under {references_dir}")
 
 
 def remove_empty_directory(path: Path, *, dry_run: bool) -> None:
@@ -127,7 +140,7 @@ def remove_empty_directory(path: Path, *, dry_run: bool) -> None:
             path.rmdir()
 
 
-def uninstall_qoder_overlay(target: Path, *, dry_run: bool) -> None:
+def uninstall_qoder_overlay(target: Path, *, dry_run: bool, product: str) -> None:
     removed = 0
     for name in (*EXPECTED_AGENT_FILES, *DEPRECATED_AGENT_FILES):
         path = target / "agents" / name
@@ -163,10 +176,12 @@ def uninstall_qoder_overlay(target: Path, *, dry_run: bool) -> None:
     for name in ("agents", "skills", "references"):
         remove_empty_directory(target / name, dry_run=dry_run)
 
-    print(f"{'would remove' if dry_run else 'removed'} {removed} managed Qoder entries")
+    label = PRODUCT_LABELS[product]
+    print(f"{'would remove' if dry_run else 'removed'} {removed} managed {label} entries")
 
 
-def audit_qoder_overlay(target: Path) -> int:
+def audit_qoder_overlay(target: Path, *, product: str) -> int:
+    label = PRODUCT_LABELS[product]
     agents_dir = target / "agents"
     skills_dir = target / "skills"
     references_dir = target / "references"
@@ -191,7 +206,7 @@ def audit_qoder_overlay(target: Path) -> int:
     deprecated_agents = [name for name in DEPRECATED_AGENT_FILES if (agents_dir / name).exists()]
     deprecated_skills = [name for name in DEPRECATED_SKILL_DIRS if (skills_dir / name).exists()]
 
-    print(f"Qoder home: {target}")
+    print(f"{label} home: {target}")
     print(f"expected agents installed: {len(EXPECTED_AGENT_FILES) - len(missing_agents)}/{len(EXPECTED_AGENT_FILES)}")
     print(f"expected skill files installed: {len(EXPECTED_SKILL_FILES) - len(missing_skill_files)}/{len(EXPECTED_SKILL_FILES)}")
     print(f"expected reference files installed: {len(EXPECTED_REFERENCE_FILES) - len(missing_reference_files)}/{len(EXPECTED_REFERENCE_FILES)}")
@@ -236,10 +251,16 @@ def audit_qoder_overlay(target: Path) -> int:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
+        "--product",
+        choices=tuple(PRODUCT_LABELS),
+        default="qoder",
+        help="Target product. qoder uses QODER_HOME/~/.qoder; qodercn uses QODER_CN_HOME/QODERCN_HOME/LINGMA_HOME/~/.lingma.",
+    )
+    parser.add_argument(
         "--qoder-home",
         type=Path,
-        default=default_qoder_home(),
-        help="Target Qoder user directory. Defaults to QODER_HOME or ~/.qoder.",
+        default=None,
+        help="Target Qoder/Qoder CN user directory. Defaults depend on --product.",
     )
     parser.add_argument(
         "--build",
@@ -262,18 +283,19 @@ def main(argv: list[str] | None = None) -> int:
         help="Show planned filesystem changes without writing.",
     )
     args = parser.parse_args(argv)
+    qoder_home = (args.qoder_home or default_qoder_home(args.product)).expanduser()
 
     if args.audit:
-        return audit_qoder_overlay(args.qoder_home.expanduser())
+        return audit_qoder_overlay(qoder_home, product=args.product)
 
     if args.uninstall:
-        uninstall_qoder_overlay(args.qoder_home.expanduser(), dry_run=args.dry_run)
+        uninstall_qoder_overlay(qoder_home, dry_run=args.dry_run, product=args.product)
         return 0
 
     if args.build:
         build_qoder_addon()
-    install_qoder_overlay(DIST_QODER, args.qoder_home.expanduser(), dry_run=args.dry_run)
-    verify_qoder_overlay(args.qoder_home.expanduser(), dry_run=args.dry_run)
+    install_qoder_overlay(DIST_QODER, qoder_home, dry_run=args.dry_run, product=args.product)
+    verify_qoder_overlay(qoder_home, dry_run=args.dry_run, product=args.product)
     return 0
 
 

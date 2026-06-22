@@ -840,6 +840,36 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
             ".qoder/agents/engineering-calc-release-worker.md",
             ".qoder/references/engineering-calc-system.md",
         ],
+        "QoderCN": [
+            "skills/engineering-calc-system/SKILL.md",
+            "skills/engineering-calc-system/reference.md",
+            "skills/engineering-calc-system/qoder_quickstart.md",
+            "skills/engineering-calc-system/assets/lifecycle-console.html",
+            "agents/engineering-calc-system.md",
+            "agents/engineering-calc-reference-acquirer.md",
+            "agents/engineering-calc-source-intake.md",
+            "agents/engineering-calc-logic-extractor.md",
+            "agents/engineering-calc-module-worker.md",
+            "agents/engineering-calc-interface-worker.md",
+            "agents/engineering-calc-verification-worker.md",
+            "agents/engineering-calc-release-worker.md",
+            "references/engineering-calc-system.md",
+        ],
+        "QoderCN Project": [
+            ".lingma/skills/engineering-calc-system/SKILL.md",
+            ".lingma/skills/engineering-calc-system/reference.md",
+            ".lingma/skills/engineering-calc-system/qoder_quickstart.md",
+            ".lingma/skills/engineering-calc-system/assets/lifecycle-console.html",
+            ".lingma/agents/engineering-calc-system.md",
+            ".lingma/agents/engineering-calc-reference-acquirer.md",
+            ".lingma/agents/engineering-calc-source-intake.md",
+            ".lingma/agents/engineering-calc-logic-extractor.md",
+            ".lingma/agents/engineering-calc-module-worker.md",
+            ".lingma/agents/engineering-calc-interface-worker.md",
+            ".lingma/agents/engineering-calc-verification-worker.md",
+            ".lingma/agents/engineering-calc-release-worker.md",
+            ".lingma/references/engineering-calc-system.md",
+        ],
         "TRAE": [
             ".trae/project_rules.md",
             ".trae/rules/engineering-calc-system.md",
@@ -873,6 +903,28 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
                     "A4 HTML First",
                     "print-ready A4 HTML",
                 ],
+                context=context,
+            )
+        if target.name == "QoderCN":
+            require_text(
+                payload_root / "skills" / "engineering-calc-system" / "assets" / "lifecycle-console.html",
+                [f"v{VERSION}", "12a", "12b", "12c", "14"],
+                context=context,
+            )
+            require_text(
+                payload_root / "agents" / "engineering-calc-system.md",
+                ["static_report_or_cli_only", "reports/*.html"],
+                context=context,
+            )
+        if target.name == "QoderCN Project":
+            require_text(
+                payload_root / ".lingma" / "skills" / "engineering-calc-system" / "assets" / "lifecycle-console.html",
+                [f"v{VERSION}", "12a", "12b", "12c", "14"],
+                context=context,
+            )
+            require_text(
+                payload_root / ".lingma" / "agents" / "engineering-calc-system.md",
+                ["static_report_or_cli_only", "reports/*.html"],
                 context=context,
             )
 
