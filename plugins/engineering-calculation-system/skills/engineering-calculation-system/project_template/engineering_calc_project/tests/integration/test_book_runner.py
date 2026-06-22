@@ -7,6 +7,7 @@ from pkg.books.example_book.report_context import build_report_context
 from pkg.core.checks import CheckResult
 from pkg.core.enums import Status
 from pkg.report.html_renderer import build_html_report_context, render_a4_html_report
+from pkg.report.latex_renderer import build_latex_report_context
 
 
 def test_run_book_returns_result():
@@ -83,12 +84,30 @@ def test_check_results_generate_review_charts_and_report_context():
 
     report_context = build_report_context(result)
     assert report_context["charts"] == result.charts
+    report_context["figures"] = [
+        {
+            "figure_id": "FIG-001",
+            "title": "Foundation Layout",
+            "caption": "Project geometry image supplied for report review.",
+            "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3C/svg%3E",
+            "recommended_report_location": "after_input_summary",
+            "source_reference": "S-FIG",
+            "result_path": "report.figures[0]",
+        }
+    ]
 
     book_input = BookInput(project=result.project)
     html_context = build_html_report_context(book_input, result, report_context)
     html = render_a4_html_report(html_context)
+    latex_context = build_latex_report_context(book_input, result, report_context)
     assert "Engineering Charts" in html
+    assert "Engineering Figures" in html
+    assert "Foundation Layout" in html
+    assert "<img" in html
     assert "Check Utilization Summary" in html
     assert "<svg" in html
+    assert "chart-data" in html
+    assert "print-color-adjust" in html
     assert "checks[0].utilization" in html
     assert "do not recalculate engineering outcomes" in html
+    assert latex_context["figures"][0]["figure_id"] == "FIG-001"

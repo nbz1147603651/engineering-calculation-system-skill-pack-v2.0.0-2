@@ -6,7 +6,9 @@ Use this template for the embedded-admin Marimo formula-publishing surface deplo
 
 ```text
 web app: /
-Marimo admin app: /admin/review/
+Flask admin shell: /admin/
+Marimo calculation review app: /admin/review/
+Marimo formula publisher app: /admin/formulas/
 shared registry: data/formula_registry/
 publish log: outputs/logs/formula_publish_log.csv
 ```
@@ -30,10 +32,14 @@ production effect notice
 Protect access with:
 
 ```text
+ADMIN_REVIEW_PASSWORD for the Flask admin shell
 ADMIN_REVIEW_TOKEN
 nginx HTTPS
 optional internal network or VPN restriction
 ```
+
+If Marimo is not installed, the Flask admin shell must show the install command and keep the main
+calculator usable.
 
 ## Publish Rule
 

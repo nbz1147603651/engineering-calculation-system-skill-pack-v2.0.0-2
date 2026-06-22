@@ -2,6 +2,20 @@
 
 > This is a Qoder reference file, not a Qoder agent. Keep it outside `.qoder/agents/` so Qoder does not list it as a disabled custom agent.
 
+Static report triage: if a generated project contains calculation scripts or `reports/*.html` but
+does not contain `webapp/`, `apps/review/`, `src/pkg/report/`, `latex/templates/`, `tests/smoke/`,
+`deploy/`, and `handoff/`, classify it as `static_report_or_cli_only`. Treat the report as
+comparison evidence and remediate through the complete web-complete path before claiming
+production, deployable, or web-complete status.
+
+A4 HTML first: default final calculation-book output should be print-ready `html_a4` with
+`@page size: A4`, print-safe CSS, formula logic traces, source result paths, warnings/errors,
+sources, assumptions, traceability, and chart data tables when charts are emitted. Use
+LaTeX/Overleaf/PDF only when explicitly requested or required. Generate `BookResult.charts` /
+`ChartSpec` from already-computed values only when the current book's result-path registry or
+`ReportContext` exposes useful chartable data. Do not copy fixed chart IDs or result paths from
+another project.
+
 本文件包含各技能的完整字段定义、产物清单和执行细节。主文件路由后按需读取对应章节。
 
 ---

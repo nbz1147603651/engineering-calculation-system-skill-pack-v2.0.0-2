@@ -24,7 +24,9 @@ def test_health_and_calculate_routes():
     assert isinstance(payload["errors"], list)
 
 
-def test_capabilities_route_and_review_shell():
+def test_capabilities_route_and_review_shell(monkeypatch):
+    monkeypatch.setattr(cfg, "ADMIN_REVIEW_PASSWORD", "")
+    monkeypatch.setattr(cfg, "ADMIN_REVIEW_TOKEN", "")
     client = create_app().test_client()
 
     response = client.get("/api/capabilities")
@@ -35,16 +37,28 @@ def test_capabilities_route_and_review_shell():
     assert "marimo_review" in payload["capabilities"]
     assert "latex" in payload["capabilities"]
 
-    page = client.get("/admin/review/")
+    page = client.get("/admin/")
     assert page.status_code == 200
     html = page.get_data(as_text=True)
     assert 'id="adminReviewPage"' in html
     assert "Marimo Calculation Review" in html
+    assert "Admin password is not configured" in html
     assert "ADMIN_REVIEW_TOKEN" in html
-    assert "marimo run apps/review/calculation_review.py" in html
-    assert "marimo run apps/review/admin_formula_review.py" in html
-    assert "/api/review/session" in html
+    assert "ADMIN_REVIEW_PASSWORD" in html
     assert "/static/js/i18n.js" in html
+
+    monkeypatch.setattr(cfg, "ADMIN_REVIEW_PASSWORD", "let-me-in")
+    bad_login = client.post("/admin/", data={"admin_password": "wrong"})
+    assert bad_login.status_code == 401
+    assert "Invalid admin password" in bad_login.get_data(as_text=True)
+
+    good_login = client.post("/admin/", data={"admin_password": "let-me-in"})
+    assert good_login.status_code == 200
+    authed_html = good_login.get_data(as_text=True)
+    assert "marimo run apps/review/calculation_review.py" in authed_html
+    assert "marimo run apps/review/admin_formula_review.py" in authed_html
+    assert "/api/review/session" in authed_html
+    assert "/admin/formulas" in authed_html
 
 
 def test_import_report_and_batch_routes(monkeypatch, tmp_path):
@@ -66,7 +80,12 @@ def test_import_report_and_batch_routes(monkeypatch, tmp_path):
     html = html_response.get_data(as_text=True)
     assert "@page" in html
     assert "size: A4" in html
+    assert "print-color-adjust" in html
+    assert "Engineering Calculation Book" in html
+    assert "Table of Contents" in html
+    assert "cover-page" in html
     assert "Engineering Charts" in html
+    assert "chart-data" in html
     assert "Formula Logic Trace" in html
     assert "Sources" in html
     assert "Assumptions" in html
@@ -75,13 +94,15 @@ def test_import_report_and_batch_routes(monkeypatch, tmp_path):
     decision_response = client.get("/api/report/decision")
     assert decision_response.status_code == 200
     decision = decision_response.get_json()["decision"]
-    assert decision["output_format"] in {"latex_pdf", "html_a4"}
+    assert decision["output_format"] == "html_a4"
+    assert "print-ready A4 HTML" in decision["reason"]
 
     review_response = client.post("/api/review/session", json=case)
     assert review_response.status_code == 200
     review = review_response.get_json()["review"]
     assert review["session_id"]
-    assert review["admin_url"].startswith("/admin/review/?session_id=")
+    assert review["admin_url"].startswith("/admin/?session_id=")
+    assert review["review_url"].startswith("/admin/review/?session_id=")
 
     state_response = client.get(f"/api/review/state/{review['session_id']}")
     assert state_response.status_code == 200
@@ -122,6 +143,25 @@ def test_i18n_api_and_language_toggle_shell():
     assert 'data-lang="zh"' in html
     assert 'data-i18n-title="language_label"' in html
     assert "static/js/i18n.js" in html
+
+
+def test_deploy_artifacts_present():
+    project_root = cfg.PROJECT_ROOT
+    deploy_script = project_root / "deploy" / "one_click_deploy.sh"
+    runbook = project_root / "release" / "runbook.md"
+    compose = project_root / "deploy" / "docker-compose.yml"
+    nginx = project_root / "deploy" / "nginx" / "engineering-calc.conf"
+
+    assert deploy_script.exists()
+    assert "docker compose up -d --build" in deploy_script.read_text(encoding="utf-8")
+    assert 'ECS_ENV_FILE="$ENV_FILE"' in deploy_script.read_text(encoding="utf-8")
+    assert "ADMIN_REVIEW_PASSWORD" in deploy_script.read_text(encoding="utf-8")
+    assert runbook.exists()
+    assert "bash deploy/one_click_deploy.sh" in runbook.read_text(encoding="utf-8")
+    assert "marimo-formula-admin" in compose.read_text(encoding="utf-8")
+    assert "127.0.0.1:2718:2718" in compose.read_text(encoding="utf-8")
+    assert "127.0.0.1:2719:2719" in compose.read_text(encoding="utf-8")
+    assert "/admin/formulas/" in nginx.read_text(encoding="utf-8")
 
 
 def test_export_json_accepts_posted_form_data():

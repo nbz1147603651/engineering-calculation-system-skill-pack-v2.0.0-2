@@ -5,7 +5,12 @@ from html import escape
 import math
 from typing import Any
 
-from .latex_renderer import report_assumptions_from_context, report_sources_from_checks, to_plain
+from .latex_renderer import (
+    report_assumptions_from_context,
+    report_figures_from_context,
+    report_sources_from_checks,
+    to_plain,
+)
 
 
 def build_html_report_context(
@@ -25,6 +30,7 @@ def build_html_report_context(
     checks = plain_result.get("checks", [])
     sources = plain_report.get("sources") or report_sources_from_checks(checks)
     assumptions = report_assumptions_from_context(plain_input, plain_report)
+    figures = report_figures_from_context(plain_report, plain_result)
     return {
         "lang": lang,
         "report_status": report_status,
@@ -37,6 +43,7 @@ def build_html_report_context(
         "governing": plain_result.get("governing", {}),
         "checks": checks,
         "charts": charts,
+        "figures": figures,
         "sources": sources,
         "assumptions": assumptions,
         "warnings": plain_result.get("warnings", []),
@@ -69,14 +76,14 @@ def _project_title(project: dict[str, Any]) -> str:
 
 def _kv_table(data: dict[str, Any], *, title: str) -> str:
     if not data:
-        return f"<section class=\"report-section\"><h2>{escape(title)}</h2><p class=\"muted\">No data recorded.</p></section>"
+        return f"<section class=\"section report-section\"><h1>{escape(title)}</h1><p class=\"muted\">No data recorded.</p></section>"
     rows = "\n".join(
         f"<tr><th>{escape(str(key))}</th><td>{_fmt(value)}</td></tr>"
         for key, value in data.items()
     )
     return f"""
-    <section class="report-section">
-        <h2>{escape(title)}</h2>
+    <section class="section report-section">
+        <h1>{escape(title)}</h1>
         <table class="kv-table"><tbody>{rows}</tbody></table>
     </section>
     """
@@ -86,8 +93,8 @@ def _warnings_errors(warnings: list[Any], errors: list[Any]) -> str:
     warning_items = "".join(f"<li>{_fmt(item)}</li>" for item in warnings) or "<li>None</li>"
     error_items = "".join(f"<li>{_fmt(item)}</li>" for item in errors) or "<li>None</li>"
     return f"""
-    <section class="report-section">
-        <h2>Warnings and Errors</h2>
+    <section class="section report-section">
+        <h1>Warnings and Errors</h1>
         <div class="two-col">
             <div><h3>Warnings</h3><ul>{warning_items}</ul></div>
             <div><h3>Errors</h3><ul>{error_items}</ul></div>
@@ -109,8 +116,8 @@ def _sources_section(sources: list[dict[str, Any]]) -> str:
             for source in sources
         )
     return f"""
-    <section class="report-section">
-        <h2>Sources</h2>
+    <section class="section report-section">
+        <h1>Sources</h1>
         <table class="data-table">
             <thead><tr><th>Source</th><th>Role</th><th>Used In</th></tr></thead>
             <tbody>{body}</tbody>
@@ -133,8 +140,8 @@ def _assumptions_section(assumptions: list[dict[str, Any]]) -> str:
             for item in assumptions
         )
     return f"""
-    <section class="report-section">
-        <h2>Assumptions</h2>
+    <section class="section report-section">
+        <h1>Assumptions</h1>
         <table class="data-table">
             <thead><tr><th>ID</th><th>Assumption</th><th>Source</th><th>Handling</th></tr></thead>
             <tbody>{body}</tbody>
@@ -161,8 +168,8 @@ def _checks_table(checks: list[dict[str, Any]]) -> str:
             for check in checks
         )
     return f"""
-    <section class="report-section">
-        <h2>Calculation Checks</h2>
+    <section class="section report-section">
+        <h1>Calculation Checks</h1>
         <table class="data-table">
             <thead>
                 <tr>
@@ -327,8 +334,8 @@ def _chart_data_table(chart: dict[str, Any]) -> str:
 def _engineering_charts(charts: list[dict[str, Any]]) -> str:
     if not charts:
         return """
-        <section class="report-section">
-            <h2>Engineering Charts</h2>
+        <section class="section report-section">
+            <h1>Engineering Charts</h1>
             <p class="muted">No chart specifications were exposed in the BookResult.</p>
         </section>
         """
@@ -356,8 +363,8 @@ def _engineering_charts(charts: list[dict[str, Any]]) -> str:
             """
         )
     return f"""
-    <section class="report-section">
-        <h2>Engineering Charts</h2>
+    <section class="section report-section">
+        <h1>Engineering Charts</h1>
         <p class="section-note">Charts are rendered from trusted BookResult chart specifications only. They visualize recorded values and do not recalculate engineering outcomes.</p>
         {''.join(cards)}
     </section>
@@ -423,10 +430,140 @@ def _formula_logic_trace(checks: list[dict[str, Any]]) -> str:
             )
     content = "\n".join(trace_blocks) or "<p class=\"muted\">No formula traces were recorded for this scaffold result.</p>"
     return f"""
-    <section class="report-section">
-        <h2>Formula Logic Trace</h2>
+    <section class="section report-section">
+        <h1>Formula Logic Trace</h1>
         <p class="section-note">This section displays source-backed formula traces from BookResult only. It does not recalculate engineering outcomes.</p>
         {content}
+    </section>
+    """
+
+
+def _table_of_contents(has_figures: bool) -> str:
+    items = [
+        "Control Results and Governing Summary",
+        "Input Summary",
+    ]
+    if has_figures:
+        items.append("Engineering Figures")
+    items.extend([
+        "Engineering Charts",
+        "Calculation Checks",
+        "Formula Logic Trace",
+        "Sources",
+        "Assumptions",
+        "Warnings and Errors",
+        "Traceability",
+        "Template Boundary Statement",
+    ])
+    body = "\n".join(f"<li>{escape(item)}</li>" for item in items)
+    return f"""
+    <section class="section toc-section">
+        <h1>Table of Contents</h1>
+        <ol class="toc-list">{body}</ol>
+    </section>
+    """
+
+
+def _figure_location(figure: dict[str, Any]) -> str:
+    return str(
+        figure.get("recommended_report_location")
+        or figure.get("placement")
+        or figure.get("location")
+        or "after_input_summary"
+    )
+
+
+def _figure_src(figure: dict[str, Any]) -> str:
+    return str(
+        figure.get("src")
+        or figure.get("html_src")
+        or figure.get("path")
+        or figure.get("url")
+        or figure.get("data_uri")
+        or ""
+    )
+
+
+def _figures_for(figures: list[dict[str, Any]], *locations: str) -> list[dict[str, Any]]:
+    return [figure for figure in figures if _figure_location(figure) in locations]
+
+
+def _figure_card(figure: dict[str, Any]) -> str:
+    src = _figure_src(figure)
+    image = (
+        f'<img src="{escape(src, quote=True)}" alt="{_fmt(figure.get("alt"))}" />'
+        if src
+        else '<p class="muted">Image source not recorded.</p>'
+    )
+    caption = figure.get("caption")
+    caption_block = f"<span>{_fmt(caption)}</span>" if caption else ""
+    notes = figure.get("notes") or []
+    note_items = "".join(f"<li>{_fmt(note)}</li>" for note in notes) if isinstance(notes, list) else ""
+    note_block = f"<ul class=\"figure-notes\">{note_items}</ul>" if note_items else ""
+    source = figure.get("source_reference") or figure.get("source")
+    source_block = (
+        f'<p class="figure-meta"><strong>Source:</strong> {_fmt(source)}</p>'
+        if source
+        else ""
+    )
+    result_path = figure.get("result_path") or figure.get("source_result_path")
+    result_path_block = (
+        f'<p class="figure-meta"><strong>Result path:</strong> <code>{_fmt(result_path)}</code></p>'
+        if result_path
+        else ""
+    )
+    return f"""
+    <figure class="report-figure">
+        {image}
+        <figcaption>
+            <strong>{_fmt(figure.get('figure_id'))} - {_fmt(figure.get('title'))}</strong>
+            {caption_block}
+        </figcaption>
+        {source_block}
+        {result_path_block}
+        {note_block}
+    </figure>
+    """
+
+
+def _engineering_figures(figures: list[dict[str, Any]], *locations: str, title: str = "Engineering Figures") -> str:
+    selected = _figures_for(figures, *locations)
+    if not selected:
+        return ""
+    cards = "\n".join(_figure_card(figure) for figure in selected)
+    return f"""
+    <section class="section figures-section">
+        <h1>{escape(title)}</h1>
+        <p class="section-note">Figures are report assets supplied through ReportContext or BookResult metadata. They support review and do not perform engineering calculations.</p>
+        {cards}
+    </section>
+    """
+
+
+def _cover_page(project: dict[str, Any], context: dict[str, Any], title: str, generated_at: str) -> str:
+    traceability = context.get("traceability", {})
+    return f"""
+    <section class="cover-page">
+        <h1>Engineering Calculation Book</h1>
+        <h2>{title}</h2>
+        <hr>
+        <div class="project-info">
+            <p><strong>{_fmt(project.get('project_name') or project.get('title') or title)}</strong></p>
+            <p>Calculation report generated from trusted BookInput, BookResult, and ReportContext data.</p>
+            <p>Formula traces, checks, charts, and figures are presentation-only views of recorded results.</p>
+        </div>
+        <div class="meta">
+            <table class="cover-meta">
+                <tbody>
+                    <tr><td><strong>Project ID</strong></td><td>{_fmt(project.get('project_id'))}</td></tr>
+                    <tr><td><strong>Case ID</strong></td><td>{_fmt(project.get('case_id'))}</td></tr>
+                    <tr><td><strong>Report Status</strong></td><td>{_fmt(context.get('report_status'))}</td></tr>
+                    <tr><td><strong>Generated At</strong></td><td>{generated_at}</td></tr>
+                    <tr><td><strong>Template</strong></td><td>{_fmt(context.get('template_version'))}</td></tr>
+                    <tr><td><strong>Formula Registry</strong></td><td>{_fmt(traceability.get('formula_registry_version'))}</td></tr>
+                </tbody>
+            </table>
+        </div>
     </section>
     """
 
@@ -438,6 +575,7 @@ def render_a4_html_report(context: dict[str, Any]) -> str:
     warnings = context.get("warnings", [])
     errors = context.get("errors", [])
     charts = context.get("charts", [])
+    figures = context.get("figures", [])
     sources = context.get("sources", [])
     assumptions = context.get("assumptions", [])
     generated_at = _fmt(context.get("generated_at"))
@@ -450,183 +588,291 @@ def render_a4_html_report(context: dict[str, Any]) -> str:
     <style>
         @page {{
             size: A4;
-            margin: 18mm 16mm 18mm 16mm;
+            margin: 20mm 15mm 25mm 20mm;
         }}
-        * {{ box-sizing: border-box; }}
+        * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+        html {{
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }}
         body {{
-            margin: 0;
-            background: #eef1f5;
-            color: #1f2933;
-            font-family: Arial, "Helvetica Neue", sans-serif;
-            font-size: 10.5pt;
-            line-height: 1.45;
-        }}
-        .a4-page {{
-            width: 210mm;
-            min-height: 297mm;
-            margin: 12mm auto;
-            padding: 18mm 16mm;
             background: #fff;
-            box-shadow: 0 8px 30px rgba(15, 23, 42, 0.16);
-        }}
-        .cover {{
-            border-bottom: 2px solid #1d4ed8;
-            margin-bottom: 12mm;
-            padding-bottom: 10mm;
-        }}
-        .eyebrow {{
-            color: #1d4ed8;
-            font-size: 9pt;
-            font-weight: 700;
-            letter-spacing: 0;
-            text-transform: uppercase;
+            color: #1a1a1a;
+            font-family: "Times New Roman", Times, serif;
+            font-size: 11pt;
+            line-height: 1.5;
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 20mm 15mm 25mm 20mm;
         }}
         h1 {{
-            margin: 4mm 0 6mm;
-            font-size: 24pt;
-            line-height: 1.15;
+            margin: 20px 0 10px;
+            color: #1a3a5c;
+            font-size: 18pt;
+            line-height: 1.2;
+            text-align: center;
         }}
         h2 {{
-            margin: 9mm 0 3mm;
-            color: #12305c;
+            margin: 25px 0 10px;
+            color: #1a3a5c;
             font-size: 14pt;
-            border-bottom: 1px solid #cbd5e1;
-            padding-bottom: 1.5mm;
+            border-bottom: 2px solid #1a3a5c;
+            padding-bottom: 5px;
         }}
         h3 {{
-            margin: 4mm 0 2mm;
+            margin: 15px 0 8px;
+            color: #2c5282;
+            font-size: 12pt;
+        }}
+        h4 {{
+            margin: 10px 0 5px;
+            color: #333;
             font-size: 11pt;
-            color: #334155;
+        }}
+        p {{
+            margin: 5px 0;
+            text-align: justify;
         }}
         table {{
             width: 100%;
             border-collapse: collapse;
-            margin: 3mm 0 5mm;
+            margin: 10px 0;
+            font-size: 10pt;
             page-break-inside: auto;
         }}
         th, td {{
-            border: 1px solid #cbd5e1;
-            padding: 2mm 2.5mm;
+            border: 1px solid #666;
+            padding: 4px 8px;
+            text-align: left;
             vertical-align: top;
             word-break: break-word;
         }}
         th {{
-            background: #f1f5f9;
+            background: #e8f0f8;
+            color: #1a3a5c;
             font-weight: 700;
+        }}
+        tr:nth-child(even) {{ background: #f8f9fa; }}
+        ul, ol {{ margin: 5px 0 5px 20px; }}
+        li {{ margin: 3px 0; }}
+        .cover-page {{
+            text-align: center;
+            padding: 60px 20px;
+            page-break-after: always;
+        }}
+        .cover-page h1 {{
+            margin-top: 80px;
+            font-size: 24pt;
+            text-transform: uppercase;
+        }}
+        .cover-page h2 {{
+            border: none;
+            color: #333;
+            font-size: 16pt;
+        }}
+        .cover-page hr {{
+            width: 80%;
+            margin: 30px auto;
+            border: 1px solid #1a3a5c;
+        }}
+        .cover-page .project-info {{
+            margin: 40px 0;
+            font-size: 12pt;
+        }}
+        .cover-page .meta {{
+            margin-top: 60px;
+            color: #555;
+            font-size: 11pt;
+        }}
+        .cover-meta {{
+            width: 68%;
+            margin: 0 auto;
+        }}
+        .cover-meta td:first-child {{
+            width: 44%;
+            text-align: right;
+        }}
+        .cover-meta td {{
+            border: none;
+            background: none;
             text-align: left;
         }}
+        .section {{
+            page-break-before: always;
+        }}
+        .toc-list {{
+            font-size: 12pt;
+            line-height: 2;
+        }}
         .kv-table th {{ width: 34%; }}
-        .data-table th, .data-table td {{ font-size: 9pt; }}
+        .summary-table td:first-child {{ width: 45%; font-weight: 700; }}
+        .data-table th, .data-table td {{ font-size: 9.5pt; }}
         .summary-grid, .two-col {{
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 5mm;
         }}
-        .summary-box {{
-            border: 1px solid #cbd5e1;
-            background: #f8fafc;
-            padding: 4mm;
-        }}
         .status {{
             display: inline-block;
-            border-radius: 3px;
-            padding: 0.5mm 1.5mm;
             font-weight: 700;
-            background: #e2e8f0;
         }}
-        .status-pass, .status-ok {{ color: #166534; background: #dcfce7; }}
-        .status-fail, .status-error {{ color: #991b1b; background: #fee2e2; }}
-        .trace-block {{
-            border-left: 3px solid #2563eb;
+        .status-pass, .status-ok {{ color: #16a34a; }}
+        .status-fail, .status-error {{ color: #dc2626; }}
+        .status-warning, .status-warn {{ color: #d97706; }}
+        .note {{
+            margin: 8px 0;
+            padding: 6px 10px;
+            border: 1px solid #fbbf24;
+            background: #fffbeb;
+            font-size: 10pt;
+        }}
+        .result-box {{
+            margin: 10px 0;
+            padding: 8px 12px;
+            border: 2px solid #1a3a5c;
             background: #f8fafc;
-            margin: 4mm 0;
-            padding: 3mm 4mm;
+        }}
+        .trace-block {{
+            margin: 8px 0;
+            padding: 8px 12px;
+            border: 1px solid #c0d0e0;
+            border-left: 4px solid #1a3a5c;
+            background: #f8fafc;
             page-break-inside: avoid;
         }}
         .formula-box {{
-            border: 1px solid #bfdbfe;
-            background: #eff6ff;
-            color: #172554;
-            font-family: "Courier New", monospace;
-            margin: 3mm 0;
-            padding: 3mm;
+            margin: 8px 0;
+            padding: 8px 12px;
+            border: 1px solid #c0d0e0;
+            border-left: 4px solid #1a3a5c;
+            background: #f0f4f8;
+            color: #1a1a1a;
+            font-family: "Cambria Math", "Times New Roman", serif;
+            font-size: 11pt;
+            overflow-x: auto;
             word-break: break-word;
         }}
         .explanation {{
-            color: #334155;
+            color: #333;
         }}
         .trace-data th {{
             width: 30%;
         }}
         code {{
-            color: #1d4ed8;
+            color: #1a3a5c;
             font-family: "Courier New", monospace;
         }}
         .section-note, .muted {{
-            color: #64748b;
+            color: #666;
+            font-size: 10pt;
         }}
         .chart-card {{
-            border: 1px solid #cbd5e1;
+            margin: 10px 0;
+            padding: 8px 12px;
+            border: 1px solid #c0d0e0;
             background: #f8fafc;
-            margin: 4mm 0;
-            padding: 3mm 4mm;
             page-break-inside: avoid;
         }}
         .chart-svg {{
             width: 100%;
             max-width: 170mm;
             height: auto;
-            margin: 2mm 0 3mm;
+            margin: 8px 0;
             background: #fff;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #c0d0e0;
         }}
         .chart-data th, .chart-data td {{
             font-size: 8.5pt;
         }}
-        .chart-meta, .chart-notes {{
-            color: #475569;
+        .chart-meta, .chart-notes, .figure-meta, .figure-notes {{
+            color: #555;
             font-size: 9pt;
+        }}
+        .report-figure {{
+            margin: 12px 0 16px;
+            padding: 8px 10px;
+            border: 1px solid #c0d0e0;
+            background: #f8fafc;
+            page-break-inside: avoid;
+        }}
+        .report-figure img {{
+            display: block;
+            max-width: 100%;
+            max-height: 135mm;
+            margin: 0 auto 8px;
+            border: 1px solid #d6dde8;
+            background: #fff;
+            object-fit: contain;
+        }}
+        .report-figure figcaption {{
+            color: #333;
+            font-size: 10pt;
+            text-align: center;
+        }}
+        .report-figure figcaption span {{
+            display: block;
+            margin-top: 2px;
         }}
         .report-section {{
             page-break-inside: auto;
         }}
+        .report-end {{
+            margin: 30px 0;
+            border: none;
+            border-top: 1px solid #999;
+        }}
+        .end-note {{
+            color: #666;
+            font-size: 10pt;
+            text-align: center;
+        }}
         @media print {{
-            body {{ background: #fff; }}
-            .a4-page {{
-                width: auto;
-                min-height: auto;
+            html, body {{
+                width: 210mm;
+                min-height: 297mm;
+            }}
+            body {{
+                max-width: none;
                 margin: 0;
                 padding: 0;
-                box-shadow: none;
+                background: #fff;
+            }}
+            thead {{ display: table-header-group; }}
+            tr, .trace-block, .chart-card, .report-figure {{
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }}
+            .chart-svg, .report-figure img {{
+                max-width: 100%;
+                break-inside: avoid;
+                page-break-inside: avoid;
             }}
         }}
     </style>
 </head>
 <body>
-<main class="a4-page">
-    <section class="cover">
-        <div class="eyebrow">A4 calculation report</div>
-        <h1>{title}</h1>
-        <div class="summary-grid">
-            <div class="summary-box"><strong>Project ID</strong><br>{_fmt(project.get('project_id'))}</div>
-            <div class="summary-box"><strong>Case ID</strong><br>{_fmt(project.get('case_id'))}</div>
-            <div class="summary-box"><strong>Report Status</strong><br>{_fmt(context.get('report_status'))}</div>
-            <div class="summary-box"><strong>Generated At</strong><br>{generated_at}</div>
-        </div>
-    </section>
+<main class="calc-book">
+    {_cover_page(project, context, title, generated_at)}
+    {_engineering_figures(figures, 'after_cover', 'front_matter', title='Project Figures')}
+    {_table_of_contents(bool(figures))}
     {_kv_table(context.get('governing', {}), title='Control Results and Governing Summary')}
     {_kv_table(context.get('input', {}).get('inputs', {}), title='Input Summary')}
+    {_engineering_figures(figures, 'after_input_summary', 'before_charts')}
     {_engineering_charts(charts)}
+    {_engineering_figures(figures, 'after_charts', 'before_checks', title='Supplementary Figures')}
     {_checks_table(checks)}
     {_formula_logic_trace(checks)}
     {_sources_section(sources)}
     {_assumptions_section(assumptions)}
     {_warnings_errors(warnings, errors)}
     {_kv_table(context.get('traceability', {}), title='Traceability')}
-    <section class="report-section">
-        <h2>Template Boundary Statement</h2>
+    <section class="section report-section">
+        <h1>Template Boundary Statement</h1>
         <p>This HTML template references trusted BookInput, BookResult, ReportContext, warnings, errors, and formula traces only. It must not contain engineering formulas, lookup rules, unit conversion for official results, load-combination generation, optimization logic, or pass/fail recalculation.</p>
     </section>
+    {_engineering_figures(figures, 'appendix', 'appendix_figures', title='Appendix Figures')}
+    <hr class="report-end">
+    <p class="end-note">End of Engineering Calculation Book<br>{title}<br>Generated: {generated_at}</p>
 </main>
 </body>
 </html>

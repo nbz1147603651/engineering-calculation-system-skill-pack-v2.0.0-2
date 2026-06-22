@@ -24,16 +24,26 @@ outputs/
 
 Do:
 
+- If delegated a project that only has scripts and `reports/*.html`, build the missing interface
+  scaffold instead of wrapping the static report: `webapp/`, `src/pkg/report/`, `apps/review/`,
+  `latex/templates/`, import/export output areas, and smoke tests.
 - Keep interfaces thin: parse inputs, map to `BookInput`, call `run_book()`, save `BookResult`, build `ReportContext`, and render/return results.
 - Use the shared UI kit: `templates/implementation/ui_design_system.md`, `webapp/templates/partials/`, `tokens.css`, and `components.css`.
 - Preserve Chinese/English switching through `/api/i18n/<lang>`, `data-i18n`, persisted language preference, and selected-language report calls.
-- Support report preview/download, LaTeX/Overleaf zip fallback, JSON import/export, upload packages, and batch summary flows when in scope.
+- Default report preview/download/final output to print-ready A4 HTML with `@page size: A4`,
+  print-safe CSS, formula traces, source paths, traceability, and chart data tables when charts
+  are emitted.
+- Support LaTeX/Overleaf zip and PDF only as explicit exports or handoff-required deliverables,
+  JSON import/export, upload packages, and batch summary flows when in scope.
+- Generate UI/report charts from `BookResult.charts` / `ChartSpec` only when the current book's
+  result-path registry or `ReportContext` exposes useful chartable data. Do not hardcode chart
+  IDs, labels, or source paths from another project.
 - Add smoke tests for owned routes and UI hooks.
 
 Do not:
 
 - Implement engineering formulas or independent pass/fail logic.
 - Recalculate results inside templates, frontend code, review notebooks, or batch scripts.
+- Present exported report HTML as the deployable application runtime.
 - Change module or runner contracts without supervisor approval.
 - Declare final production or release readiness.
-

@@ -450,7 +450,8 @@ function renderCapabilities(payload) {
     strip.innerHTML = `
         <span><strong>Python:</strong> ${escapeHtml(python.version || "unknown")}</span>
         <span><strong>Marimo review:</strong> ${escapeHtml(marimoReview.status || "missing")}</span>
-        <span><strong>Report output:</strong> ${escapeHtml(latex.available ? "latex/pdf available" : "html_a4 fallback")}</span>
+        <span><strong>Admin gate:</strong> ${escapeHtml(marimoReview.admin_password_set ? "password set" : "password missing")}</span>
+        <span><strong>Report output:</strong> ${escapeHtml(latex.available ? "html_a4 default; latex/pdf export available" : "html_a4 default")}</span>
     `;
 
     configureReviewAdmin(marimoReview);
@@ -464,18 +465,20 @@ function configureReviewAdmin(marimoReview) {
     const status = marimoReview.status || "missing";
     if (status === "configured") {
         link.classList.remove("disabled");
-        link.setAttribute("href", marimoReview.admin_url || "/admin/review/");
-        link.setAttribute("title", "Create a review session and open Marimo");
+        link.setAttribute("href", marimoReview.shell_url || "/admin/");
+        link.setAttribute("title", "Create a review session and open the password-gated admin shell");
         if (note) note.textContent = "";
         return;
     }
 
     link.classList.remove("disabled");
-    link.setAttribute("href", marimoReview.shell_url || "/admin/review/");
+    link.setAttribute("href", marimoReview.shell_url || "/admin/");
     link.setAttribute("title", marimoReview.message || "Open review admin setup.");
     if (note) {
-        note.textContent = status === "available"
+        note.textContent = status === "available" && marimoReview.admin_password_set
             ? "Marimo installed; review token/service setup needed."
+            : status === "available"
+                ? "Marimo installed; set ADMIN_REVIEW_PASSWORD and ADMIN_REVIEW_TOKEN."
             : `Review setup needed. Install with: ${marimoReview.install_command || "python -m pip install marimo"}`;
     }
 }

@@ -21,13 +21,18 @@ class ReportRenderDecision:
         return asdict(self)
 
 
-def select_report_output() -> ReportRenderDecision:
-    """Choose the strictest available calculation-book renderer for this host."""
+def select_report_output(preferred_format: ReportFormat | None = None) -> ReportRenderDecision:
+    """Choose the default calculation-book renderer for this host.
+
+    Print-ready A4 HTML is the primary default because it is easy to review,
+    archive, and print from a browser. LaTeX remains available as an explicit
+    export/compile path when a PDF or Overleaf package is requested.
+    """
     toolchain = detect_latex_toolchain()
-    if toolchain["available"]:
+    if preferred_format == "latex_pdf" and toolchain["available"]:
         return ReportRenderDecision(
             output_format="latex_pdf",
-            reason="Local LaTeX compiler detected; final report must compile without errors.",
+            reason="LaTeX PDF was explicitly requested and a local compiler was detected.",
             latex_available=True,
             latex_tool=toolchain["tool"],
             latex_path=toolchain["path"],
@@ -35,6 +40,11 @@ def select_report_output() -> ReportRenderDecision:
 
     return ReportRenderDecision(
         output_format="html_a4",
-        reason="No local LaTeX compiler detected; use rigorous A4 HTML calculation report.",
-        latex_available=False,
+        reason=(
+            "Default calculation-book output is print-ready A4 HTML; "
+            "LaTeX/Overleaf export remains available when explicitly requested."
+        ),
+        latex_available=bool(toolchain["available"]),
+        latex_tool=toolchain["tool"],
+        latex_path=toolchain["path"],
     )

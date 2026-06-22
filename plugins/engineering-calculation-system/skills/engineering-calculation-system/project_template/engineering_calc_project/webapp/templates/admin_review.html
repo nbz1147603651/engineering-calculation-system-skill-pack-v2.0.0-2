@@ -1,31 +1,105 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section id="adminReviewPage" class="container-xxl">
+<section id="adminReviewPage" class="container-xxl review-shell">
+    <div class="review-hero mb-3">
+        <div>
+            <span class="ecs-tag">Admin review</span>
+            <h1 class="h3 mt-2 mb-1">Marimo Calculation Review</h1>
+            <p class="mb-0 text-muted">
+                Review frontend-created calculation sessions, publish declaration-based formula rules,
+                and let the next <code>/api/calculate</code> call reflect the active registry version.
+            </p>
+        </div>
+        <span class="ecs-tag {{ 'ecs-tag-green' if review.status == 'configured' else 'ecs-tag-warm' if review.status == 'available' else 'ecs-tag-muted' }}">
+            {{ review.status }}
+        </span>
+    </div>
+
+    {% if not password_configured %}
+    <div class="ecs-panel ecs-panel-warning mb-3">
+        <strong>Admin password is not configured.</strong>
+        Set <code>ADMIN_REVIEW_PASSWORD</code> before allowing formula or review changes.
+        <code>ADMIN_REVIEW_TOKEN</code> is still required for the proxied Marimo services.
+    </div>
+    {% endif %}
+
+    {% if not review.available %}
+    <div class="ecs-panel ecs-panel-warning mb-3">
+        <strong>Marimo is not installed in this runtime.</strong>
+        The main calculator still runs, but live review is disabled until the cloud image includes Marimo.
+        Install with <code>{{ review.install_command }}</code> or preinstall it on the Linux host.
+    </div>
+    {% endif %}
+
+    {% if auth_error %}
+    <div class="alert alert-danger border-0">{{ auth_error }}</div>
+    {% endif %}
+
+    {% if not authenticated %}
     <div class="row g-3">
-        <div class="col-12">
-            <div class="alert alert-info border-0 shadow-sm">
-                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
-                    <div>
-                        <h1 class="h4 mb-1">Marimo Calculation Review</h1>
-                        <p class="mb-0">
-                            Marimo reviews frontend-created calculation sessions with live Python cells, traces, and review decisions.
-                        </p>
-                    </div>
-                    <span class="badge text-bg-{{ 'success' if review.status == 'configured' else 'warning' if review.status == 'available' else 'secondary' }}">
-                        {{ review.status }}
-                    </span>
+        <div class="col-lg-5">
+            <div class="card review-card h-100">
+                <div class="card-header fw-semibold">Administrator Access</div>
+                <div class="card-body">
+                    <form method="post" class="vstack gap-3">
+                        <div>
+                            <label class="form-label" for="admin_password">Admin password</label>
+                            <input
+                                class="form-control"
+                                id="admin_password"
+                                name="admin_password"
+                                type="password"
+                                autocomplete="current-password"
+                                {% if not password_configured %}disabled{% endif %}
+                                required
+                            >
+                        </div>
+                        <button class="btn btn-primary" type="submit" {% if not password_configured %}disabled{% endif %}>
+                            Enter review admin
+                        </button>
+                    </form>
+                    <p class="text-muted small mt-3 mb-0">
+                        The password gate protects the Flask admin shell. Marimo itself must also run with
+                        <code>--token-password &lt;ADMIN_REVIEW_TOKEN&gt;</code>.
+                    </p>
                 </div>
             </div>
         </div>
 
+        <div class="col-lg-7">
+            <div class="card review-card h-100">
+                <div class="card-header fw-semibold">Runtime Status</div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Python</dt>
+                        <dd class="col-sm-8">{{ capabilities.python.version }} / {{ capabilities.python.implementation }}</dd>
+                        <dt class="col-sm-4">Marimo</dt>
+                        <dd class="col-sm-8">{{ capabilities.marimo.version or "not installed" }}</dd>
+                        <dt class="col-sm-4">ADMIN_REVIEW_PASSWORD</dt>
+                        <dd class="col-sm-8">{{ "set" if review.admin_password_set else "not set" }}</dd>
+                        <dt class="col-sm-4">ADMIN_REVIEW_TOKEN</dt>
+                        <dd class="col-sm-8">{{ "set" if review.admin_token_set else "not set" }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="d-flex justify-content-end mb-3">
+        <form method="post" action="{{ url_for('main.admin_review_logout') }}">
+            <button class="btn btn-outline-secondary btn-sm" type="submit">Lock admin page</button>
+        </form>
+    </div>
+
+    <div class="row g-3">
         <div class="col-lg-4">
             <div class="card review-card h-100">
                 <div class="card-header fw-semibold">Runtime</div>
                 <div class="card-body">
                     <dl class="mb-0">
                         <dt>Python</dt>
-                        <dd>{{ capabilities.python.version }} · {{ capabilities.python.implementation }}</dd>
+                        <dd>{{ capabilities.python.version }} / {{ capabilities.python.implementation }}</dd>
                         <dt>Marimo</dt>
                         <dd>{{ capabilities.marimo.version or "not installed" }}</dd>
                         <dt>ADMIN_REVIEW_TOKEN</dt>
@@ -41,8 +115,8 @@
                 <div class="card-body">
                     <p>{{ review.message }}</p>
                     <div class="d-flex flex-wrap gap-2">
-                        <a class="btn btn-primary{% if not review.available %} disabled{% endif %}"
-                           href="{{ review.admin_url }}"
+                        <a class="btn btn-primary{% if not review.configured %} disabled{% endif %}"
+                           href="{{ review.admin_url }}{% if review_session_id %}?session_id={{ review_session_id }}{% endif %}"
                            target="_blank"
                            rel="noopener">
                             Open proxied review
@@ -55,7 +129,8 @@
                         </a>
                     </div>
                     <p class="text-muted small mt-3 mb-0">
-                        In production, nginx or the platform router should proxy {{ review.admin_url }} to the Marimo calculation review service.
+                        In production, nginx or the platform router should proxy {{ review.admin_url }} to
+                        the Marimo calculation review service.
                     </p>
                 </div>
             </div>
@@ -76,9 +151,9 @@
                 <div class="card-header fw-semibold">Review Boundary</div>
                 <div class="card-body">
                     <ul class="mb-0">
-                        <li>Frontend creates review sessions through <code>/api/review/session</code>; Marimo reads the saved BookInput, BookResult, ReportContext, and FormulaTrace data.</li>
+                        <li>Frontend creates review sessions through <code>/api/review/session</code>; Marimo reads saved BookInput, BookResult, ReportContext, and FormulaTrace data.</li>
                         <li>Draft Python edits in <code>marimo edit</code> are exploratory until they are implemented in source modules and rerun through <code>run_book()</code>.</li>
-                        <li>The web UI and report templates remain presentation-only; official calculations still flow through run_book().</li>
+                        <li>The web UI and report templates remain presentation-only; official calculations still flow through <code>run_book()</code>.</li>
                     </ul>
                 </div>
             </div>
@@ -86,16 +161,33 @@
 
         <div class="col-12">
             <div class="card review-card">
-                <div class="card-header fw-semibold">Formula Rule Admin</div>
+                <div class="card-header fw-semibold">Formula Review Admin</div>
                 <div class="card-body">
                     <p class="mb-2">
                         Use the separate Formula Review Admin only for declaration-based formula registry publishing.
                         Publishing writes a versioned rule, updates <code>active_versions.yaml</code>, and appends the publish log after validation and smoke tests pass.
+                        The next interactive calculation displays the new formula registry version and hash.
                     </p>
+                    <p class="text-muted small mb-2">Default proxy path: <code>/admin/formulas/</code></p>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <a class="btn btn-warning{% if not review.configured %} disabled{% endif %}"
+                           href="{{ review.formula_admin_url }}"
+                           target="_blank"
+                           rel="noopener">
+                            Open formula publisher
+                        </a>
+                        <a class="btn btn-outline-primary{% if not review.available %} disabled{% endif %}"
+                           href="{{ review.formula_admin_service_url }}"
+                           target="_blank"
+                           rel="noopener">
+                            Open local formula service
+                        </a>
+                    </div>
                     <pre class="mb-0"><code>{{ review.formula_admin_run_command }}</code></pre>
                 </div>
             </div>
         </div>
     </div>
+    {% endif %}
 </section>
 {% endblock %}

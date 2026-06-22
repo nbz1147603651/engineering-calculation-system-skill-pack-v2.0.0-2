@@ -41,11 +41,13 @@ reduced scope. The default `web-complete` path is:
 08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14
 ```
 
-`web-complete` means dual closure: a readable A4/LaTeX calculation book with
-real input and non-empty `BookResult.checks`, plus a complete web system with
-API/UI, import/export, batch, deployment artifacts, and smoke tests. Lightweight
-entrypoints must call into the complete core package, project template, and
-validator before making a production completion claim.
+`web-complete` means dual closure: a readable print-ready A4 HTML calculation
+book with real input, non-empty `BookResult.checks`, and metadata-driven charts
+when the current book exposes useful chartable values, plus a complete web system
+with API/UI, import/export, batch, deployment artifacts, and smoke tests.
+LaTeX/Overleaf/PDF are explicit exports or client-specific additions.
+Lightweight entrypoints must call into the complete core package, project
+template, and validator before making a production completion claim.
 
 For `web-complete`, the interactive UI must include Chinese/English switching:
 `/api/i18n/<lang>`, `data-i18n` bindings, persisted language preference, and
@@ -56,16 +58,16 @@ For production UI, use `templates/implementation/ui_design_system.md`,
 `webapp/static/css/components.css` before adding book-specific fields or result
 cards.
 
-For calculation-book export, use `templates/implementation/latex_report_spec.md`
-and `templates/implementation/html_report_spec.md`. Choose LaTeX/PDF when
-`latexmk` or `pdflatex` is installed and require successful compilation to
-`main.pdf`; otherwise use A4 HTML with `@page size: A4`. Ask whether the user
-has a preferred LaTeX/Overleaf template before project initialization or first
-export; if none is supplied, use `latex/templates/default_engineering_calcbook/`.
-Generated web apps must expose `GET /api/report/decision`,
-`POST /api/report/final`, `GET /api/report/templates`, and send
-`latex_template_id` to `/api/report/latex` with default fallback unless the user
-explicitly chooses another report workflow.
+For calculation-book export, use `templates/implementation/html_report_spec.md`
+as the default and `templates/implementation/latex_report_spec.md` for explicit
+LaTeX/Overleaf/PDF exports. Default final output is A4 HTML with `@page size: A4`,
+print-safe CSS, source result paths, formula traces, and chart data tables when
+charts are emitted. Ask whether the user has a preferred LaTeX/Overleaf template
+before project initialization or first LaTeX export; if none is supplied, use
+`latex/templates/default_engineering_calcbook/`. Generated web apps must expose
+`GET /api/report/decision`, `POST /api/report/final`, `GET /api/report/templates`,
+and send `latex_template_id` to `/api/report/latex` with default fallback unless
+the user explicitly chooses another report workflow.
 
 The supervisor must keep gate decisions, source authority, ID allocation,
 handoff freeze, `run_book()` public contracts, and final acceptance serial.
@@ -176,6 +178,8 @@ Behavior:
 - Qoder should still route to the package router rather than reading every child file.
 - Widget or custom UI features are optional. If unavailable, continue with text artifacts and validation scripts.
 - The direct QODER Skill zip is a lightweight entrypoint. For web-complete generation, prefer QODER Project because it includes the core skill, templates, schemas, validator, project scaffold, and `.qoder/` overlay.
+- If a Qoder-generated project only has calculation scripts, a report generator, or exported `reports/*.html`, classify it as `static_report_or_cli_only`. Use the complete project scaffold to add `run_book`, `webapp/`, Marimo review, report renderers, import/export, deployment files, and smoke tests before any `web-complete` claim.
+- Qoder should default calculation books to print-ready A4 HTML and generate `BookResult.charts` / `ChartSpec` only from the current book's result-path registry, report context, and already-computed chartable values; do not copy fixed chart IDs, labels, or paths from examples into unrelated projects.
 - Qoder custom agents should map expert-team roles to the roles in `shared/multi-agent-orchestration.md`: supervisor, reference-acquirer, source-intake, logic-extractor, module-worker, interface-worker, and verification-worker.
 
 Fallback:
@@ -264,7 +268,7 @@ For web-complete, follow 08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14.
 For web-complete, deliver both a readable calculation book with non-empty BookResult.checks and a complete web system with API/UI, import/export, batch, deployment, and smoke tests.
 For web-complete, include a Chinese/English interactive UI switch with /api/i18n/<lang>, data-i18n, persisted language preference, and selected-language report calls.
 For production UI, use templates/implementation/ui_design_system.md plus webapp/templates/partials/, tokens.css, and components.css.
-For calculation-book export, use templates/implementation/latex_report_spec.md and templates/implementation/html_report_spec.md; choose LaTeX/PDF when latexmk or pdflatex is installed and require successful compilation to main.pdf, otherwise use A4 HTML with @page size: A4; expose GET /api/report/decision, POST /api/report/final, GET /api/report/templates, and send latex_template_id to /api/report/latex with default fallback.
+For calculation-book export, use templates/implementation/html_report_spec.md as the default final calculation book and templates/implementation/latex_report_spec.md for explicit LaTeX/Overleaf/PDF exports; default to A4 HTML with @page size: A4, print-safe CSS, source result paths, formula traces, and chart data tables when charts are emitted; expose GET /api/report/decision, POST /api/report/final, GET /api/report/templates, and send latex_template_id to /api/report/latex with default fallback.
 Do not call CLI runners, static HTML, exported report HTML, notebooks, or UI mockups complete or deployable.
 For explicit multi-agent or parallel work, read shared/multi-agent-orchestration.md and use templates/orchestration/.
 Split work only by disjoint owned paths. Workers return agent_result_packet.yaml fields, and the supervisor accepts output only after merge_review.md checks.

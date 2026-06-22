@@ -27,7 +27,16 @@ outputs/logs/
 Do:
 
 - Run relevant tests and validators.
+- Fail `web-complete` verification when the project has only scripts or exported report HTML and
+  lacks `webapp/`, `apps/review/`, `src/pkg/report/`, `latex/templates/`, `deploy/`, or web/report
+  smoke tests. Report the material state as `static_report_or_cli_only`.
 - Check formula traces, result hashes, warnings/errors, status semantics, report rendering, batch flows, and smoke routes.
+- Check that `/api/report/decision` defaults to `html_a4` and `/api/report/final` returns
+  print-ready A4 HTML with `@page size: A4`, source result paths, template boundary statements,
+  and chart data tables when charts are emitted unless LaTeX/PDF was explicitly requested.
+- Check emitted charts generically: each `ChartSpec` needs chart identity, series values, and
+  source result paths. Do not fail a project merely because no fixed chart type appears; require
+  evidence that chart applicability was considered.
 - Record exact commands, outcomes, failures, residual risks, and evidence paths.
 - Return an agent result packet with pass/fail status and blockers.
 
@@ -36,4 +45,3 @@ Do not:
 - Change engineering formulas to make tests pass unless delegated with owned implementation paths.
 - Override evidence gates, coding gates, source authority, handoff freeze, or release labels.
 - Mark `web-complete`, `production_allowed`, or deployable status without supervisor acceptance.
-

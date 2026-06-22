@@ -4,7 +4,13 @@ Use this template to document how engineering charts are produced, placed, and v
 
 ## Principle
 
-Charts are part of the calculation result contract. Build chart specifications from already-computed `BookResult` values in the book layer, then let the UI and report renderers display those specifications.
+Charts are part of the calculation result contract. Build chart specifications from
+already-computed `BookResult` values in the book layer, then let the UI and report renderers
+display those specifications. Chart selection must be generic and metadata-driven: inspect the
+book's `result_path_registry`, `ReportContext`, review needs, and available result arrays/groups.
+Do not hardcode a universal chart set, chart IDs, result paths, or domain-specific labels across
+books. Include concise reviewer-useful charts when chartable data exists; otherwise record charts
+as not applicable.
 
 Charts must not compute engineering results, recalculate utilization, override status, choose design branches, perform official unit conversion, or suppress warnings/errors.
 
@@ -63,56 +69,59 @@ class ChartSpec:
     notes: list[str] = field(default_factory=list)
 ```
 
-## Chart Inventory
+## Chart Candidate Inventory
+
+This table is a project-specific decision record, not a global required chart list. Replace the
+example rows with chart candidates derived from the current book.
 
 | Chart ID | Name | Type | Data source | Trigger | Placement |
 | --- | --- | --- | --- | --- | --- |
-| `check_utilization_summary` | Check utilization summary | bar | `BookResult.checks[*].utilization` | any check has utilization | after governing/input summary |
-| `demand_capacity_comparison` | Demand and capacity comparison | grouped_bar | `BookResult.checks[*].demand/capacity` | demand and capacity are both present | before check table |
-| `chart_stress_profile` | Stress distribution | line | module result profile values | settlement/stress profile exists | result detail or appendix |
-| `chart_envelope` | Governing envelope | line/bar | envelope result paths | envelope values exist | after governing summary |
-| `chart_soil_profile` | Soil profile schematic | schematic | normalized layer model | soil profile exists | input summary or appendix |
+| `example_check_metric_summary` | Example check metric summary | bar | project-specific check metric path | repeated comparable metric exists | after governing/input summary |
+| `example_pair_comparison` | Example paired result comparison | grouped_bar | project-specific paired paths | two comparable values share categories/units | before detail table |
+| `example_profile` | Example profile or series | line | project-specific sequence/profile path | ordered numeric sequence exists | result detail or appendix |
 | to_be_defined | to_be_defined | to_be_defined | to_be_defined | to_be_defined | to_be_defined |
+
+Recommended workflow: list candidate result paths, decide whether each would help engineering
+review, and either emit a `ChartSpec` or record why it is not applicable. Common chart families
+include comparable metrics, paired values, profiles, envelopes, distributions, or schematics, but
+the actual charts must come from the current book's result data and stable paths.
 
 ## Builder Pattern
 
 ```python
 # src/<pkg>/books/<book_name>/charts.py
 from .book_models import BookResult, ChartAxis, ChartSeries, ChartSpec
+from .result_path_registry import chart_candidates, resolve_result_path
 
 
 def build_book_charts(result: BookResult) -> list[ChartSpec]:
     charts = []
-    utilization_checks = [
-        (index, check)
-        for index, check in enumerate(result.checks)
-        if check.utilization is not None
-    ]
-    if utilization_checks:
+    for candidate in chart_candidates():
+        values = [
+            resolve_result_path(result, result_path)
+            for result_path in candidate.result_paths
+        ]
+        if not any(value is not None for value in values):
+            continue
+
         charts.append(
             ChartSpec(
-                chart_id="check_utilization_summary",
-                title="Check Utilization Summary",
-                chart_type="bar",
-                purpose="Compare recorded utilization values across checks.",
-                categories=[check.name for _, check in utilization_checks],
+                chart_id=candidate.chart_id,
+                title=candidate.title,
+                chart_type=candidate.chart_type,
+                purpose=candidate.purpose,
+                categories=candidate.categories,
                 series=[
                     ChartSeries(
-                        label="Utilization",
-                        values=[check.utilization for _, check in utilization_checks],
-                        unit="ratio",
-                        result_paths=[
-                            f"checks[{index}].utilization"
-                            for index, _ in utilization_checks
-                        ],
+                        label=candidate.series_label,
+                        values=values,
+                        unit=candidate.unit,
+                        result_paths=candidate.result_paths,
                     )
                 ],
-                x_axis=ChartAxis(label="Check"),
-                y_axis=ChartAxis(label="Utilization", unit="ratio"),
-                source_result_paths=[
-                    f"checks[{index}].utilization"
-                    for index, _ in utilization_checks
-                ],
+                x_axis=ChartAxis(label=candidate.x_axis_label),
+                y_axis=ChartAxis(label=candidate.y_axis_label, unit=candidate.unit),
+                source_result_paths=candidate.result_paths,
             )
         )
     return charts
@@ -140,6 +149,8 @@ trusted BookResult
 ```
 
 HTML can render inline SVG from `ChartSpec`. LaTeX/Overleaf exports should at minimum include the chart title, purpose, values, units, source result paths, thresholds, and placement notes. If graphic LaTeX charts are added, they must still consume `ChartSpec` values only.
+For A4 HTML reports, render chart visuals in print-safe inline SVG and always include a data table
+below the visual so printed copies remain auditable without interactive tooltips.
 
 ## Color and Style Conventions
 
@@ -157,6 +168,7 @@ HTML can render inline SVG from `ChartSpec`. LaTeX/Overleaf exports should at mi
 unit/integration tests cover ChartSpec builders
 API smoke tests assert "charts" is present
 report smoke tests assert chart section is present when chart specs exist
+report smoke tests assert A4 HTML includes chart data tables and source result paths when charts are emitted
 frontend shell tests assert chartsSection exists
 chart data includes source result paths
 no UI/report template computes engineering formulas, utilization, or status

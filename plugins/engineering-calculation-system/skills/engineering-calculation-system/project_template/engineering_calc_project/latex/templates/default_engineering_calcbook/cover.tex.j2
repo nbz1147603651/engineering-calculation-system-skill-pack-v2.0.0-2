@@ -1,18 +1,30 @@
 \begin{titlepage}
 \centering
-{\Large Engineering Calculation Report\par}
-\vspace{12mm}
-{\huge {{ project.title | default("Calculation Book") | latex_escape }}\par}
+\vspace*{35mm}
+{\Huge\bfseries\textcolor{brandblue}{ENGINEERING CALCULATION BOOK}\par}
 \vspace{8mm}
-{\large Project ID: {{ project.project_id | default("--") | latex_escape }}\par}
-{\large Case ID: {{ project.case_id | default("--") | latex_escape }}\par}
+{\Large {{ project.title | default(project.project_name | default("Calculation Book")) | latex_escape }}\par}
+\vspace{10mm}
+\rule{0.8\linewidth}{0.8pt}
+\vspace{14mm}
+
+\begin{minipage}{0.82\linewidth}
+\centering
+{\large This calculation book is generated from trusted BookInput, BookResult, and ReportContext data.\par}
+\vspace{4mm}
+{\normalsize Formula traces, checks, charts, and report figures are presentation-only views of already computed results.\par}
+\end{minipage}
+
 \vfill
-\begin{tabular}{ll}
+\rowcolors{2}{white}{resultBg}
+\begin{tabular}{>{\bfseries}p{0.32\linewidth}p{0.42\linewidth}}
+Project ID & {{ project.project_id | default("--") | latex_escape }} \\
+Case ID & {{ project.case_id | default("--") | latex_escape }} \\
 Report status & {{ report_status | latex_escape }} \\
 Generated at & {{ generated_at | latex_escape }} \\
 Template & {{ template_version | latex_escape }} \\
 Formula registry & {{ traceability.formula_registry_version | latex_escape }} \\
 \end{tabular}
 \vfill
-{\small This report is generated from trusted BookResult data. The LaTeX templates must not perform engineering calculations.}
+{\small The LaTeX templates must not perform engineering calculations, lookup selection, unit conversion for official results, or pass/fail recalculation.}
 \end{titlepage}

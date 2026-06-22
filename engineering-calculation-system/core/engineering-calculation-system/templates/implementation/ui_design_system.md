@@ -26,6 +26,8 @@ webapp/static/js/main.js
 
 - Keep the global page zones fixed: top bar, left input panel, right review workbench, modal/drawer, status strip.
 - Keep import/export/report/language actions in the top bar.
+- Keep a visible review-admin entry in the top bar; it creates a review session and opens
+  the password-gated `/admin/` shell, which can launch the token-protected Marimo services.
 - Keep `tokens.css` as the only color, radius, spacing, and shadow token layer.
 - Keep reusable structure in `components.css`.
 - Use `style.css` only for book-specific additive styles.
@@ -40,7 +42,8 @@ webapp/static/js/main.js
 
 | Component | Required behavior | Files |
 | --- | --- | --- |
-| Top bar | project/book title, import/export, report preview, LaTeX template selector/export, language switch | `_topbar.html`, `main.js`, `i18n.py` |
+| Top bar | project/book title, import/export, A4 HTML final report download, report preview, LaTeX template selector/export, language switch | `_topbar.html`, `main.js`, `i18n.py` |
+| Review admin entry | create review session, open `/admin/`, surface missing Marimo/password/token setup | `_topbar.html`, `results.js`, `admin_review.html` |
 | Input card | grouped BookInput fields, units, inline validation, conditional visibility | `index.html`, `forms.js` |
 | Result card | conclusion first, status badge, trace expansion, stable result path | `index.html`, `results.js` |
 | Calculation review card | check icon, engineering explanation, formula box, variable/substitution tables, result path, source reference | `results.js`, `components.css` |
@@ -61,7 +64,10 @@ When adding a field, record the field path, label, unit, group, editability, sou
 
 ## Visual Guardrails
 
-- Use a restrained operational palette from `tokens.css`.
+- Use a restrained operational palette from `tokens.css`. Default to the ZJIC-style
+  engineering portal tokens unless a project design overrides them: white surfaces,
+  `#005EB8` primary blue, `#003087` dark blue, `#FFB81C` warm action/focus color,
+  pale blue information panels, compact 2-4px radii, and no decorative gradients.
 - Keep cards to individual input/result/review units only.
 - Keep compact tables for comparable checks.
 - Use metric boxes for headline values.
@@ -83,6 +89,10 @@ partials/_report_modal.html
 id="langToggle"
 id="latexTemplateSelect"
 id="btnDownloadLatex"
+id="btnAdminReview"
+/admin/
+/admin/review/
+ADMIN_REVIEW_PASSWORD
 GET /api/report/templates
 /api/report/latex
 /api/report/decision

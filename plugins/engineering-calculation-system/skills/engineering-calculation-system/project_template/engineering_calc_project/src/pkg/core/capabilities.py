@@ -84,10 +84,18 @@ def detect_capabilities(env: Mapping[str, str] | None = None) -> dict[str, Any]:
     )
 
     admin_token_set = bool(env.get("ADMIN_REVIEW_TOKEN"))
-    review_shell_url = "/admin/review/"
-    marimo_base_url = _path_url(env.get("MARIMO_BASE_URL", ""), review_shell_url)
+    admin_password_set = bool(env.get("ADMIN_REVIEW_PASSWORD"))
+    review_shell_url = "/admin/"
+    marimo_review_url = "/admin/review/"
+    marimo_base_url = _path_url(env.get("MARIMO_BASE_URL", ""), marimo_review_url)
     marimo_service_url = _service_url(env.get("MARIMO_SERVICE_URL", ""), "http://127.0.0.1:2718/")
-    if marimo["available"] and admin_token_set:
+    formula_admin_base_url = _path_url(env.get("FORMULA_ADMIN_BASE_URL", ""), "/admin/formulas/")
+    formula_admin_service_url = _service_url(
+        env.get("FORMULA_ADMIN_SERVICE_URL", ""),
+        "http://127.0.0.1:2719/",
+    )
+    formula_admin_port = env.get("FORMULA_ADMIN_PORT", "2719")
+    if marimo["available"] and admin_token_set and admin_password_set:
         review_status = "configured"
     elif marimo["available"]:
         review_status = "available"
@@ -95,11 +103,11 @@ def detect_capabilities(env: Mapping[str, str] | None = None) -> dict[str, Any]:
         review_status = "missing"
 
     if review_status == "configured":
-        review_message = "Marimo review is configured. Start or proxy the calculation review service."
+        review_message = "Marimo review is configured. Enter the password-gated admin shell, then open the proxied review service."
     elif marimo["available"]:
-        review_message = "Marimo is installed. Set ADMIN_REVIEW_TOKEN and start the review service."
+        review_message = "Marimo is installed. Set ADMIN_REVIEW_TOKEN and ADMIN_REVIEW_PASSWORD, then start the review service."
     else:
-        review_message = "Install Marimo and set ADMIN_REVIEW_TOKEN to enable calculation review."
+        review_message = "Install Marimo and set ADMIN_REVIEW_TOKEN plus ADMIN_REVIEW_PASSWORD to enable calculation review."
 
     return {
         "status": "ok",
@@ -117,9 +125,12 @@ def detect_capabilities(env: Mapping[str, str] | None = None) -> dict[str, Any]:
                 "available": marimo["available"],
                 "configured": review_status == "configured",
                 "admin_token_set": admin_token_set,
+                "admin_password_set": admin_password_set,
                 "admin_url": marimo_base_url,
+                "formula_admin_url": formula_admin_base_url,
                 "shell_url": review_shell_url,
                 "service_url": marimo_service_url,
+                "formula_admin_service_url": formula_admin_service_url,
                 "install_command": "python -m pip install marimo",
                 "run_command": (
                     "marimo run apps/review/calculation_review.py "
@@ -128,7 +139,7 @@ def detect_capabilities(env: Mapping[str, str] | None = None) -> dict[str, Any]:
                 ),
                 "formula_admin_run_command": (
                     "marimo run apps/review/admin_formula_review.py "
-                    f"--host 127.0.0.1 --port 2719 --base-url {marimo_base_url.rstrip('/')} "
+                    f"--host 127.0.0.1 --port {formula_admin_port} --base-url {formula_admin_base_url.rstrip('/')} "
                     "--headless --token --token-password <ADMIN_REVIEW_TOKEN>"
                 ),
                 "message": review_message,

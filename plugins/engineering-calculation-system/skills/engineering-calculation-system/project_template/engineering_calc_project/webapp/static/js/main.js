@@ -200,12 +200,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ── Import JSON button ────────────────────────────────────────────
-    // Marimo review session button: save current frontend case, then open Marimo.
+    // Review session button: save current frontend case, then open the password-gated admin shell.
     const btnAdminReview = document.getElementById("btnAdminReview");
     if (btnAdminReview) {
         btnAdminReview.addEventListener("click", async (event) => {
             event.preventDefault();
-            const fallbackUrl = btnAdminReview.getAttribute("href") || "/admin/review/";
+            const fallbackUrl = btnAdminReview.getAttribute("href") || "/admin/";
             try {
                 const data = collectFormData();
                 data.lang = getCurrentLang();

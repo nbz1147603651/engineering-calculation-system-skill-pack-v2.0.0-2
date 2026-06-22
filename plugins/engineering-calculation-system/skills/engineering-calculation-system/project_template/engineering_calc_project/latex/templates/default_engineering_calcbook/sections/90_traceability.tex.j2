@@ -1,7 +1,9 @@
 \section{Traceability}
 
-\begin{tabular}{ll}
+\rowcolors{2}{white}{resultBg}
+\begin{tabular}{>{\bfseries}p{0.34\linewidth}p{0.56\linewidth}}
 \toprule
+\rowcolor{tablehead}
 Item & Value \\
 \midrule
 Formula registry version & {{ traceability.formula_registry_version | latex_escape }} \\
@@ -22,17 +24,21 @@ This section displays source-backed formula traces from BookResult only. It does
 \subsection{ {{ trace.formula_id | latex_escape }} -- {{ trace.formula_name | latex_escape }} }
 
 {% if trace.expression_tex %}
+\colorbox{formulaBg}{\parbox{0.96\linewidth}{
 \[
 {{ trace.expression_tex }}
 \]
+}}
 {% elif trace.expression_plain %}
-\noindent\textbf{Formula expression:} {{ trace.expression_plain | latex_escape }}
+\colorbox{formulaBg}{\parbox{0.96\linewidth}{\textbf{Formula expression:} {{ trace.expression_plain | latex_escape }}}}
 {% else %}
 \noindent\textit{Formula expression not recorded in FormulaTrace.}
 {% endif %}
 
+\rowcolors{2}{white}{resultBg}
 \begin{longtable}{p{0.30\linewidth}p{0.60\linewidth}}
 \toprule
+\rowcolor{tablehead}
 Item & Value \\
 \midrule
 Check & {{ check.check_id | latex_escape }} \\
@@ -55,8 +61,10 @@ No formula traces were recorded for this result.
 
 \section{Sources}
 
+\rowcolors{2}{white}{resultBg}
 \begin{longtable}{p{0.18\linewidth}p{0.26\linewidth}p{0.46\linewidth}}
 \toprule
+\rowcolor{tablehead}
 Source & Role & Used in \\
 \midrule
 {% for source in sources %}
@@ -67,8 +75,10 @@ Source & Role & Used in \\
 
 \section{Assumptions}
 
+\rowcolors{2}{white}{resultBg}
 \begin{longtable}{p{0.16\linewidth}p{0.36\linewidth}p{0.16\linewidth}p{0.24\linewidth}}
 \toprule
+\rowcolor{tablehead}
 ID & Assumption & Source & Handling \\
 \midrule
 {% for assumption in assumptions %}

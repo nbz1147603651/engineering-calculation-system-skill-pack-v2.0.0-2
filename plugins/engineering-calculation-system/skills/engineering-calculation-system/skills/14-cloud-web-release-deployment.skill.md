@@ -27,6 +27,8 @@ tests/
 
 Do not package as production-ready if verification failed, source basis is missing, or the web/API
 layer calculates outside `run_book()`.
+If the project has no `webapp/app.py`, no `webapp/routes.py`, or no web smoke test, stop and route
+back to 12b/13. A generated report HTML file is an output artifact, not a release target.
 
 ## Steps
 
@@ -40,12 +42,17 @@ layer calculates outside `run_book()`.
    language switch with `/api/i18n/<lang>`, persisted selection, selected-language report calls;
    environment-based configuration; non-debug production defaults; structured error responses that
    preserve server logs.
-3. When Marimo admin review is embedded, deploy it as a separate service proxied under
-   `/admin/review/`: Docker Compose services for the main web app + Marimo review, shared
-   `data/formula_registry/` volume, admin-token env var, nginx proxy rules for websocket/long
-   sessions.
+3. When Marimo admin review is embedded, deploy it as separate services proxied under
+   `/admin/review/` and `/admin/formulas/`, with the Flask password-gated admin shell at
+   `/admin/`: Docker Compose services for the main web app,
+   Marimo calculation review, and Marimo formula publishing, shared `data/formula_registry/`
+   volume, admin-password env var for the Flask shell, admin-token env var for Marimo, nginx
+   proxy rules for websocket/long sessions, and Marimo ports bound to localhost or an internal
+   network. If Marimo is not installed on a Linux host, the
+   admin shell must show the install prompt rather than silently hiding review.
 4. Create/update deployment files: `deploy/env.example`, `deploy/Dockerfile` or
-   `deploy/systemd/*.service`, `deploy/nginx/*.conf` when reverse-proxying, `deploy/docker-compose.yml`
+   `deploy/systemd/*.service`, `deploy/nginx/*.conf` when reverse-proxying, `deploy/docker-compose.yml`,
+   `deploy/one_click_deploy.sh`
    when Docker is used, `apps/review/admin_formula_review.py` when embedded admin review is used,
    `release/release_checklist.md`, `release/runbook.md` when operational handoff is needed. Document:
    local run command, Linux production run command, required env vars, port/host binding,
@@ -61,15 +68,17 @@ layer calculates outside `run_book()`.
    logs to journald/container logs/configured files; debug off.
 7. Run smoke tests: `python -m webapp.app` (or equivalent local start); `GET /health`; `GET /`;
    `POST /api/calculate` with a known input; `GET /api/i18n/en` and `GET /api/i18n/zh` + main-page
-   language-toggle shell; report preview/export when present; Marimo admin `/admin/review/` when
-   present; Docker build/run or systemd command syntax when provided; artifact-validation script.
+   language-toggle shell; report preview/export when present; admin shell `/admin/`; Marimo admin
+   `/admin/review/` when present; formula admin `/admin/formulas/` when present; `bash deploy/one_click_deploy.sh`
+   syntax or dry-run inspection when possible; Docker build/run or systemd command syntax when
+   provided; artifact-validation script.
    If the environment cannot start Docker/systemd/nginx, still validate file presence and command
    syntax where possible, and provide the exact unrun command plus the reason it was not executed.
 
 ## Artifacts
 
 ```text
-deploy/{env.example, Dockerfile, docker-compose.yml, systemd/*.service, nginx/*.conf}
+deploy/{env.example, one_click_deploy.sh, Dockerfile, docker-compose.yml, systemd/*.service, nginx/*.conf}
 apps/review/admin_formula_review.py   (when embedded admin review used)
 release/{release_checklist.md, runbook.md}
 ```

@@ -1,6 +1,8 @@
 # LaTeX Calculation Report Specification
 
-Use this template when the user asks for calculation-book export, LaTeX export, Overleaf-compatible output, PDF-ready reports, or a reusable report template.
+Use this template when the user explicitly asks for LaTeX export, Overleaf-compatible output,
+PDF-ready reports, or a reusable report template. The default final calculation book remains
+print-ready A4 HTML from `html_report_spec.md`.
 
 ## Interaction Gate
 
@@ -33,6 +35,10 @@ latex/templates/<template_id>/
 The folder must contain `main.tex.j2`; it may also contain `.cls`, `.sty`,
 images, fonts, and section templates needed by Overleaf.
 
+Treat every folder under `latex/templates/<template_id>/` as a replaceable
+template-library entry. Replacing a style means adding or replacing a template
+folder and manifest, not changing calculation modules or `run_book()`.
+
 ## Required Project Shape
 
 ```text
@@ -47,6 +53,7 @@ latex/
       sections/
         01_summary.tex.j2
         02_inputs.tex.j2
+        04_figures.tex.j2
         03_results.tex.j2
         90_traceability.tex.j2
   generated/
@@ -110,6 +117,7 @@ governing summary
 input summary
 calculation checks table
 engineering charts when BookResult.charts is present
+engineering figures when ReportContext.figures or BookResult.figures is present
 formula logic trace
 calculation review cards or sections with formula expression, explanation, variable definitions, substitutions, source reference, and result path
 sources
@@ -121,10 +129,38 @@ page header/footer
 latexmkrc
 ```
 
-## Optional PDF Compilation
+The default style should match the formal A4 engineering calculation-book
+pattern also used by the HTML renderer: formal cover, table of contents,
+major-section page breaks, blue engineering headings, light-blue table headers,
+formula/result/note visual treatments, sources, assumptions, traceability, and
+an explicit template-boundary statement.
 
-For final calculation-book delivery, PDF compilation is not optional when a
-local TeX toolchain exists. Detect `latexmk` first, then `pdflatex`.
+## Report Figures
+
+Use the same `figures` list as the HTML renderer:
+
+```yaml
+figures:
+  - figure_id: FIG-001
+    title: Foundation layout
+    caption: Plan view used for reviewer orientation.
+    src: /static/reports/foundation-layout.png
+    latex_path: figures/foundation-layout.png
+    recommended_report_location: after_input_summary
+    source_reference: S-FIG-001
+    result_path: report.figures[0]
+```
+
+For LaTeX/Overleaf, `latex_path` should be a relative path inside the generated
+zip. The template may show HTML-only `src` values as metadata, but it should
+only call `\includegraphics` for paths that are packaged into the LaTeX project.
+Figures are report evidence or review aids only; they must not replace formulas,
+source references, or checked result paths.
+
+## Requested PDF Compilation
+
+For explicit PDF delivery, compile locally when a TeX toolchain exists. Detect
+`latexmk` first, then `pdflatex`.
 
 ```text
 latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex
@@ -132,8 +168,9 @@ latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex
 
 If only `pdflatex` exists, run it twice with `-interaction=nonstopmode` and
 `-halt-on-error`. Completion requires exit code 0 and a generated `main.pdf`.
-If compilation fails, do not mark the report complete. If no local TeX toolchain
-is available, choose the A4 HTML report path from `html_report_spec.md`.
+If compilation fails, do not mark the requested PDF export complete. If no local
+TeX toolchain is available, keep the default A4 HTML final report path and
+return an Overleaf-compatible zip when that satisfies the request.
 
 Still provide an Overleaf-compatible zip for collaborative editing/import when
 requested.
@@ -152,6 +189,8 @@ owner
 required_assets
 section_order
 supports_formula_trace: true
+supports_report_figures: true
+replaceable_template: true
 ```
 
 Template sections must render the same `ReportContext` fields used by the web

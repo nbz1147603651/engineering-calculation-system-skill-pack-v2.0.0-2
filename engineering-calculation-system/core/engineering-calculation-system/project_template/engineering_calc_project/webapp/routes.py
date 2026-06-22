@@ -9,12 +9,13 @@ from __future__ import annotations
 import json
 import re
 import traceback
+from hmac import compare_digest
 from io import BytesIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from flask import (
-    Blueprint, jsonify, render_template, request,
+    Blueprint, jsonify, redirect, render_template, request, session, url_for,
     Response, send_file,
 )
 
@@ -70,6 +71,8 @@ def _available_latex_templates() -> list[dict[str, object]]:
             "version": str(metadata.get("version") or f"{template_id}-v1"),
             "is_default": template_id == cfg.DEFAULT_LATEX_TEMPLATE_ID,
             "supports_formula_trace": bool(metadata.get("supports_formula_trace", False)),
+            "supports_report_figures": bool(metadata.get("supports_report_figures", False)),
+            "replaceable_template": bool(metadata.get("replaceable_template", False)),
         })
     return templates
 
@@ -86,6 +89,28 @@ def _resolve_latex_template_dir(template_id: str | None) -> tuple[str, Path]:
     return selected, template_dir
 
 
+def _admin_review_password() -> str:
+    """Return the configured admin password for the Flask admin shell."""
+    return cfg.ADMIN_REVIEW_PASSWORD
+
+
+def _admin_review_context(auth_error: str | None = None) -> dict[str, object]:
+    from pkg.core.capabilities import detect_capabilities
+
+    payload = detect_capabilities()
+    capabilities = payload["capabilities"]
+    authenticated = bool(session.get("admin_review_authenticated"))
+    password_configured = bool(_admin_review_password())
+    return {
+        "capabilities": capabilities,
+        "review": capabilities["marimo_review"],
+        "authenticated": authenticated,
+        "password_configured": password_configured,
+        "auth_error": auth_error,
+        "review_session_id": request.args.get("session_id", ""),
+    }
+
+
 # ---------------------------------------------------------------------------
 # Page routes
 # ---------------------------------------------------------------------------
@@ -96,22 +121,35 @@ def index():
     return render_template("index.html")
 
 
-@bp.route("/admin/review/")
+@bp.route("/admin/", methods=["GET", "POST"])
 def admin_review():
-    """Serve the local review-admin status and launch page.
+    """Serve the password-gated local review-admin status and launch page.
 
-    In production this path is normally proxied to Marimo. During local
-    development the Flask page explains the required token and run command.
+    Marimo review itself is proxied under /admin/review/; this Flask shell is
+    the password gate and setup page that links into that token-protected service.
     """
-    from pkg.core.capabilities import detect_capabilities
+    expected = _admin_review_password()
+    auth_error = None
+    status_code = 200
+    if request.method == "POST":
+        supplied = request.form.get("admin_password", "")
+        if not expected:
+            auth_error = "Set ADMIN_REVIEW_PASSWORD before opening admin review."
+            status_code = 503
+        elif compare_digest(supplied, expected):
+            session["admin_review_authenticated"] = True
+        else:
+            auth_error = "Invalid admin password."
+            status_code = 401
 
-    payload = detect_capabilities()
-    capabilities = payload["capabilities"]
-    return render_template(
-        "admin_review.html",
-        capabilities=capabilities,
-        review=capabilities["marimo_review"],
-    )
+    return render_template("admin_review.html", **_admin_review_context(auth_error)), status_code
+
+
+@bp.route("/admin/logout", methods=["POST"])
+def admin_review_logout():
+    """Clear the local admin-review password session."""
+    session.pop("admin_review_authenticated", None)
+    return redirect(url_for("main.admin_review"))
 
 
 # ---------------------------------------------------------------------------
@@ -161,7 +199,8 @@ def api_review_session():
             root=cfg.REVIEW_SESSION_DIR,
         )
         session["lang"] = lang
-        session["admin_url"] = f"/admin/review/?session_id={session['session_id']}"
+        session["admin_url"] = f"/admin/?session_id={session['session_id']}"
+        session["review_url"] = f"/admin/review/?session_id={session['session_id']}"
         return jsonify({"status": "ok", "review": session})
 
     except Exception as e:
@@ -198,7 +237,7 @@ def api_report_templates():
 
 @bp.route("/api/report/decision")
 def api_report_decision():
-    """Return the automatic calculation-book renderer decision for this host."""
+    """Return the default print-ready calculation-book renderer decision."""
     from pkg.report.report_selector import select_report_output
 
     return jsonify({
@@ -319,13 +358,18 @@ def api_report_latex():
 
 @bp.route("/api/report/final", methods=["POST"])
 def api_report_final():
-    """Generate the strictest available calculation-book report for this host."""
+    """Generate the default print-ready final calculation-book report."""
     try:
         data = request.get_json(force=True)
         lang = data.pop("lang", "en")
         template_request = data.pop("latex_template_id", None) or data.pop(
             "latexTemplateId", None
         )
+        preferred_format = data.pop("report_format", None) or data.pop(
+            "output_format", None
+        )
+        if preferred_format not in {"latex_pdf", "html_a4"}:
+            preferred_format = None
         book_input = build_case_input_from_form(data)
 
         from pkg.books.example_book.book_runner import run_book
@@ -336,7 +380,7 @@ def api_report_final():
 
         result = run_book(book_input)
         report_context = build_report_context(result)
-        decision = select_report_output()
+        decision = select_report_output(preferred_format=preferred_format)
 
         if decision.output_format == "latex_pdf":
             template_id, template_dir = _resolve_latex_template_dir(template_request)

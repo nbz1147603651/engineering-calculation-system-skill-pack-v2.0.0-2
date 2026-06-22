@@ -43,6 +43,13 @@ calculators, reusable packages, batch workflows, or any request that does not ex
 narrower prototype. In this skill, `web-complete` means dual closure: a readable, traceable
 calculation book AND a complete web calculation system. For `web-complete` the default path is
 `08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14`.
+The default calculation-book output is print-ready A4 HTML; LaTeX/Overleaf/PDF are explicit
+exports or client-specific additions, not the default replacement for the A4 HTML book.
+
+If an existing project has calculation scripts and exported HTML reports but lacks the complete
+project scaffold (`run_book`, `webapp/`, `apps/review/`, report renderers, import/export,
+deployment files, and smoke tests), classify it as `report-only` or `static_report_or_cli_only`.
+Do not polish the report and call it done; route remediation through the full web-complete path.
 
 ## Non-negotiable gates
 
@@ -62,11 +69,17 @@ duplicate them elsewhere:
   runtime only when the user explicitly requests it and the handoff defines an adapter plan.
 - Do not call a delivery complete/production-ready/deployable/web-complete when it is only a CLI
   runner, static `.html`, exported report HTML, notebook demo, or UI mockup.
+- For Qoder or other lightweight entrypoints, run an install-shape check first. If `skills/`,
+  `shared/`, `templates/`, `schemas/`, `scripts/validate_artifacts.py`, or `project_template/`
+  are absent, use the complete core or QODER Project package before attempting web-complete work.
 - Use the shared UI design system (`templates/implementation/ui_design_system.md`,
   `webapp/templates/partials/`, `webapp/static/css/{tokens,components}.css`) for production UI.
-- When formula rules must change after deployment, use a declaration-based formula registry plus a
-  token-protected Marimo admin review app under `/admin/review/`; publish only after validation
-  and smoke tests pass.
+- Prefer A4 HTML calculation books with `@page size: A4`, print-safe margins, browser preview,
+  and chart data tables for printing when charts are emitted; add LaTeX/PDF only when requested
+  or required.
+- When formula rules must change after deployment, use a declaration-based formula registry, the
+  password-gated Flask admin shell under `/admin/`, and token-protected Marimo apps under
+  `/admin/review/` and `/admin/formulas/`; publish only after validation and smoke tests pass.
 
 ## Artifact validation
 

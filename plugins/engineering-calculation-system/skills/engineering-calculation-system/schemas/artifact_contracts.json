@@ -65,8 +65,10 @@
     "project_template/engineering_calc_project/webapp/templates/admin_review.html",
     "project_template/engineering_calc_project/webapp/static/css/tokens.css",
     "project_template/engineering_calc_project/webapp/static/css/components.css",
+    "project_template/engineering_calc_project/deploy/one_click_deploy.sh",
     "project_template/engineering_calc_project/latex/templates/default_engineering_calcbook/main.tex.j2",
     "project_template/engineering_calc_project/latex/templates/default_engineering_calcbook/cover.tex.j2",
+    "project_template/engineering_calc_project/latex/templates/default_engineering_calcbook/sections/04_figures.tex.j2",
     "project_template/engineering_calc_project/src/pkg/core/capabilities.py",
     "project_template/engineering_calc_project/src/pkg/report/latex_renderer.py",
     "project_template/engineering_calc_project/src/pkg/report/html_renderer.py",
@@ -472,11 +474,15 @@
     "handoff/coding_go_no_go.md",
     "implementation/02_modules/module_asset_registry.csv",
     "deploy/env.example",
+    "deploy/one_click_deploy.sh",
     "deploy/Dockerfile",
     "deploy/docker-compose.yml",
     "deploy/systemd/engineering-calc.service",
+    "deploy/systemd/engineering-calc-review.service",
+    "deploy/systemd/engineering-calc-formula-admin.service",
     "deploy/nginx/engineering-calc.conf",
     "release/release_checklist.md",
+    "release/runbook.md",
     "references/source_registry.yaml",
     "references/evidence_library_manifest.yaml",
     "references/acquisition/acquisition_handoff.yaml",
@@ -550,6 +556,7 @@
     "latex/templates/default_engineering_calcbook/latexmkrc",
     "latex/templates/default_engineering_calcbook/sections/01_summary.tex.j2",
     "latex/templates/default_engineering_calcbook/sections/02_inputs.tex.j2",
+    "latex/templates/default_engineering_calcbook/sections/04_figures.tex.j2",
     "latex/templates/default_engineering_calcbook/sections/03_results.tex.j2",
     "latex/templates/default_engineering_calcbook/sections/90_traceability.tex.j2",
     "latex/generated/.gitkeep",
@@ -612,6 +619,7 @@
       "build_case_input_from_form",
       "run_book",
       "case_result_to_ui",
+      "/admin/",
       "/admin/review/",
       "admin_review"
     ],
@@ -696,6 +704,8 @@
     "src/pkg/core/capabilities.py": [
       "detect_capabilities",
       "marimo_review",
+      "admin_password_set",
+      "formula_admin_url",
       "latex",
       "docker"
     ],
@@ -715,7 +725,9 @@
       "render_a4_html_report",
       "@page",
       "size: A4",
+      "print-color-adjust",
       "Engineering Charts",
+      "chart-data",
       "Formula Logic Trace",
       "Control Results and Governing Summary",
       "Sources",
@@ -726,7 +738,8 @@
       "select_report_output",
       "latex_pdf",
       "html_a4",
-      "detect_latex_toolchain"
+      "detect_latex_toolchain",
+      "print-ready A4 HTML"
     ],
     "src/pkg/books/example_book/book_runner.py": [
       "def run_book",
@@ -763,10 +776,41 @@
       "chartsSection",
       "btnAdminReview",
       "size: A4",
+      "print-color-adjust",
       "Engineering Charts",
+      "chart-data",
       "Formula Logic Trace",
       "Sources",
-      "Assumptions"
+      "Assumptions",
+      "test_deploy_artifacts_present"
+    ],
+    "deploy/one_click_deploy.sh": [
+      "docker compose up -d --build",
+      "ECS_ENV_FILE=\"$ENV_FILE\"",
+      "ADMIN_REVIEW_PASSWORD",
+      "ADMIN_REVIEW_TOKEN",
+      "marimo run apps/review/calculation_review.py",
+      "marimo run apps/review/admin_formula_review.py"
+    ],
+    "deploy/docker-compose.yml": [
+      "marimo-review",
+      "marimo-formula-admin",
+      "ADMIN_REVIEW_TOKEN",
+      "FORMULA_ADMIN_BASE_URL",
+      "127.0.0.1:2718:2718",
+      "127.0.0.1:2719:2719"
+    ],
+    "deploy/nginx/engineering-calc.conf": [
+      "location /admin/review/",
+      "location /admin/formulas/",
+      "proxy_http_version 1.1"
+    ],
+    "release/runbook.md": [
+      "bash deploy/one_click_deploy.sh",
+      "/admin/",
+      "ADMIN_REVIEW_PASSWORD",
+      "ADMIN_REVIEW_TOKEN",
+      "Formula Publishing Effect"
     ],
     "tests/smoke/test_latex_report.py": [
       "/api/report/latex",
@@ -775,7 +819,9 @@
       "latex_template_id",
       "ReportRenderDecision",
       "html_a4",
+      "print-ready A4 HTML",
       "size: A4",
+      "print-color-adjust",
       "application/zip",
       "main.tex",
       "page_style.sty",
@@ -802,6 +848,7 @@
     "webapp/templates/admin_review.html": [
       "id=\"adminReviewPage\"",
       "Formula Review Admin",
+      "ADMIN_REVIEW_PASSWORD",
       "ADMIN_REVIEW_TOKEN",
       "active_versions.yaml",
       "run_book()",

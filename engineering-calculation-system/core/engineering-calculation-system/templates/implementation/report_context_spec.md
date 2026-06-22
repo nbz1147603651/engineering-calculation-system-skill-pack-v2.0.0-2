@@ -10,8 +10,9 @@ Use this template to define how a report, review page, export, or batch artifact
 | Intended audience | to_be_defined | to_be_defined | user request / handoff |
 | Review depth | draft / review / final / prototype | to_be_defined | coding gate |
 | Report status | draft / review / final / superseded / prototype / not_for_construction | to_be_defined | coding gate |
-| Output format | latex_pdf / html_a4 / html / latex / pdf / docx / xlsx / json / other | to_be_defined | user request / report selector |
-| Automatic report decision | latex_pdf / html_a4 / manual_override | to_be_defined | GET /api/report/decision |
+| Output format | html_a4 default / latex_pdf / html / latex / pdf / docx / xlsx / json / other | to_be_defined | user request / report selector |
+| Automatic report decision | html_a4 default / latex_pdf explicit / manual_override | to_be_defined | GET /api/report/decision |
+| HTML template ID | default_html_a4_calcbook / custom_template_id / not_applicable | to_be_defined | html_report_spec.md |
 | Local LaTeX compiler | latexmk / pdflatex / not_available | to_be_defined | report selector |
 | Renderer or export path | to_be_defined | to_be_defined | environment |
 | LaTeX/Overleaf template | default_engineering_calcbook / user_supplied / not_applicable | to_be_defined | latex_report_spec.md |
@@ -33,6 +34,7 @@ Use this template to define how a report, review page, export, or batch artifact
 | Traceability metadata is preserved | to_be_defined | result/report metadata |  |
 | Renderer smoke test exists | to_be_defined | tests/smoke |  |
 | Charts preserve source result paths when present | to_be_defined | BookResult.charts / report smoke |  |
+| Figures preserve source references when present | to_be_defined | ReportContext.figures / report smoke |  |
 
 If any production requirement is not satisfied, the report status must not be `final`.
 
@@ -54,11 +56,27 @@ Derive sections from the user request, calculation scope, result paths, review n
 
 ## Engineering Charts
 
-Charts are optional, but when they are useful they should come from `BookResult.charts` or an equivalent `ChartSpec` list built by the book layer from already-computed values.
+Charts are optional only when no useful chartable result paths exist. For each book, evaluate the
+book-specific result-path registry, grouped numeric outputs, repeated categories, ordered series,
+and reviewer workflow needs. When useful data exists, charts should come from `BookResult.charts`
+or an equivalent `ChartSpec` list built by the book layer from already-computed values, with data
+tables for A4 HTML printing. Do not hardcode chart IDs or chart paths from another book.
 
 | Chart ID | Title | Purpose | BookResult paths | Recommended report location | Recommended UI location | Visibility rule | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | to_be_defined | to_be_defined | to_be_defined | to_be_defined | after_input_summary / after_governing_summary / appendix | after_governing_summary / before_checks / result_detail | to_be_defined | templates render values only |
+
+## Report Figures
+
+Figures are optional report assets for visual context, diagrams, project photos,
+layouts, soil profiles, details, result images, or appendix evidence. They are
+not calculation inputs unless the official `BookInput` and source-backed logic
+already define that relationship. Templates render figure metadata and images
+only.
+
+| Figure ID | Title | Caption | Source path or URI | LaTeX path | Recommended report location | Source reference | Result path | Visibility rule | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| to_be_defined | to_be_defined | to_be_defined | src / html_src / path / url / data_uri | latex_path | after_cover / after_input_summary / before_charts / after_charts / before_checks / appendix | to_be_defined | to_be_defined | to_be_defined | no calculations in template |
 
 ## Module summaries
 
@@ -99,6 +117,7 @@ Charts are optional, but when they are useful they should come from `BookResult.
 | source_references | BookResult / traces | true |  |
 | runner_version | BookResult metadata | true |  |
 | report_template_version | renderer metadata | true when templated |  |
+| report_template_id | renderer metadata | true when template library is used |  |
 | data_package_id | package manifest | true when packages exist |  |
 | imported_report_ids | import records | true when imported reports are used |  |
 

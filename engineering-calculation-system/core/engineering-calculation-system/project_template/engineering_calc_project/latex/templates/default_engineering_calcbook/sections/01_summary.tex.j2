@@ -1,7 +1,11 @@
 \section{Control Results and Governing Summary}
 
-\begin{tabular}{ll}
+\rowcolors{2}{white}{resultBg}
+\begin{tabular}{>{\bfseries}p{0.34\linewidth}p{0.56\linewidth}}
 \toprule
+\rowcolor{tablehead}
+Item & Value \\
+\midrule
 Overall status & {{ governing.overall_status | default("NOT_EVALUATED") | latex_escape }} \\
 Governing check & {{ governing.governing_check_name | default("--") | latex_escape }} \\
 Utilization or margin & {{ governing.governing_utilization_or_margin | default("--") | latex_escape }} \\
@@ -12,18 +16,22 @@ Errors & {{ errors | length }} \\
 
 {% if warnings %}
 \subsection{Warnings}
+\colorbox{noteBg}{\parbox{0.96\linewidth}{
 \begin{itemize}
 {% for warning in warnings %}
 \item {{ warning | latex_escape }}
 {% endfor %}
 \end{itemize}
+}}
 {% endif %}
 
 {% if errors %}
 \subsection{Errors}
+\colorbox{noteBg}{\parbox{0.96\linewidth}{
 \begin{itemize}
 {% for error in errors %}
 \item {{ error | latex_escape }}
 {% endfor %}
 \end{itemize}
+}}
 {% endif %}

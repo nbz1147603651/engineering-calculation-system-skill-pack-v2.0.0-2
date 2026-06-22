@@ -14,6 +14,42 @@ Classify the current install before doing implementation or release work:
 
 If the task asks for a deployable online calculator or `web-complete`, use the QODER Project package together with the complete core package. If only the direct skill is installed, label outputs as guidance, draft, or prototype until the core validator can run.
 
+## Static Report Triage
+
+Before editing a generated project, check whether it only contains calculation scripts and
+exported reports, for example `src/*.py` plus `reports/*.html`, but no `webapp/`, `apps/review/`,
+`latex/templates/`, `src/pkg/report/`, `tests/smoke/`, `deploy/`, or `handoff/`.
+
+If so, classify the project as `static_report_or_cli_only`, not `web-complete`. The next action is
+to migrate the calculation logic into the complete project scaffold:
+
+```text
+run_book(BookInput) -> BookResult
+src/pkg/report/{html_renderer,latex_renderer,report_selector}.py
+webapp/{app.py,routes.py,form_utils.py,i18n.py}
+webapp/templates/ and webapp/static/
+apps/review/calculation_review.py and admin_formula_review.py when review is in scope
+data/ + outputs/ import/export areas
+tests/smoke/test_web_routes.py and tests/smoke/test_latex_report.py
+deploy/ and release/
+```
+
+Do not make the static report prettier and call it a web app. Treat it as an imported visual
+reference or regression comparison until the scaffold and validator pass.
+
+## A4 HTML First
+
+For calculation-book output, prefer print-ready A4 HTML as the default final report:
+`@page size: A4`, print-safe margins, page-like browser preview, formula logic traces, chart data
+tables, source paths, warnings/errors, sources, assumptions, and traceability. Keep LaTeX/Overleaf
+zip and PDF as explicit exports when the user, client template, or handoff requires them.
+
+When the current book's result-path registry or `ReportContext` exposes useful grouped numeric
+outputs, repeated categories, ordered series, or other reviewer-useful chartable data, generate
+`BookResult.charts` / `ChartSpec` in the book layer and render those charts in the UI and A4 HTML
+report. Do not copy fixed chart IDs or paths from another project. Charts must visualize
+already-computed values only.
+
 ## First Prompt To Qoder
 
 Use the supervisor agent when it exists:

@@ -1,0 +1,38 @@
+{% if figures %}
+\section{Engineering Figures}
+
+Figures in this section are report assets supplied through ReportContext or BookResult metadata. They support review and do not perform engineering calculations.
+
+{% for figure in figures %}
+\subsection{ {{ figure.figure_id | latex_escape }} -- {{ figure.title | latex_escape }} }
+
+{% set figure_path = figure.latex_path | default(figure.path | default("")) %}
+{% if figure_path %}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.92\linewidth,height=0.55\textheight,keepaspectratio]{{ "{" }}{{ figure_path }}{{ "}" }}
+\caption{ {{ figure.caption | default(figure.title) | latex_escape }} }
+\end{figure}
+{% elif figure.src %}
+\noindent\textit{HTML image source recorded for browser reports:} {{ figure.src | latex_escape }}
+
+{% else %}
+\noindent\textit{Image source not recorded.}
+
+{% endif %}
+
+\rowcolors{2}{white}{resultBg}
+\begin{longtable}{p{0.28\linewidth}p{0.62\linewidth}}
+\toprule
+\rowcolor{tablehead}
+Item & Value \\
+\midrule
+Placement & {{ figure.recommended_report_location | default("after_input_summary") | latex_escape }} \\
+Source & {{ figure.source_reference | default(figure.source | default("--")) | latex_escape }} \\
+Result path & {{ figure.result_path | default(figure.source_result_path | default("--")) | latex_escape }} \\
+Notes & {{ figure.notes | default("--") | latex_escape }} \\
+\bottomrule
+\end{longtable}
+
+{% endfor %}
+{% endif %}

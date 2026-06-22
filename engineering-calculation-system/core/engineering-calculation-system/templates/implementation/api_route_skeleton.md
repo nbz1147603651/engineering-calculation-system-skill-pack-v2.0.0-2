@@ -26,7 +26,9 @@ Use this template to document the API endpoint architecture for engineering calc
 | POST | `/api/report/preview` | Generate report for inline preview | JSON (form data + lang) | JSON `{status, html}` | none |
 | POST | `/api/import/json` | Import configuration | file upload or JSON body | JSON `{status, data}` | none |
 | POST | `/api/export/json` | Export configuration | JSON (form data) | JSON file download | none |
-| GET | `/admin/review/` | Marimo formula review admin | browser session + token | HTML app | admin token |
+| GET/POST | `/admin/` | Password-gated review/admin launch shell | browser session + password | HTML app | `ADMIN_REVIEW_PASSWORD` |
+| GET | `/admin/review/` | Marimo calculation review app | browser session + token | HTML app | `ADMIN_REVIEW_TOKEN` |
+| GET | `/admin/formulas/` | Marimo formula publishing app | browser session + token | HTML app | `ADMIN_REVIEW_TOKEN` |
 | POST | `/api/optimize` | Auto-optimize parameters | JSON (form data + lang) | JSON (optimal result) | none |
 
 ## Handler Pattern

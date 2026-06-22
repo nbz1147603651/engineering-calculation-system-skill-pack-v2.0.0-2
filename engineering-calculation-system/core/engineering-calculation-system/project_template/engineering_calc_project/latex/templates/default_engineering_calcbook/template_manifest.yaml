@@ -1,19 +1,24 @@
 template_id: default_engineering_calcbook
 label: Default engineering calculation book
-version: default_engineering_calcbook-v1
+version: default_engineering_calcbook-v2
 owner: engineering-calculation-system
+style_family: formal_a4_calculation_book
+replaceable_template: true
 required_assets:
   - main.tex.j2
   - cover.tex.j2
   - page_style.sty
   - sections/01_summary.tex.j2
   - sections/02_inputs.tex.j2
+  - sections/04_figures.tex.j2
   - sections/03_results.tex.j2
   - sections/90_traceability.tex.j2
 section_order:
   - cover
   - summary
   - inputs
+  - figures
   - results
   - traceability
 supports_formula_trace: true
+supports_report_figures: true

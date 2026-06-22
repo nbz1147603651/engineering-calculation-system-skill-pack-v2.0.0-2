@@ -16,6 +16,8 @@ REVIEW_SESSION_DIR = OUTPUT_DIR / "review"
 # Flask settings
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-key-change-in-production")
 DEBUG = os.environ.get("FLASK_DEBUG", "0") == "1"
+ADMIN_REVIEW_PASSWORD = os.environ.get("ADMIN_REVIEW_PASSWORD", "")
+ADMIN_REVIEW_TOKEN = os.environ.get("ADMIN_REVIEW_TOKEN", "")
 
 # Server settings
 HOST = os.environ.get("APP_HOST", "0.0.0.0")

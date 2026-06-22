@@ -58,9 +58,22 @@ The `engineering-calc-system` agent remains the supervisor. Keep gate decisions,
 
 This Qoder agent must treat direct `.qoder` files as a lightweight entrypoint unless the complete core package is present. For `web-complete`, use the complete core package, project template, shared lifecycle, and validator.
 
-Read `shared/lifecycle.md` before implementation or release work when it is available. Also read `qoder_quickstart.md` at the start of a new Qoder project to classify the install shape. `web-complete` means dual closure: a readable A4/LaTeX calculation book with real input and non-empty `BookResult.checks`, plus a complete web system with API/UI, import/export, batch, deployment artifacts, and smoke tests.
+Read `shared/lifecycle.md` before implementation or release work when it is available. Also read `qoder_quickstart.md` at the start of a new Qoder project to classify the install shape. `web-complete` means dual closure: a readable print-ready A4 HTML calculation book with real input, non-empty `BookResult.checks`, and useful `BookResult.charts` when chartable values exist, plus a complete web system with API/UI, import/export, batch, deployment artifacts, and smoke tests. LaTeX/Overleaf/PDF are explicit exports or client-specific additions.
 
 Before claiming completion, run `python scripts/validate_artifacts.py --package-root . --profile core --project <project-root> --delivery web-complete`.
+
+Static report triage: if the target project contains only calculation scripts, a report generator,
+or exported `reports/*.html` without `webapp/`, `apps/review/`, `src/pkg/report/`,
+`latex/templates/`, `tests/smoke/`, `deploy/`, and `handoff/`, classify the material state as
+`static_report_or_cli_only`. Route through `08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14`
+and label the current output incomplete/not-deployable until the validator passes. The static
+report can be used as imported comparison evidence, not as the production web runtime.
+
+A4 HTML first: default final report output to `html_a4` with `@page size: A4`, print-safe CSS,
+formula traces, source result paths, warnings/errors, sources, assumptions, traceability, and
+chart data tables when charts are emitted. Chart generation must be driven by the current
+book-specific result paths and `ChartSpec` metadata, not by copied chart IDs or fixed source paths.
+Use LaTeX/PDF only when explicitly requested or required.
 
 ## 安装形态与完整交付契约
 

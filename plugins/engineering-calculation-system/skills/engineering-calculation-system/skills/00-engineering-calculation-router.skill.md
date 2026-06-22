@@ -30,6 +30,7 @@ contract, or final release acceptance.
 | `materials_available_untrusted` | authority/version/conflicts unclear | 04, maybe 01 -> 02 -> 03 |
 | `local_evidence_library_available` | source registry + cards + raw/extracted + acquisition handoff exist | 04 -> 05 -> 06 -> 07 |
 | `analysis_handoff_available` | implementation handoff + coding gate exist | 08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14 (default `web-complete`; narrower only if explicitly requested) |
+| `static_report_or_cli_only` | existing scripts, CLI output, notebook, static HTML, or exported calculation book but no complete runtime web scaffold | 08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14 if `web-complete` is expected; label incomplete until validator passes |
 | `codebase_available` | existing implementation | classify bug/feature by layer, then route to 08-14 |
 
 ## Step 2 — classify the task intent

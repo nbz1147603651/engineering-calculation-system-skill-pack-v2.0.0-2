@@ -1,8 +1,10 @@
 \section{Calculation Checks}
 
 {% if checks %}
+\rowcolors{2}{white}{resultBg}
 \begin{longtable}{p{0.18\linewidth}p{0.28\linewidth}p{0.14\linewidth}p{0.14\linewidth}p{0.14\linewidth}}
 \toprule
+\rowcolor{tablehead}
 Check ID & Name & Status & Utilization & Unit \\
 \midrule
 {% for check in checks %}
@@ -28,8 +30,10 @@ Charts in this section are rendered from trusted BookResult chart specifications
 
 {{ chart.purpose | default("") | latex_escape }}
 
+\rowcolors{2}{white}{resultBg}
 \begin{longtable}{p{0.24\linewidth}p{0.22\linewidth}p{0.14\linewidth}p{0.12\linewidth}p{0.20\linewidth}}
 \toprule
+\rowcolor{tablehead}
 Category & Series & Value & Unit & Result path \\
 \midrule
 {% for category in chart.categories %}
@@ -46,8 +50,10 @@ Category & Series & Value & Unit & Result path \\
 \end{longtable}
 
 {% if chart.thresholds %}
+\rowcolors{2}{white}{resultBg}
 \begin{longtable}{p{0.35\linewidth}p{0.20\linewidth}p{0.15\linewidth}p{0.22\linewidth}}
 \toprule
+\rowcolor{tablehead}
 Threshold & Value & Unit & Source result path \\
 \midrule
 {% for threshold in chart.thresholds %}
@@ -75,8 +81,10 @@ No chart specifications were exposed in the BookResult.
 {% endif %}
 
 \subsection{Intermediate Values Selected for Audit}
+\rowcolors{2}{white}{resultBg}
 \begin{longtable}{p{0.35\linewidth}p{0.55\linewidth}}
 \toprule
+\rowcolor{tablehead}
 Path & Value \\
 \midrule
 {% for path, value in intermediate_values.items() %}

@@ -35,6 +35,9 @@ guard all live in `shared/lifecycle.md` (single source — do not restate).
 ```
 
 If the request spans all three families, read in this order: `12a -> 12b -> 12c -> 13 -> 14`.
+If the project already has only a report generator or exported HTML calculation book and the user
+expects a runnable calculator, select all three interface families plus 13 and 14. Treat the
+existing report as review evidence or a visual reference, not as the application runtime.
 
 ## Step 2 — record the interface decision
 

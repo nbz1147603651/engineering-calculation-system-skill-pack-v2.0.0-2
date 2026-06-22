@@ -594,11 +594,12 @@ For implementation or release work, the skill must use:
 shared/lifecycle.md
 ```
 
-`web-complete` means dual closure: a readable A4/LaTeX calculation book with
-real input and non-empty `BookResult.checks`, plus a complete web system with
-API/UI, import/export, batch, deployment artifacts, and smoke tests. The
-MiniMaxCode entrypoint must use the full core package, project template, and
-validator before making a production completion claim.
+`web-complete` means dual closure: a readable print-ready A4 HTML calculation
+book with real input, non-empty `BookResult.checks`, and useful charts when
+chartable values exist, plus a complete web system with API/UI, import/export,
+batch, deployment artifacts, and smoke tests. The MiniMaxCode entrypoint must
+use the full core package, project template, and validator before making a
+production completion claim.
 
 ## Import from Github
 
@@ -635,7 +636,7 @@ This ASCII guide replaces the previous encoded Chinese fallback to avoid mojibak
 
 Use `skills/engineering-calculation-system/SKILL.md` as the skill entrypoint. For implementation or release work, load `shared/lifecycle.md`.
 
-`web-complete` means dual closure: a readable A4/LaTeX calculation book with real input and non-empty `BookResult.checks`, plus a complete web system with API/UI, import/export, batch, deployment artifacts, and smoke tests.
+`web-complete` means dual closure: a readable print-ready A4 HTML calculation book with real input, non-empty `BookResult.checks`, and useful charts when chartable values exist, plus a complete web system with API/UI, import/export, batch, deployment artifacts, and smoke tests.
 
 Validate before completion:
 
@@ -698,6 +699,10 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
                 "Direct QODER Skill",
                 "QODER Project overlay",
                 "Complete core project",
+                "Static Report Triage",
+                "static_report_or_cli_only",
+                "A4 HTML First",
+                "print-ready A4 HTML",
             ],
             context=context,
         )
@@ -767,7 +772,9 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
                 "project_template/engineering_calc_project/webapp/templates/base.html",
                 "project_template/engineering_calc_project/webapp/templates/partials/_topbar.html",
                 "project_template/engineering_calc_project/webapp/static/js/i18n.js",
+                "project_template/engineering_calc_project/deploy/one_click_deploy.sh",
                 "project_template/engineering_calc_project/deploy/Dockerfile",
+                "project_template/engineering_calc_project/release/runbook.md",
                 "project_template/engineering_calc_project/tests/smoke/test_web_routes.py",
             ],
             context=context,
@@ -795,6 +802,15 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
                 "id=\"langToggle\"",
                 "data-lang=\"en\"",
                 "data-lang=\"zh\"",
+            ],
+            context=context,
+        )
+        require_text(
+            payload_root / "project_template/engineering_calc_project/deploy/one_click_deploy.sh",
+            [
+                "docker compose up -d --build",
+                "ADMIN_REVIEW_PASSWORD",
+                "marimo run apps/review/admin_formula_review.py",
             ],
             context=context,
         )
@@ -842,6 +858,21 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
             require_text(
                 payload_root / ".qoder" / "skills" / "engineering-calc-system" / "assets" / "lifecycle-console.html",
                 [f"v{VERSION}", "12a", "12b", "12c", "14"],
+                context=context,
+            )
+            require_text(
+                payload_root / ".qoder" / "agents" / "engineering-calc-system.md",
+                ["static_report_or_cli_only", "reports/*.html"],
+                context=context,
+            )
+            require_text(
+                payload_root / ".qoder" / "skills" / "engineering-calc-system" / "qoder_quickstart.md",
+                [
+                    "Static Report Triage",
+                    "static_report_or_cli_only",
+                    "A4 HTML First",
+                    "print-ready A4 HTML",
+                ],
                 context=context,
             )
 

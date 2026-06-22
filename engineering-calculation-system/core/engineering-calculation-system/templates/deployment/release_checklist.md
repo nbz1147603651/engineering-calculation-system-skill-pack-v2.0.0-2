@@ -23,17 +23,21 @@
 - [ ] Traceability metadata includes source basis, input hash, result hash, runner version, and report/template version when present.
 - [ ] Local web client run command is documented and tested.
 - [ ] Cloud Linux deployment files are present.
+- [ ] `deploy/one_click_deploy.sh` exists and is documented for `auto`, `compose`, and `local` modes.
 - [ ] `/health` endpoint passes.
 - [ ] `POST /api/calculate` smoke test passes with known input.
-- [ ] `GET /api/report/decision` records whether final report output is `latex_pdf` or `html_a4`.
-- [ ] `POST /api/report/final` passes: LaTeX/PDF compiles to `main.pdf` when local LaTeX exists, otherwise A4 HTML contains `@page size: A4`.
+- [ ] `GET /api/report/decision` records `html_a4` as the default final report output; `latex_pdf` is explicit or handoff-required.
+- [ ] `POST /api/report/final` passes: A4 HTML contains `@page size: A4`, print-safe CSS, and chart data tables/source result paths when charts are emitted.
 - [ ] Chinese/English UI switch is present, persisted, and smoke-tested through `/api/i18n/en` and `/api/i18n/zh`.
 - [ ] Delivery is not only a static `.html` file, exported report HTML, or mockup unless explicitly labeled as a non-production prototype.
 - [ ] Production debug mode is disabled.
 - [ ] Secrets are environment-based and not committed.
 - [ ] Data and output persistence paths are documented.
 - [ ] Formula registry path is shared by web and Marimo services when admin review is enabled.
-- [ ] `/admin/review/` is protected by an environment token/password when enabled.
+- [ ] `/admin/` is protected by `ADMIN_REVIEW_PASSWORD` before modification controls are shown.
+- [ ] Marimo review and formula publishing services are protected by `ADMIN_REVIEW_TOKEN`.
+- [ ] Marimo review and formula publishing ports bind to localhost or an internal network, not the public interface.
+- [ ] Formula publisher is proxied under `/admin/formulas/` when enabled.
 - [ ] Formula publish failures do not change `active_versions.yaml`.
 
 ## Release Artifacts
@@ -42,6 +46,7 @@
 | --- | --- | --- | --- |
 | Local run instructions | README.md | true | to_be_defined |
 | Environment example | deploy/env.example | true | to_be_defined |
+| One-click deploy script | deploy/one_click_deploy.sh | true | to_be_defined |
 | Dockerfile | deploy/Dockerfile | Docker path | to_be_defined |
 | systemd service | deploy/systemd/*.service | systemd path | to_be_defined |
 | nginx site config | deploy/nginx/*.conf | public Linux path | to_be_defined |
@@ -62,6 +67,8 @@
 | Report decision | `curl -fsS http://127.0.0.1:5000/api/report/decision` | to_be_defined |  |
 | Final report | `curl -fsS -X POST ... /api/report/final` | to_be_defined |  |
 | Marimo admin | `curl -fsS http://127.0.0.1:2718/` | to_be_defined |  |
+| Formula admin | `curl -fsS http://127.0.0.1:2719/` | to_be_defined |  |
+| One-click deploy | `bash deploy/one_click_deploy.sh auto` | to_be_defined |  |
 | Docker build | `docker build -f deploy/Dockerfile .` | to_be_defined |  |
 
 ## Remaining Assumptions

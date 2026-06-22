@@ -171,13 +171,18 @@ WEB_COMPLETE_REQUIRED_PROJECT_PATHS = [
     "latex/templates/default_engineering_calcbook/cover.tex.j2",
     "latex/templates/default_engineering_calcbook/page_style.sty",
     "latex/templates/default_engineering_calcbook/latexmkrc",
+    "latex/templates/default_engineering_calcbook/sections/04_figures.tex.j2",
     "apps/review/calculation_review.py",
     "deploy/env.example",
+    "deploy/one_click_deploy.sh",
     "deploy/Dockerfile",
     "deploy/docker-compose.yml",
     "deploy/systemd/engineering-calc.service",
+    "deploy/systemd/engineering-calc-review.service",
+    "deploy/systemd/engineering-calc-formula-admin.service",
     "deploy/nginx/engineering-calc.conf",
     "release/release_checklist.md",
+    "release/runbook.md",
     "tests/smoke/test_web_routes.py",
     "outputs/results_json/.gitkeep",
     "outputs/normalized_inputs_json/.gitkeep",
@@ -207,6 +212,7 @@ WEB_COMPLETE_TEXT_REQUIRED_PHRASES = {
         "/api/capabilities",
         "/api/review/session",
         "/api/review/state/<session_id>",
+        "/admin/",
         "/admin/review/",
         "admin_review",
         "detect_capabilities",
@@ -240,10 +246,13 @@ WEB_COMPLETE_TEXT_REQUIRED_PHRASES = {
     "webapp/templates/admin_review.html": [
         "id=\"adminReviewPage\"",
         "Marimo Calculation Review",
+        "ADMIN_REVIEW_PASSWORD",
         "ADMIN_REVIEW_TOKEN",
         "review.run_command",
+        "review.formula_admin_run_command",
         "apps/review/calculation_review.py",
         "/api/review/session",
+        "/admin/formulas",
         "active_versions.yaml",
         "run_book()",
     ],
@@ -300,6 +309,8 @@ WEB_COMPLETE_TEXT_REQUIRED_PHRASES = {
     "src/pkg/core/capabilities.py": [
         "detect_capabilities",
         "marimo_review",
+        "admin_password_set",
+        "formula_admin_url",
         "calculation_review.py",
         "latex",
         "docker",
@@ -316,7 +327,9 @@ WEB_COMPLETE_TEXT_REQUIRED_PHRASES = {
         "render_a4_html_report",
         "@page",
         "size: A4",
+        "print-color-adjust",
         "Engineering Charts",
+        "chart-data",
         "Formula Logic Trace",
         "Control Results and Governing Summary",
         "Sources",
@@ -339,6 +352,7 @@ WEB_COMPLETE_TEXT_REQUIRED_PHRASES = {
         "latex_pdf",
         "html_a4",
         "detect_latex_toolchain",
+        "print-ready A4 HTML",
     ],
     "webapp/static/js/i18n.js": [
         "localStorage",
@@ -366,10 +380,41 @@ WEB_COMPLETE_TEXT_REQUIRED_PHRASES = {
         "btnAdminReview",
         "chartsSection",
         "size: A4",
+        "print-color-adjust",
         "Engineering Charts",
+        "chart-data",
         "Formula Logic Trace",
         "Sources",
         "Assumptions",
+        "test_deploy_artifacts_present",
+    ],
+    "deploy/one_click_deploy.sh": [
+        "docker compose up -d --build",
+        "ECS_ENV_FILE=\"$ENV_FILE\"",
+        "ADMIN_REVIEW_PASSWORD",
+        "ADMIN_REVIEW_TOKEN",
+        "marimo run apps/review/calculation_review.py",
+        "marimo run apps/review/admin_formula_review.py",
+    ],
+    "deploy/docker-compose.yml": [
+        "marimo-review",
+        "marimo-formula-admin",
+        "ADMIN_REVIEW_TOKEN",
+        "FORMULA_ADMIN_BASE_URL",
+        "127.0.0.1:2718:2718",
+        "127.0.0.1:2719:2719",
+    ],
+    "deploy/nginx/engineering-calc.conf": [
+        "location /admin/review/",
+        "location /admin/formulas/",
+        "proxy_http_version 1.1",
+    ],
+    "release/runbook.md": [
+        "bash deploy/one_click_deploy.sh",
+        "/admin/",
+        "ADMIN_REVIEW_PASSWORD",
+        "ADMIN_REVIEW_TOKEN",
+        "Formula Publishing Effect",
     ],
     "apps/review/calculation_review.py": [
         "marimo.App",
@@ -385,7 +430,9 @@ WEB_COMPLETE_TEXT_REQUIRED_PHRASES = {
         "latex_template_id",
         "ReportRenderDecision",
         "html_a4",
+        "print-ready A4 HTML",
         "size: A4",
+        "print-color-adjust",
         "application/zip",
         "main.tex",
         "page_style.sty",
@@ -446,7 +493,6 @@ WEB_COMPLETE_REQUIRED_REPORT_SECTIONS = [
 ]
 WEB_COMPLETE_FORBIDDEN_REPORT_PHRASES = [
     "No checks recorded.",
-    "No chart specifications were exposed",
     "No sources recorded.",
     "No assumptions recorded.",
     "Example Project",
@@ -827,9 +873,12 @@ def check_static_html_delivery_guard(project_root: Path, errors: list[str]) -> N
     missing = [rel_path for rel_path in runtime_paths if not (project_root / rel_path).exists()]
     if missing:
         errors.append(
-            "report-only output is not a deployable web system; static HTML/report HTML "
-            "alone is not a production-ready web calculation "
-            f"system; missing runtime artifacts: {', '.join(missing)}"
+            "material state static_report_or_cli_only: report-only output is not a deployable "
+            "web system; static HTML/report HTML alone is not a production-ready web calculation "
+            f"system; missing runtime artifacts: {', '.join(missing)}. Remediate through "
+            "08->09->10->11->12a->12b->12c->13->14 and add webapp, report renderers, "
+            "Marimo/review bridge when in scope, import/export outputs, deployment files, and "
+            "smoke tests."
             )
 
 
@@ -934,6 +983,33 @@ def status_value(value: object) -> str:
     return normalize_token(value)
 
 
+def object_field(value: object, name: str, default: object = None) -> object:
+    if isinstance(value, dict):
+        return value.get(name, default)
+    return getattr(value, name, default)
+
+
+def check_chart_contract(charts: list[object], errors: list[str]) -> None:
+    """Validate emitted charts generically without requiring a fixed chart set."""
+    for index, chart in enumerate(charts):
+        context = f"BookResult.charts[{index}]"
+        if not object_field(chart, "chart_id"):
+            errors.append(f"{context} is missing chart_id")
+        if not object_field(chart, "title"):
+            errors.append(f"{context} is missing title")
+
+        series_list = list(object_field(chart, "series", []) or [])
+        if not series_list:
+            errors.append(f"{context} is missing data series")
+
+        source_paths = list(object_field(chart, "source_result_paths", []) or [])
+        series_paths: list[object] = []
+        for series in series_list:
+            series_paths.extend(list(object_field(series, "result_paths", []) or []))
+        if not source_paths and not series_paths:
+            errors.append(f"{context} must include source_result_paths or per-series result_paths")
+
+
 def check_web_complete_runtime_closure(project_root: Path, errors: list[str]) -> None:
     example_data = check_example_input_payload(project_root, errors)
     if not example_data:
@@ -966,8 +1042,7 @@ def check_web_complete_runtime_closure(project_root: Path, errors: list[str]) ->
             errors.append("web-complete runtime closure requires formula traces on BookResult.checks")
 
         charts = list(getattr(result, "charts", []) or [])
-        if not charts:
-            errors.append("web-complete runtime closure requires non-empty BookResult.charts")
+        check_chart_contract(charts, errors)
 
         report_context = report_context_module.build_report_context(result)
         html_context = html_renderer.build_html_report_context(book_input, result, report_context)
@@ -1144,16 +1219,16 @@ def validate_qoder_addon_profile(package_root: Path) -> list[str]:
     check_text_required_phrases(
         package_root,
         {
-            ".qoder/skills/engineering-calc-system/SKILL.md": ["Qoder Architecture", "agent-first", "shared/lifecycle.md", "dual closure", "qoder_quickstart.md"],
+            ".qoder/skills/engineering-calc-system/SKILL.md": ["Qoder Architecture", "agent-first", "shared/lifecycle.md", "dual closure", "qoder_quickstart.md", "Static Report Triage", "static_report_or_cli_only", "A4 HTML First", "print-ready A4 HTML"],
             ".qoder/skills/engineering-calc-system/reference.md": ["/api/i18n/<lang>"],
-            ".qoder/skills/engineering-calc-system/qoder_quickstart.md": ["Qoder Package Self-Check", "Direct QODER Skill", "QODER Project overlay", "Complete core project", "validate_artifacts.py --package-root"],
+            ".qoder/skills/engineering-calc-system/qoder_quickstart.md": ["Qoder Package Self-Check", "Direct QODER Skill", "QODER Project overlay", "Complete core project", "validate_artifacts.py --package-root", "Static Report Triage", "static_report_or_cli_only", "A4 HTML First", "print-ready A4 HTML"],
             ".qoder/skills/engineering-calc-system/assets/lifecycle-console.html": [f"v{expected_version}", "12a", "12b", "12c", "14", "route_confirmed", "batch_import"],
-            ".qoder/agents/engineering-calc-system.md": ["Qoder Architecture", "agent-first", "Stable ASCII Contract", "shared/lifecycle.md", "dual closure"],
+            ".qoder/agents/engineering-calc-system.md": ["Qoder Architecture", "agent-first", "Stable ASCII Contract", "shared/lifecycle.md", "dual closure", "static_report_or_cli_only", "A4 HTML first", "print-ready A4 HTML"],
             ".qoder/agents/engineering-calc-module-worker.md": ["Qoder Worker Contract", "run_book(BookInput) -> BookResult"],
-            ".qoder/agents/engineering-calc-interface-worker.md": ["Qoder Worker Contract", "/api/i18n/<lang>"],
-            ".qoder/agents/engineering-calc-verification-worker.md": ["Qoder Worker Contract", "web-complete"],
+            ".qoder/agents/engineering-calc-interface-worker.md": ["Qoder Worker Contract", "/api/i18n/<lang>", "reports/*.html"],
+            ".qoder/agents/engineering-calc-verification-worker.md": ["Qoder Worker Contract", "web-complete", "static_report_or_cli_only", "html_a4", "chart data tables"],
             ".qoder/agents/engineering-calc-release-worker.md": ["Qoder Worker Contract", "/health"],
-            ".qoder/references/engineering-calc-system.md": ["/api/i18n/<lang>"],
+            ".qoder/references/engineering-calc-system.md": ["/api/i18n/<lang>", "static_report_or_cli_only", "A4 HTML first", "BookResult.charts"],
         },
         errors,
     )

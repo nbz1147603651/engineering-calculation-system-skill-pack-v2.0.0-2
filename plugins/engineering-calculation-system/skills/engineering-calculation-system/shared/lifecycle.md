@@ -21,6 +21,17 @@ web app, online calculator, deployable tool, reusable package, batch workflow,
 or request that does not explicitly ask for narrower scope. For `web-complete`
 the default path is `08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14`.
 
+Existing code does not lower the delivery bar. If a project contains calculation
+scripts, a CLI, generated report HTML, or a static page but lacks `run_book`,
+`webapp/`, review apps, report renderers, import/export, deployment files, or
+smoke tests, classify it as `static_report_or_cli_only` and label it
+incomplete/not-deployable until the missing web-complete layers are added.
+
+The default calculation-book deliverable is print-ready A4 HTML: browser-viewable
+pages, `@page size: A4`, print-safe margins, and chart data tables that survive
+printing when charts are emitted. LaTeX/Overleaf/PDF are explicit exports or
+client-specific additions, not the default replacement for the A4 HTML book.
+
 ## Hard Handoffs
 
 ```text
@@ -68,7 +79,7 @@ Coding gate    (before implementation): no_go | prototype_allowed | production_a
 | 10 Reusable modules | Models + source-backed formulas exist | Decoupled modules, typed interfaces, formula traces, unit tests, asset registry | Modules independently testable + traceable | Formula trace + module tests |
 | 11 Book runner | Modules or source-backed checks exist | Official orchestration, validation, governing summary, warnings/errors, charts, result hashes | Non-empty checks for real input; governing status traceable | Official runner path |
 | 12 Interface routing | Runner exists | Select report / frontend-review / batch subskills per delivery mode | Required subskills selected | Thin interface over `run_book` |
-| 12a Report context/rendering | Calc-book or preview in scope | Report context + HTML A4/LaTeX renderers; preserve warnings/errors/traces; no template calculations | Readable A4/LaTeX book with required sections | Formula Logic Trace + Template Boundary Statement |
+| 12a Report context/rendering | Calc-book or preview in scope | Report context + print-ready A4 HTML by default, optional LaTeX/PDF exports; preserve warnings/errors/traces; no template calculations | Readable A4 HTML/exports with required sections | Formula Logic Trace + Template Boundary Statement |
 | 12b Frontend/review/API | Web or review UI in scope | Backend API, UI kit, i18n, charts, trace display, capability detection, optional review app | API/UI calculate through `run_book` and render real results | Web API/UI framework |
 | 12c Batch/import/export | Repeated use or packages in scope | JSON import/export, batch runner/API, package manifests, hashes, output registries | Batch uses `run_book` once per case | Batch + reproducible inputs |
 | 13 Verification/traceability | Core/report/web/batch pieces exist | Unit, regression, smoke, i18n, report, batch, traceability, artifact validation | Hard blockers fixed or delivery downgraded | Validator before completion claim |
@@ -92,7 +103,9 @@ Before claiming `web-complete`, ALL of these must hold:
 - Real, non-empty project input exists
 - `BookResult.checks` non-empty with at least one evaluated check
 - Reports include Formula Logic Trace, Template Boundary Statement, input
-  summary, governing result, detailed checks, charts, sources, assumptions
+  summary, governing result, detailed checks, emitted charts, sources, assumptions
+- The final calculation book defaults to print-ready A4 HTML with `@page size: A4`
+  and chart data tables/source paths when charts are emitted; requested LaTeX/PDF exports remain optional
 - Web API/UI, import/export, batch, report generation, deployment files, and
   smoke tests all exist
 - `scripts/validate_artifacts.py --delivery web-complete` passes

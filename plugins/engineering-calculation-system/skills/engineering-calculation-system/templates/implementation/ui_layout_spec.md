@@ -10,14 +10,15 @@ Use this template for production frontend, review UI, or app-like engineering ca
 | Primary user | engineer / checker / approver / batch operator | to_be_defined | workflow |
 | Data source | uploaded package / final_input.json / API / batch_control | to_be_defined | import contract |
 | Calculation path | run_book(BookInput) -> BookResult | required | code |
-| Report preview path | A4 HTML preview plus automatic final report / PDF / DOCX / other | to_be_defined | report context |
-| Final report decision | latex_pdf if local LaTeX compiler exists, otherwise html_a4 | required | GET /api/report/decision |
+| Report preview path | A4 HTML preview plus final A4 HTML / LaTeX / PDF / DOCX / other exports | to_be_defined | report context |
+| Final report decision | html_a4 by default; latex_pdf only when explicitly requested or handoff-required | required | GET /api/report/decision |
+| Review admin entry | password-gated `/admin/` shell plus optional Marimo services under `/admin/review/` and `/admin/formulas/` | required when review is enabled | `ADMIN_REVIEW_PASSWORD` + `ADMIN_REVIEW_TOKEN` |
 
 ## Standard Page Zones
 
 | Zone | Required content | Notes |
 | --- | --- | --- |
-| Top bar | project/book title, case selector, status, import, export, report preview, final report download, LaTeX template selector, Chinese/English language switch | Keep actions predictable across projects. |
+| Top bar | project/book title, case selector, status, import, export, report preview, final report download, LaTeX template selector, review admin entry, Chinese/English language switch | Keep actions predictable across projects. |
 | Left input panel | collapsible BookInput groups, units, validation, sticky run/save controls | Do not place result logic here. |
 | Right review workbench | governing summary, warnings/errors, result cards, charts, traces | Conclusion first, details below. |
 | Modal/drawer | report preview, imported report preview, source trace, formula trace, package validation, diff | Use for deep review without losing context. |
@@ -63,7 +64,9 @@ Use this template for production frontend, review UI, or app-like engineering ca
   `calculation_review_card_spec.md`: icon, explanation, formula box, variables, substitutions,
   result path, and source reference from `FormulaTrace`.
 - Use tables for comparable engineering checks and compact metric boxes for headline values.
-- Provide chart containers only when figures improve engineering review.
+- Provide chart containers when figures improve engineering review. Select charts from the
+  current book's result-path registry and `ChartSpec` metadata rather than a universal hardcoded
+  chart list, and show chart data tables for printing/audit when charts are emitted.
 - Use `ui_design_system.md` for token, component, and partial-file rules.
 
 ## Operator Convenience Decisions
@@ -72,6 +75,7 @@ Use this template for production frontend, review UI, or app-like engineering ca
 | --- | --- | --- |
 | repeated data entry | keyboard-friendly forms / defaults / copy case / import package | optimize for engineers running many cases |
 | review and approval | trace drawers / formula references / source references / comments | make checking faster and less error-prone |
+| controlled formula updates | password-gated admin shell / token-protected Marimo / registry publish log | changes affect the next `run_book()` call through `active_versions.yaml` |
 | report production | preview / export / status labels / saved final input | prevent accidental finalization from draft data |
 | batch or comparison work | import/export package / diff / saved BookResult JSON | keep results reproducible |
 | complex interactions | keep default Jinja2 stack or upgrade to SPA | choose based on workflow quality, not minimalism |
@@ -120,6 +124,7 @@ Do not introduce a separate SPA build directory, Node build step, or component f
 | Health endpoint | `/health` | Required for deployment smoke tests |
 | Local run command | `python -m webapp.app` / other | Required for local client |
 | Production run command | `gunicorn "webapp.app:create_app()" --bind 0.0.0.0:5000` / other | Required for Linux cloud |
+| One-click deploy | `bash deploy/one_click_deploy.sh` | Required for scaffolded Linux deployment |
 
 ## Related Templates
 

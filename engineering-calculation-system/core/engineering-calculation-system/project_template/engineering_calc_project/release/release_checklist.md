@@ -10,18 +10,22 @@
 - [ ] Unit, regression, integration, interface, and smoke tests pass or blockers are recorded.
 - [ ] Local run command is tested: `python -m webapp.app`.
 - [ ] Cloud Linux deployment files are present under `deploy/`.
+- [ ] One-click deployment script is present and documented: `bash deploy/one_click_deploy.sh`.
 - [ ] `/health` endpoint passes.
 - [ ] `POST /api/calculate` smoke test passes with known input.
 - [ ] Chinese/English UI switch is present, persists the selected language, and is smoke-tested through `/api/i18n/en` and `/api/i18n/zh`.
 - [ ] JSON import/export smoke tests pass: `/api/import/json` and `/api/export/json`.
 - [ ] Report preview/download smoke tests pass: `/api/report/preview` and `/api/report/html`.
-- [ ] Final report decision smoke test passes: `GET /api/report/decision` returns `latex_pdf` or `html_a4`.
-- [ ] Final report smoke test passes: `POST /api/report/final` compiles LaTeX to `main.pdf` when local LaTeX exists, otherwise returns A4 HTML containing `@page size: A4`.
+- [ ] Final report decision smoke test passes: `GET /api/report/decision` defaults to `html_a4`.
+- [ ] Final report smoke test passes: `POST /api/report/final` returns A4 HTML containing `@page size: A4`, print-safe CSS, and chart data tables/source result paths when charts are emitted.
 - [ ] Batch smoke test passes: `/api/batch/run` calls `run_book()` once per case and returns a batch summary.
 - [ ] `web-complete` validation passes with `--delivery web-complete`.
 - [ ] Delivery is not only a static `.html` file, exported report HTML, CLI runner, notebook demo, or mockup unless explicitly labeled as a non-production prototype.
 - [ ] Marimo admin review smoke test passes when enabled.
+- [ ] `/admin/` requires `ADMIN_REVIEW_PASSWORD` before exposing review or formula-publishing controls.
 - [ ] `ADMIN_REVIEW_TOKEN` is set outside source code.
+- [ ] Marimo review and formula publishing ports bind to localhost or an internal network, not the public interface.
+- [ ] Formula publisher is proxied under `/admin/formulas/` when enabled.
 - [ ] `data/formula_registry/active_versions.yaml` is shared by web and Marimo services.
 - [ ] Formula publish failures do not change the active version.
 - [ ] Production debug mode is disabled.

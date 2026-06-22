@@ -1,11 +1,22 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{page_style}[2026/06/18 Engineering calculation report page style]
+\ProvidesPackage{page_style}[2026/06/22 Engineering calculation book page style]
 \RequirePackage{fancyhdr}
+\RequirePackage{xcolor}
 \pagestyle{fancy}
 \fancyhf{}
-\lhead{Engineering Calculation Report}
-\rhead{\leftmark}
+\lhead{\textcolor{brandblue}{Engineering Calculation Book}}
+\rhead{\textcolor{brandblue}{\leftmark}}
 \cfoot{\thepage\ of \pageref{LastPage}}
-\definecolor{statuspass}{HTML}{198754}
-\definecolor{statusfail}{HTML}{DC3545}
-\definecolor{statuswarn}{HTML}{B7791F}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+\definecolor{brandblue}{HTML}{1A3A5C}
+\definecolor{sectionblue}{HTML}{2C5282}
+\definecolor{tablehead}{HTML}{E8F0F8}
+\definecolor{tableline}{HTML}{666666}
+\definecolor{formulaBg}{HTML}{F0F4F8}
+\definecolor{resultBg}{HTML}{F8FAFC}
+\definecolor{noteBg}{HTML}{FFFBEB}
+\definecolor{statuspass}{HTML}{16A34A}
+\definecolor{statusfail}{HTML}{DC2626}
+\definecolor{statuswarn}{HTML}{D97706}
+\hypersetup{colorlinks=true,linkcolor=brandblue,urlcolor=brandblue}

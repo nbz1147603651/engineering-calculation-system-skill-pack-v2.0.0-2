@@ -20,8 +20,8 @@ I18N: dict[str, tuple[str, str]] = {
     "language_label": ("Language", "语言"),
     "language_english": ("English", "英文"),
     "language_chinese": ("Chinese", "中文"),
-    "nav_preview": ("Preview Report", "预览报告"),
-    "nav_download": ("Download Report", "下载报告"),
+    "nav_preview": ("Preview Calc Book", "预览计算书"),
+    "nav_download": ("Export Calc Book", "导出计算书"),
     "nav_download_latex": ("LaTeX", "LaTeX"),
     "latex_template_label": ("LaTeX template", "LaTeX template"),
     "latex_template_default": ("Default template", "Default template"),
@@ -41,8 +41,8 @@ I18N: dict[str, tuple[str, str]] = {
     "btn_calculate": ("Run Calculation", "执行计算"),
     "btn_import_json": ("Import JSON Config", "导入 JSON 配置"),
     "btn_export_json": ("Export Config", "导出配置"),
-    "btn_preview_report": ("Preview Report", "预览报告"),
-    "btn_download_report": ("Download Report", "下载报告"),
+    "btn_preview_report": ("Preview Calc Book", "预览计算书"),
+    "btn_download_report": ("Export Calc Book", "导出计算书"),
     "btn_close": ("Close", "关闭"),
     "btn_reset": ("Reset to Defaults", "恢复默认值"),
     "status_calculating": ("Calculating...", "正在计算..."),
@@ -76,7 +76,7 @@ I18N: dict[str, tuple[str, str]] = {
     ),
 
     # ── Report preview ───────────────────────────────────────────────
-    "report_title": ("Calculation Report", "计算报告"),
+    "report_title": ("Calculation Book", "计算书"),
     "report_generating": ("Generating report...", "正在生成报告..."),
 
     # ── Book-specific entries ────────────────────────────────────────

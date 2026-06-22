@@ -91,6 +91,45 @@ def report_assumptions_from_context(
     ]
 
 
+def report_figures_from_context(
+    plain_report: dict[str, Any],
+    plain_result: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Return report-only figure records without changing calculation results."""
+    raw_figures = (
+        plain_report.get("figures")
+        or plain_report.get("report_figures")
+        or plain_result.get("figures")
+        or []
+    )
+    if not isinstance(raw_figures, list):
+        return []
+
+    figures: list[dict[str, Any]] = []
+    for index, raw_item in enumerate(raw_figures, start=1):
+        if isinstance(raw_item, str):
+            item: dict[str, Any] = {"src": raw_item}
+        elif isinstance(raw_item, dict):
+            item = dict(raw_item)
+        else:
+            continue
+
+        figure_id = str(item.get("figure_id") or item.get("id") or f"FIG-{index:03d}")
+        title = item.get("title") or item.get("caption") or figure_id
+        location = (
+            item.get("recommended_report_location")
+            or item.get("placement")
+            or item.get("location")
+            or "after_input_summary"
+        )
+        item["figure_id"] = figure_id
+        item["title"] = title
+        item["alt"] = item.get("alt") or title
+        item["recommended_report_location"] = str(location)
+        figures.append(item)
+    return figures
+
+
 def build_latex_report_context(
     book_input: Any,
     book_result: Any,
@@ -108,6 +147,7 @@ def build_latex_report_context(
     checks = plain_result.get("checks", [])
     sources = plain_report.get("sources") or report_sources_from_checks(checks)
     assumptions = report_assumptions_from_context(plain_input, plain_report)
+    figures = report_figures_from_context(plain_report, plain_result)
     return {
         "lang": lang,
         "report_status": report_status,
@@ -120,6 +160,7 @@ def build_latex_report_context(
         "governing": plain_result.get("governing", {}),
         "checks": checks,
         "charts": charts,
+        "figures": figures,
         "sources": sources,
         "assumptions": assumptions,
         "warnings": plain_result.get("warnings", []),

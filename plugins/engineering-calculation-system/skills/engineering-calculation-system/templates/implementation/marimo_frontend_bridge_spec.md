@@ -15,7 +15,8 @@ frontend form data
 -> run_book(BookInput)
 -> build ReportContext
 -> save outputs/review/sessions/<session_id>/{input,result,report_context,review_state}.json
--> open /admin/review/?session_id=<session_id>
+-> open /admin/?session_id=<session_id>
+-> authenticated admin shell opens /admin/review/?session_id=<session_id>
 -> Marimo reads the session and appends review decisions
 ```
 
@@ -26,7 +27,7 @@ src/<pkg>/review/bridge.py
 apps/review/calculation_review.py
 outputs/review/.gitkeep
 webapp/routes.py              # /api/review/session and /api/review/state/<session_id>
-webapp/static/js/main.js      # button creates a session before opening Marimo
+webapp/static/js/main.js      # button creates a session before opening the admin shell
 ```
 
 ## Bridge Data

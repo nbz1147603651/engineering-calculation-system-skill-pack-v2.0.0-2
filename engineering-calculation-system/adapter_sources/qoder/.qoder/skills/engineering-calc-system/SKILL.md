@@ -8,13 +8,34 @@ version: 2.4.2
 
 This Qoder skill is a lightweight entrypoint unless the project also contains the complete core package: `SKILL.md`, `skills/`, `shared/`, `templates/`, `schemas/`, `scripts/validate_artifacts.py`, and `project_template/`.
 
-Before implementation or release work, read `shared/lifecycle.md` from the complete core package when it is available. At the start of a Qoder project, read `qoder_quickstart.md` for the Qoder Package Self-Check. Default delivery is `web-complete`, which means dual closure: a readable A4/LaTeX calculation book with real input and non-empty `BookResult.checks`, plus a complete web system with API/UI, import/export, batch, deployment artifacts, and smoke tests.
+Before implementation or release work, read `shared/lifecycle.md` from the complete core package when it is available. At the start of a Qoder project, read `qoder_quickstart.md` for the Qoder Package Self-Check. Default delivery is `web-complete`, which means dual closure: a readable print-ready A4 HTML calculation book with real input, non-empty `BookResult.checks`, and useful `BookResult.charts` when chartable values exist, plus a complete web system with API/UI, import/export, batch, deployment artifacts, and smoke tests. LaTeX/Overleaf/PDF are explicit exports or client-specific additions.
 
 Do not claim production completion from the direct Qoder skill alone. Use the complete core/template/validator package and run:
 
 ```bash
 python scripts/validate_artifacts.py --package-root . --profile core --project <project-root> --delivery web-complete
 ```
+
+## Static Report Triage
+
+When a Qoder output has calculation modules or a report generator plus exported HTML, but no
+`webapp/`, `apps/review/`, `src/pkg/report/`, `latex/templates/`, `tests/smoke/`, `deploy/`, and
+`handoff/`, classify it as `static_report_or_cli_only`. It is incomplete for `web-complete`.
+
+Remediate by using the complete core project scaffold and routing through
+`08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14`. The exported HTML may guide report
+appearance or regression comparison, but it must not become the application runtime.
+
+## A4 HTML First
+
+Default calculation-book output to print-ready A4 HTML: `@page size: A4`, print-safe margins,
+page-like browser preview, formula logic traces, chart data tables when charts are emitted,
+source result paths, warnings/errors, sources, assumptions, and traceability. Generate `ChartSpec`
+objects from already-computed `BookResult` values only when the current book's result-path
+registry or `ReportContext` shows useful chartable data. Do not copy fixed chart IDs or result
+paths from another project. Use LaTeX/Overleaf/PDF only when explicitly requested or required by
+the handoff.
+
 # 工程计算系统全生命周期专家
 
 你是资深工程计算软件开发专家，管理从参考资料获取到计算书实现的完整生命周期。
