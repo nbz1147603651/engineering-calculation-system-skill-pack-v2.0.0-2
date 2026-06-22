@@ -1,4 +1,4 @@
-# 工程计算系统技能包 v2.4.2
+# 工程计算系统技能包 v2.4.3
 
 本技能包把工程计算软件开发组织成完整交付生命周期：
 
@@ -151,7 +151,7 @@ Codex 兼容环境优先从根目录加载：
 dist/core/engineering-calculation-system/SKILL.md
 ```
 
-默认安装 `dist/core/engineering-calculation-system/`。MiniMax Code 标准技能导入或自动发现时使用 `dist/release/engineering-calculation-system-MiniMaxCode-v2.4.2.zip`。QODER 直接上传 Skill 时使用 `dist/release/engineering-calculation-system-QODER-v2.4.2.zip`；需要复制到 QODER 项目根时使用 `dist/release/engineering-calculation-system-QODER-Project-v2.4.2.zip`。Qoder 原始入口位于 `dist/qoder-addon/`，OpenCode、AGENTS.md 和 TRAE 兼容入口位于 `dist/adapters-light/`。
+默认安装 `dist/core/engineering-calculation-system/`。MiniMax Code 标准技能导入或自动发现时使用 `dist/release/engineering-calculation-system-MiniMaxCode-v2.4.3.zip`。QODER 直接上传 Skill 时使用 `dist/release/engineering-calculation-system-QODER-v2.4.3.zip`；需要复制到 QODER 项目根时使用 `dist/release/engineering-calculation-system-QODER-Project-v2.4.3.zip`。Qoder 原始入口位于 `dist/qoder-addon/`，OpenCode、AGENTS.md 和 TRAE 兼容入口位于 `dist/adapters-light/`。
 
 Qoder 推荐采用“智能体主控 + 技能资源层”架构：`.qoder/agents/engineering-calc-system.md` 是智能体入口，负责工具、专家团编排、门禁和最终验收；`.qoder/agents/engineering-calc-*.md` 是被主控委派的专项 worker 智能体；`.qoder/skills/engineering-calc-system/` 是技能/资源层；长参考资料放在 `.qoder/references/`，不要放在 `.qoder/agents/`，否则 Qoder 会把参考文件误列为缺少描述信息的智能体。执行一次 `python tools/build_release.py` 会同时生成 direct Skill 包和包含多智能体的 QODER Project 包；需要安装多个 Qoder 智能体时使用 QODER Project 包。从源码检出目录执行 `python tools/install_qoder_user.py --build`，可以构建 Qoder overlay，并把主控智能体、worker 智能体、技能资源和 references 同步到 `QODER_HOME` 或 `~/.qoder`。执行 `python tools/install_qoder_user.py --audit` 可以检查是否缺失或存在冗余旧文件；执行 `python tools/install_qoder_user.py --uninstall` 只卸载本包管理的 Qoder 文件，不删除 Qoder 缓存、扩展、项目历史或其他自定义内容。
 
@@ -212,7 +212,7 @@ python -B -m pytest -q -p no:cacheprovider
 ## 版本
 
 ```text
-version: 2.4.2
+version: 2.4.3
 created_at: 2026-06-22
 status: complete_packaged_release
 ```

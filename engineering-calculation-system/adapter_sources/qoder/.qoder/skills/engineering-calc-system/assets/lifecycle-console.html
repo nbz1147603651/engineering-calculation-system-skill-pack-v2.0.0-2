@@ -177,7 +177,7 @@
   <h1 id="projTitle">工程计算系统 · 全生命周期控制台</h1>
   <div style="display:flex;align-items:center;gap:6px">
     <button class="btn btn-s" onclick="swTab('im')" style="font-size:10px;padding:4px 10px"><span style="margin-right:4px">⬆</span>导入数据</button>
-    <span class="hdr-badge" id="verBadge">v2.4.2</span>
+    <span class="hdr-badge" id="verBadge">v2.4.3</span>
   </div>
 </div>
 
@@ -575,7 +575,7 @@ function setFmt(el, fmt) {
 function loadTemplate() {
   const tpl = {
     project_name: "示例工程项目",
-    version: "2.4.2",
+    version: "2.4.3",
     completed_stages: ["01"],
     current_stage: "02",
     gate_status: {
@@ -602,7 +602,7 @@ function loadTemplate() {
 function exportCurrent() {
   const data = {
     project_name: D.project_name || '未命名项目',
-    version: D.version || '2.4.2',
+    version: D.version || '2.4.3',
     completed_stages: STAGES.filter(s => stageStatus[s.id] === 'done').map(s => s.id),
     current_stage: STAGES.find(s => stageStatus[s.id] === 'current')?.id || null,
     gate_status: D.gate_status || {},

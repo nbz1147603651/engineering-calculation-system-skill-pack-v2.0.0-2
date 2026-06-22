@@ -16,5 +16,5 @@ from __future__ import annotations
 # Mirrors release_config.json "version"; kept in sync by sync_versions.py.
 # Exposed so the PyInstaller-bundled exe can report its build version without
 # reading release_config.json (which is not shipped inside the exe).
-__version__ = "2.4.2"
+__version__ = "2.4.3"
 

@@ -8,6 +8,14 @@
 - Added ZCode to the deployment console as a user-level target with conservative program and sentinel detection.
 - Documented ZCode loading behavior, `$engineering-calculation-system` invocation, and workspace `AGENTS.md` guardrails in adapter and install docs.
 
+## v2.4.3 release version sync - 2026-06-22
+
+### Changed - Version Metadata
+
+- Bumped the canonical release version in `tools/release_config.json` to `2.4.3`.
+- Synchronized core skill frontmatter, artifact contracts, adapter skill frontmatter, Codex plugin manifest, OpenCode package metadata, installer GUI metadata, and current install docs from the central version source.
+- Kept historical changelog references to earlier versions unchanged.
+
 ## v2.4.2 unified release sync - 2026-06-22
 
 ### Changed - Version Management

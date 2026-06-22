@@ -1,7 +1,7 @@
 ---
 name: engineering-calculation-system
 description: Build, verify, package, or deploy source-backed engineering calculation web apps and calculation books. Use when the user needs to assess or acquire engineering references, turn standards/manuals/PDFs/spreadsheets into a Calculation Logic Blueprint and implementation handoff, build decoupled reusable calculation modules and an official run_book() runner, build an auditable web calculation app with a reusable UI kit and HTML/LaTeX/Overleaf reports, verify formulas/reports/batch/traceability, or package a runnable local and Linux-cloud deployable online calculator — even when "calculation", "engineering", or "calculation book" is not named explicitly.
-version: 2.4.2
+version: 2.4.3
 ---
 
 # Engineering Calculation System
