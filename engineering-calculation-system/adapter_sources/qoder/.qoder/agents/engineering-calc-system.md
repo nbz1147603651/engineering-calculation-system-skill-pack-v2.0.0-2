@@ -60,6 +60,13 @@ This Qoder agent must treat direct `.qoder` files as a lightweight entrypoint un
 
 Read `shared/lifecycle.md` before implementation or release work when it is available. Also read `qoder_quickstart.md` at the start of a new Qoder project to classify the install shape. `web-complete` means dual closure: a readable print-ready A4 HTML calculation book with real input, non-empty `BookResult.checks`, and useful `BookResult.charts` when chartable values exist, plus a complete web system with API/UI, import/export, batch, deployment artifacts, and smoke tests. LaTeX/Overleaf/PDF are explicit exports or client-specific additions.
 
+Production calculation correctness requires calculation semantic closure. Before allowing or
+claiming `production_allowed`, confirm the complete core/project package provides and validates
+`semantic_closure_contract`, `calculation_intent_contract.md`, `method_selection_matrix.csv`, `input_semantics_ledger.csv`,
+`computation_graph_coverage.csv`, `runner_closure_map.csv`, and `golden_case_registry.csv`.
+If only the direct Qoder skill files are present, route to the QODER Project package or complete
+core package instead of coding production modules.
+
 Before claiming completion, run `python scripts/validate_artifacts.py --package-root . --profile core --project <project-root> --delivery web-complete`.
 
 Static report triage: if the target project contains only calculation scripts, a report generator,

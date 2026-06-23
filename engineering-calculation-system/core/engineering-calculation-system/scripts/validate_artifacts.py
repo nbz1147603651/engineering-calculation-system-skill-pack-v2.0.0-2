@@ -53,6 +53,8 @@ PLACEHOLDER_VALUES = {
     "unknown",
 }
 TRUTHY_VALUES = {"1", "true", "yes", "y", "blocking", "blocks"}
+CLOSURE_PASS_VALUES = {"closed", "covered", "complete", "verified", "production_ready"}
+GOLDEN_CASE_PASS_VALUES = {"verified", "approved", "passed", "passing", "production_ready"}
 CORE_FORBIDDEN_ROOT_PATHS = {
     "AGENTS.md",
     "README.md",
@@ -120,6 +122,18 @@ PRODUCTION_REQUIRED_PROJECT_ARTIFACTS = {
         "analysis/01_source_inventory/source_conflicts.csv",
         "analysis/source_conflicts.csv",
     ],
+    "calculation intent contract": [
+        "analysis/02_logic_blueprint/calculation_intent_contract.md",
+        "analysis/calculation_intent_contract.md",
+    ],
+    "method selection matrix": [
+        "analysis/02_logic_blueprint/method_selection_matrix.csv",
+        "analysis/method_selection_matrix.csv",
+    ],
+    "input semantics ledger": [
+        "analysis/02_logic_blueprint/input_semantics_ledger.csv",
+        "analysis/input_semantics_ledger.csv",
+    ],
     "formula inventory": [
         "analysis/03_logic_details/formula_inventory.csv",
         "analysis/formula_inventory.csv",
@@ -132,6 +146,11 @@ PRODUCTION_REQUIRED_PROJECT_ARTIFACTS = {
         "analysis/03_logic_details/branch_inventory.csv",
         "analysis/branch_inventory.csv",
     ],
+    "computation graph coverage": [
+        "analysis/03_logic_details/computation_graph_coverage.csv",
+        "analysis/02_logic_blueprint/computation_graph_coverage.csv",
+        "analysis/computation_graph_coverage.csv",
+    ],
     "unit and sign conventions": [
         "analysis/03_logic_details/unit_and_sign_conventions.md",
         "analysis/unit_and_sign_conventions.md",
@@ -143,6 +162,22 @@ PRODUCTION_REQUIRED_PROJECT_ARTIFACTS = {
     "open questions": [
         "analysis/05_risks_and_questions/open_questions.csv",
         "analysis/open_questions.csv",
+    ],
+    "module asset registry": [
+        "implementation/02_modules/module_asset_registry.csv",
+        "implementation/module_asset_registry.csv",
+    ],
+    "runner closure map": [
+        "implementation/03_book_runner/runner_closure_map.csv",
+        "implementation/runner_closure_map.csv",
+    ],
+    "test matrix": [
+        "verification/test_matrix.csv",
+        "tests/test_matrix.csv",
+    ],
+    "golden case registry": [
+        "verification/golden_case_registry.csv",
+        "verification/golden_cases.csv",
     ],
 }
 WEB_COMPLETE_REQUIRED_PROJECT_PATHS = [
@@ -468,9 +503,15 @@ WEB_COMPLETE_PLACEHOLDER_SCAN_PATHS = [
     "analysis/01_source_inventory/source_inventory.yaml",
     "analysis/01_source_inventory/source_authority_table.csv",
     "analysis/03_logic_details/formula_inventory.csv",
+    "analysis/02_logic_blueprint/calculation_intent_contract.md",
+    "analysis/02_logic_blueprint/method_selection_matrix.csv",
+    "analysis/02_logic_blueprint/input_semantics_ledger.csv",
+    "analysis/03_logic_details/computation_graph_coverage.csv",
     "analysis/03_logic_details/unit_and_sign_conventions.md",
     "analysis/03_logic_details/assumption_register.csv",
     "analysis/05_risks_and_questions/open_questions.csv",
+    "implementation/03_book_runner/runner_closure_map.csv",
+    "verification/golden_case_registry.csv",
 ]
 WEB_COMPLETE_FORBIDDEN_PROJECT_TOKENS = [
     "Example Project",
@@ -583,10 +624,51 @@ def read_csv_rows(path: Path, errors: list[str], *, label: str) -> list[dict[str
 
 
 def row_identifier(row: dict[str, str], fallback_index: int) -> str:
-    for key in ("formula_id", "lookup_id", "branch_id", "question_id", "conflict_id", "assumption_id", "requirement_id"):
+    for key in (
+        "formula_id",
+        "lookup_id",
+        "branch_id",
+        "coverage_id",
+        "method_id",
+        "input_id",
+        "case_id",
+        "test_id",
+        "module_id",
+        "question_id",
+        "conflict_id",
+        "assumption_id",
+        "requirement_id",
+    ):
         if has_actionable_text(row.get(key)):
             return str(row.get(key))
     return f"row {fallback_index}"
+
+
+def split_reference_values(value: object) -> set[str]:
+    text = clean_scalar(value)
+    if not text:
+        return set()
+    cleaned = text.strip().strip("[]")
+    return {
+        token.strip().strip("'\"")
+        for token in re.split(r"[;,|]", cleaned)
+        if has_actionable_text(token)
+    }
+
+
+def collect_reference_values(rows: list[dict[str, str]], field: str) -> set[str]:
+    values: set[str] = set()
+    for row in rows:
+        values.update(split_reference_values(row.get(field)))
+    return values
+
+
+def actionable_row_ids(rows: list[dict[str, str]], field: str) -> set[str]:
+    return {
+        clean_scalar(row.get(field))
+        for row in rows
+        if has_actionable_text(row.get(field))
+    }
 
 
 def first_existing(root: Path, candidates: list[str]) -> Path | None:
@@ -723,6 +805,280 @@ def check_blocking_csv_flags(
             )
 
 
+def check_calculation_intent_contract(path: Path, errors: list[str]) -> None:
+    status = markdown_gate_status(path)
+    if status != "production_ready":
+        errors.append(
+            "production gate requires calculation intent contract "
+            f"status='production_ready', got {status or 'missing'}"
+        )
+    text = read_text(path) if path.exists() else ""
+    for phrase in ("governing_question", "intended_decision", "excluded_scope"):
+        if phrase not in text:
+            errors.append(f"calculation intent contract is missing {phrase}")
+
+
+def check_status_field(
+    path: Path,
+    label: str,
+    status_field: str,
+    pass_values: set[str],
+    errors: list[str],
+    *,
+    require_rows: bool = True,
+) -> list[dict[str, str]]:
+    rows = read_csv_rows(path, errors, label=label)
+    if require_rows and not rows:
+        errors.append(f"production gate requires at least one {label} row")
+    for index, row in enumerate(rows, start=2):
+        status = normalize_token(row.get(status_field))
+        if status not in pass_values:
+            errors.append(
+                f"production gate requires {label} {row_identifier(row, index)} "
+                f"{status_field} in {sorted(pass_values)}, got {status or 'missing'}"
+            )
+    return rows
+
+
+def check_input_semantics_ledger(path: Path, errors: list[str]) -> list[dict[str, str]]:
+    check_csv_required_fields(
+        path,
+        "input semantics ledger",
+        [
+            "input_id",
+            "book_input_path",
+            "meaning",
+            "unit",
+            "sign_convention",
+            "source_reference",
+            "required",
+            "default_policy",
+            "validation_rule",
+            "used_by_nodes",
+        ],
+        errors,
+        require_rows=True,
+    )
+    rows = read_csv_rows(path, errors, label="input semantics ledger")
+    for index, row in enumerate(rows, start=2):
+        if is_truthy(row.get("blocks_production")):
+            errors.append(
+                "production gate blocked by input semantics ledger "
+                f"{row_identifier(row, index)} with blocks_production=true"
+            )
+    return rows
+
+
+def check_method_selection_matrix(path: Path, errors: list[str]) -> list[dict[str, str]]:
+    check_csv_required_fields(
+        path,
+        "method selection matrix",
+        [
+            "method_id",
+            "check_id",
+            "method_name",
+            "source_reference",
+            "applicability",
+            "selection_condition",
+            "required_inputs",
+            "required_outputs",
+            "test_requirement",
+            "risk_level",
+        ],
+        errors,
+        require_rows=True,
+    )
+    return read_csv_rows(path, errors, label="method selection matrix")
+
+
+def check_module_asset_registry(path: Path, errors: list[str]) -> list[dict[str, str]]:
+    check_csv_required_fields(
+        path,
+        "module asset registry",
+        [
+            "module_id",
+            "module_name",
+            "public_function",
+            "input_model",
+            "result_model",
+            "source_references",
+            "formula_trace_path",
+            "unit_tests",
+            "reuse_status",
+        ],
+        errors,
+        require_rows=True,
+    )
+    return read_csv_rows(path, errors, label="module asset registry")
+
+
+def check_test_matrix(path: Path, errors: list[str]) -> list[dict[str, str]]:
+    check_csv_required_fields(
+        path,
+        "test matrix",
+        ["test_id", "target", "type", "reference_basis", "input_case", "expected_result", "tolerance"],
+        errors,
+        require_rows=True,
+    )
+    return read_csv_rows(path, errors, label="test matrix")
+
+
+def check_computation_graph_coverage(
+    path: Path,
+    errors: list[str],
+    *,
+    formula_rows: list[dict[str, str]],
+    lookup_rows: list[dict[str, str]],
+    branch_rows: list[dict[str, str]],
+    input_rows: list[dict[str, str]],
+    module_ids: set[str],
+    test_ids: set[str],
+) -> list[dict[str, str]]:
+    check_csv_required_fields(
+        path,
+        "computation graph coverage",
+        [
+            "coverage_id",
+            "node_id",
+            "node_type",
+            "source_reference",
+            "module_id",
+            "public_function",
+            "runner_step",
+            "result_path",
+            "test_ids",
+            "closure_status",
+        ],
+        errors,
+        require_rows=True,
+    )
+    rows = check_status_field(
+        path,
+        "computation graph coverage",
+        "closure_status",
+        CLOSURE_PASS_VALUES,
+        errors,
+        require_rows=False,
+    )
+
+    coverage_formula_ids = collect_reference_values(rows, "formula_ids")
+    for formula_id in actionable_row_ids(formula_rows, "formula_id") - coverage_formula_ids:
+        errors.append(f"production gate requires computation graph coverage for formula {formula_id}")
+
+    coverage_lookup_ids = collect_reference_values(rows, "lookup_ids")
+    for lookup_id in actionable_row_ids(lookup_rows, "lookup_id") - coverage_lookup_ids:
+        errors.append(f"production gate requires computation graph coverage for lookup {lookup_id}")
+
+    coverage_branch_ids = collect_reference_values(rows, "branch_ids")
+    for branch_id in actionable_row_ids(branch_rows, "branch_id") - coverage_branch_ids:
+        errors.append(f"production gate requires computation graph coverage for branch {branch_id}")
+
+    required_input_ids = {
+        clean_scalar(row.get("input_id"))
+        for row in input_rows
+        if has_actionable_text(row.get("input_id")) and is_truthy(row.get("required"))
+    }
+    coverage_input_ids = collect_reference_values(rows, "input_ids")
+    for input_id in required_input_ids - coverage_input_ids:
+        errors.append(f"production gate requires computation graph coverage for required input {input_id}")
+
+    for index, row in enumerate(rows, start=2):
+        module_id = clean_scalar(row.get("module_id"))
+        if has_actionable_text(module_id) and module_ids and module_id not in module_ids:
+            errors.append(
+                f"computation graph coverage {row_identifier(row, index)} "
+                f"references unknown module_id {module_id!r}"
+            )
+        for test_id in split_reference_values(row.get("test_ids")):
+            if test_ids and test_id not in test_ids:
+                errors.append(
+                    f"computation graph coverage {row_identifier(row, index)} "
+                    f"references unknown test_id {test_id!r}"
+                )
+    return rows
+
+
+def check_runner_closure_map(
+    path: Path,
+    errors: list[str],
+    *,
+    module_ids: set[str],
+    test_ids: set[str],
+) -> list[dict[str, str]]:
+    check_csv_required_fields(
+        path,
+        "runner closure map",
+        [
+            "runner_step",
+            "check_id",
+            "module_id",
+            "public_function",
+            "input_paths",
+            "result_paths",
+            "test_ids",
+            "closure_status",
+        ],
+        errors,
+        require_rows=True,
+    )
+    rows = check_status_field(
+        path,
+        "runner closure map",
+        "closure_status",
+        CLOSURE_PASS_VALUES,
+        errors,
+        require_rows=False,
+    )
+    for index, row in enumerate(rows, start=2):
+        module_id = clean_scalar(row.get("module_id"))
+        if has_actionable_text(module_id) and module_ids and module_id not in module_ids:
+            errors.append(
+                f"runner closure map {row_identifier(row, index)} "
+                f"references unknown module_id {module_id!r}"
+            )
+        for test_id in split_reference_values(row.get("test_ids")):
+            if test_ids and test_id not in test_ids:
+                errors.append(
+                    f"runner closure map {row_identifier(row, index)} "
+                    f"references unknown test_id {test_id!r}"
+                )
+    return rows
+
+
+def check_golden_case_registry(path: Path, errors: list[str]) -> list[dict[str, str]]:
+    check_csv_required_fields(
+        path,
+        "golden case registry",
+        [
+            "case_id",
+            "purpose",
+            "reference_basis",
+            "input_path",
+            "expected_behavior",
+            "expected_result_path",
+            "tolerance",
+            "status",
+        ],
+        errors,
+        require_rows=True,
+    )
+    rows = check_status_field(
+        path,
+        "golden case registry",
+        "status",
+        GOLDEN_CASE_PASS_VALUES,
+        errors,
+        require_rows=False,
+    )
+    for index, row in enumerate(rows, start=2):
+        if is_truthy(row.get("blocks_production")):
+            errors.append(
+                "production gate blocked by golden case registry "
+                f"{row_identifier(row, index)} with blocks_production=true"
+            )
+    return rows
+
+
 def check_project_semantic_gates(project_root: Path, errors: list[str]) -> None:
     """Validate gate consistency that cannot be caught by file/header checks."""
     gate_statuses = {
@@ -743,6 +1099,23 @@ def check_project_semantic_gates(project_root: Path, errors: list[str]) -> None:
     found = check_production_required_artifacts(project_root, errors)
     if "source coverage matrix" in found:
         check_source_coverage_for_production(found["source coverage matrix"], errors)
+    if "calculation intent contract" in found:
+        check_calculation_intent_contract(found["calculation intent contract"], errors)
+    method_rows: list[dict[str, str]] = []
+    if "method selection matrix" in found:
+        method_rows = check_method_selection_matrix(found["method selection matrix"], errors)
+    input_rows: list[dict[str, str]] = []
+    if "input semantics ledger" in found:
+        input_rows = check_input_semantics_ledger(found["input semantics ledger"], errors)
+    module_rows: list[dict[str, str]] = []
+    if "module asset registry" in found:
+        module_rows = check_module_asset_registry(found["module asset registry"], errors)
+    module_ids = actionable_row_ids(module_rows, "module_id")
+    test_rows: list[dict[str, str]] = []
+    if "test matrix" in found:
+        test_rows = check_test_matrix(found["test matrix"], errors)
+    test_ids = actionable_row_ids(test_rows, "test_id")
+    formula_rows: list[dict[str, str]] = []
     if "formula inventory" in found:
         check_csv_required_fields(
             found["formula inventory"],
@@ -751,6 +1124,8 @@ def check_project_semantic_gates(project_root: Path, errors: list[str]) -> None:
             errors,
             require_rows=True,
         )
+        formula_rows = read_csv_rows(found["formula inventory"], errors, label="formula inventory")
+    lookup_rows: list[dict[str, str]] = []
     if "lookup inventory" in found:
         check_csv_required_fields(
             found["lookup inventory"],
@@ -758,6 +1133,8 @@ def check_project_semantic_gates(project_root: Path, errors: list[str]) -> None:
             ["lookup_id", "name", "inputs", "outputs", "source_reference", "interpolation_rule", "out_of_range_behavior", "test_requirement"],
             errors,
         )
+        lookup_rows = read_csv_rows(found["lookup inventory"], errors, label="lookup inventory")
+    branch_rows: list[dict[str, str]] = []
     if "branch inventory" in found:
         check_csv_required_fields(
             found["branch inventory"],
@@ -765,6 +1142,31 @@ def check_project_semantic_gates(project_root: Path, errors: list[str]) -> None:
             ["branch_id", "condition", "source_reference", "path_if_true", "path_if_false", "required_tests"],
             errors,
         )
+        branch_rows = read_csv_rows(found["branch inventory"], errors, label="branch inventory")
+    if method_rows and formula_rows:
+        method_test_requirements = collect_reference_values(method_rows, "test_requirement")
+        if not method_test_requirements:
+            errors.append("production gate requires method selection rows to reference test requirements")
+    if "computation graph coverage" in found:
+        check_computation_graph_coverage(
+            found["computation graph coverage"],
+            errors,
+            formula_rows=formula_rows,
+            lookup_rows=lookup_rows,
+            branch_rows=branch_rows,
+            input_rows=input_rows,
+            module_ids=module_ids,
+            test_ids=test_ids,
+        )
+    if "runner closure map" in found:
+        check_runner_closure_map(
+            found["runner closure map"],
+            errors,
+            module_ids=module_ids,
+            test_ids=test_ids,
+        )
+    if "golden case registry" in found:
+        check_golden_case_registry(found["golden case registry"], errors)
     if "open questions" in found:
         check_blocking_csv_flags(found["open questions"], "open question", "blocks_coding", errors)
     if "source conflicts" in found:
@@ -1040,6 +1442,18 @@ def check_web_complete_runtime_closure(project_root: Path, errors: list[str]) ->
 
         if not any(getattr(check, "formula_traces", None) for check in checks):
             errors.append("web-complete runtime closure requires formula traces on BookResult.checks")
+        for check_index, check in enumerate(checks):
+            traces = list(getattr(check, "formula_traces", []) or [])
+            if not traces:
+                errors.append(f"web-complete runtime closure requires formula traces on BookResult.checks[{check_index}]")
+            for trace_index, trace in enumerate(traces):
+                context = f"BookResult.checks[{check_index}].formula_traces[{trace_index}]"
+                if not object_field(trace, "formula_id"):
+                    errors.append(f"{context} is missing formula_id")
+                if not object_field(trace, "source_reference"):
+                    errors.append(f"{context} is missing source_reference")
+                if not object_field(trace, "result_path"):
+                    errors.append(f"{context} is missing result_path")
 
         charts = list(getattr(result, "charts", []) or [])
         check_chart_contract(charts, errors)
@@ -1219,16 +1633,16 @@ def validate_qoder_addon_profile(package_root: Path) -> list[str]:
     check_text_required_phrases(
         package_root,
         {
-            ".qoder/skills/engineering-calc-system/SKILL.md": ["Qoder Architecture", "agent-first", "shared/lifecycle.md", "dual closure", "qoder_quickstart.md", "Static Report Triage", "static_report_or_cli_only", "A4 HTML First", "print-ready A4 HTML"],
+            ".qoder/skills/engineering-calc-system/SKILL.md": ["Qoder Architecture", "agent-first", "shared/lifecycle.md", "dual closure", "qoder_quickstart.md", "Static Report Triage", "static_report_or_cli_only", "A4 HTML First", "print-ready A4 HTML", "calculation semantic closure", "calculation_intent_contract.md", "runner_closure_map.csv", "golden_case_registry.csv"],
             ".qoder/skills/engineering-calc-system/reference.md": ["/api/i18n/<lang>"],
-            ".qoder/skills/engineering-calc-system/qoder_quickstart.md": ["Qoder Package Self-Check", "Direct QODER Skill", "QODER Project overlay", "Complete core project", "validate_artifacts.py --package-root", "Static Report Triage", "static_report_or_cli_only", "A4 HTML First", "print-ready A4 HTML"],
+            ".qoder/skills/engineering-calc-system/qoder_quickstart.md": ["Qoder Package Self-Check", "Direct QODER Skill", "QODER Project overlay", "Complete core project", "validate_artifacts.py --package-root", "Static Report Triage", "static_report_or_cli_only", "A4 HTML First", "print-ready A4 HTML", "calculation semantic closure", "input_semantics_ledger.csv", "computation_graph_coverage.csv"],
             ".qoder/skills/engineering-calc-system/assets/lifecycle-console.html": [f"v{expected_version}", "12a", "12b", "12c", "14", "route_confirmed", "batch_import"],
-            ".qoder/agents/engineering-calc-system.md": ["Qoder Architecture", "agent-first", "Stable ASCII Contract", "shared/lifecycle.md", "dual closure", "static_report_or_cli_only", "A4 HTML first", "print-ready A4 HTML"],
+            ".qoder/agents/engineering-calc-system.md": ["Qoder Architecture", "agent-first", "Stable ASCII Contract", "shared/lifecycle.md", "dual closure", "static_report_or_cli_only", "A4 HTML first", "print-ready A4 HTML", "calculation semantic closure", "method_selection_matrix.csv", "golden_case_registry.csv"],
             ".qoder/agents/engineering-calc-module-worker.md": ["Qoder Worker Contract", "run_book(BookInput) -> BookResult"],
             ".qoder/agents/engineering-calc-interface-worker.md": ["Qoder Worker Contract", "/api/i18n/<lang>", "reports/*.html"],
             ".qoder/agents/engineering-calc-verification-worker.md": ["Qoder Worker Contract", "web-complete", "static_report_or_cli_only", "html_a4", "chart data tables"],
             ".qoder/agents/engineering-calc-release-worker.md": ["Qoder Worker Contract", "/health"],
-            ".qoder/references/engineering-calc-system.md": ["/api/i18n/<lang>", "static_report_or_cli_only", "A4 HTML first", "BookResult.charts"],
+            ".qoder/references/engineering-calc-system.md": ["/api/i18n/<lang>", "static_report_or_cli_only", "A4 HTML first", "BookResult.charts", "calculation semantic closure", "runner_closure_map.csv"],
         },
         errors,
     )

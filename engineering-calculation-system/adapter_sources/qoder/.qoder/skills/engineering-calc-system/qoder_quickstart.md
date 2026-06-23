@@ -14,6 +14,13 @@ Classify the current install before doing implementation or release work:
 
 If the task asks for a deployable online calculator or `web-complete`, use the QODER Project package together with the complete core package. If only the direct skill is installed, label outputs as guidance, draft, or prototype until the core validator can run.
 
+Production calculation correctness requires calculation semantic closure. Before coding is labeled
+`production_allowed`, the complete core/project package must contain and validate:
+`semantic_closure_contract`, `calculation_intent_contract.md`, `method_selection_matrix.csv`, `input_semantics_ledger.csv`,
+`computation_graph_coverage.csv`, `runner_closure_map.csv`, and `golden_case_registry.csv`.
+If those files or `scripts/validate_artifacts.py` are missing, the current Qoder install is not
+complete enough for production calculation modules.
+
 ## Static Report Triage
 
 Before editing a generated project, check whether it only contains calculation scripts and
@@ -101,6 +108,7 @@ Do not say complete, production-ready, deployable, or `web-complete` unless:
 
 - `shared/lifecycle.md` has been applied
 - `handoff/implementation_handoff.yaml` and `handoff/coding_go_no_go.md` allow production
+- calculation semantic closure artifacts exist and validate
 - real input creates non-empty evaluated `BookResult.checks`
 - API/UI, report, import/export, batch, deployment artifacts, and smoke tests exist
 - `validate_artifacts.py --delivery web-complete` passes

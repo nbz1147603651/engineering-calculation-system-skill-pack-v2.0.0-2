@@ -1,6 +1,6 @@
 ---
 name: verification-regression-traceability
-description: Design and implement verification, regression tests, tolerance policy, formula trace checks, module asset checks, input/result hashes, report smoke tests, web/API smoke tests, Marimo review smoke tests, upload package checks, batch summary checks, deployment smoke tests, and acceptance gates for engineering calculation book systems.
+description: Design and implement verification, golden-case regression tests, tolerance policy, formula trace checks, module asset checks, input/result hashes, report smoke tests, web/API smoke tests, Marimo review smoke tests, upload package checks, batch summary checks, deployment smoke tests, and acceptance gates for engineering calculation book systems.
 ---
 
 # Verification, Regression, and Traceability
@@ -18,15 +18,20 @@ orchestration, report context, interfaces, and traceability.
    web/API smoke, Chinese/English i18n + language-toggle smoke, Marimo review smoke, upload/import
    package manifest + hash, batch smoke, serialization + hash, formula-registry validation +
    publish-gate, and deployment smoke (local + Linux cloud).
-2. Capture regression references (`templates/verification/regression_references.md`) in priority
-   order: design-code examples → published manual examples → approved historical reports →
-   verified legacy spreadsheets → independent hand calcs → synthetic edge cases.
-3. Define the tolerance policy (`templates/verification/tolerance_policy.md`).
-4. Attach traceability metadata to production results: book_type, book_name, case_id, project_id,
+2. Build the golden case registry (`templates/verification/golden_case_registry.csv`) with at
+   least one production-relevant case for every high-risk check/method family. Golden cases verify
+   module and runner behavior; they do not need to match a report verbatim, but must state
+   reference basis, input path, expected behavior/result path, tolerance, status, and whether they
+   block production.
+3. Capture regression references (`templates/verification/regression_references.md`) in priority
+   order: design-code examples -> published manual examples -> approved historical reports ->
+   verified legacy spreadsheets -> independent hand calcs -> synthetic edge cases.
+4. Define the tolerance policy (`templates/verification/tolerance_policy.md`).
+5. Attach traceability metadata to production results: book_type, book_name, case_id, project_id,
    design_code + version, run_timestamp, package version, input_hash, result_hash, python_version,
    git_commit if available, formula-registry version if used, runner version, report-template
    version.
-5. Run the acceptance checklist (`templates/verification/acceptance_checklist.md`): source basis
+6. Run the acceptance checklist (`templates/verification/acceptance_checklist.md`): source basis
    recorded; features classified by layer; formulas only in reusable modules; modules listed in
    `module_asset_registry.csv`; `run_book` is the official entry point; CSV/JSON/frontend/API inputs
    map to the same BookInput; unit conversion only at boundaries; templates/UI/review/Marimo/batch
@@ -41,6 +46,7 @@ orchestration, report context, interfaces, and traceability.
 
 ```text
 verification/test_matrix.csv            (templates/verification/test_matrix.csv)
+verification/golden_case_registry.csv   (templates/verification/golden_case_registry.csv)
 verification/regression_references.md   (templates/verification/regression_references.md)
 verification/tolerance_policy.md        (templates/verification/tolerance_policy.md)
 verification/acceptance_checklist.md    (templates/verification/acceptance_checklist.md)

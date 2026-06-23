@@ -1,0 +1,2 @@
+runner_step,check_id,module_id,public_function,branch_ids,input_paths,result_paths,warning_paths,test_ids,closure_status
+compute_module_results,CHK-001,example_book_runner,run_book,,inputs.checks[],checks[].utilization;checks[].status,warnings,T001,closed

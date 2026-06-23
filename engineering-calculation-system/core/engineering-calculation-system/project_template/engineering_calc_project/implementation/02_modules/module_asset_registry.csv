@@ -1,1 +1,2 @@
 module_id,domain,category,module_name,public_function,input_model,options_model,result_model,source_references,formula_trace_path,unit_tests,regression_tests,reuse_status,asset_owner,notes
+example_book_runner,template,demand_capacity,Example book runner,run_book,BookInput,,BookResult,S01,checks[].formula_traces,tests/integration/test_book_runner.py,tests/smoke/example_input.json,stable,template_owner,Template closure row; replace with reusable source-backed modules for real projects

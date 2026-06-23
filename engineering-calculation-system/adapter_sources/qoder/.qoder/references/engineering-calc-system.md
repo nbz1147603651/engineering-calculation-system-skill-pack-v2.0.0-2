@@ -16,6 +16,12 @@ LaTeX/Overleaf/PDF only when explicitly requested or required. Generate `BookRes
 `ReportContext` exposes useful chartable data. Do not copy fixed chart IDs or result paths from
 another project.
 
+calculation semantic closure: production work requires `semantic_closure_contract`,
+`calculation_intent_contract.md`, `method_selection_matrix.csv`, `input_semantics_ledger.csv`,
+`computation_graph_coverage.csv`, `runner_closure_map.csv`, and `golden_case_registry.csv` from the complete core/project package.
+The direct Qoder skill/reference package is a lightweight router only; it cannot replace the core
+templates, handoff contracts, or `validate_artifacts.py` semantic gates.
+
 本文件包含各技能的完整字段定义、产物清单和执行细节。主文件路由后按需读取对应章节。
 
 ---

@@ -20,9 +20,9 @@ sufficiency is doubtful, run skills 01-03 first.
 
 ```text
 04-source-intake-and-authority          stable source IDs, authority ranking, conflicts
-05-engineering-logic-blueprint          concept map + normalized calculation nodes + diagrams
-06-formula-lookup-branch-extraction     freeze formulas, lookups, branches, units, test needs
-07-implementation-handoff-contract      freeze public scope, runtime stack, coding gate
+05-engineering-logic-blueprint          intent contract + method selection + input semantics + nodes
+06-formula-lookup-branch-extraction     freeze formulas, lookups, branches, units, graph coverage
+07-implementation-handoff-contract      freeze public scope, runtime stack, semantic closure, coding gate
 ```
 
 ## Phase exit gate
@@ -31,7 +31,9 @@ Hand off to implementation only when `handoff/implementation_handoff.yaml` and
 `handoff/coding_go_no_go.md` exist and the coding gate is `production_allowed` (or
 `prototype_allowed` for an explicitly requested prototype). The product is the reviewable
 Calculation Logic Blueprint, not the Mermaid views — diagrams are views of the deeper node model.
-See `shared/lifecycle.md` rows 04-07 for the per-step entry/exit gates.
+The handoff must include semantic closure across calculation intent, method selection, input
+semantics, computation graph coverage, runner targets, and verification targets. See
+`shared/lifecycle.md` rows 04-07 for the per-step entry/exit gates.
 
 ## Cross-cutting rules (loaded on demand, not restated here)
 

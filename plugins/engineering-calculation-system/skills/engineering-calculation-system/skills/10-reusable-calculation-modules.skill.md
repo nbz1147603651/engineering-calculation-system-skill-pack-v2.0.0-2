@@ -20,9 +20,10 @@ reused by later books, web apps, batch jobs, and reports through the same public
 2. Enforce module rules: typed input + typed output; one stable public function; no hidden global
    state; no file I/O; no UI/report/batch/web-framework/env-var dependencies; validate
    module-specific assumptions; return intermediate values needed for audit; return warnings
-   instead of silently clipping values; independently testable; recorded in
-   `module_asset_registry.csv`. Example: `def check_bearing_capacity(input_data: BearingInput,
-   options: BearingOptions) -> BearingResult: ...`.
+   instead of silently clipping values; never silently invent defaults, flip signs, take absolute
+   values, or substitute empirical estimates without returning a warning/assumption trace;
+   independently testable; recorded in `module_asset_registry.csv`. Example:
+   `def check_bearing_capacity(input_data: BearingInput, options: BearingOptions) -> BearingResult: ...`.
 3. When admin-editable formulas are required, expose them through a declaration-based formula
    registry (not editable Python code); the module loads only the active validated registry
    version and preserves registry version/hash in results.
@@ -33,6 +34,8 @@ reused by later books, web apps, batch jobs, and reports through the same public
 6. Record each module in `module_asset_registry.csv`: module_id, domain & category, module name,
    stable public function, input/options/result models, source references, formula-trace path,
    unit/regression test paths, reuse status (draft/reviewed/stable/deprecated), asset owner.
+   Every production module must also appear in `computation_graph_coverage.csv` and later in
+   `runner_closure_map.csv`; an uncalled module is not delivered calculation capability.
 
 ## Forbidden
 

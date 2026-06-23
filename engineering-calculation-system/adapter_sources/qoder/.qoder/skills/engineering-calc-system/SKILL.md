@@ -10,6 +10,8 @@ This Qoder skill is a lightweight entrypoint unless the project also contains th
 
 Before implementation or release work, read `shared/lifecycle.md` from the complete core package when it is available. At the start of a Qoder project, read `qoder_quickstart.md` for the Qoder Package Self-Check. Default delivery is `web-complete`, which means dual closure: a readable print-ready A4 HTML calculation book with real input, non-empty `BookResult.checks`, and useful `BookResult.charts` when chartable values exist, plus a complete web system with API/UI, import/export, batch, deployment artifacts, and smoke tests. LaTeX/Overleaf/PDF are explicit exports or client-specific additions.
 
+Production work also requires calculation semantic closure. The complete core/project package must provide and validate `semantic_closure_contract`, `calculation_intent_contract.md`, `method_selection_matrix.csv`, `input_semantics_ledger.csv`, `computation_graph_coverage.csv`, `runner_closure_map.csv`, and `golden_case_registry.csv`. Direct Qoder skill imports do not contain those templates or validator gates by themselves; they must route users to the QODER Project package, complete core package, or single-file fallback before claiming production correctness.
+
 Do not claim production completion from the direct Qoder skill alone. Use the complete core/template/validator package and run:
 
 ```bash

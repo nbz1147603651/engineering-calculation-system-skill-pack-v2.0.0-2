@@ -61,6 +61,9 @@ duplicate them elsewhere:
   calculation modules and the official book runner.
 - The one official calculation path is `run_book(book_input: BookInput) -> BookResult`
   (shorthand: `run_book(BookInput) -> BookResult`); every interface calls it, none reimplements it.
+- Production work requires calculation semantic closure across calculation intent, method
+  selection, input semantics, computation graph coverage, runner closure, and golden-case
+  verification; UI/report completeness cannot compensate for an open calculation core.
 - Do not invent formulas/coefficients/units/lookups/branches when the source basis is missing.
 - Do not start production implementation unless `handoff/implementation_handoff.yaml` and
   `handoff/coding_go_no_go.md` allow it.

@@ -14,7 +14,8 @@ calculation book AND a complete web calculation system.
 
 `handoff/implementation_handoff.yaml` and `handoff/coding_go_no_go.md` allow implementation
 (`production_allowed`, or `prototype_allowed` for an explicit prototype). If the handoff is
-missing, incomplete, or not source-backed, route upstream through 01-07 first. For any
+missing, incomplete, not source-backed, or missing `semantic_closure_contract`, route upstream
+through 01-07 first. For any
 implementation, release, or validation task, read `shared/lifecycle.md` — it defines the required
 08-14 sequence, exit gates, and the web-complete bar.
 

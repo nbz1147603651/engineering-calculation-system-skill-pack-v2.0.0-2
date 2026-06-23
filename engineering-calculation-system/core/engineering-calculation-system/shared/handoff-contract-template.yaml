@@ -175,6 +175,20 @@ release_contract:
     - GET /health
     - POST /api/calculate with known input
 
+semantic_closure_contract:
+  calculation_intent_contract: analysis/02_logic_blueprint/calculation_intent_contract.md
+  method_selection_matrix: analysis/02_logic_blueprint/method_selection_matrix.csv
+  input_semantics_ledger: analysis/02_logic_blueprint/input_semantics_ledger.csv
+  computation_graph_coverage: analysis/03_logic_details/computation_graph_coverage.csv
+  runner_closure_map: implementation/03_book_runner/runner_closure_map.csv
+  golden_case_registry: verification/golden_case_registry.csv
+  required_status:
+    calculation_intent: production_ready
+    graph_closure: closed
+    runner_closure: closed
+    golden_cases: verified
+  rule: production_allowed requires semantic closure across intent, method selection, input semantics, modules, runner, result paths, and tests
+
 formula_inventory_refs:
   - F001
 

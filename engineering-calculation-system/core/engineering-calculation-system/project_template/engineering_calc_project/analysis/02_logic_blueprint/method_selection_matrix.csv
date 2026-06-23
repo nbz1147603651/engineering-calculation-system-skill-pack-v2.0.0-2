@@ -1,0 +1,2 @@
+method_id,check_id,method_name,source_reference,applicability,selection_condition,rejection_conditions,required_inputs,required_outputs,branch_id,test_requirement,risk_level
+M001,CHK-001,Demand/capacity ratio,S01,Template demonstration check only,checks item has finite demand capacity and limit,capacity missing or zero,demand;capacity;limit,utilization;status,,T001 verifies template pass case,low

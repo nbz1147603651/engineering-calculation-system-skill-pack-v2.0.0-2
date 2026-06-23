@@ -1,0 +1,4 @@
+input_id,book_input_path,meaning,unit,sign_convention,coordinate_direction,source_reference,required,default_policy,validation_rule,used_by_nodes,blocks_production
+IN001,inputs.checks[].demand,Applied demand for one template check,kN,magnitude comparison,not_applicable,S01,true,no_default_required,must be finite numeric,N001,false
+IN002,inputs.checks[].capacity,Available capacity for one template check,kN,magnitude comparison,not_applicable,S01,true,no_default_required,must be finite positive numeric,N001,false
+IN003,inputs.checks[].limit,Maximum allowed utilization,ratio,positive limit,not_applicable,S01,true,no_default_required,must be finite positive numeric,N001,false

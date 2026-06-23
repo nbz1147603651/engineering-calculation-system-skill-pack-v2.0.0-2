@@ -1,0 +1,2 @@
+coverage_id,node_id,node_type,check_id,formula_ids,lookup_ids,branch_ids,input_ids,source_reference,module_id,public_function,runner_step,result_path,test_ids,report_visibility,closure_status
+COV001,N001,Check,CHK-001,F001,,,IN001;IN002;IN003,S01,example_book_runner,run_book,compute_module_results,checks[0].utilization,T001,visible,closed

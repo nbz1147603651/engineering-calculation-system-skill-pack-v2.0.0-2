@@ -1,0 +1,2 @@
+case_id,purpose,reference_basis,input_path,expected_behavior,expected_result_path,tolerance,status,blocks_production
+GC001,Template pass case,S01 template demonstration,tests/smoke/example_input.json,45/90 gives utilization 0.5 and PASS,checks[0].utilization,exact,verified,false

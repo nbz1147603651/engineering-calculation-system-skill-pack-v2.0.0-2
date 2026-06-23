@@ -20,6 +20,10 @@
     "templates/acquisition/open_reference_questions.md",
     "templates/acquisition/acquisition_notes.md",
     "templates/analysis/source_intake_notes.md",
+    "templates/analysis/calculation_intent_contract.md",
+    "templates/analysis/method_selection_matrix.csv",
+    "templates/analysis/input_semantics_ledger.csv",
+    "templates/analysis/computation_graph_coverage.csv",
     "templates/analysis/unit_and_sign_conventions.md",
     "templates/handoff/implementation_handoff.md",
     "templates/handoff/coding_go_no_go.md",
@@ -38,6 +42,7 @@
     "templates/implementation/formula_publish_log.csv",
     "templates/implementation/lookup_module_spec.md",
     "templates/implementation/governing_summary_spec.md",
+    "templates/implementation/runner_closure_map.csv",
     "templates/implementation/input_mapping_spec.md",
     "templates/implementation/ui_layout_spec.md",
     "templates/implementation/ui_design_system.md",
@@ -51,6 +56,7 @@
     "templates/implementation/review_readability_checklist.md",
     "templates/implementation/module_asset_registry.csv",
     "templates/implementation/data_package_manifest.yaml",
+    "templates/verification/golden_case_registry.csv",
     "templates/deployment/cloud_linux_deployment.md",
     "templates/deployment/release_checklist.md",
     "templates/deployment/runtime_env.example",
@@ -58,6 +64,13 @@
     "scripts/validate_artifacts.py",
     "project_template/engineering_calc_project/README.md",
     "project_template/engineering_calc_project/pyproject.toml",
+    "project_template/engineering_calc_project/analysis/02_logic_blueprint/calculation_intent_contract.md",
+    "project_template/engineering_calc_project/analysis/02_logic_blueprint/method_selection_matrix.csv",
+    "project_template/engineering_calc_project/analysis/02_logic_blueprint/input_semantics_ledger.csv",
+    "project_template/engineering_calc_project/analysis/03_logic_details/computation_graph_coverage.csv",
+    "project_template/engineering_calc_project/implementation/03_book_runner/runner_closure_map.csv",
+    "project_template/engineering_calc_project/verification/test_matrix.csv",
+    "project_template/engineering_calc_project/verification/golden_case_registry.csv",
     "project_template/engineering_calc_project/webapp/app.py",
     "project_template/engineering_calc_project/webapp/routes.py",
     "project_template/engineering_calc_project/webapp/templates/partials/_topbar.html",
@@ -112,11 +125,14 @@
     "templates/analysis/assumption_register.csv": "assumption_id,assumption,source_reference,reason,program_handling,blocks_production",
     "templates/analysis/branch_inventory.csv": "branch_id,condition,engineering_meaning,source_reference,path_if_true,path_if_false,not_applicable_behavior,program_representation,required_tests,risk_level",
     "templates/analysis/calculation_nodes.csv": "node_id,node_type,node_name,engineering_meaning,inputs,outputs,units,formula_or_method,source_reference,branch_condition,applicability,assumptions,module_candidate,result_visibility,report_visibility,test_requirement,risk_level",
+    "templates/analysis/computation_graph_coverage.csv": "coverage_id,node_id,node_type,check_id,formula_ids,lookup_ids,branch_ids,input_ids,source_reference,module_id,public_function,runner_step,result_path,test_ids,report_visibility,closure_status",
     "templates/analysis/concept_map.csv": "concept,meaning,role_in_calculation,source_id,notes",
     "templates/analysis/formula_inventory.csv": "formula_id,name,purpose,inputs,outputs,units,source_reference,applicability,branch_dependencies,lookup_dependencies,implementation_note,test_requirement,risk_level",
+    "templates/analysis/input_semantics_ledger.csv": "input_id,book_input_path,meaning,unit,sign_convention,coordinate_direction,source_reference,required,default_policy,validation_rule,used_by_nodes,blocks_production",
     "templates/analysis/input_inventory.csv": "field,symbol,unit,source_id,required,default,validation_rule,module",
     "templates/analysis/intermediate_inventory.csv": "value,symbol,unit,derived_from,used_by,should_be_reported",
     "templates/analysis/lookup_inventory.csv": "lookup_id,name,inputs,outputs,source_reference,interpolation_rule,out_of_range_behavior,implementation_note,test_requirement,risk_level",
+    "templates/analysis/method_selection_matrix.csv": "method_id,check_id,method_name,source_reference,applicability,selection_condition,rejection_conditions,required_inputs,required_outputs,branch_id,test_requirement,risk_level",
     "templates/analysis/open_questions.csv": "question_id,question,severity,affected_artifact,blocks_analysis,blocks_coding,recommended_resolution",
     "templates/analysis/output_inventory.csv": "output,symbol,unit,meaning,status_logic,report_section",
     "templates/analysis/risk_register.csv": "risk_id,risk,cause,impact,mitigation,owner,status",
@@ -129,6 +145,8 @@
     "templates/implementation/module_asset_registry.csv": "module_id,domain,category,module_name,public_function,input_model,options_model,result_model,source_references,formula_trace_path,unit_tests,regression_tests,reuse_status,asset_owner,notes",
     "templates/implementation/result_path_registry.csv": "result_path,meaning,unit,source_module,report_visibility,regression_check",
     "templates/implementation/review_schema.csv": "field_path,label,unit,input_type,required,validation,help_text,check_family,display_icon,result_path,formula_trace_required,marimo_section,report_visibility",
+    "templates/implementation/runner_closure_map.csv": "runner_step,check_id,module_id,public_function,branch_ids,input_paths,result_paths,warning_paths,test_ids,closure_status",
+    "templates/verification/golden_case_registry.csv": "case_id,purpose,reference_basis,input_path,expected_behavior,expected_result_path,tolerance,status,blocks_production",
     "templates/verification/test_matrix.csv": "test_id,target,type,reference_basis,input_case,expected_result,tolerance,priority,notes"
   },
   "yaml_required_keys": {
@@ -170,6 +188,7 @@
       "frontend_contract",
       "operator_workflow_contract",
       "release_contract",
+      "semantic_closure_contract",
       "coding_gate"
     ],
     "templates/handoff/artifact_index.yaml": [
@@ -275,6 +294,7 @@
       "frontend_contract",
       "operator_workflow_contract",
       "release_contract",
+      "semantic_closure_contract",
       "coding_gate",
       "production_allowed",
       "implementation_handoff.yaml"
@@ -284,11 +304,35 @@
       "Python wrapper",
       "module_asset_registry.csv",
       "stable public function",
+      "runner_closure_map.csv",
       "formula-registry"
+    ],
+    "skills/11-book-runner-and-governing-summary.skill.md": [
+      "runner_closure_map.csv",
+      "run_book(book_input: BookInput) -> BookResult",
+      "Do not count unused modules"
+    ],
+    "skills/13-verification-regression-traceability.skill.md": [
+      "golden_case_registry.csv",
+      "Golden cases verify",
+      "validator passes"
     ],
     "templates/handoff/coding_go_no_go.md": [
       "status:",
-      "Semantic production gate checklist"
+      "Semantic production gate checklist",
+      "Calculation intent contract",
+      "Runner closure map"
+    ],
+    "templates/handoff/implementation_handoff.md": [
+      "Semantic Closure Contract",
+      "calculation intent contract",
+      "runner closure map",
+      "BookResult result paths"
+    ],
+    "templates/implementation/input_mapping_spec.md": [
+      "input_semantics_ledger.csv",
+      "Unit conversion is allowed only at parse/model boundaries",
+      "UI, API, import/export, batch, report, and review layers must not change engineering meaning"
     ],
     "templates/implementation/ui_layout_spec.md": [
       "Standard Page Zones",
@@ -417,6 +461,9 @@
       "Runtime stack is recorded",
       "Frontend format is recorded",
       "Semantic production gate validation passes",
+      "Calculation intent contract is production-ready",
+      "Runner closure map proves production modules/checks are called",
+      "Golden case registry covers production-relevant high-risk checks",
       "Operator workflow decisions",
       "Report production decision is recorded",
       "Automatic report output decision is recorded",
@@ -426,10 +473,11 @@
       "Cloud Linux deployment path",
       "Chinese/English switching"
     ],
-    "shared/lifecycle.md": [
+      "shared/lifecycle.md": [
       "Engineering Calculation Lifecycle",
       "Delivery Mode",
       "Non-Negotiable Rules",
+      "calculation semantic closure",
       "Gate Statuses",
       "Step / Gate Matrix",
       "End-of-Step Rule",
@@ -490,12 +538,19 @@
     "analysis/01_source_inventory/source_inventory.yaml",
     "analysis/01_source_inventory/source_authority_table.csv",
     "analysis/01_source_inventory/source_conflicts.csv",
+    "analysis/02_logic_blueprint/calculation_intent_contract.md",
+    "analysis/02_logic_blueprint/method_selection_matrix.csv",
+    "analysis/02_logic_blueprint/input_semantics_ledger.csv",
     "analysis/03_logic_details/formula_inventory.csv",
     "analysis/03_logic_details/lookup_inventory.csv",
     "analysis/03_logic_details/branch_inventory.csv",
+    "analysis/03_logic_details/computation_graph_coverage.csv",
     "analysis/03_logic_details/unit_and_sign_conventions.md",
     "analysis/03_logic_details/assumption_register.csv",
     "analysis/05_risks_and_questions/open_questions.csv",
+    "implementation/03_book_runner/runner_closure_map.csv",
+    "verification/test_matrix.csv",
+    "verification/golden_case_registry.csv",
     "tests/smoke/example_input.json",
     "apps/review/admin_formula_review.py",
     "data/formula_registry/active_versions.yaml",
@@ -568,6 +623,12 @@
   ],
   "project_csv_headers": {
     "implementation/02_modules/module_asset_registry.csv": "module_id,domain,category,module_name,public_function,input_model,options_model,result_model,source_references,formula_trace_path,unit_tests,regression_tests,reuse_status,asset_owner,notes",
+    "implementation/03_book_runner/runner_closure_map.csv": "runner_step,check_id,module_id,public_function,branch_ids,input_paths,result_paths,warning_paths,test_ids,closure_status",
+    "analysis/02_logic_blueprint/method_selection_matrix.csv": "method_id,check_id,method_name,source_reference,applicability,selection_condition,rejection_conditions,required_inputs,required_outputs,branch_id,test_requirement,risk_level",
+    "analysis/02_logic_blueprint/input_semantics_ledger.csv": "input_id,book_input_path,meaning,unit,sign_convention,coordinate_direction,source_reference,required,default_policy,validation_rule,used_by_nodes,blocks_production",
+    "analysis/03_logic_details/computation_graph_coverage.csv": "coverage_id,node_id,node_type,check_id,formula_ids,lookup_ids,branch_ids,input_ids,source_reference,module_id,public_function,runner_step,result_path,test_ids,report_visibility,closure_status",
+    "verification/test_matrix.csv": "test_id,target,type,reference_basis,input_case,expected_result,tolerance,priority,notes",
+    "verification/golden_case_registry.csv": "case_id,purpose,reference_basis,input_path,expected_behavior,expected_result_path,tolerance,status,blocks_production",
     "references/acquisition/candidate_sources.csv": "candidate_id,title,publisher,source_type,version_or_date,jurisdiction,url_or_location,access_date,authority_level,relevance_score,gaps_covered,recommended_action,limitations,license_or_access_notes",
     "references/acquisition/search_log.csv": "search_id,gap_id,query,tool_or_location,date,results_reviewed,candidates_selected,notes",
     "references/acquisition/source_coverage_matrix.csv": "requirement_id,requirement,importance,covered,current_source_id,gap,needed_source_type,blocks_analysis,blocks_coding"
@@ -586,6 +647,7 @@
       "frontend_contract",
       "release_contract",
       "operator_workflow_contract",
+      "semantic_closure_contract",
       "coding_gate"
     ]
   },
@@ -843,7 +905,10 @@
     ],
     "handoff/coding_go_no_go.md": [
       "status:",
-      "Semantic production gate checklist"
+      "Semantic production gate checklist",
+      "Calculation intent contract",
+      "Runner closure map",
+      "Golden case registry"
     ],
     "webapp/templates/admin_review.html": [
       "id=\"adminReviewPage\"",

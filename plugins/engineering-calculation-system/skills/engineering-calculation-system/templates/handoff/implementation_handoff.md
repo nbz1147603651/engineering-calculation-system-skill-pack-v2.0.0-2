@@ -24,6 +24,13 @@ Summarize input model groups, result model groups, validation rules, and result 
 
 Summarize module candidates, formula references, lookup references, branch references, and runner sequence.
 
+## Semantic Closure Contract
+
+Summarize the calculation intent contract, method selection matrix, input semantics ledger,
+computation graph coverage, runner closure map, and golden case registry. Explicitly state whether
+the production path is closed from calculation purpose to BookInput fields, source-backed rules,
+modules, `run_book()`, BookResult result paths, report visibility, and tests.
+
 ## Calculation Module Contract
 
 List the reusable calculation module paths, public functions, typed input/result models, source trace requirements, tests, and forbidden dependencies.

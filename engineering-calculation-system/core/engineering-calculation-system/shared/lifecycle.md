@@ -47,6 +47,11 @@ handoff/implementation_handoff.yaml                connects analysis -> implemen
   report templates, batch scripts, CSV/XLSX inputs, or presentation-only code.
 - The one official calculation path is `run_book(book_input: BookInput) -> BookResult`.
   Every interface (API, UI, batch, report) calls it; none reimplement it.
+- Production calculation correctness is gated by calculation semantic closure:
+  `calculation_intent_contract.md`, `method_selection_matrix.csv`,
+  `input_semantics_ledger.csv`, `computation_graph_coverage.csv`,
+  `runner_closure_map.csv`, and `golden_case_registry.csv` must agree before
+  `production_allowed`.
 - Do not invent formulas, coefficients, units, lookup rules, or branch logic
   when the source basis is missing.
 - Do not describe a delivery as complete / production-ready / deployable /
@@ -71,18 +76,18 @@ Coding gate    (before implementation): no_go | prototype_allowed | production_a
 | 02 Discovery & acquisition | 01 finds gaps | Search, select candidates, record retrieval decisions, no unauthorized copying | Critical gaps have candidates or blockers | Search log for missing/stale sources |
 | 03 Local evidence library | Sources available/selected | Persist allowed metadata/extracts, source cards, hashes; write acquisition handoff | `analysis_allowed` or explicit blocker | Source IDs and access notes |
 | 04 Source intake | Evidence library present | Rank authority, extract applicability limits, identify conflicts, normalize IDs | Sources trusted or conflicts block work | Authority ranking |
-| 05 Logic blueprint | Trusted source set | Map concepts, inputs, outputs, nodes, assumptions, risks, visibility | Logic traceable enough for extraction | Input/output/node traceability |
-| 06 Formula/lookup/branch | Blueprint exists | Extract formulas, lookups, branches, units, sign conventions, test requirements | Every production rule has source + test requirement | Source-backed formula inventory |
-| 07 Implementation handoff | Analysis artifacts complete | Freeze public scope, runtime stack, module candidates, API/UI/report/batch/release contracts, coding gate | `production_allowed` for production; else prototype/no-go | Coding gate + `run_book` contract |
+| 05 Logic blueprint | Trusted source set | Map concepts, inputs, outputs, nodes, assumptions, risks, visibility; freeze calculation intent, method selection, and input semantics | Logic traceable enough for extraction | Input/output/node traceability and semantic closure seeds |
+| 06 Formula/lookup/branch | Blueprint exists | Extract formulas, lookups, branches, units, sign conventions, test requirements; link each rule to method/input semantics and graph coverage | Every production rule has source + test requirement + closure target | Source-backed formula inventory |
+| 07 Implementation handoff | Analysis artifacts complete | Freeze public scope, runtime stack, module candidates, semantic closure contract, API/UI/report/batch/release contracts, coding gate | `production_allowed` for production; else prototype/no-go | Coding gate + `run_book` contract + semantic closure |
 | 08 Architecture | Coding gate allows work | Define project structure, dependency direction, feature layers, package layout | Architecture prevents formulas in UI/report/batch | Dependency direction |
 | 09 Core/data models | Architecture fixed | Typed inputs/results, statuses, hashes, serialization, errors, units, result paths | Models support `BookInput`/`BookResult` | Stable public models |
-| 10 Reusable modules | Models + source-backed formulas exist | Decoupled modules, typed interfaces, formula traces, unit tests, asset registry | Modules independently testable + traceable | Formula trace + module tests |
-| 11 Book runner | Modules or source-backed checks exist | Official orchestration, validation, governing summary, warnings/errors, charts, result hashes | Non-empty checks for real input; governing status traceable | Official runner path |
+| 10 Reusable modules | Models + source-backed formulas exist | Decoupled modules, typed interfaces, formula traces, explicit default/assumption warnings, unit tests, asset registry | Modules independently testable + traceable | Formula trace + module tests |
+| 11 Book runner | Modules or source-backed checks exist | Official orchestration, validation, governing summary, warnings/errors, charts, result hashes; close every production graph node through `runner_closure_map.csv` | Non-empty checks for real input; governing status traceable | Official runner path |
 | 12 Interface routing | Runner exists | Select report / frontend-review / batch subskills per delivery mode | Required subskills selected | Thin interface over `run_book` |
 | 12a Report context/rendering | Calc-book or preview in scope | Report context + print-ready A4 HTML by default, optional LaTeX/PDF exports; preserve warnings/errors/traces; no template calculations | Readable A4 HTML/exports with required sections | Formula Logic Trace + Template Boundary Statement |
 | 12b Frontend/review/API | Web or review UI in scope | Backend API, UI kit, i18n, charts, trace display, capability detection, optional review app | API/UI calculate through `run_book` and render real results | Web API/UI framework |
 | 12c Batch/import/export | Repeated use or packages in scope | JSON import/export, batch runner/API, package manifests, hashes, output registries | Batch uses `run_book` once per case | Batch + reproducible inputs |
-| 13 Verification/traceability | Core/report/web/batch pieces exist | Unit, regression, smoke, i18n, report, batch, traceability, artifact validation | Hard blockers fixed or delivery downgraded | Validator before completion claim |
+| 13 Verification/traceability | Core/report/web/batch pieces exist | Unit, regression, golden-case, branch, smoke, i18n, report, batch, traceability, artifact validation | Hard blockers fixed or delivery downgraded | Validator before completion claim |
 | 14 Release/deployment | Web-complete requested, tests pass | Local/cloud run path, Docker or systemd/nginx, env examples, release checklist, deploy smoke | Runnable local + Linux-cloud path exists | Deployment artifacts for production |
 
 ## End-of-Step Rule (every step)
@@ -101,6 +106,7 @@ Before claiming `web-complete`, ALL of these must hold:
 
 - `coding_gate.status = production_allowed`
 - Real, non-empty project input exists
+- Calculation semantic closure artifacts exist and have no production blockers
 - `BookResult.checks` non-empty with at least one evaluated check
 - Reports include Formula Logic Trace, Template Boundary Statement, input
   summary, governing result, detailed checks, emitted charts, sources, assumptions

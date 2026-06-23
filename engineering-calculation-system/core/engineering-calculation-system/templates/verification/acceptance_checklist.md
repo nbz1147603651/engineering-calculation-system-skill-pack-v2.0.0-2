@@ -4,6 +4,12 @@
 - [ ] Acquisition handoff exists when sources were searched
 - [ ] Implementation handoff exists
 - [ ] Semantic production gate validation passes when `production_allowed`
+- [ ] Calculation intent contract is production-ready before production coding
+- [ ] Method selection matrix covers every production check and method family
+- [ ] Input semantics ledger defines units, sign conventions, defaults, validation, and blockers
+- [ ] Computation graph coverage maps formulas/lookups/branches/inputs to module, runner, result path, and tests
+- [ ] Runner closure map proves production modules/checks are called by `run_book`
+- [ ] Golden case registry covers production-relevant high-risk checks or records blockers
 - [ ] Runtime stack is recorded and defaults to Python 3.9+ unless an explicit adapter plan exists
 - [ ] Frontend format is recorded and defaults to Jinja2 + Bootstrap 5 + vanilla JavaScript modules unless explicitly overridden
 - [ ] Operator workflow decisions preserve input quality, review convenience, traceability, report preview, and import/export usability
@@ -17,6 +23,7 @@
 - [ ] Typed BookInput and BookResult exist
 - [ ] Unit policy is explicit
 - [ ] Report/UI/batch do not calculate
+- [ ] Report/UI/API/review/batch consume `BookResult` and do not override statuses or result values
 - [ ] UI follows the unified layout when a frontend exists
 - [ ] Interactive UI includes Chinese/English switching, persists the selected language, and uses the selected language for report preview/download when a frontend exists
 - [ ] Marimo review pages do not calculate outside trusted modules or run_book
