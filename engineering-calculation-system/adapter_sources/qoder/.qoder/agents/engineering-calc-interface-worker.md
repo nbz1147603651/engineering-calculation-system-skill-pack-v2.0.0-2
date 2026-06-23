@@ -30,6 +30,12 @@ Do:
 - Keep interfaces thin: parse inputs, map to `BookInput`, call `run_book()`, save `BookResult`, build `ReportContext`, and render/return results.
 - Use the shared UI kit: `templates/implementation/ui_design_system.md`, `webapp/templates/partials/`, `tokens.css`, and `components.css`.
 - Preserve Chinese/English switching through `/api/i18n/<lang>`, `data-i18n`, persisted language preference, and selected-language report calls.
+- For `web-complete`, create the mandatory Marimo review/admin closure: `/api/review/session`,
+  `/api/review/state/<session_id>`, `src/pkg/review/bridge.py`,
+  `apps/review/calculation_review.py`, `apps/review/admin_formula_review.py`, the
+  password-gated `/admin/` shell, proxied `/admin/review/` and `/admin/formulas/`, and
+  `ADMIN_REVIEW_PASSWORD` / `ADMIN_REVIEW_TOKEN` setup. If Marimo is unavailable, show the
+  install/config prompt and keep the main calculator usable.
 - Default report preview/download/final output to print-ready A4 HTML with `@page size: A4`,
   print-safe CSS, formula traces, source paths, traceability, and chart data tables when charts
   are emitted.

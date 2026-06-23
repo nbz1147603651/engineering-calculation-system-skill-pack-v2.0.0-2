@@ -3,7 +3,8 @@
 This is the single source of truth for the 01-14 lifecycle gates, the
 delivery-mode bar, and the quality checks behind each gate. Every adapter and
 release target uses the same rules. `web-complete` means dual closure: a
-reviewable calculation book AND a complete web calculation system. Reduced modes
+reviewable calculation book AND a complete web calculation system with mandatory
+Marimo review/admin closure. Reduced modes
 (`core-only`, `report-only`, `prototype-web`) are valid only when the user
 explicitly narrows scope and must be labeled not-complete / not-deployable.
 
@@ -23,8 +24,9 @@ the default path is `08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14`.
 
 Existing code does not lower the delivery bar. If a project contains calculation
 scripts, a CLI, generated report HTML, or a static page but lacks `run_book`,
-`webapp/`, review apps, report renderers, import/export, deployment files, or
-smoke tests, classify it as `static_report_or_cli_only` and label it
+`webapp/`, Marimo review apps, password-gated admin shell, report renderers,
+import/export, deployment files, or smoke tests, classify it as
+`static_report_or_cli_only` and label it
 incomplete/not-deployable until the missing web-complete layers are added.
 
 The default calculation-book deliverable is print-ready A4 HTML: browser-viewable
@@ -85,7 +87,7 @@ Coding gate    (before implementation): no_go | prototype_allowed | production_a
 | 11 Book runner | Modules or source-backed checks exist | Official orchestration, validation, governing summary, warnings/errors, charts, result hashes; close every production graph node through `runner_closure_map.csv` | Non-empty checks for real input; governing status traceable | Official runner path |
 | 12 Interface routing | Runner exists | Select report / frontend-review / batch subskills per delivery mode | Required subskills selected | Thin interface over `run_book` |
 | 12a Report context/rendering | Calc-book or preview in scope | Report context + print-ready A4 HTML by default, optional LaTeX/PDF exports; preserve warnings/errors/traces; no template calculations | Readable A4 HTML/exports with required sections | Formula Logic Trace + Template Boundary Statement |
-| 12b Frontend/review/API | Web or review UI in scope | Backend API, UI kit, i18n, charts, trace display, capability detection, optional review app | API/UI calculate through `run_book` and render real results | Web API/UI framework |
+| 12b Frontend/review/API | Web or review UI in scope | Backend API, UI kit, i18n, charts, trace display, capability detection, mandatory Marimo review/admin scaffold for `web-complete` | API/UI calculate through `run_book` and render real results | Web API/UI framework |
 | 12c Batch/import/export | Repeated use or packages in scope | JSON import/export, batch runner/API, package manifests, hashes, output registries | Batch uses `run_book` once per case | Batch + reproducible inputs |
 | 13 Verification/traceability | Core/report/web/batch pieces exist | Unit, regression, golden-case, branch, smoke, i18n, report, batch, traceability, artifact validation | Hard blockers fixed or delivery downgraded | Validator before completion claim |
 | 14 Release/deployment | Web-complete requested, tests pass | Local/cloud run path, Docker or systemd/nginx, env examples, release checklist, deploy smoke | Runnable local + Linux-cloud path exists | Deployment artifacts for production |
@@ -114,6 +116,12 @@ Before claiming `web-complete`, ALL of these must hold:
   and chart data tables/source paths when charts are emitted; requested LaTeX/PDF exports remain optional
 - Web API/UI, import/export, batch, report generation, deployment files, and
   smoke tests all exist
+- Marimo review/admin closure exists: `/admin/`, `/admin/review/`, `/admin/formulas/`,
+  `/api/review/session`, `/api/review/state/<session_id>`,
+  `apps/review/calculation_review.py`, `apps/review/admin_formula_review.py`,
+  `src/<pkg>/review/bridge.py`, `ADMIN_REVIEW_PASSWORD`, and `ADMIN_REVIEW_TOKEN`
+  are wired; if Marimo is missing, the admin shell shows the install/config prompt
+  and the calculator remains usable
 - `scripts/validate_artifacts.py --delivery web-complete` passes
 
 If any fails, return a remediation list and label the delivery

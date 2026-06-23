@@ -58,7 +58,7 @@ The `engineering-calc-system` agent remains the supervisor. Keep gate decisions,
 
 This Qoder agent must treat direct `.qoder` files as a lightweight entrypoint unless the complete core package is present. For `web-complete`, use the complete core package, project template, shared lifecycle, and validator.
 
-Read `shared/lifecycle.md` before implementation or release work when it is available. Also read `qoder_quickstart.md` at the start of a new Qoder project to classify the install shape. `web-complete` means dual closure: a readable print-ready A4 HTML calculation book with real input, non-empty `BookResult.checks`, and useful `BookResult.charts` when chartable values exist, plus a complete web system with API/UI, import/export, batch, deployment artifacts, and smoke tests. LaTeX/Overleaf/PDF are explicit exports or client-specific additions.
+Read `shared/lifecycle.md` before implementation or release work when it is available. Also read `qoder_quickstart.md` at the start of a new Qoder project to classify the install shape. `web-complete` means dual closure: a readable print-ready A4 HTML calculation book with real input, non-empty `BookResult.checks`, and useful `BookResult.charts` when chartable values exist, plus a complete web system with API/UI, Marimo review/admin pages, import/export, batch, deployment artifacts, and smoke tests. LaTeX/Overleaf/PDF are explicit exports or client-specific additions.
 
 Production calculation correctness requires calculation semantic closure. Before allowing or
 claiming `production_allowed`, confirm the complete core/project package provides and validates
@@ -68,6 +68,13 @@ If only the direct Qoder skill files are present, route to the QODER Project pac
 core package instead of coding production modules.
 
 Before claiming completion, run `python scripts/validate_artifacts.py --package-root . --profile core --project <project-root> --delivery web-complete`.
+
+Marimo review closure is mandatory for `web-complete`: require `/admin/`, `/admin/review/`,
+`/admin/formulas/`, `/api/review/session`, `/api/review/state/<session_id>`,
+`apps/review/calculation_review.py`, `apps/review/admin_formula_review.py`,
+`src/pkg/review/bridge.py`, `ADMIN_REVIEW_PASSWORD`, and `ADMIN_REVIEW_TOKEN`. If Marimo is
+not installed, the admin shell must show the install/config prompt and keep `/health` and
+`/api/calculate` usable.
 
 Static report triage: if the target project contains only calculation scripts, a report generator,
 or exported `reports/*.html` without `webapp/`, `apps/review/`, `src/pkg/report/`,

@@ -44,7 +44,8 @@ reduced scope. The default `web-complete` path is:
 `web-complete` means dual closure: a readable print-ready A4 HTML calculation
 book with real input, non-empty `BookResult.checks`, and metadata-driven charts
 when the current book exposes useful chartable values, plus a complete web system
-with API/UI, import/export, batch, deployment artifacts, and smoke tests.
+with API/UI, Marimo review/admin pages, import/export, batch, deployment artifacts,
+and smoke tests.
 LaTeX/Overleaf/PDF are explicit exports or client-specific additions.
 Lightweight entrypoints must call into the complete core package, project
 template, and validator before making a production completion claim.
@@ -52,6 +53,15 @@ template, and validator before making a production completion claim.
 For `web-complete`, the interactive UI must include Chinese/English switching:
 `/api/i18n/<lang>`, `data-i18n` bindings, persisted language preference, and
 selected-language report preview/download calls.
+
+For `web-complete`, Marimo review/admin closure is mandatory: the project must
+include the password-gated `/admin/` shell, proxied Marimo services at
+`/admin/review/` and `/admin/formulas/`, `/api/review/session`,
+`/api/review/state/<session_id>`, `apps/review/calculation_review.py`,
+`apps/review/admin_formula_review.py`, `src/<pkg>/review/bridge.py`, and
+`ADMIN_REVIEW_PASSWORD` / `ADMIN_REVIEW_TOKEN` setup. If Marimo is missing, the
+admin shell must show the install/config prompt and the main calculator remains
+usable.
 
 For production UI, use `templates/implementation/ui_design_system.md`,
 `webapp/templates/partials/`, `webapp/static/css/tokens.css`, and
@@ -106,7 +116,7 @@ Multi-agent note:
 
 Preferred setup:
 
-1. Use `dist/release/engineering-calculation-system-MiniMaxCode-v2.4.4.zip`, or expose `dist/core/engineering-calculation-system/` as a standard `SKILL.md` skill folder.
+1. Use `dist/release/engineering-calculation-system-MiniMaxCode-v2.4.5.zip`, or expose `dist/core/engineering-calculation-system/` as a standard `SKILL.md` skill folder.
 2. Let MiniMax Code import or auto-discover the root `SKILL.md`.
 3. Start with `SKILL.md` and `skills/00-engineering-calculation-router.skill.md`.
 
@@ -124,7 +134,7 @@ Fallback:
 
 Preferred setup:
 
-1. Use `dist/release/engineering-calculation-system-ZCode-v2.4.4.zip`, or copy `dist/core/engineering-calculation-system/` to `~/.zcode/skills/engineering-calculation-system/`.
+1. Use `dist/release/engineering-calculation-system-ZCode-v2.4.5.zip`, or copy `dist/core/engineering-calculation-system/` to `~/.zcode/skills/engineering-calculation-system/`.
 2. In ZCode, open Settings -> Skills, refresh the skill list, and keep `engineering-calculation-system` enabled.
 3. Invoke the skill in chat with `$engineering-calculation-system`; use `@` file references and `/goal` for long tasks when useful.
 4. Put project-specific operating rules in the workspace `AGENTS.md`. If you need a starter file, copy `dist/adapters-light/AGENTS.md` into the workspace root.
@@ -145,7 +155,7 @@ Fallback:
 
 Preferred setup:
 
-1. For project-root installation, use `dist/release/engineering-calculation-system-QODER-Project-v2.4.4.zip`.
+1. For project-root installation, use `dist/release/engineering-calculation-system-QODER-Project-v2.4.5.zip`.
 2. Apply `dist/qoder-addon/` on top of the core package when composing manually.
 3. Use `.qoder/agents/engineering-calc-system.md` as the Smart Agent supervisor when the environment supports custom agents.
 4. Use `.qoder/skills/engineering-calc-system/SKILL.md` as the project skill and direct-skill fallback.
@@ -178,7 +188,7 @@ Behavior:
 - Qoder should still route to the package router rather than reading every child file.
 - Widget or custom UI features are optional. If unavailable, continue with text artifacts and validation scripts.
 - The direct QODER Skill zip is a lightweight entrypoint. For web-complete generation, prefer QODER Project because it includes the core skill, templates, schemas, validator, project scaffold, and `.qoder/` overlay.
-- If a Qoder-generated project only has calculation scripts, a report generator, or exported `reports/*.html`, classify it as `static_report_or_cli_only`. Use the complete project scaffold to add `run_book`, `webapp/`, Marimo review, report renderers, import/export, deployment files, and smoke tests before any `web-complete` claim.
+- If a Qoder-generated project only has calculation scripts, a report generator, or exported `reports/*.html`, classify it as `static_report_or_cli_only`. Use the complete project scaffold to add `run_book`, `webapp/`, Marimo review/admin pages, report renderers, import/export, deployment files, and smoke tests before any `web-complete` claim.
 - Qoder should default calculation books to print-ready A4 HTML and generate `BookResult.charts` / `ChartSpec` only from the current book's result-path registry, report context, and already-computed chartable values; do not copy fixed chart IDs, labels, or paths from examples into unrelated projects.
 - Qoder custom agents should map expert-team roles to the roles in `shared/multi-agent-orchestration.md`: supervisor, reference-acquirer, source-intake, logic-extractor, module-worker, interface-worker, and verification-worker.
 
@@ -265,8 +275,9 @@ Use templates/ for output artifacts and scripts/validate_artifacts.py before con
 For implementation or release work, read shared/lifecycle.md.
 Declare delivery mode before implementation: core-only, report-only, prototype-web, or web-complete. Default to web-complete.
 For web-complete, follow 08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14.
-For web-complete, deliver both a readable calculation book with non-empty BookResult.checks and a complete web system with API/UI, import/export, batch, deployment, and smoke tests.
+For web-complete, deliver both a readable calculation book with non-empty BookResult.checks and a complete web system with API/UI, Marimo review/admin pages, import/export, batch, deployment, and smoke tests.
 For web-complete, include a Chinese/English interactive UI switch with /api/i18n/<lang>, data-i18n, persisted language preference, and selected-language report calls.
+For web-complete, include /admin/, /admin/review/, /admin/formulas/, /api/review/session, /api/review/state/<session_id>, apps/review/calculation_review.py, apps/review/admin_formula_review.py, src/<pkg>/review/bridge.py, ADMIN_REVIEW_PASSWORD, and ADMIN_REVIEW_TOKEN; if Marimo is missing, the admin shell shows the install prompt and the calculator still runs.
 For production UI, use templates/implementation/ui_design_system.md plus webapp/templates/partials/, tokens.css, and components.css.
 For calculation-book export, use templates/implementation/html_report_spec.md as the default final calculation book and templates/implementation/latex_report_spec.md for explicit LaTeX/Overleaf/PDF exports; default to A4 HTML with @page size: A4, print-safe CSS, source result paths, formula traces, and chart data tables when charts are emitted; expose GET /api/report/decision, POST /api/report/final, GET /api/report/templates, and send latex_template_id to /api/report/latex with default fallback.
 Do not call CLI runners, static HTML, exported report HTML, notebooks, or UI mockups complete or deployable.

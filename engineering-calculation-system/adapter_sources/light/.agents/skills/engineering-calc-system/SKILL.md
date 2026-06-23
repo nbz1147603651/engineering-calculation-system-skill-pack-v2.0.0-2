@@ -5,7 +5,7 @@ compatibility: generic-agent
 metadata:
   package: engineering-calculation-system-skill-pack
   entrypoint: ../../../SKILL.md
-version: 2.4.4
+version: 2.4.5
 ---
 
 # Engineering Calculation System
@@ -57,9 +57,10 @@ the generated dist/singlefile/engineering-calculation-system.all-in-one.md relea
 - Keep UI, reports, batch scripts, and review tools as thin consumers of trusted results.
 - Declare delivery mode before implementation: `core-only`, `report-only`, `prototype-web`, or `web-complete`.
 - Default to `web-complete`; its path is `08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14`.
-- `web-complete` means dual closure: a readable A4/LaTeX calculation book with real input and non-empty `BookResult.checks`, plus a complete web system with API/UI, import/export, batch, deployment artifacts, and smoke tests.
+- `web-complete` means dual closure: a readable A4/LaTeX calculation book with real input and non-empty `BookResult.checks`, plus a complete web system with API/UI, Marimo review/admin pages, import/export, batch, deployment artifacts, and smoke tests.
 - Lightweight wrappers must use the complete core package, project template, and validator before making a production completion claim.
 - For `web-complete`, include a Chinese/English interactive UI switch with `/api/i18n/<lang>`, `data-i18n`, persisted language preference, and selected-language report calls.
+- For `web-complete`, include `/admin/`, `/admin/review/`, `/admin/formulas/`, `/api/review/session`, `/api/review/state/<session_id>`, `apps/review/calculation_review.py`, `apps/review/admin_formula_review.py`, `src/<pkg>/review/bridge.py`, `ADMIN_REVIEW_PASSWORD`, and `ADMIN_REVIEW_TOKEN`; if Marimo is missing, show the install/config prompt and keep the main calculator usable.
 - For production UI, use `templates/implementation/ui_design_system.md`, `webapp/templates/partials/`, `webapp/static/css/tokens.css`, and `webapp/static/css/components.css`.
 - For calculation-book export, use `templates/implementation/latex_report_spec.md` and `templates/implementation/html_report_spec.md`; choose LaTeX/PDF when `latexmk` or `pdflatex` is installed and require successful compilation to `main.pdf`, otherwise use A4 HTML with `@page size: A4`; expose `GET /api/report/decision`, `POST /api/report/final`, `GET /api/report/templates`, and `/api/report/latex`.
 - Do not call CLI runners, static HTML, exported report HTML, notebooks, or UI mockups complete or deployable.

@@ -1,14 +1,14 @@
 ---
 name: engineering-calc-system
 description: 工程计算系统全生命周期专家。Use when a task involves engineering calculation references, formula/lookup/branch extraction, calculation logic blueprints, implementation handoff, auditable calculation-book software, reports, batch flows, or verification.
-version: 2.4.4
+version: 2.4.5
 ---
 
 ## Stable ASCII Contract
 
 This Qoder skill is a lightweight entrypoint unless the project also contains the complete core package: `SKILL.md`, `skills/`, `shared/`, `templates/`, `schemas/`, `scripts/validate_artifacts.py`, and `project_template/`.
 
-Before implementation or release work, read `shared/lifecycle.md` from the complete core package when it is available. At the start of a Qoder project, read `qoder_quickstart.md` for the Qoder Package Self-Check. Default delivery is `web-complete`, which means dual closure: a readable print-ready A4 HTML calculation book with real input, non-empty `BookResult.checks`, and useful `BookResult.charts` when chartable values exist, plus a complete web system with API/UI, import/export, batch, deployment artifacts, and smoke tests. LaTeX/Overleaf/PDF are explicit exports or client-specific additions.
+Before implementation or release work, read `shared/lifecycle.md` from the complete core package when it is available. At the start of a Qoder project, read `qoder_quickstart.md` for the Qoder Package Self-Check. Default delivery is `web-complete`, which means dual closure: a readable print-ready A4 HTML calculation book with real input, non-empty `BookResult.checks`, and useful `BookResult.charts` when chartable values exist, plus a complete web system with API/UI, Marimo review/admin pages, import/export, batch, deployment artifacts, and smoke tests. LaTeX/Overleaf/PDF are explicit exports or client-specific additions.
 
 Production work also requires calculation semantic closure. The complete core/project package must provide and validate `semantic_closure_contract`, `calculation_intent_contract.md`, `method_selection_matrix.csv`, `input_semantics_ledger.csv`, `computation_graph_coverage.csv`, `runner_closure_map.csv`, and `golden_case_registry.csv`. Direct Qoder skill imports do not contain those templates or validator gates by themselves; they must route users to the QODER Project package, complete core package, or single-file fallback before claiming production correctness.
 
@@ -18,6 +18,12 @@ Do not claim production completion from the direct Qoder skill alone. Use the co
 python scripts/validate_artifacts.py --package-root . --profile core --project <project-root> --delivery web-complete
 ```
 
+## Marimo Review Closure
+
+For `web-complete`, Qoder must generate the complete Marimo review/admin scaffold, not just a static HTML report or a UI mockup. Required artifacts and public entrypoints are `/admin/`, `/admin/review/`, `/admin/formulas/`, `/api/review/session`, `/api/review/state/<session_id>`, `apps/review/calculation_review.py`, `apps/review/admin_formula_review.py`, `src/pkg/review/bridge.py`, `ADMIN_REVIEW_PASSWORD`, and `ADMIN_REVIEW_TOKEN`.
+
+If Marimo is not installed on the target runtime, the `/admin/` shell must still exist, show the `python -m pip install marimo` and token/password setup prompt, and leave `/`, `/health`, and `/api/calculate` usable.
+
 ## Static Report Triage
 
 When a Qoder output has calculation modules or a report generator plus exported HTML, but no
@@ -25,7 +31,7 @@ When a Qoder output has calculation modules or a report generator plus exported 
 `handoff/`, classify it as `static_report_or_cli_only`. It is incomplete for `web-complete`.
 
 Remediate by using the complete core project scaffold and routing through
-`08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14`. The exported HTML may guide report
+`08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14`, including the Marimo review/admin closure. The exported HTML may guide report
 appearance or regression comparison, but it must not become the application runtime.
 
 ## A4 HTML First

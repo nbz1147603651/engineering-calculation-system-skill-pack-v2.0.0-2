@@ -31,6 +31,11 @@ Do:
   lacks `webapp/`, `apps/review/`, `src/pkg/report/`, `latex/templates/`, `deploy/`, or web/report
   smoke tests. Report the material state as `static_report_or_cli_only`.
 - Check formula traces, result hashes, warnings/errors, status semantics, report rendering, batch flows, and smoke routes.
+- Check Marimo review/admin closure for `web-complete`: `/admin/`, `/admin/review/`,
+  `/admin/formulas/`, `/api/review/session`, `/api/review/state/<session_id>`,
+  `apps/review/calculation_review.py`, `apps/review/admin_formula_review.py`,
+  `src/pkg/review/bridge.py`, `ADMIN_REVIEW_PASSWORD`, `ADMIN_REVIEW_TOKEN`, and the
+  missing-Marimo install/config prompt.
 - Check that `/api/report/decision` defaults to `html_a4` and `/api/report/final` returns
   print-ready A4 HTML with `@page size: A4`, source result paths, template boundary statements,
   and chart data tables when charts are emitted unless LaTeX/PDF was explicitly requested.

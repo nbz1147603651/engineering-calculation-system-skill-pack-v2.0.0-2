@@ -73,9 +73,9 @@ explicitly requests a narrower prototype.
 
 `web-complete` means dual closure: a readable A4/LaTeX calculation book with
 real input and non-empty `BookResult.checks`, plus a complete web system with
-API/UI, import/export, batch, deployment artifacts, and smoke tests. Lightweight
-wrappers must use the complete core package, project template, and validator
-before making a production completion claim.
+API/UI, Marimo review/admin pages, import/export, batch, deployment artifacts,
+and smoke tests. Lightweight wrappers must use the complete core package,
+project template, and validator before making a production completion claim.
 
 Do not call CLI runners, static HTML, exported report HTML, notebooks, or UI
 mockups complete or deployable.
@@ -83,6 +83,12 @@ mockups complete or deployable.
 For `web-complete`, include a Chinese/English interactive UI switch with
 `/api/i18n/<lang>`, `data-i18n`, persisted language preference, and
 selected-language report calls.
+
+For `web-complete`, include `/admin/`, `/admin/review/`, `/admin/formulas/`,
+`/api/review/session`, `/api/review/state/<session_id>`,
+`apps/review/calculation_review.py`, `apps/review/admin_formula_review.py`,
+`src/<pkg>/review/bridge.py`, `ADMIN_REVIEW_PASSWORD`, and `ADMIN_REVIEW_TOKEN`.
+If Marimo is missing, show the install/config prompt and keep the main calculator usable.
 
 For production UI, use `templates/implementation/ui_design_system.md`,
 `webapp/templates/partials/`, `webapp/static/css/tokens.css`, and

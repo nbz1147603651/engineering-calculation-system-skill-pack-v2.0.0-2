@@ -1,7 +1,7 @@
 ---
 name: engineering-calculation-system
 description: Build, verify, package, or deploy source-backed engineering calculation web apps and calculation books. Use when the user needs to assess or acquire engineering references, turn standards/manuals/PDFs/spreadsheets into a Calculation Logic Blueprint and implementation handoff, build decoupled reusable calculation modules and an official run_book() runner, build an auditable web calculation app with a reusable UI kit and HTML/LaTeX/Overleaf reports, verify formulas/reports/batch/traceability, or package a runnable local and Linux-cloud deployable online calculator — even when "calculation", "engineering", or "calculation book" is not named explicitly.
-version: 2.4.4
+version: 2.4.5
 ---
 
 # Engineering Calculation System
@@ -38,6 +38,12 @@ calculation book AND a complete web calculation system. For `web-complete` the d
 `08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14`.
 The default calculation-book output is print-ready A4 HTML; LaTeX/Overleaf/PDF are explicit
 exports or client-specific additions, not the default replacement for the A4 HTML book.
+For `web-complete`, Marimo review/admin closure is mandatory: the generated project must include
+`/admin/`, `/admin/review/`, `/admin/formulas/`, `/api/review/session`,
+`/api/review/state/<session_id>`, `apps/review/calculation_review.py`,
+`apps/review/admin_formula_review.py`, `src/<pkg>/review/bridge.py`, and deployment/run commands.
+If Marimo is not installed at runtime, the admin shell still exists, shows the install/token
+prompt, and leaves the main calculator usable.
 
 If an existing project has calculation scripts and exported HTML reports but lacks the complete
 project scaffold (`run_book`, `webapp/`, `apps/review/`, report renderers, import/export,
@@ -61,7 +67,8 @@ duplicate them elsewhere:
 - Do not start production implementation unless `handoff/implementation_handoff.yaml` and
   `handoff/coding_go_no_go.md` allow it.
 - Default stack is Python-first (Python 3.9+, `src/<pkg>/libraries/`, Flask/FastAPI thin routes,
-  `webapp/` browser UI, Marimo review when Python-native module review is needed). Use another
+  `webapp/` browser UI, mandatory Marimo review/admin scaffold for `web-complete`, and
+  module-specific Marimo review pages when Python-native module review is needed). Use another
   runtime only when the user explicitly requests it and the handoff defines an adapter plan.
 - Do not call a delivery complete/production-ready/deployable/web-complete when it is only a CLI
   runner, static `.html`, exported report HTML, notebook demo, or UI mockup.

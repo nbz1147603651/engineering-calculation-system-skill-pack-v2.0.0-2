@@ -10,9 +10,9 @@ Classify the current install before doing implementation or release work:
 | --- | --- | --- |
 | Direct QODER Skill | `SKILL.md`, `reference.md`, `qoder_quickstart.md`, `assets/lifecycle-console.html` | Route, explain gates, guide work. Do not claim `web-complete` from this shape alone. |
 | QODER Project overlay | `.qoder/agents/engineering-calc-system.md`, `.qoder/skills/engineering-calc-system/`, `.qoder/references/engineering-calc-system.md` | Agent-first supervision with worker agents and skill resources. |
-| Complete core project | `SKILL.md`, `skills/`, `shared/`, `templates/`, `schemas/`, `scripts/validate_artifacts.py`, `project_template/` | Full source-backed implementation, validation, report, web, batch, and deployment closure. |
+| Complete core project | `SKILL.md`, `skills/`, `shared/`, `templates/`, `schemas/`, `scripts/validate_artifacts.py`, `project_template/` | Full source-backed implementation, validation, report, web, Marimo review/admin, batch, and deployment closure. |
 
-If the task asks for a deployable online calculator or `web-complete`, use the QODER Project package together with the complete core package. If only the direct skill is installed, label outputs as guidance, draft, or prototype until the core validator can run.
+If the task asks for a deployable online calculator or `web-complete`, use the QODER Project package together with the complete core package, including the Marimo review/admin scaffold. If only the direct skill is installed, label outputs as guidance, draft, or prototype until the core validator can run.
 
 Production calculation correctness requires calculation semantic closure. Before coding is labeled
 `production_allowed`, the complete core/project package must contain and validate:
@@ -35,7 +35,8 @@ run_book(BookInput) -> BookResult
 src/pkg/report/{html_renderer,latex_renderer,report_selector}.py
 webapp/{app.py,routes.py,form_utils.py,i18n.py}
 webapp/templates/ and webapp/static/
-apps/review/calculation_review.py and admin_formula_review.py when review is in scope
+apps/review/calculation_review.py and admin_formula_review.py
+src/pkg/review/bridge.py plus /admin/, /admin/review/, /admin/formulas/
 data/ + outputs/ import/export areas
 tests/smoke/test_web_routes.py and tests/smoke/test_latex_report.py
 deploy/ and release/
@@ -43,6 +44,13 @@ deploy/ and release/
 
 Do not make the static report prettier and call it a web app. Treat it as an imported visual
 reference or regression comparison until the scaffold and validator pass.
+
+## Marimo Review Closure
+
+`web-complete` requires `/api/review/session`, `/api/review/state/<session_id>`, the
+password-gated `/admin/` shell, proxied Marimo services at `/admin/review/` and
+`/admin/formulas/`, `ADMIN_REVIEW_PASSWORD`, and `ADMIN_REVIEW_TOKEN`. If Marimo is not installed,
+the admin page must show the install/config prompt and the main calculator must still run.
 
 ## A4 HTML First
 
@@ -111,4 +119,5 @@ Do not say complete, production-ready, deployable, or `web-complete` unless:
 - calculation semantic closure artifacts exist and validate
 - real input creates non-empty evaluated `BookResult.checks`
 - API/UI, report, import/export, batch, deployment artifacts, and smoke tests exist
+- Marimo review/admin pages, review-session API, review bridge, token/password setup, and missing-Marimo fallback exist
 - `validate_artifacts.py --delivery web-complete` passes

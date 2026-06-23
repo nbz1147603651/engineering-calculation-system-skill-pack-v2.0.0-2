@@ -34,7 +34,9 @@ use. The static-HTML guard and `run_book()` contract live in `shared/lifecycle.m
    Required API surface for a web-complete calculator includes `GET /health`, `GET /`,
    `POST /api/calculate`, `GET /api/report/decision`, `GET /api/report/templates`,
    `POST /api/report/html`, `POST /api/report/preview`, `POST /api/report/latex`,
-   `POST /api/report/final`, and review-session endpoints when Marimo review is enabled.
+   `POST /api/report/final`, `GET /api/capabilities`, `POST /api/review/session`,
+   `GET /api/review/state/<session_id>`, the password-gated `/admin/` shell, and
+   proxied Marimo services at `/admin/review/` and `/admin/formulas/`.
 3. Apply the unified frontend layout (`templates/implementation/ui_layout_spec.md`) unless an
    existing product design overrides it: top bar (title, case selector, report status, import/
    export, report preview, language switch); left input panel (grouped BookInput forms, units,
@@ -78,12 +80,14 @@ use. The static-HTML guard and `run_book()` contract live in `shared/lifecycle.m
    `BookResult.charts`/`ChartSpec` with source result paths, data tables, and recommended UI/report
    locations; when it does not, record charts as not applicable. Charts visualize; they never
    calculate, override pass/fail, choose governing cases, or do official unit conversion.
-9. Add a Marimo review app when reviewers need module-level inspection, under
+9. For `web-complete`, always add the frontend-connected Marimo review/admin scaffold.
+   The required bridge from `templates/implementation/marimo_frontend_bridge_spec.md` is:
+   `/api/review/session`, `/api/review/state/<session_id>`,
+   `src/<pkg>/review/bridge.py`, `apps/review/calculation_review.py`, and
+   `apps/review/admin_formula_review.py`. Add module-level inspection pages under
    `apps/review/<book_name>_review.py` and `apps/review/modules/<module_name>_review.py`
-   (`templates/implementation/marimo_review_spec.md`). For frontend-connected review, add the
-   generic bridge from `templates/implementation/marimo_frontend_bridge_spec.md`: `/api/review/session`,
-   `/api/review/state/<session_id>`, `src/<pkg>/review/bridge.py`, and
-   `apps/review/calculation_review.py`. The Marimo app loads saved BookInput/BookResult/
+   (`templates/implementation/marimo_review_spec.md`) when reviewers need reusable-module
+   inspection beyond the generic calculation session review. The Marimo app loads saved BookInput/BookResult/
    ReportContext sessions from `outputs/review/`, then supports live Python review in
    `marimo edit` and controlled token-protected `marimo run` behind `/admin/review/`.
    The interactive UI must include an obvious entry into review from the top bar. The Flask
@@ -113,6 +117,7 @@ webapp/templates/{base.html,index.html,partials/_topbar.html,partials/_report_mo
 webapp/static/js/{main,forms,results,i18n}.js
 webapp/static/css/{tokens,components,style}.css
 src/<pkg>/core/sanitize.py
+src/<pkg>/review/bridge.py
 apps/review/...
 implementation/04_interfaces/{ui_layout_spec,ui_design_system,form_mapping_spec,
   api_route_skeleton,i18n_pattern,chart_integration,marimo_review_spec,
@@ -121,6 +126,7 @@ implementation/04_interfaces/{ui_layout_spec,ui_design_system,form_mapping_spec,
 
 ## Exit gate
 
-API/UI calculate through `run_book` and render real results; delivery is not static-HTML-only when
-production delivery is expected. See `shared/lifecycle.md` row 12b. Next path: 12c if batch/
-import-export is needed, else 13.
+API/UI calculate through `run_book` and render real results; `/admin/`, `/admin/review/`,
+`/admin/formulas/`, review-session APIs, and the Marimo missing-install fallback exist for
+`web-complete`; delivery is not static-HTML-only when production delivery is expected.
+See `shared/lifecycle.md` row 12b. Next path: 12c if batch/import-export is needed, else 13.

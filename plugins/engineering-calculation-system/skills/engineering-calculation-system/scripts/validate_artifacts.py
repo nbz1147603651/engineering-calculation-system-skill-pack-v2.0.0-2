@@ -14,6 +14,7 @@ import re
 import shutil
 import sys
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 
 sys.dont_write_bytecode = True
@@ -208,6 +209,7 @@ WEB_COMPLETE_REQUIRED_PROJECT_PATHS = [
     "latex/templates/default_engineering_calcbook/latexmkrc",
     "latex/templates/default_engineering_calcbook/sections/04_figures.tex.j2",
     "apps/review/calculation_review.py",
+    "apps/review/admin_formula_review.py",
     "deploy/env.example",
     "deploy/one_click_deploy.sh",
     "deploy/Dockerfile",
@@ -219,6 +221,7 @@ WEB_COMPLETE_REQUIRED_PROJECT_PATHS = [
     "release/release_checklist.md",
     "release/runbook.md",
     "tests/smoke/test_web_routes.py",
+    "tests/unit/test_marimo_review.py",
     "outputs/results_json/.gitkeep",
     "outputs/normalized_inputs_json/.gitkeep",
     "outputs/upload_packages/.gitkeep",
@@ -251,6 +254,10 @@ WEB_COMPLETE_TEXT_REQUIRED_PHRASES = {
         "/admin/review/",
         "admin_review",
         "detect_capabilities",
+        "write_review_session",
+        "read_review_session",
+        "admin_url",
+        "review_url",
         "_resolve_latex_template_dir",
         "latex_template_id",
         "select_report_output",
@@ -285,6 +292,8 @@ WEB_COMPLETE_TEXT_REQUIRED_PHRASES = {
         "ADMIN_REVIEW_TOKEN",
         "review.run_command",
         "review.formula_admin_run_command",
+        "review.install_command",
+        "Marimo is not installed in this runtime",
         "apps/review/calculation_review.py",
         "/api/review/session",
         "/admin/formulas",
@@ -453,10 +462,26 @@ WEB_COMPLETE_TEXT_REQUIRED_PHRASES = {
     ],
     "apps/review/calculation_review.py": [
         "marimo.App",
+        "_MissingMarimoApp",
+        "Marimo is not installed",
         "list_review_sessions",
         "read_review_session",
         "append_review_decision",
         "FormulaTrace",
+        "review_decisions.jsonl",
+    ],
+    "apps/review/admin_formula_review.py": [
+        "marimo.App",
+        "_MissingMarimoApp",
+        "Marimo is not installed",
+        "publish_formula_rule",
+        "active_versions.yaml",
+        "run_book()",
+    ],
+    "tests/unit/test_marimo_review.py": [
+        "calculation_review.py",
+        "admin_formula_review.py",
+        "Marimo is not installed",
     ],
     "tests/smoke/test_latex_report.py": [
         "/api/report/latex",
@@ -1279,7 +1304,7 @@ def check_static_html_delivery_guard(project_root: Path, errors: list[str]) -> N
             "web system; static HTML/report HTML alone is not a production-ready web calculation "
             f"system; missing runtime artifacts: {', '.join(missing)}. Remediate through "
             "08->09->10->11->12a->12b->12c->13->14 and add webapp, report renderers, "
-            "Marimo/review bridge when in scope, import/export outputs, deployment files, and "
+            "mandatory Marimo review/admin bridge, import/export outputs, deployment files, and "
             "smoke tests."
             )
 
@@ -1412,6 +1437,41 @@ def check_chart_contract(charts: list[object], errors: list[str]) -> None:
             errors.append(f"{context} must include source_result_paths or per-series result_paths")
 
 
+def check_marimo_review_app_imports(project_root: Path, errors: list[str]) -> None:
+    previous_path = list(sys.path)
+    purge_project_modules()
+    sys.path.insert(0, str(project_root))
+    sys.path.insert(0, str(project_root / "src"))
+    try:
+        for rel_path in (
+            "apps/review/calculation_review.py",
+            "apps/review/admin_formula_review.py",
+        ):
+            path = project_root / rel_path
+            if not path.exists():
+                continue
+            module_name = f"ecs_validator_{Path(rel_path).stem}"
+            spec = importlib.util.spec_from_file_location(module_name, path)
+            if spec is None or spec.loader is None:
+                errors.append(f"web-complete Marimo review app is not importable: {rel_path}")
+                continue
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            app = getattr(module, "app", None)
+            if app is None:
+                errors.append(f"web-complete Marimo review app missing app object: {rel_path}")
+            message = getattr(app, "message", "")
+            if message and "Marimo is not installed" not in message:
+                errors.append(
+                    f"web-complete Marimo fallback message is incomplete in {rel_path}"
+                )
+    except Exception as exc:  # pragma: no cover - validator reports import failures.
+        errors.append(f"web-complete Marimo review app import failed: {exc}")
+    finally:
+        sys.path[:] = previous_path
+        purge_project_modules()
+
+
 def check_web_complete_runtime_closure(project_root: Path, errors: list[str]) -> None:
     example_data = check_example_input_payload(project_root, errors)
     if not example_data:
@@ -1431,6 +1491,7 @@ def check_web_complete_runtime_closure(project_root: Path, errors: list[str]) ->
         book_runner = importlib.import_module(f"pkg.books.{book_name}.book_runner")
         report_context_module = importlib.import_module(f"pkg.books.{book_name}.report_context")
         html_renderer = importlib.import_module("pkg.report.html_renderer")
+        review_bridge = importlib.import_module("pkg.review.bridge")
 
         book_input = form_utils.build_case_input_from_form(example_data)
         result = book_runner.run_book(book_input)
@@ -1467,6 +1528,43 @@ def check_web_complete_runtime_closure(project_root: Path, errors: list[str]) ->
         for phrase in WEB_COMPLETE_FORBIDDEN_REPORT_PHRASES:
             if phrase in html:
                 errors.append(f"web-complete report contains incomplete placeholder phrase: {phrase}")
+
+        with TemporaryDirectory(prefix="ecs_review_validator_") as tmp_dir:
+            review_root = Path(tmp_dir)
+            session = review_bridge.write_review_session(
+                book_input,
+                result,
+                report_context,
+                root=review_root,
+            )
+            if session.get("status") != "ready_for_review":
+                errors.append("web-complete review session must be ready_for_review")
+            for key in (
+                "input_path",
+                "result_path",
+                "report_context_path",
+                "review_state_path",
+            ):
+                path_value = session.get(key)
+                if not path_value or not Path(path_value).exists():
+                    errors.append(f"web-complete review session did not write {key}")
+            loaded_session = review_bridge.read_review_session(
+                session["session_id"],
+                root=review_root,
+            )
+            if loaded_session["state"].get("review_decision") != "pending":
+                errors.append("web-complete review session state must start pending")
+            decision_state = review_bridge.append_review_decision(
+                session["session_id"],
+                reviewer="validator",
+                decision="accepted",
+                notes="validator smoke",
+                root=review_root,
+            )
+            if decision_state.get("review_decision") != "accepted":
+                errors.append("web-complete review decision append did not update state")
+            if not (review_root / "review_decisions.jsonl").exists():
+                errors.append("web-complete review decision log was not written")
     except Exception as exc:  # pragma: no cover - validator must report import/runtime failures cleanly.
         errors.append(f"web-complete runtime closure failed: {exc}")
     finally:
@@ -1479,6 +1577,7 @@ def check_web_complete_delivery(project_root: Path, errors: list[str]) -> None:
     for rel_path in WEB_COMPLETE_REQUIRED_PROJECT_PATHS:
         check_exists(project_root, rel_path, errors)
     check_text_required_phrases(project_root, WEB_COMPLETE_TEXT_REQUIRED_PHRASES, errors)
+    check_marimo_review_app_imports(project_root, errors)
     check_web_complete_gate_status(project_root, errors)
     check_web_complete_placeholders(project_root, errors)
     check_web_complete_runtime_closure(project_root, errors)
@@ -1596,12 +1695,12 @@ def validate_adapters_light_profile(package_root: Path) -> list[str]:
     check_text_required_phrases(
         package_root,
         {
-            "AGENTS.md": ["Chinese/English interactive UI switch", "shared/lifecycle.md", "dual closure"],
-            "adapters/agent-entrypoints.md": ["Chinese/English switching", "shared/lifecycle.md", "dual closure"],
-            ".agents/skills/engineering-calc-system/SKILL.md": ["Chinese/English interactive UI switch", "lifecycle.md", "dual closure"],
-            ".opencode/skills/engineering-calc-system/SKILL.md": ["Chinese/English interactive UI switch", "lifecycle.md", "dual closure"],
-            ".trae/project_rules.md": ["Chinese/English interactive UI switch", "shared/lifecycle.md", "dual closure"],
-            ".trae/rules/engineering-calc-system.md": ["Chinese/English interactive UI switch", "shared/lifecycle.md", "dual closure"],
+            "AGENTS.md": ["Chinese/English interactive UI switch", "shared/lifecycle.md", "dual closure", "Marimo review/admin pages", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
+            "adapters/agent-entrypoints.md": ["Chinese/English switching", "shared/lifecycle.md", "dual closure", "Marimo review/admin closure", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
+            ".agents/skills/engineering-calc-system/SKILL.md": ["Chinese/English interactive UI switch", "lifecycle.md", "dual closure", "Marimo review/admin pages", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
+            ".opencode/skills/engineering-calc-system/SKILL.md": ["Chinese/English interactive UI switch", "lifecycle.md", "dual closure", "Marimo review/admin pages", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
+            ".trae/project_rules.md": ["Chinese/English interactive UI switch", "shared/lifecycle.md", "dual closure", "Marimo review/admin pages", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
+            ".trae/rules/engineering-calc-system.md": ["Chinese/English interactive UI switch", "shared/lifecycle.md", "dual closure", "Marimo review/admin pages", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
         },
         errors,
     )
@@ -1633,16 +1732,16 @@ def validate_qoder_addon_profile(package_root: Path) -> list[str]:
     check_text_required_phrases(
         package_root,
         {
-            ".qoder/skills/engineering-calc-system/SKILL.md": ["Qoder Architecture", "agent-first", "shared/lifecycle.md", "dual closure", "qoder_quickstart.md", "Static Report Triage", "static_report_or_cli_only", "A4 HTML First", "print-ready A4 HTML", "calculation semantic closure", "calculation_intent_contract.md", "runner_closure_map.csv", "golden_case_registry.csv"],
-            ".qoder/skills/engineering-calc-system/reference.md": ["/api/i18n/<lang>"],
-            ".qoder/skills/engineering-calc-system/qoder_quickstart.md": ["Qoder Package Self-Check", "Direct QODER Skill", "QODER Project overlay", "Complete core project", "validate_artifacts.py --package-root", "Static Report Triage", "static_report_or_cli_only", "A4 HTML First", "print-ready A4 HTML", "calculation semantic closure", "input_semantics_ledger.csv", "computation_graph_coverage.csv"],
+            ".qoder/skills/engineering-calc-system/SKILL.md": ["Qoder Architecture", "agent-first", "shared/lifecycle.md", "dual closure", "qoder_quickstart.md", "Static Report Triage", "static_report_or_cli_only", "A4 HTML First", "print-ready A4 HTML", "calculation semantic closure", "calculation_intent_contract.md", "runner_closure_map.csv", "golden_case_registry.csv", "Marimo Review Closure", "/api/review/session", "apps/review/admin_formula_review.py", "ADMIN_REVIEW_TOKEN"],
+            ".qoder/skills/engineering-calc-system/reference.md": ["/api/i18n/<lang>", "Marimo Review Closure", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
+            ".qoder/skills/engineering-calc-system/qoder_quickstart.md": ["Qoder Package Self-Check", "Direct QODER Skill", "QODER Project overlay", "Complete core project", "validate_artifacts.py --package-root", "Static Report Triage", "static_report_or_cli_only", "A4 HTML First", "print-ready A4 HTML", "calculation semantic closure", "input_semantics_ledger.csv", "computation_graph_coverage.csv", "Marimo Review Closure", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
             ".qoder/skills/engineering-calc-system/assets/lifecycle-console.html": [f"v{expected_version}", "12a", "12b", "12c", "14", "route_confirmed", "batch_import"],
-            ".qoder/agents/engineering-calc-system.md": ["Qoder Architecture", "agent-first", "Stable ASCII Contract", "shared/lifecycle.md", "dual closure", "static_report_or_cli_only", "A4 HTML first", "print-ready A4 HTML", "calculation semantic closure", "method_selection_matrix.csv", "golden_case_registry.csv"],
+            ".qoder/agents/engineering-calc-system.md": ["Qoder Architecture", "agent-first", "Stable ASCII Contract", "shared/lifecycle.md", "dual closure", "static_report_or_cli_only", "A4 HTML first", "print-ready A4 HTML", "calculation semantic closure", "method_selection_matrix.csv", "golden_case_registry.csv", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
             ".qoder/agents/engineering-calc-module-worker.md": ["Qoder Worker Contract", "run_book(BookInput) -> BookResult"],
-            ".qoder/agents/engineering-calc-interface-worker.md": ["Qoder Worker Contract", "/api/i18n/<lang>", "reports/*.html"],
-            ".qoder/agents/engineering-calc-verification-worker.md": ["Qoder Worker Contract", "web-complete", "static_report_or_cli_only", "html_a4", "chart data tables"],
-            ".qoder/agents/engineering-calc-release-worker.md": ["Qoder Worker Contract", "/health"],
-            ".qoder/references/engineering-calc-system.md": ["/api/i18n/<lang>", "static_report_or_cli_only", "A4 HTML first", "BookResult.charts", "calculation semantic closure", "runner_closure_map.csv"],
+            ".qoder/agents/engineering-calc-interface-worker.md": ["Qoder Worker Contract", "/api/i18n/<lang>", "reports/*.html", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
+            ".qoder/agents/engineering-calc-verification-worker.md": ["Qoder Worker Contract", "web-complete", "static_report_or_cli_only", "html_a4", "chart data tables", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
+            ".qoder/agents/engineering-calc-release-worker.md": ["Qoder Worker Contract", "/health", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
+            ".qoder/references/engineering-calc-system.md": ["/api/i18n/<lang>", "static_report_or_cli_only", "A4 HTML first", "BookResult.charts", "calculation semantic closure", "runner_closure_map.csv", "Marimo Review Closure", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
         },
         errors,
     )

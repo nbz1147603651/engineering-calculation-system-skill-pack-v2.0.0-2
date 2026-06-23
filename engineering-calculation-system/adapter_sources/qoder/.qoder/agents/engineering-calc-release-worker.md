@@ -22,10 +22,10 @@ outputs/logs/
 
 Do:
 
-- Document local run commands, environment variables, health checks, API smoke commands, and deployment assumptions.
+- Document local run commands, environment variables, health checks, API smoke commands, and deployment assumptions, including `ADMIN_REVIEW_PASSWORD`, `ADMIN_REVIEW_TOKEN`, and Marimo review/formula admin run commands.
 - Prepare Docker or systemd/nginx deployment artifacts when in scope.
 - Verify the delivered app is not just static HTML, report HTML, notebook output, or a UI mockup.
-- Run `/health`, `/api/calculate`, report, import/export, and batch smoke tests when available.
+- Run `/health`, `/api/calculate`, `/admin/`, `/api/review/session`, `/api/review/state/<session_id>`, report, import/export, and batch smoke tests when available.
 - Return an agent result packet with release artifacts, smoke evidence, and remaining deployment risks.
 
 Do not:
@@ -33,4 +33,3 @@ Do not:
 - Declare release readiness if tests, health checks, environment files, or deployment paths are missing.
 - Change formula modules or runner contracts without supervisor approval.
 - Claim cloud deployment when only local prototype artifacts exist.
-

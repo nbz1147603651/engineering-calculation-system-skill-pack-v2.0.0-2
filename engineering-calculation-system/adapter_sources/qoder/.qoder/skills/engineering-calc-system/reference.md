@@ -632,3 +632,13 @@ domain formulas, book-specific runner logic, UI code, report rendering, batch wo
 - 记录工具到 `tool_or_location`
 - 记录接受和拒绝的候选源
 - 工具不可用时明确声明
+## Marimo Review Closure
+
+For `web-complete`, the interactive project must include Marimo review/admin closure, not only
+report HTML or a mockup. Required entrypoints and artifacts are `/admin/`, `/admin/review/`,
+`/admin/formulas/`, `/api/review/session`, `/api/review/state/<session_id>`,
+`apps/review/calculation_review.py`, `apps/review/admin_formula_review.py`,
+`src/pkg/review/bridge.py`, `ADMIN_REVIEW_PASSWORD`, and `ADMIN_REVIEW_TOKEN`.
+
+If Marimo is missing from the runtime, `/admin/` must show the `python -m pip install marimo`
+and token/password setup prompt while `/`, `/health`, and `/api/calculate` remain usable.
