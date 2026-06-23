@@ -14,7 +14,7 @@ npm run build
 node dist/cli/index.js install --target .. --force
 ```
 
-If the skill root cannot be inferred from schema version `2.4.3`, pass it explicitly:
+If the skill root cannot be inferred from schema version `2.4.4`, pass it explicitly:
 
 ```bash
 node dist/cli/index.js install --target .. --skill-root ../engineering-calculation-system/core/engineering-calculation-system --force

@@ -50,7 +50,7 @@ orchestrates copies/deploys). Set `ECS_REPO_ROOT` to pre-fill the repo path:
 
 ```powershell
 $env:ECS_REPO_ROOT = "C:\path\to\engineering-calculation-system"
-.\engineering-calc-system-installer-v2.4.3.exe
+.\engineering-calc-system-installer-v2.4.4.exe
 ```
 
 To rebuild the whole release (skill packs + UI exe) in one command, drop the

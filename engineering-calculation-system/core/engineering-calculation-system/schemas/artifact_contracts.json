@@ -1,5 +1,5 @@
 {
-  "version": "2.4.3",
+  "version": "2.4.4",
   "package_required_paths": [
     "SKILL.md",
     "agents/openai.yaml",

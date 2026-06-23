@@ -1,7 +1,7 @@
 ---
 name: engineering-calc-system
 description: 工程计算系统全生命周期专家。Use when a task involves engineering calculation references, formula/lookup/branch extraction, calculation logic blueprints, implementation handoff, auditable calculation-book software, reports, batch flows, or verification.
-version: 2.4.3
+version: 2.4.4
 ---
 
 ## Stable ASCII Contract

@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.4.4 release version sync - 2026-06-23
+
+### Changed - Version Metadata
+
+- Bumped the canonical release version in `tools/release_config.json` to `2.4.4`.
+- Synchronized core skill frontmatter, artifact contracts, adapter skill frontmatter, Codex plugin manifest, OpenCode package metadata, installer GUI metadata, and current install docs from the central version source.
+- Updated ZCode release target packaging.
+
 ## Unreleased - ZCode skill adaptation
 
 ### Added - ZCode Target

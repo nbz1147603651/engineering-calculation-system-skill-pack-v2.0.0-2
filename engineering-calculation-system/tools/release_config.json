@@ -1,6 +1,6 @@
 {
-  "version": "2.4.3",
-  "created_at": "2026-06-22",
+  "version": "2.4.4",
+  "created_at": "2026-06-23",
   "profiles": [
     "core",
     "adapters-light",

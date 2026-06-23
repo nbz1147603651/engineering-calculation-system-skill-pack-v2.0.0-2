@@ -1,4 +1,4 @@
-# Engineering Calculation System Skill Pack v2.4.3
+# Engineering Calculation System Skill Pack v2.4.4
 
 This package organizes engineering calculation software development into a full delivery lifecycle:
 
@@ -137,16 +137,16 @@ dist/release/          CODEX, MiniMaxCode, ZCode, QODER Skill, QODER project, Qo
 For publishing or manual installation, use the package for the target tool:
 
 ```text
-dist/release/engineering-calculation-system-CODEX-v2.4.3.zip
-dist/release/engineering-calculation-system-MiniMaxCode-v2.4.3.zip
-dist/release/engineering-calculation-system-ZCode-v2.4.3.zip
-dist/release/engineering-calculation-system-QODER-v2.4.3.zip
-dist/release/engineering-calculation-system-QODER-Project-v2.4.3.zip
-dist/release/engineering-calculation-system-QoderCN-v2.4.3.zip
-dist/release/engineering-calculation-system-QoderCN-Project-v2.4.3.zip
-dist/release/engineering-calculation-system-TRAE-v2.4.3.zip
-dist/release/engineering-calculation-system-OpenCode-v2.4.3.zip
-dist/release/engineering-calculation-system-AGENTS-Generic-v2.4.3.zip
+dist/release/engineering-calculation-system-CODEX-v2.4.4.zip
+dist/release/engineering-calculation-system-MiniMaxCode-v2.4.4.zip
+dist/release/engineering-calculation-system-ZCode-v2.4.4.zip
+dist/release/engineering-calculation-system-QODER-v2.4.4.zip
+dist/release/engineering-calculation-system-QODER-Project-v2.4.4.zip
+dist/release/engineering-calculation-system-QoderCN-v2.4.4.zip
+dist/release/engineering-calculation-system-QoderCN-Project-v2.4.4.zip
+dist/release/engineering-calculation-system-TRAE-v2.4.4.zip
+dist/release/engineering-calculation-system-OpenCode-v2.4.4.zip
+dist/release/engineering-calculation-system-AGENTS-Generic-v2.4.4.zip
 ```
 
 Each package contains one install folder plus `INSTALL.md`, except MiniMaxCode which is packaged as a MiniMax skills repository root:
