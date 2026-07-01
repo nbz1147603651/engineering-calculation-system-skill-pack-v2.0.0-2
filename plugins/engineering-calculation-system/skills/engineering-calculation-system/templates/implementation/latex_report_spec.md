@@ -15,7 +15,8 @@ Do you have a preferred LaTeX/Overleaf template, .cls/.sty file, company cover, 
 This is a required interaction gate for agents generating a project. If the
 user does not answer, answers "no", or supplies no usable template files, do
 not block export. Record the interaction result as `no_response_default` or
-`user_declined`, record the template ID as `default_engineering_calcbook`, and use:
+`user_declined`, record the template ID as `default_engineering_calcbook` in
+`analysis/06_user_interaction/user_interaction_decisions.csv`, and use:
 
 ```text
 latex/templates/default_engineering_calcbook/
@@ -75,7 +76,7 @@ BookInput + BookResult + ReportContext
 -> build_latex_report_context()
 -> render_latex_project_zip()
 -> GET /api/report/templates for available template choices
--> /api/report/latex
+-> /api/report/latex with latex_template_id and lang=en|zh|bilingual when multilingual reporting is in scope
 -> outputs/reports_latex or browser download
 ```
 
@@ -197,6 +198,9 @@ Template sections must render the same `ReportContext` fields used by the web
 and HTML preview. Formula displays must read `FormulaTrace.expression_tex` or
 `FormulaTrace.expression_plain`; domain formulas must not be hardcoded in
 template files.
+Language-specific labels should use the same dictionary/glossary strategy as
+`i18n_pattern.md`; technical symbols, source IDs, formula IDs, and result paths
+remain stable across languages.
 
 ## Overleaf Use
 
@@ -214,4 +218,5 @@ latex/templates/default_engineering_calcbook/page_style.sty
 src/pkg/report/latex_renderer.py
 tests/smoke/test_latex_report.py
 /api/report/latex
+lang=en|zh|bilingual report export smoke when multilingual reporting is in scope
 ```

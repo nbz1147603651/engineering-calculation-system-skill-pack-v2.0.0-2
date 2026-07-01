@@ -1,6 +1,6 @@
 {
-  "version": "2.4.5",
-  "created_at": "2026-06-23",
+  "version": "2.6.0",
+  "created_at": "2026-07-01",
   "profiles": [
     "core",
     "adapters-light",
@@ -65,6 +65,7 @@
     "templates/",
     "schemas/",
     "scripts/validate_artifacts.py",
+    "scripts/ecs_execution.py",
     "project_template/engineering_calc_project/README.md",
     "project_template/engineering_calc_project/pyproject.toml",
     "project_template/engineering_calc_project/implementation/02_modules/module_asset_registry.csv",

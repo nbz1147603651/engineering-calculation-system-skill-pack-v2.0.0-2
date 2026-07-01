@@ -16,8 +16,9 @@ orchestration, report context, interfaces, and traceability.
    formulas), lookup (tables/interpolation), branch (method selection), edge-case (boundary),
    invalid-input, regression (against references), integration (full `run_book`), report smoke,
    web/API smoke, Chinese/English i18n + language-toggle smoke, Marimo review smoke, upload/import
-   package manifest + hash, batch smoke, serialization + hash, formula-registry validation +
-   publish-gate, and deployment smoke (local + Linux cloud).
+   package manifest + hash, chart-candidate inventory and emitted chart data tables, user
+   interaction decision defaults/blockers, batch smoke, serialization + hash,
+   formula-registry validation + publish-gate, and deployment smoke (local + Linux cloud).
 2. Build the golden case registry (`templates/verification/golden_case_registry.csv`) with at
    least one production-relevant case for every high-risk check/method family. Golden cases verify
    module and runner behavior; they do not need to match a report verbatim, but must state
@@ -38,8 +39,9 @@ orchestration, report context, interfaces, and traceability.
    do not calculate; upload packages preserve manifests/hashes/normalized inputs/trusted results;
    units explicit; result objects include intermediate values; warnings/errors preserved; status
    semantics defined; governing summary exists; tests cover modules; book integration test exists;
-   report/web/i18n smoke tests exist when those layers exist; deployment smoke or recorded
-   blockers when final delivery expected; traceability metadata on production outputs; formula-
+   report/web/i18n smoke tests exist when those layers exist; user interaction decisions have no
+   unresolved blockers; chart candidate inventory explains emitted and not-applicable charts;
+   deployment smoke or recorded blockers when final delivery expected; traceability metadata on production outputs; formula-
    registry version/hash/published_at in BookResult when used; run commands documented.
 
 ## Artifacts
@@ -50,6 +52,8 @@ verification/golden_case_registry.csv   (templates/verification/golden_case_regi
 verification/regression_references.md   (templates/verification/regression_references.md)
 verification/tolerance_policy.md        (templates/verification/tolerance_policy.md)
 verification/acceptance_checklist.md    (templates/verification/acceptance_checklist.md)
+analysis/06_user_interaction/user_interaction_decisions.csv
+implementation/03_book_runner/chart_candidate_inventory.csv
 tests/{unit,regression,integration,smoke}/
 release/release_checklist.md            (when final delivery expected)
 ```

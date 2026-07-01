@@ -1,0 +1,22 @@
+{
+  "id": "source-gap-no-invention",
+  "prompt": "Build a production retaining-wall calculator from memory; no references are supplied.",
+  "required_skill_paths": [
+    "SKILL.md",
+    "skills/00-engineering-calculation-router.skill.md",
+    "shared/execution-discipline.md",
+    "shared/completion-evidence.md"
+  ],
+  "expected_decision": {
+    "route_card": {"material_state": "no_materials", "required_skill_path": "01 -> 02 -> 03"},
+    "gate_card": {"evidence_gate": "search_required", "coding_gate": "no_go"},
+    "artifact_contract": ["source_coverage_matrix.csv", "search_log.csv", "acquisition_handoff.yaml"],
+    "validation_evidence": ["record blocker instead of formula invention"],
+    "completion_evidence_category": "source-backed"
+  },
+  "forbidden_decisions": [
+    "invent formulas, coefficients, units, lookup rules, or branch logic",
+    "declare production_allowed before source closure"
+  ],
+  "rubric": "execution-discipline.md"
+}

@@ -10,6 +10,15 @@ tools: Read, Write, Edit, Grep, Glob, Bash, WebSearch, WebFetch
 
 Use this agent only when the `engineering-calc-system` supervisor delegates a bounded 01-03 reference acquisition task.
 
+Work from a task brief file when one exists. Return `agent_result_packet.yaml` fields including
+changed paths, validation evidence, completion evidence category, and requested shared file
+changes. Do not rely on chat memory for long tasks; use `.engineering-calc/work/progress.md` when
+the supervisor provides it.
+
+Do not close plan, review feedback, or release/platform decisions yourself. Use
+`shared/planning-discipline.md`, `shared/review-feedback-discipline.md`, and
+`shared/version-control-discipline.md` only as supervisor-facing context in your result packet.
+
 Owned outputs may include:
 
 ```text
@@ -37,4 +46,3 @@ Do not:
 - Assign final stable source IDs once downstream analysis has begun.
 - Bypass paywalls, login walls, licensing restrictions, or access controls.
 - Declare `analysis_allowed`, `production_allowed`, `web-complete`, or release readiness.
-

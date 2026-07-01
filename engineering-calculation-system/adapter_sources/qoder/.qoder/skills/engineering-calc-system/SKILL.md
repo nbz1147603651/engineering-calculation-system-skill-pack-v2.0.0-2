@@ -1,7 +1,7 @@
 ---
 name: engineering-calc-system
 description: 工程计算系统全生命周期专家。Use when a task involves engineering calculation references, formula/lookup/branch extraction, calculation logic blueprints, implementation handoff, auditable calculation-book software, reports, batch flows, or verification.
-version: 2.4.5
+version: 2.6.0
 ---
 
 ## Stable ASCII Contract
@@ -17,6 +17,32 @@ Do not claim production completion from the direct Qoder skill alone. Use the co
 ```bash
 python scripts/validate_artifacts.py --package-root . --profile core --project <project-root> --delivery web-complete
 ```
+
+## Behavior Engineering Layer
+
+When the complete core package is available, every non-trivial Qoder task must read
+`shared/execution-discipline.md` after the router and produce a route card, gate card, artifact
+contract, and validation evidence frame before implementation action.
+
+For multi-step plans, read `shared/planning-discipline.md` and require concrete goals,
+global constraints, exact files, interfaces, artifact outputs, validation commands, expected
+outputs, and stop conditions. For user feedback, external review, or worker reports, read
+`shared/review-feedback-discipline.md` before choosing fix, reject, or upstream route. For release,
+sync, or cross-platform packaging, read `shared/version-control-discipline.md` and record workspace
+isolation, baseline validation, dirty state, sync targets, and finishing options.
+
+Before any `source-backed`, `production_allowed`, `formula verified`, `report-ready`,
+`web-complete`, `deployable`, or `bug fixed` claim, read `shared/completion-evidence.md` and list
+fresh supporting artifacts and commands. Static HTML, visible UI, old command output, or a worker
+summary is not enough.
+
+For bug fixes, read `shared/systematic-debugging.md` and repair the lowest correct layer in the
+source -> formula/lookup/branch -> module -> `run_book()` -> API/batch -> report/UI chain.
+
+For multi-agent Qoder Project work, use `templates/orchestration/task_brief.md`,
+`agent_result_packet.yaml`, `task_review.md`, `merge_review.md`, and
+`.engineering-calc/work/progress.md`. Workers request shared file changes in result packets; the
+supervisor owns gate decisions, ID namespaces, handoff freeze, and final acceptance.
 
 ## Marimo Review Closure
 

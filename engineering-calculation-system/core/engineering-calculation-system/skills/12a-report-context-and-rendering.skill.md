@@ -15,7 +15,10 @@ structured `ReportContext` that wraps trusted results without recalculating.
 1. Record the report-production decision (use `templates/implementation/report_context_spec.md`):
    purpose, audience, review depth, status, required output formats, governing source basis, saved
    input/result source, required traceability metadata, renderer choice + reason, required report
-   sections, verification method, known limitations.
+   sections, report language mode (`en`/`zh`/`bilingual`), template selection status, verification
+   method, known limitations. Cross-reference
+   `analysis/06_user_interaction/user_interaction_decisions.csv` for user-selected, declined, or
+   defaulted report decisions.
    If a legacy `report_generator.py` or `reports/*.html` file exists, record it as imported
    comparison evidence only. Do not reuse it as the production renderer unless it has been refit
    to consume `ReportContext` from `BookResult` without recalculating.
@@ -33,7 +36,7 @@ structured `ReportContext` that wraps trusted results without recalculating.
    (`templates/implementation/html_report_spec.md`). Use LaTeX project zip
    (Overleaf-compatible), compiled PDF, DOCX, XLSX, or JSON as explicit exports when the user,
    handoff, or client workflow requires them. The renderer must preserve warnings, limitations,
-   source basis, report status, and traceability metadata.
+   source basis, report status, language mode, and traceability metadata.
 4. Enforce template boundaries. Templates MAY contain value references, loops/conditionals,
    formatting filters, section-visibility logic, unit-display formatting, cross-references.
    Templates MUST NOT contain engineering formulas, lookup rules, load-combination generation,
@@ -53,10 +56,11 @@ structured `ReportContext` that wraps trusted results without recalculating.
 6. For LaTeX/Overleaf export (`templates/implementation/latex_report_spec.md`): before first
    generation ask whether the user has a preferred template/`.cls`/`.sty`/cover/page format/
    section order; if none supplied use `latex/templates/default_engineering_calcbook/`. Record the
-   interaction as `user_selected` / `user_declined` / `no_response_default`. Generate an
-   Overleaf-compatible zip by default (no self-hosted Overleaf required). Keep each report style
-   replaceable under `latex/templates/<template_id>/` with a `template_manifest.yaml`; style
-   changes must not require report renderer code changes. Generated web apps must expose `GET /api/report/decision`,
+   interaction as `user_selected` / `user_declined` / `no_response_default` in the user interaction
+   decisions ledger. Generate an Overleaf-compatible zip by default (no self-hosted Overleaf
+   required). Keep each report style replaceable under `latex/templates/<template_id>/` with a
+   `template_manifest.yaml`; style changes must not require report renderer code changes.
+   Generated web apps must expose `GET /api/report/decision`,
    `GET /api/report/templates`, `POST /api/report/latex` (sending `latex_template_id`, defaulting
    to `default_engineering_calcbook` when missing), `POST /api/report/final`. Required files:
    `src/pkg/report/{latex_renderer,html_renderer,report_selector}.py`,
@@ -68,10 +72,11 @@ structured `ReportContext` that wraps trusted results without recalculating.
 ## Production minimum
 
 Recorded report-production decision; explicit report status; saved final input or trusted saved
-BookResult; clear source basis and limitations; structured ReportContext; template-boundary proof;
-warnings/errors preserved; traceability metadata preserved; smoke test per renderer/export path;
-default A4 HTML report verified for browser printing; requested LaTeX/PDF exports compiled or
-packaged as required; documented run command. If any item is missing, label the report
+BookResult; clear source basis and limitations; structured ReportContext; language/template
+decision recorded; template-boundary proof; warnings/errors preserved; traceability metadata
+preserved; smoke test per renderer/export path and selected language mode; default A4 HTML report
+verified for browser printing; requested LaTeX/PDF exports compiled or packaged as required;
+documented run command. If any item is missing, label the report
 `draft`/`review`/`prototype`/`not_for_construction`.
 
 ## Artifacts

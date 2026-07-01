@@ -44,17 +44,23 @@ export const checks: CheckDefinition[] = [
     },
   },
   {
-    name: "orchestration-templates",
+    name: "behavior-engineering-files",
     run(ctx) {
       const required = [
+        "shared/execution-discipline.md",
+        "shared/completion-evidence.md",
+        "shared/systematic-debugging.md",
         "shared/multi-agent-orchestration.md",
         "templates/orchestration/parallel_work_plan.yaml",
+        "templates/orchestration/task_brief.md",
         "templates/orchestration/agent_result_packet.yaml",
+        "templates/orchestration/task_review.md",
         "templates/orchestration/merge_review.md",
+        "templates/orchestration/progress_ledger.md",
       ];
       const missing = required.filter((relPath) => !existsSync(path.join(ctx.skillRoot.root, relPath)));
-      if (missing.length > 0) return result("orchestration-templates", "fail", "Orchestration files missing", missing);
-      return result("orchestration-templates", "pass", `v${TARGET_SCHEMA_VERSION} orchestration files found`);
+      if (missing.length > 0) return result("behavior-engineering-files", "fail", "Behavior engineering files missing", missing);
+      return result("behavior-engineering-files", "pass", `v${TARGET_SCHEMA_VERSION} behavior engineering files found`);
     },
   },
   {

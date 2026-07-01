@@ -25,6 +25,7 @@ The generated project should expose this decision through:
 GET /api/report/decision
 POST /api/report/final
 POST /api/report/final with report_format=latex_pdf only when PDF is explicitly requested
+lang=en|zh|bilingual for report preview/final when multilingual reporting is in scope
 ```
 
 ## A4 Layout Minimum
@@ -51,6 +52,7 @@ assumptions
 warnings and errors
 traceability metadata
 template boundary statement
+language/template decision statement when user_interaction_decisions.csv records defaults or user selections
 ```
 
 ## Default Style Template
@@ -139,6 +141,8 @@ Future file-based HTML templates should live under a template-library folder
 such as `html/templates/<template_id>/` or an equivalent project-approved
 location. Style replacement must not require changes to `run_book()` or
 formula modules.
+Record user-supplied or defaulted style/template choices in
+`analysis/06_user_interaction/user_interaction_decisions.csv`.
 
 ## Validation Targets
 
@@ -161,4 +165,6 @@ HTML contains result_path
 HTML contains Sources
 HTML contains Assumptions
 HTML contains Template Boundary Statement
+HTML respects lang=en|zh|bilingual when multilingual reporting is in scope
+report output records template ID and user/default decision source
 ```

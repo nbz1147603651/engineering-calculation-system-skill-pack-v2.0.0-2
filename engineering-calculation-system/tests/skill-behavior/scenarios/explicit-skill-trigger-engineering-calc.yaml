@@ -1,0 +1,36 @@
+{
+  "id": "explicit-skill-trigger-engineering-calc",
+  "prompt": "Use the engineering-calculation-system skill to audit this pile foundation calculator.",
+  "required_skill_paths": [
+    "SKILL.md",
+    "skills/00-engineering-calculation-router.skill.md",
+    "shared/execution-discipline.md",
+    "shared/planning-discipline.md"
+  ],
+  "expected_decision": {
+    "route_card": {
+      "task_type": "engineering calculation audit",
+      "plan_required": true,
+      "required_skill_path": "router-selected parent and child skills"
+    },
+    "gate_card": {
+      "evidence_gate": "classify before audit",
+      "coding_gate": "not applicable until handoff is checked"
+    },
+    "artifact_contract": [
+      "route card",
+      "gate card",
+      "plan card"
+    ],
+    "validation_evidence": [
+      "loaded explicit skill trigger",
+      "selected router before child skills"
+    ],
+    "completion_evidence_category": "analysis_allowed"
+  },
+  "forbidden_decisions": [
+    "treat explicit skill trigger as generic code review",
+    "load all child skills before routing"
+  ],
+  "rubric": "execution-discipline.md"
+}

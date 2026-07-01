@@ -1,0 +1,42 @@
+{
+  "id": "platform-entrypoint-loads-canonical-docs",
+  "prompt": "Build release archives for Codex, Qoder, QoderCN, AGENTS, OpenCode, Trae, MiniMaxCode, and singlefile.",
+  "required_skill_paths": [
+    "SKILL.md",
+    "skills/00-engineering-calculation-router.skill.md",
+    "shared/execution-discipline.md",
+    "shared/planning-discipline.md",
+    "shared/review-feedback-discipline.md",
+    "shared/version-control-discipline.md",
+    "shared/completion-evidence.md",
+    "shared/systematic-debugging.md",
+    "scripts/ecs_execution.py"
+  ],
+  "expected_decision": {
+    "route_card": {
+      "task_type": "multi-platform release",
+      "plan_required": true,
+      "workspace_isolation": "required"
+    },
+    "gate_card": {
+      "evidence_gate": "platform matrix required",
+      "coding_gate": "baseline validation before sync"
+    },
+    "artifact_contract": [
+      "platform acceptance report",
+      "release archives",
+      "plugin/platform validator output"
+    ],
+    "validation_evidence": [
+      "scripts/ecs_execution.py platform-matrix check",
+      "tools/build_release.py --all --no-ui-client"
+    ],
+    "completion_evidence_category": "deployable"
+  },
+  "forbidden_decisions": [
+    "optimize only Codex plugin",
+    "omit QoderCN or Trae entrypoint",
+    "copy full lifecycle gate text into adapters"
+  ],
+  "rubric": "platform-acceptance.md"
+}

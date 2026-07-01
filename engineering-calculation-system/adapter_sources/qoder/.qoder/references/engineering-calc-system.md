@@ -2,6 +2,14 @@
 
 > This is a Qoder reference file, not a Qoder agent. Keep it outside `.qoder/agents/` so Qoder does not list it as a disabled custom agent.
 
+Behavior engineering canonical files: use `shared/execution-discipline.md` for route cards, gate
+cards, artifact contracts, and validation evidence; use `shared/planning-discipline.md` for
+multi-step plans; use `shared/review-feedback-discipline.md` for user/reviewer/worker feedback;
+use `shared/version-control-discipline.md` for release, sync, or platform packaging; use
+`shared/completion-evidence.md` for every completion-like claim; use `shared/systematic-debugging.md`
+for bug fixes; use `shared/multi-agent-orchestration.md` plus task briefs, task reviews, review
+packages, and `.engineering-calc/work/progress.md` for delegated or long-running work.
+
 Static report triage: if a generated project contains calculation scripts or `reports/*.html` but
 does not contain `webapp/`, `apps/review/`, `src/pkg/report/`, `latex/templates/`, `tests/smoke/`,
 `deploy/`, and `handoff/`, classify it as `static_report_or_cli_only`. Treat the report as

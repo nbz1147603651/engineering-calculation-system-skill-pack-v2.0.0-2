@@ -1,5 +1,5 @@
 {
-  "version": "2.4.5",
+  "version": "2.6.0",
   "package_required_paths": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -9,6 +9,12 @@
     "parent/engineering-calculation-book.skill.md",
     "shared/multi-agent-orchestration.md",
     "shared/lifecycle.md",
+    "shared/execution-discipline.md",
+    "shared/planning-discipline.md",
+    "shared/review-feedback-discipline.md",
+    "shared/version-control-discipline.md",
+    "shared/completion-evidence.md",
+    "shared/systematic-debugging.md",
     "shared/copyright-and-access-policy.md",
     "shared/unit-convention.md",
     "shared/id-convention.md",
@@ -23,6 +29,7 @@
     "templates/analysis/calculation_intent_contract.md",
     "templates/analysis/method_selection_matrix.csv",
     "templates/analysis/input_semantics_ledger.csv",
+    "templates/analysis/user_interaction_decisions.csv",
     "templates/analysis/computation_graph_coverage.csv",
     "templates/analysis/unit_and_sign_conventions.md",
     "templates/handoff/implementation_handoff.md",
@@ -30,6 +37,9 @@
     "templates/orchestration/parallel_work_plan.yaml",
     "templates/orchestration/agent_result_packet.yaml",
     "templates/orchestration/merge_review.md",
+    "templates/orchestration/task_brief.md",
+    "templates/orchestration/task_review.md",
+    "templates/orchestration/progress_ledger.md",
     "templates/implementation/project_structure.md",
     "templates/implementation/dependency_rules.md",
     "templates/implementation/package_layout.md",
@@ -42,6 +52,7 @@
     "templates/implementation/formula_publish_log.csv",
     "templates/implementation/lookup_module_spec.md",
     "templates/implementation/governing_summary_spec.md",
+    "templates/implementation/chart_candidate_inventory.csv",
     "templates/implementation/runner_closure_map.csv",
     "templates/implementation/input_mapping_spec.md",
     "templates/implementation/ui_layout_spec.md",
@@ -57,17 +68,21 @@
     "templates/implementation/module_asset_registry.csv",
     "templates/implementation/data_package_manifest.yaml",
     "templates/verification/golden_case_registry.csv",
+    "templates/verification/root_cause_trace.md",
     "templates/deployment/cloud_linux_deployment.md",
     "templates/deployment/release_checklist.md",
     "templates/deployment/runtime_env.example",
     "schemas/artifact_contracts.json",
     "scripts/validate_artifacts.py",
+    "scripts/ecs_execution.py",
     "project_template/engineering_calc_project/README.md",
     "project_template/engineering_calc_project/pyproject.toml",
     "project_template/engineering_calc_project/analysis/02_logic_blueprint/calculation_intent_contract.md",
     "project_template/engineering_calc_project/analysis/02_logic_blueprint/method_selection_matrix.csv",
     "project_template/engineering_calc_project/analysis/02_logic_blueprint/input_semantics_ledger.csv",
+    "project_template/engineering_calc_project/analysis/06_user_interaction/user_interaction_decisions.csv",
     "project_template/engineering_calc_project/analysis/03_logic_details/computation_graph_coverage.csv",
+    "project_template/engineering_calc_project/implementation/03_book_runner/chart_candidate_inventory.csv",
     "project_template/engineering_calc_project/implementation/03_book_runner/runner_closure_map.csv",
     "project_template/engineering_calc_project/verification/test_matrix.csv",
     "project_template/engineering_calc_project/verification/golden_case_registry.csv",
@@ -129,6 +144,7 @@
     "templates/analysis/concept_map.csv": "concept,meaning,role_in_calculation,source_id,notes",
     "templates/analysis/formula_inventory.csv": "formula_id,name,purpose,inputs,outputs,units,source_reference,applicability,branch_dependencies,lookup_dependencies,implementation_note,test_requirement,risk_level",
     "templates/analysis/input_semantics_ledger.csv": "input_id,book_input_path,meaning,unit,sign_convention,coordinate_direction,source_reference,required,default_policy,validation_rule,used_by_nodes,blocks_production",
+    "templates/analysis/user_interaction_decisions.csv": "decision_id,lifecycle_step,decision_topic,question,default_if_no_response,user_response,decision_status,source_or_reason,affected_artifacts,blocks_progress",
     "templates/analysis/input_inventory.csv": "field,symbol,unit,source_id,required,default,validation_rule,module",
     "templates/analysis/intermediate_inventory.csv": "value,symbol,unit,derived_from,used_by,should_be_reported",
     "templates/analysis/lookup_inventory.csv": "lookup_id,name,inputs,outputs,source_reference,interpolation_rule,out_of_range_behavior,implementation_note,test_requirement,risk_level",
@@ -143,6 +159,7 @@
     "templates/implementation/module_review_log.csv": "module_review_id,module_id,review_scope,input_source,edited_fields,runner_or_function,result_status,decision,output_path,notes",
     "templates/implementation/formula_publish_log.csv": "timestamp,admin,module_id,version_id,status,sha256,notes",
     "templates/implementation/module_asset_registry.csv": "module_id,domain,category,module_name,public_function,input_model,options_model,result_model,source_references,formula_trace_path,unit_tests,regression_tests,reuse_status,asset_owner,notes",
+    "templates/implementation/chart_candidate_inventory.csv": "chart_id,title,chart_type,purpose,result_paths,units,trigger_condition,recommended_ui_location,recommended_report_location,decision,reason,source_result_paths,test_ids",
     "templates/implementation/result_path_registry.csv": "result_path,meaning,unit,source_module,report_visibility,regression_check",
     "templates/implementation/review_schema.csv": "field_path,label,unit,input_type,required,validation,help_text,check_family,display_icon,result_path,formula_trace_required,marimo_section,report_visibility",
     "templates/implementation/runner_closure_map.csv": "runner_step,check_id,module_id,public_function,branch_ids,input_paths,result_paths,warning_paths,test_ids,closure_status",
@@ -186,6 +203,9 @@
       "book_runner_contract",
       "backend_api_contract",
       "frontend_contract",
+      "report_localization_contract",
+      "report_template_contract",
+      "visualization_contract",
       "operator_workflow_contract",
       "release_contract",
       "semantic_closure_contract",
@@ -207,6 +227,8 @@
       "supervisor",
       "phase",
       "gate_context",
+      "work_directory",
+      "progress_ledger",
       "agent_roles",
       "tasks",
       "merge_points",
@@ -225,6 +247,8 @@
       "assumptions",
       "open_questions",
       "validation_run",
+      "review_verdicts",
+      "completion_evidence",
       "merge_notes"
     ],
     "templates/implementation/data_package_manifest.yaml": [
@@ -259,7 +283,9 @@
       "GET /api/report/templates",
       "latex_template_id",
       "POST /api/report/final",
-      "default_engineering_calcbook"
+      "default_engineering_calcbook",
+      "user_interaction_decisions.csv",
+      "report language mode"
     ],
     "skills/12b-frontend-and-review-interfaces.skill.md": [
       "create_app()",
@@ -268,6 +294,8 @@
       "result_to_ui",
       "data-i18n",
       "/api/i18n/<lang>",
+      "bilingual",
+      "chart_candidate_inventory.csv",
       "Marimo",
       "ui_design_system.md",
       "sanitize"
@@ -308,11 +336,14 @@
       "formula-registry"
     ],
     "skills/11-book-runner-and-governing-summary.skill.md": [
+      "chart_candidate_inventory.csv",
       "runner_closure_map.csv",
       "run_book(book_input: BookInput) -> BookResult",
       "Do not count unused modules"
     ],
     "skills/13-verification-regression-traceability.skill.md": [
+      "user interaction decision",
+      "chart-candidate inventory",
       "golden_case_registry.csv",
       "Golden cases verify",
       "validator passes"
@@ -327,7 +358,9 @@
       "Semantic Closure Contract",
       "calculation intent contract",
       "runner closure map",
-      "BookResult result paths"
+      "BookResult result paths",
+      "Report Localization And Template Contract",
+      "Visualization Contract"
     ],
     "templates/implementation/input_mapping_spec.md": [
       "input_semantics_ledger.csv",
@@ -366,7 +399,9 @@
       "sources",
       "assumptions",
       "Formula Logic Trace",
-      "Template Boundary Statement"
+      "Template Boundary Statement",
+      "lang=en|zh|bilingual",
+      "user_interaction_decisions.csv"
     ],
     "templates/implementation/latex_report_spec.md": [
       "LaTeX Calculation Report Specification",
@@ -383,13 +418,23 @@
       "formula logic trace",
       "sources",
       "assumptions",
-      "/api/report/latex"
+      "/api/report/latex",
+      "lang=en|zh|bilingual",
+      "user_interaction_decisions.csv"
     ],
     "templates/implementation/i18n_pattern.md": [
       "visible Chinese/English toggle",
       "localStorage",
       "document.documentElement.lang",
-      "report preview/download path"
+      "report preview/download path",
+      "Report language modes",
+      "user_interaction_decisions.csv"
+    ],
+    "templates/implementation/chart_integration.md": [
+      "Chart Candidate Inventory",
+      "chart_candidate_inventory.csv",
+      "emit | not_applicable | defer",
+      "source result paths"
     ],
     "templates/implementation/api_route_skeleton.md": [
       "Primary runtime",
@@ -455,7 +500,9 @@
       "no_response_default",
       "Production Eligibility",
       "Traceability",
-      "Template Boundaries"
+      "Template Boundaries",
+      "Report language mode",
+      "User interaction ledger"
     ],
     "templates/verification/acceptance_checklist.md": [
       "Runtime stack is recorded",
@@ -463,6 +510,8 @@
       "Semantic production gate validation passes",
       "Calculation intent contract is production-ready",
       "Runner closure map proves production modules/checks are called",
+      "User interaction decisions record",
+      "Chart candidate inventory records",
       "Golden case registry covers production-relevant high-risk checks",
       "Operator workflow decisions",
       "Report production decision is recorded",
@@ -473,7 +522,7 @@
       "Cloud Linux deployment path",
       "Chinese/English switching"
     ],
-      "shared/lifecycle.md": [
+    "shared/lifecycle.md": [
       "Engineering Calculation Lifecycle",
       "Delivery Mode",
       "Non-Negotiable Rules",
@@ -485,20 +534,82 @@
       "dual closure",
       "coding_gate.status = production_allowed",
       "BookResult.checks",
+      "user_interaction_decisions.csv",
+      "chart_candidate_inventory.csv",
       "scripts/validate_artifacts.py --delivery web-complete",
       "run_book(book_input: BookInput) -> BookResult"
     ],
     "SKILL.md": [
       "shared/lifecycle.md",
-      "web-complete` means dual closure"
+      "shared/execution-discipline.md",
+      "shared/planning-discipline.md",
+      "shared/review-feedback-discipline.md",
+      "shared/version-control-discipline.md",
+      "shared/completion-evidence.md",
+      "Canonical Contracts"
     ],
     "skills/00-engineering-calculation-router.skill.md": [
       "shared/lifecycle.md",
+      "shared/execution-discipline.md",
+      "shared/planning-discipline.md",
+      "shared/review-feedback-discipline.md",
+      "shared/version-control-discipline.md",
+      "completion_evidence_category",
+      "plan_required",
+      "review_feedback_mode",
+      "workspace_isolation",
       "do not route around 12a"
     ],
     "parent/engineering-calculation-book.skill.md": [
       "shared/lifecycle.md",
+      "shared/completion-evidence.md",
       "dual closure"
+    ],
+    "shared/execution-discipline.md": [
+      "Execution Discipline",
+      "Route Card",
+      "Gate Card",
+      "Artifact Contract",
+      "Validation Evidence",
+      "plan_required",
+      "review_feedback_mode",
+      "workspace_isolation"
+    ],
+    "shared/planning-discipline.md": [
+      "Planning Discipline",
+      "Plan Card",
+      "Plan Quality Gate",
+      "exact_files",
+      "stop_conditions"
+    ],
+    "shared/review-feedback-discipline.md": [
+      "Review Feedback Discipline",
+      "Feedback Card",
+      "source_authority_impact",
+      "unit_or_formula_impact",
+      "route_upstream"
+    ],
+    "shared/version-control-discipline.md": [
+      "Version Control Discipline",
+      "Workspace Card",
+      "baseline_validation",
+      "sync_targets",
+      "platform acceptance report"
+    ],
+    "shared/completion-evidence.md": [
+      "Completion Evidence",
+      "Evidence Matrix",
+      "`web-complete`",
+      "fresh `validate_artifacts.py --delivery web-complete`",
+      "`bug fixed`"
+    ],
+    "shared/systematic-debugging.md": [
+      "Systematic Debugging",
+      "Root-Cause Chain",
+      "run_book(BookInput) -> BookResult",
+      "lowest-layer fix",
+      "Condition-Based Waiting",
+      "Defense-In-Depth Validation"
     ],
     "shared/multi-agent-orchestration.md": [
       "Supervisor Responsibilities",
@@ -506,12 +617,44 @@
       "Serial Gates",
       "Ownership Rules",
       "Worker Result Packet",
-      "Merge Review"
+      "Task-Scoped And Final Review",
+      "Merge Review",
+      "progress.md"
     ],
     "templates/orchestration/merge_review.md": [
-      "Required Checks",
+      "Spec Compliance",
+      "Engineering Quality",
       "No worker made final evidence, coding, production, or release gate decisions",
       "Official calculation flow still uses"
+    ],
+    "templates/orchestration/task_brief.md": [
+      "Task Brief",
+      "Owned paths",
+      "Validation commands"
+    ],
+    "templates/orchestration/task_review.md": [
+      "Task Review",
+      "Spec Compliance",
+      "Engineering Quality"
+    ],
+    "templates/orchestration/progress_ledger.md": [
+      "Progress Ledger",
+      "Route",
+      "Evidence"
+    ],
+    "templates/verification/root_cause_trace.md": [
+      "Root Cause Trace",
+      "observed_failure",
+      "lowest correct layer"
+    ],
+    "scripts/ecs_execution.py": [
+      "task-brief",
+      "review-package",
+      "ledger",
+      "workspace",
+      "plan-check",
+      "review-feedback-check",
+      "platform-matrix"
     ]
   },
   "project_required_paths": [
@@ -548,6 +691,8 @@
     "analysis/03_logic_details/unit_and_sign_conventions.md",
     "analysis/03_logic_details/assumption_register.csv",
     "analysis/05_risks_and_questions/open_questions.csv",
+    "analysis/06_user_interaction/user_interaction_decisions.csv",
+    "implementation/03_book_runner/chart_candidate_inventory.csv",
     "implementation/03_book_runner/runner_closure_map.csv",
     "verification/test_matrix.csv",
     "verification/golden_case_registry.csv",
@@ -624,8 +769,10 @@
   "project_csv_headers": {
     "implementation/02_modules/module_asset_registry.csv": "module_id,domain,category,module_name,public_function,input_model,options_model,result_model,source_references,formula_trace_path,unit_tests,regression_tests,reuse_status,asset_owner,notes",
     "implementation/03_book_runner/runner_closure_map.csv": "runner_step,check_id,module_id,public_function,branch_ids,input_paths,result_paths,warning_paths,test_ids,closure_status",
+    "implementation/03_book_runner/chart_candidate_inventory.csv": "chart_id,title,chart_type,purpose,result_paths,units,trigger_condition,recommended_ui_location,recommended_report_location,decision,reason,source_result_paths,test_ids",
     "analysis/02_logic_blueprint/method_selection_matrix.csv": "method_id,check_id,method_name,source_reference,applicability,selection_condition,rejection_conditions,required_inputs,required_outputs,branch_id,test_requirement,risk_level",
     "analysis/02_logic_blueprint/input_semantics_ledger.csv": "input_id,book_input_path,meaning,unit,sign_convention,coordinate_direction,source_reference,required,default_policy,validation_rule,used_by_nodes,blocks_production",
+    "analysis/06_user_interaction/user_interaction_decisions.csv": "decision_id,lifecycle_step,decision_topic,question,default_if_no_response,user_response,decision_status,source_or_reason,affected_artifacts,blocks_progress",
     "analysis/03_logic_details/computation_graph_coverage.csv": "coverage_id,node_id,node_type,check_id,formula_ids,lookup_ids,branch_ids,input_ids,source_reference,module_id,public_function,runner_step,result_path,test_ids,report_visibility,closure_status",
     "verification/test_matrix.csv": "test_id,target,type,reference_basis,input_case,expected_result,tolerance,priority,notes",
     "verification/golden_case_registry.csv": "case_id,purpose,reference_basis,input_path,expected_behavior,expected_result_path,tolerance,status,blocks_production",
@@ -645,6 +792,9 @@
       "book_runner_contract",
       "backend_api_contract",
       "frontend_contract",
+      "report_localization_contract",
+      "report_template_contract",
+      "visualization_contract",
       "release_contract",
       "operator_workflow_contract",
       "semantic_closure_contract",

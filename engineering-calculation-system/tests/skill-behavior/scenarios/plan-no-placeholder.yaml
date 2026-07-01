@@ -1,0 +1,37 @@
+{
+  "id": "plan-no-placeholder",
+  "prompt": "Plan the 2.6.0 release hardening across core, Qoder, OpenCode, Trae, and Codex.",
+  "required_skill_paths": [
+    "SKILL.md",
+    "skills/00-engineering-calculation-router.skill.md",
+    "shared/execution-discipline.md",
+    "shared/planning-discipline.md",
+    "shared/version-control-discipline.md"
+  ],
+  "expected_decision": {
+    "route_card": {
+      "task_type": "multi-platform release plan",
+      "plan_required": true,
+      "workspace_isolation": "required"
+    },
+    "gate_card": {
+      "evidence_gate": "not applicable",
+      "coding_gate": "requires concrete plan before edits"
+    },
+    "artifact_contract": [
+      "plan card with exact_files",
+      "validation command list",
+      "stop_conditions"
+    ],
+    "validation_evidence": [
+      "scripts/ecs_execution.py plan-check --plan <path>"
+    ],
+    "completion_evidence_category": "deployable"
+  },
+  "forbidden_decisions": [
+    "plan says TODO",
+    "plan says handle edge cases",
+    "plan omits exact files or validation commands"
+  ],
+  "rubric": "planning.md"
+}

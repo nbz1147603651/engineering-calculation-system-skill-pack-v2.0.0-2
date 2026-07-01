@@ -19,6 +19,7 @@ analysis/01_source_inventory/source_inventory.yaml
 analysis/02_logic_blueprint/calculation_blueprint.md, calculation_intent_contract.md,
                       method_selection_matrix.csv, input_semantics_ledger.csv,
                       calculation_nodes.csv
+analysis/06_user_interaction/user_interaction_decisions.csv
 analysis/03_logic_details/formula_inventory.csv, lookup_inventory.csv, branch_inventory.csv,
                       computation_graph_coverage.csv, applicability_limits.csv,
                       unit_and_sign_conventions.md
@@ -34,7 +35,8 @@ analysis/05_risks_and_questions/risk_register.csv, open_questions.csv
    frontend_format jinja2_bootstrap5_vanilla_js, review_runtime marimo_optional), input/result
    model_groups, runner_sequence, module_candidates, calculation_module_contract,
    book_runner_contract, backend_api_contract, frontend_contract, operator_workflow_contract,
-   release_contract, semantic_closure_contract, formula/lookup/branch_inventory_refs,
+   release_contract, semantic_closure_contract, report_localization_contract,
+   report_template_contract, visualization_contract, formula/lookup/branch_inventory_refs,
    validation_rules, test_requirements, report_sections, traceability_requirements,
    open_questions, coding_gate. Record any deviation from the default runtime stack with a reason
    and an adapter boundary.
@@ -56,8 +58,8 @@ analysis/05_risks_and_questions/risk_register.csv, open_questions.csv
    `source_reference` + `test_requirement`; lookup rows define interpolation + out-of-range
    behavior; branch rows define source + true/false paths + required tests; computation graph rows
    close formula/lookup/branch/input IDs to module, runner, result path, and tests; blocking open
-   questions, source conflicts, and production-blocking assumptions are resolved. Downgrade to
-   `prototype_allowed` or `no_go` if any fail.
+   questions, source conflicts, production-blocking assumptions, and user interaction decisions
+   are resolved. Downgrade to `prototype_allowed` or `no_go` if any fail.
 6. When the validation script is available, run
    `python3 scripts/validate_artifacts.py --package-root <skill-pack-root> --profile core --project <project-root>`
    and treat failures as blockers (unless the user asks for a draft/prototype).

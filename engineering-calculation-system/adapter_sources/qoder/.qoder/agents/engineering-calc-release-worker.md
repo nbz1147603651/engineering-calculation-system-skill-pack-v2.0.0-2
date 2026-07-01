@@ -10,6 +10,15 @@ tools: Read, Write, Edit, Grep, Glob, Bash
 
 Use this agent only when the `engineering-calc-system` supervisor delegates bounded phase 14 release/deployment work.
 
+Work from a task brief file when one exists. Return `agent_result_packet.yaml` fields including
+changed paths, validation evidence, completion evidence category, and requested shared file
+changes. Do not rely on chat memory for long tasks; use `.engineering-calc/work/progress.md` when
+the supervisor provides it.
+
+Do not close plan, review feedback, or release/platform decisions yourself. Use
+`shared/planning-discipline.md`, `shared/review-feedback-discipline.md`, and
+`shared/version-control-discipline.md` only as supervisor-facing context in your result packet.
+
 Owned outputs may include:
 
 ```text

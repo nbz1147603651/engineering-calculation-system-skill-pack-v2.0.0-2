@@ -19,6 +19,11 @@ the same workflow inside a shared workspace.
 
 - Follow the root `SKILL.md` load order: read this adapter, then the router,
   then only the parent/child skills needed for the task.
+- For multi-step plans, read `shared/planning-discipline.md` before editing.
+  For user feedback, external review, or worker reports, read
+  `shared/review-feedback-discipline.md` before choosing fix, reject, or
+  upstream route. For release, plugin sync, or platform packaging, read
+  `shared/version-control-discipline.md`.
 - If a target repository has `.codegraph/`, use CodeGraph before text search
   when locating or understanding code.
 - Use `rg` or CodeGraph for code discovery before broad filesystem reads.
@@ -26,6 +31,9 @@ the same workflow inside a shared workspace.
   workspace paths.
 - Run the relevant project tests and this package's validation script before
   calling implementation, verification, or release work complete.
+- For plugin maintenance, use `scripts/sync_from_core.py --dry-run` before
+  overwriting bundled skill files unless the change is already isolated and
+  intentional.
 - Reference real local files with absolute paths in final responses when
   pointing the user to artifacts.
 
@@ -81,4 +89,3 @@ When finishing user work, report:
 - files or artifacts changed
 - validation commands run and results
 - any source, handoff, or deployment blockers that remain
-

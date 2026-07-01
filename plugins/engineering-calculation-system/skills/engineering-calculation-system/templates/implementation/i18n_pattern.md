@@ -11,6 +11,7 @@ Use this template to document the i18n strategy for multilingual engineering cal
 | HTML binding | `data-i18n="key"` attribute | JS replaces `textContent` on toggle |
 | Chart i18n | Bilingual SVG generation | CSS class toggle: `.bi-zh` / `.bi-en` |
 | Report i18n | `lang` parameter passed to renderer | Report generated in selected language |
+| Report language modes | `en`, `zh`, `bilingual` | Selected/defaulted in `user_interaction_decisions.csv` |
 | Storage | `webapp/i18n.py` | Master dictionary + helper functions |
 | Persistence | `localStorage` key such as `engineering_calc_lang` | Operator preference survives reloads |
 | Page state | `document.documentElement.lang` and `data-lang` | Required for accessibility and CSS hooks |
@@ -29,6 +30,7 @@ Use this template to document the i18n strategy for multilingual engineering cal
 | Error messages | `error_calc_failed`, `error_invalid_input` | ~6 |
 | Warning messages | `warn_invalid_values`, `warn_infinite` | ~4 |
 | Report sections | `bearing_detail`, `conclusion` | ~10 |
+| Engineering terminology | `term_governing`, `term_utilization`, `term_source_reference` | project-specific glossary |
 
 ## Implementation Pattern
 
@@ -96,4 +98,7 @@ persist the selected language and update html lang/data-lang
 test both languages render correctly for every page and the report preview/download path
 keep chart labels bilingual — generate two SVG variants
 report renderer should accept lang parameter and use the same dictionary
+report preview/download should support en, zh, and bilingual modes when required by handoff
+record selected/defaulted report language behavior in analysis/06_user_interaction/user_interaction_decisions.csv
+keep technical symbols, source IDs, units, result paths, formula IDs, and code clauses stable across languages
 ```

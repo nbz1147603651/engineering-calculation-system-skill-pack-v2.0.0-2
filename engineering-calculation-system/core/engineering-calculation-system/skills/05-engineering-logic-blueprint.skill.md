@@ -41,10 +41,19 @@ node model, not the product.
 6. Build the input / intermediate / output inventories
    (`templates/analysis/input_inventory.csv`, `intermediate_inventory.csv`,
    `output_inventory.csv`).
-7. Generate Mermaid views from the normalized logic (not from raw prose):
+7. Record meaningful user interaction decisions in
+   `templates/analysis/user_interaction_decisions.csv`: source/method choices, project
+   assumptions, report audience, report language mode, template preferences, review depth,
+   visualization expectations, defaults used when the user does not answer, affected artifacts,
+   and whether any decision blocks progress. Ask when the answer materially affects engineering
+   correctness or final report status; otherwise record the default and continue.
+8. Seed early visualization candidates from output and intermediate inventories. Do not prescribe
+   chart IDs yet; identify repeated comparable values, profiles, envelopes, distributions, or
+   review comparisons that may later become `ChartSpec` entries.
+9. Generate Mermaid views from the normalized logic (not from raw prose):
    `analysis/04_diagrams/global_flowchart.mmd`, `data_flow.mmd`, `branch_logic.mmd`,
    `module_dependency.mmd`.
-8. Map each important node to at least one future artifact: input model field, validator,
+10. Map each important node to at least one future artifact: input model field, validator,
    normalizer, lookup library, calculation-module function, book-runner step, CheckResult,
    GoverningSummary, BookResult field, ReportContext field, test target.
 
@@ -60,11 +69,12 @@ analysis/02_logic_blueprint/calculation_nodes.csv      (templates/analysis/calcu
 analysis/02_logic_blueprint/input_inventory.csv        (templates/analysis/input_inventory.csv)
 analysis/02_logic_blueprint/intermediate_inventory.csv (templates/analysis/intermediate_inventory.csv)
 analysis/02_logic_blueprint/output_inventory.csv       (templates/analysis/output_inventory.csv)
+analysis/06_user_interaction/user_interaction_decisions.csv (templates/analysis/user_interaction_decisions.csv)
 analysis/04_diagrams/global_flowchart.mmd, data_flow.mmd, branch_logic.mmd, module_dependency.mmd
 ```
 
 ## Exit gate
 
 Logic is traceable enough for extraction: calculation intent, method selection, input semantics,
-and input/output/node traceability are present. See `shared/lifecycle.md` row 05. Next path: 06
-for formula/lookup/branch extraction.
+user decisions, and input/output/node traceability are present. See `shared/lifecycle.md` row 05.
+Next path: 06 for formula/lookup/branch extraction.

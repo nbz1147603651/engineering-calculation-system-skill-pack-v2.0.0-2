@@ -19,6 +19,8 @@ read_only_inputs:
   - handoff/implementation_handoff.yaml
 shared_outputs:
   - templates/orchestration/merge_review.md
+work_directory: .engineering-calc/work/
+progress_ledger: .engineering-calc/work/progress.md
 agent_roles:
   - role: supervisor
     may_delegate: true
@@ -29,6 +31,7 @@ agent_roles:
 tasks:
   - task_id: TASK-001
     role: module-worker
+    task_brief: .engineering-calc/work/task-TASK-001-brief.md
     objective: implement or review one bounded calculation module
     read_only_inputs:
       - handoff/implementation_handoff.yaml
@@ -46,7 +49,9 @@ tasks:
 merge_points:
   - merge_id: merge_review
     reviewer: supervisor
+    task_review_template: templates/orchestration/task_review.md
     checklist: templates/orchestration/merge_review.md
+    review_package: .engineering-calc/work/review-BASE..HEAD.diff
 validation_commands:
   - python scripts/validate_artifacts.py --package-root . --profile core
 notes: []

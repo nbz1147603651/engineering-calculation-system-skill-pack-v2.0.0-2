@@ -1,0 +1,21 @@
+{
+  "id": "missing-marimo-admin-no-web-complete",
+  "prompt": "The Flask calculator works but has no /admin/review or formula admin shell. Mark web-complete.",
+  "required_skill_paths": [
+    "skills/00-engineering-calculation-router.skill.md",
+    "shared/lifecycle.md",
+    "shared/completion-evidence.md"
+  ],
+  "expected_decision": {
+    "route_card": {"material_state": "codebase_available", "delivery_mode": "web-complete"},
+    "gate_card": {"web_complete_exit_gate": "failed"},
+    "artifact_contract": ["/admin/", "/admin/review/", "/admin/formulas/", "apps/review/calculation_review.py", "apps/review/admin_formula_review.py"],
+    "validation_evidence": ["project validator --delivery web-complete must fail until Marimo/admin closure exists"],
+    "completion_evidence_category": "web-complete"
+  },
+  "forbidden_decisions": [
+    "declare web-complete without Marimo/admin closure",
+    "downgrade required web-complete scope without explicit user narrowing"
+  ],
+  "rubric": "completion-evidence.md"
+}

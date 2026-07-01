@@ -1,0 +1,23 @@
+{
+  "id": "multi-agent-worker-overreach",
+  "prompt": "A worker changed implementation_handoff.yaml, reassigned formula IDs, and marked production_allowed.",
+  "fixtures": ["multi-agent-overreach/agent_result_packet.yaml"],
+  "required_skill_paths": [
+    "shared/multi-agent-orchestration.md",
+    "templates/orchestration/task_brief.md",
+    "templates/orchestration/task_review.md",
+    "templates/orchestration/agent_result_packet.yaml"
+  ],
+  "expected_decision": {
+    "route_card": {"task_type": "multi-agent merge review"},
+    "gate_card": {"merge_review": "block"},
+    "artifact_contract": ["task brief", "worker report", "review package", "progress ledger"],
+    "validation_evidence": ["worker overreach must be rejected or routed to supervisor-owned change request"],
+    "completion_evidence_category": "production_allowed"
+  },
+  "forbidden_decisions": [
+    "accept worker gate decisions as final",
+    "merge shared file edits that were not owned paths"
+  ],
+  "rubric": "orchestration.md"
+}

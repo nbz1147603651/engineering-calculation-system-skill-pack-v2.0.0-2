@@ -3,7 +3,7 @@
 Standalone OpenCode plugin for the Engineering Calculation System skill pack.
 
 Current plugin version: `0.5.0`
-Target skill pack schema: `2.4.5`
+Target skill pack schema: `2.6.0`
 
 This package is the OpenCode-specific adapter layer. The shared skill
 pack under `engineering-calculation-system/core/` remains the workflow

@@ -167,6 +167,39 @@ CLASSIFIED_TARGETS = tuple(parse_bundle_target(target) for target in CONFIG["cla
 PUBLISH_TARGET_NAMES = tuple(CONFIG.get("publish_targets", (target.name for target in CLASSIFIED_TARGETS)))
 validate_release_config(CONFIG, CLASSIFIED_TARGETS)
 
+CANONICAL_BEHAVIOR_DOCS = (
+    "shared/lifecycle.md",
+    "shared/execution-discipline.md",
+    "shared/planning-discipline.md",
+    "shared/review-feedback-discipline.md",
+    "shared/version-control-discipline.md",
+    "shared/completion-evidence.md",
+    "shared/systematic-debugging.md",
+    "shared/multi-agent-orchestration.md",
+)
+
+PLATFORM_ENTRYPOINTS = {
+    "CODEX": "SKILL.md",
+    "MiniMaxCode": "skills/engineering-calculation-system/SKILL.md",
+    "ZCode": "SKILL.md",
+    "QODER": "SKILL.md",
+    "QODER Project": ".qoder/agents/engineering-calc-system.md",
+    "QoderCN": "agents/engineering-calc-system.md",
+    "QoderCN Project": ".lingma/agents/engineering-calc-system.md",
+    "TRAE": ".trae/project_rules.md",
+    "OpenCode": ".opencode/skills/engineering-calc-system/SKILL.md",
+    "AGENTS Generic": "AGENTS.md",
+}
+
+PLATFORM_FALLBACKS = {
+    "QODER": "Direct skill is lightweight; use QODER Project plus complete core package before web-complete claims.",
+    "QoderCN": "User-level resources are lightweight; use QoderCN Project plus complete core package for web-complete claims.",
+    "MiniMaxCode": "If repository import cannot traverse files, use the same skills/engineering-calculation-system root or singlefile fallback.",
+    "TRAE": "If rules cannot traverse the package, paste the singlefile fallback.",
+    "OpenCode": "If project skills cannot traverse the package, use .agents wrapper or singlefile fallback.",
+    "AGENTS Generic": "If repository rules are the only available entrypoint, use AGENTS.md plus SKILL.md or singlefile fallback.",
+}
+
 
 def should_skip(path: Path, *, include_indexes: bool = False) -> bool:
     if any(part in EXCLUDED_DIR_NAMES for part in path.parts):
@@ -592,7 +625,17 @@ For implementation or release work, the skill must use:
 
 ```text
 shared/lifecycle.md
+shared/execution-discipline.md
+shared/planning-discipline.md
+shared/review-feedback-discipline.md
+shared/version-control-discipline.md
+shared/completion-evidence.md
+shared/systematic-debugging.md
 ```
+
+Use route cards, gate cards, artifact contracts, validation evidence, and the
+completion evidence matrix before making completion claims. Long tasks should
+resume from `.engineering-calc/work/progress.md` when available.
 
 `web-complete` means dual closure: a readable print-ready A4 HTML calculation
 book with real input, non-empty `BookResult.checks`, and useful charts when
@@ -634,7 +677,9 @@ python skills/engineering-calculation-system/scripts/validate_artifacts.py --pac
 
 This ASCII guide replaces the previous encoded Chinese fallback to avoid mojibake in strict package validation.
 
-Use `skills/engineering-calculation-system/SKILL.md` as the skill entrypoint. For implementation or release work, load `shared/lifecycle.md`.
+Use `skills/engineering-calculation-system/SKILL.md` as the skill entrypoint. For implementation or release work, load `shared/lifecycle.md`, `shared/execution-discipline.md`, `shared/planning-discipline.md`, `shared/review-feedback-discipline.md`, `shared/version-control-discipline.md`, `shared/completion-evidence.md`, and `shared/systematic-debugging.md`.
+
+Use route cards, gate cards, artifact contracts, validation evidence, and `.engineering-calc/work/progress.md` for long-task resume.
 
 `web-complete` means dual closure: a readable print-ready A4 HTML calculation book with real input, non-empty `BookResult.checks`, and useful charts when chartable values exist, plus a complete web system with API/UI, import/export, batch, deployment artifacts, and smoke tests.
 
@@ -687,6 +732,12 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
                 "web-complete",
                 "Stable ASCII Contract",
                 "shared/lifecycle.md",
+                "shared/execution-discipline.md",
+                "shared/planning-discipline.md",
+                "shared/review-feedback-discipline.md",
+                "shared/version-control-discipline.md",
+                "shared/completion-evidence.md",
+                "shared/systematic-debugging.md",
                 "dual closure",
                 "qoder_quickstart.md",
             ],
@@ -699,6 +750,12 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
                 "Direct QODER Skill",
                 "QODER Project overlay",
                 "Complete core project",
+                "Behavior Engineering Layer",
+                "shared/execution-discipline.md",
+                "shared/planning-discipline.md",
+                "shared/review-feedback-discipline.md",
+                "shared/version-control-discipline.md",
+                "shared/completion-evidence.md",
                 "Static Report Triage",
                 "static_report_or_cli_only",
                 "A4 HTML First",
@@ -727,7 +784,17 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
                 "README_zh.md",
                 "skills/engineering-calculation-system/SKILL.md",
                 "skills/engineering-calculation-system/shared/lifecycle.md",
+                "skills/engineering-calculation-system/shared/execution-discipline.md",
+                "skills/engineering-calculation-system/shared/planning-discipline.md",
+                "skills/engineering-calculation-system/shared/review-feedback-discipline.md",
+                "skills/engineering-calculation-system/shared/version-control-discipline.md",
+                "skills/engineering-calculation-system/shared/completion-evidence.md",
+                "skills/engineering-calculation-system/shared/systematic-debugging.md",
+                "skills/engineering-calculation-system/templates/orchestration/task_brief.md",
+                "skills/engineering-calculation-system/templates/orchestration/task_review.md",
+                "skills/engineering-calculation-system/templates/orchestration/progress_ledger.md",
                 "skills/engineering-calculation-system/scripts/validate_artifacts.py",
+                "skills/engineering-calculation-system/scripts/ecs_execution.py",
                 "skills/engineering-calculation-system/project_template/engineering_calc_project/src/pkg/core/capabilities.py",
             ],
             context=context,
@@ -737,6 +804,11 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
             [
                 "name: engineering-calculation-system",
                 "shared/lifecycle.md",
+                "shared/execution-discipline.md",
+                "shared/planning-discipline.md",
+                "shared/review-feedback-discipline.md",
+                "shared/version-control-discipline.md",
+                "shared/completion-evidence.md",
                 "dual closure",
                 "run_book(BookInput) -> BookResult",
             ],
@@ -750,6 +822,11 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
                 "%USERPROFILE%\\.mavis\\skills\\engineering-calculation-system\\",
                 "skills/engineering-calculation-system/SKILL.md",
                 "shared/lifecycle.md",
+                "shared/execution-discipline.md",
+                "shared/planning-discipline.md",
+                "shared/review-feedback-discipline.md",
+                "shared/version-control-discipline.md",
+                "shared/completion-evidence.md",
                 "dual closure",
                 "BookResult.checks",
             ],
@@ -764,9 +841,19 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
                 "SKILL.md",
                 "skills/00-engineering-calculation-router.skill.md",
                 "shared/lifecycle.md",
+                "shared/execution-discipline.md",
+                "shared/planning-discipline.md",
+                "shared/review-feedback-discipline.md",
+                "shared/version-control-discipline.md",
+                "shared/completion-evidence.md",
+                "shared/systematic-debugging.md",
+                "templates/orchestration/task_brief.md",
+                "templates/orchestration/task_review.md",
+                "templates/orchestration/progress_ledger.md",
                 "templates/implementation/ui_layout_spec.md",
                 "schemas/artifact_contracts.json",
                 "scripts/validate_artifacts.py",
+                "scripts/ecs_execution.py",
                 "project_template/engineering_calc_project/webapp/routes.py",
                 "project_template/engineering_calc_project/webapp/i18n.py",
                 "project_template/engineering_calc_project/webapp/templates/base.html",
@@ -783,6 +870,11 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
             payload_root / "SKILL.md",
             [
                 "shared/lifecycle.md",
+                "shared/execution-discipline.md",
+                "shared/planning-discipline.md",
+                "shared/review-feedback-discipline.md",
+                "shared/version-control-discipline.md",
+                "shared/completion-evidence.md",
                 "dual closure",
             ],
             context=context,
@@ -793,6 +885,52 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
                 "Engineering Calculation Lifecycle",
                 "Web-Complete Exit Gate",
                 "BookResult.checks",
+            ],
+            context=context,
+        )
+        require_text(
+            payload_root / "shared/execution-discipline.md",
+            [
+                "Route Card",
+                "Gate Card",
+                "Artifact Contract",
+                "Validation Evidence",
+            ],
+            context=context,
+        )
+        require_text(
+            payload_root / "shared/planning-discipline.md",
+            [
+                "Planning Discipline",
+                "exact_files",
+                "stop_conditions",
+            ],
+            context=context,
+        )
+        require_text(
+            payload_root / "shared/review-feedback-discipline.md",
+            [
+                "Review Feedback Discipline",
+                "source_authority_impact",
+                "route_upstream",
+            ],
+            context=context,
+        )
+        require_text(
+            payload_root / "shared/version-control-discipline.md",
+            [
+                "Version Control Discipline",
+                "baseline_validation",
+                "platform acceptance report",
+            ],
+            context=context,
+        )
+        require_text(
+            payload_root / "shared/completion-evidence.md",
+            [
+                "Evidence Matrix",
+                "`web-complete`",
+                "`bug fixed`",
             ],
             context=context,
         )
@@ -892,12 +1030,18 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
             )
             require_text(
                 payload_root / ".qoder" / "agents" / "engineering-calc-system.md",
-                ["static_report_or_cli_only", "reports/*.html"],
+                ["Behavior Engineering Layer", "shared/execution-discipline.md", "shared/planning-discipline.md", "shared/review-feedback-discipline.md", "shared/version-control-discipline.md", "shared/completion-evidence.md", "progress.md", "static_report_or_cli_only", "reports/*.html"],
                 context=context,
             )
             require_text(
                 payload_root / ".qoder" / "skills" / "engineering-calc-system" / "qoder_quickstart.md",
                 [
+                    "Behavior Engineering Layer",
+                    "shared/execution-discipline.md",
+                    "shared/planning-discipline.md",
+                    "shared/review-feedback-discipline.md",
+                    "shared/version-control-discipline.md",
+                    "shared/completion-evidence.md",
                     "Static Report Triage",
                     "static_report_or_cli_only",
                     "A4 HTML First",
@@ -912,8 +1056,13 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
                 context=context,
             )
             require_text(
+                payload_root / "skills" / "engineering-calc-system" / "qoder_quickstart.md",
+                ["Behavior Engineering Layer", "shared/execution-discipline.md", "shared/planning-discipline.md", "shared/review-feedback-discipline.md", "shared/version-control-discipline.md", "shared/completion-evidence.md", "progress.md"],
+                context=context,
+            )
+            require_text(
                 payload_root / "agents" / "engineering-calc-system.md",
-                ["static_report_or_cli_only", "reports/*.html"],
+                ["Behavior Engineering Layer", "shared/execution-discipline.md", "shared/planning-discipline.md", "shared/review-feedback-discipline.md", "shared/version-control-discipline.md", "shared/completion-evidence.md", "progress.md", "static_report_or_cli_only", "reports/*.html"],
                 context=context,
             )
         if target.name == "QoderCN Project":
@@ -923,8 +1072,13 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
                 context=context,
             )
             require_text(
+                payload_root / ".lingma" / "skills" / "engineering-calc-system" / "qoder_quickstart.md",
+                ["Behavior Engineering Layer", "shared/execution-discipline.md", "shared/planning-discipline.md", "shared/review-feedback-discipline.md", "shared/version-control-discipline.md", "shared/completion-evidence.md", "progress.md"],
+                context=context,
+            )
+            require_text(
                 payload_root / ".lingma" / "agents" / "engineering-calc-system.md",
-                ["static_report_or_cli_only", "reports/*.html"],
+                ["Behavior Engineering Layer", "shared/execution-discipline.md", "shared/planning-discipline.md", "shared/review-feedback-discipline.md", "shared/version-control-discipline.md", "shared/completion-evidence.md", "progress.md", "static_report_or_cli_only", "reports/*.html"],
                 context=context,
             )
 
@@ -937,6 +1091,35 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
             ],
             context=context,
         )
+        require_text(
+            payload_root / "adapters" / "agent-entrypoints.md",
+            [
+                "shared/execution-discipline.md",
+                "shared/planning-discipline.md",
+                "shared/review-feedback-discipline.md",
+                "shared/version-control-discipline.md",
+                "shared/completion-evidence.md",
+                "shared/systematic-debugging.md",
+                "progress_ledger.md",
+            ],
+            context=context,
+        )
+
+    platform_text_checks = {
+        "TRAE": [
+            (".trae/project_rules.md", ["shared/execution-discipline.md", "shared/planning-discipline.md", "shared/review-feedback-discipline.md", "shared/version-control-discipline.md", "shared/completion-evidence.md", "shared/systematic-debugging.md", "progress.md"]),
+            (".trae/rules/engineering-calc-system.md", ["shared/execution-discipline.md", "shared/planning-discipline.md", "shared/review-feedback-discipline.md", "shared/version-control-discipline.md", "shared/completion-evidence.md", "shared/systematic-debugging.md", "progress.md"]),
+        ],
+        "OpenCode": [
+            (".opencode/skills/engineering-calc-system/SKILL.md", ["shared/execution-discipline.md", "shared/planning-discipline.md", "shared/review-feedback-discipline.md", "shared/version-control-discipline.md", "shared/completion-evidence.md", "systematic-debugging.md", "progress.md"]),
+        ],
+        "AGENTS Generic": [
+            ("AGENTS.md", ["shared/execution-discipline.md", "shared/planning-discipline.md", "shared/review-feedback-discipline.md", "shared/version-control-discipline.md", "shared/completion-evidence.md", "shared/systematic-debugging.md", "progress.md"]),
+            (".agents/skills/engineering-calc-system/SKILL.md", ["shared/execution-discipline.md", "shared/planning-discipline.md", "shared/review-feedback-discipline.md", "shared/version-control-discipline.md", "shared/completion-evidence.md", "systematic-debugging.md", "progress.md"]),
+        ],
+    }
+    for rel_path, phrases in platform_text_checks.get(target.name, []):
+        require_text(payload_root / rel_path, phrases, context=context)
 
 
 def build_platform_package(profile_roots: dict[str, Path], target: BundleTarget, package_root: Path) -> Path:
@@ -1010,6 +1193,56 @@ def write_release_index(archives: list[ReleaseArchive]) -> None:
     (RELEASE_ROOT / "RELEASE_INDEX.md").write_text("\n".join(lines), encoding="utf-8")
 
 
+def canonical_docs_summary(target: BundleTarget) -> str:
+    if target.name in {"QODER"}:
+        return "Text reminders only; direct skill must route to QODER Project or complete core package."
+    if target.name in {"QoderCN"}:
+        return "Text reminders only in user-level overlay; project/core package required for web-complete."
+    if target.name == "MiniMaxCode":
+        return "Bundled under skills/engineering-calculation-system/shared/."
+    return "Bundled at package root under shared/."
+
+
+def write_platform_acceptance_report(archives: list[ReleaseArchive]) -> None:
+    lines = [
+        "# Platform Acceptance Matrix",
+        "",
+        f"Version: {VERSION}",
+        f"Created at: {CREATED_AT}",
+        "",
+        "This report records the platform entrypoint, canonical behavior docs, adapter reminder, and fallback path for each published archive.",
+        "",
+        "## Canonical Behavior Docs",
+        "",
+        *[f"- `{doc}`" for doc in CANONICAL_BEHAVIOR_DOCS],
+        "",
+        "## Published Platforms",
+        "",
+        "| Target | Archive | Entrypoint | Canonical Docs | Adapter Reminder | Missing Capability Fallback |",
+        "| --- | --- | --- | --- | --- | --- |",
+    ]
+    for item in archives:
+        target = item.target
+        entrypoint = PLATFORM_ENTRYPOINTS.get(target.name, "SKILL.md")
+        adapter = "Use platform entrypoint, then root SKILL/router and canonical shared docs."
+        if target.name in {"QODER Project", "QoderCN Project"}:
+            adapter = "Agent-first supervisor; skill wrapper is the resource layer."
+        elif target.name in {"QODER", "QoderCN"}:
+            adapter = "Lightweight skill/resource entrypoint; do not claim web-complete alone."
+        elif target.name == "MiniMaxCode":
+            adapter = "Repository skill layout under skills/engineering-calculation-system."
+        fallback = PLATFORM_FALLBACKS.get(
+            target.name,
+            "Use dist/singlefile/engineering-calculation-system.all-in-one.md if multi-file loading is unavailable.",
+        )
+        lines.append(
+            f"| {target.name} | `{item.archive_path.name}` | `{entrypoint}` | "
+            f"{canonical_docs_summary(target)} | {adapter} | {fallback} |"
+        )
+    lines.append("")
+    (RELEASE_ROOT / "PLATFORM_ACCEPTANCE.md").write_text("\n".join(lines), encoding="utf-8")
+
+
 def build_split_archives(built_profiles: dict[str, Path]) -> list[Path]:
     split_root = RELEASE_ROOT / "split-archives"
     split_root.mkdir(parents=True, exist_ok=True)
@@ -1051,6 +1284,7 @@ def build_release_packages(
             checksum_lines.append(f"{sha256(archive)}  split-archives/{archive.name}")
     (RELEASE_ROOT / "CHECKSUMS.txt").write_text("\n".join(checksum_lines) + "\n", encoding="utf-8")
     write_release_index(archives)
+    write_platform_acceptance_report(archives)
     return archives
 
 

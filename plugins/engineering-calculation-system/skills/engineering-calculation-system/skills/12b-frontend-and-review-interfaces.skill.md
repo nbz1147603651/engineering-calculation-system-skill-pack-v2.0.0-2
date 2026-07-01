@@ -71,12 +71,15 @@ use. The static-HTML guard and `run_book()` contract live in `shared/lifecycle.m
    single translation dictionary, `data-i18n` attributes, `/api/i18n/<lang>`, visible
    Chinese/English toggle, persisted preference, `document.documentElement.lang` + `data-lang`
    update on switch, selected lang included in calculate/report-preview/report-download calls,
-   bilingual chart variants when needed. Use a recursive sanitizer for non-finite numerics
+   report language mode support for `en`, `zh`, and `bilingual` where required by the handoff,
+   bilingual chart variants when needed. Record defaulted or user-selected language behavior in
+   `analysis/06_user_interaction/user_interaction_decisions.csv`. Use a recursive sanitizer for non-finite numerics
    (`src/<pkg>/core/sanitize.py`) — display as `--`/`N/A`, preserve warnings.
 8. Generate useful engineering charts from already-computed `BookResult` values
    (`templates/implementation/chart_integration.md`, `src/<pkg>/books/<book_name>/charts.py`).
    Drive chart selection from the book's result-path registry, `ReportContext`, and review needs,
-   not from a universal hardcoded list. When useful chartable data exists, expose structured
+   plus `implementation/03_book_runner/chart_candidate_inventory.csv`, not from a universal
+   hardcoded list. When useful chartable data exists, expose structured
    `BookResult.charts`/`ChartSpec` with source result paths, data tables, and recommended UI/report
    locations; when it does not, record charts as not applicable. Charts visualize; they never
    calculate, override pass/fail, choose governing cases, or do official unit conversion.
@@ -122,6 +125,8 @@ apps/review/...
 implementation/04_interfaces/{ui_layout_spec,ui_design_system,form_mapping_spec,
   api_route_skeleton,i18n_pattern,chart_integration,marimo_review_spec,
   admin_marimo_review_spec,formula_registry_spec}.md  (templates/implementation/)
+analysis/06_user_interaction/user_interaction_decisions.csv
+implementation/03_book_runner/chart_candidate_inventory.csv
 ```
 
 ## Exit gate

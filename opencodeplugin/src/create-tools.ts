@@ -154,7 +154,7 @@ export function createTools(args: {
 
     engineering_calc_orchestration: tool({
       description: toolDescription(
-        `Generate read-only v${TARGET_SCHEMA_VERSION} orchestration drafts for parallel work plans, worker result packets, and merge reviews.`,
+        `Generate read-only v${TARGET_SCHEMA_VERSION} orchestration drafts for plans, task briefs, result packets, task reviews, merge reviews, and progress ledgers.`,
         "{\"artifact\":\"parallel_work_plan\",\"phase\":\"implementation\",\"ownedPaths\":[\"src/pkg/libraries/example/\"]}",
       ),
       args: {

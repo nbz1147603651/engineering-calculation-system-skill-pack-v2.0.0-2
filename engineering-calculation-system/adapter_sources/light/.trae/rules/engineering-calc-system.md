@@ -11,17 +11,41 @@ Start with:
 ```text
 SKILL.md
 skills/00-engineering-calculation-router.skill.md
+shared/execution-discipline.md
 ```
 
 Do not load every child skill at once. Load only the parent and child skills selected by the router.
+
+For multi-step planning, review feedback, or large release/platform work, also load:
+
+```text
+shared/planning-discipline.md
+shared/review-feedback-discipline.md
+shared/version-control-discipline.md
+```
+
+For completion, production, deployable, or `web-complete` claims, also load:
+
+```text
+shared/completion-evidence.md
+```
+
+For bug fixes or regressions, also load:
+
+```text
+shared/systematic-debugging.md
+```
 
 For explicit multi-agent, delegated, or parallel work, also load:
 
 ```text
 shared/multi-agent-orchestration.md
 templates/orchestration/parallel_work_plan.yaml
+templates/orchestration/task_brief.md
 templates/orchestration/agent_result_packet.yaml
+templates/orchestration/task_review.md
 templates/orchestration/merge_review.md
+templates/orchestration/progress_ledger.md
 ```
 
 If the environment cannot read the package as multiple files, load:
@@ -34,7 +58,6 @@ Before implementation or release work, also read:
 
 ```text
 shared/lifecycle.md
-shared/lifecycle.md
 ```
 
 If the install lacks `skills/`, `shared/`, `templates/`, `schemas/`,
@@ -43,6 +66,15 @@ lightweight entrypoint and use the full project/root package or single-file
 fallback before claiming `web-complete`.
 
 ## Lifecycle
+
+For every non-trivial task, create the route card, gate card, artifact contract, and validation
+evidence frame from `shared/execution-discipline.md` before implementation action. Completion
+claims must cite `shared/completion-evidence.md`; bug fixes must trace the lowest correct layer
+from `shared/systematic-debugging.md`.
+
+Plans, review feedback, and release/platform packaging must use the same behavior-engineering
+docs across platforms: `shared/planning-discipline.md`, `shared/review-feedback-discipline.md`,
+and `shared/version-control-discipline.md`.
 
 Route work through:
 
@@ -110,6 +142,8 @@ Allowed: split source searches, document intake, formula/lookup/branch extractio
 Forbidden: delegating evidence gates, coding gates, source authority, ID allocation, handoff freeze, `run_book()` contract changes, production labels, or release acceptance.
 
 Each worker must return an agent result packet. Accept output only after supervisor merge review.
+
+Long or compacted work resumes from `.engineering-calc/work/progress.md`, not from memory alone.
 
 ## Interface Routing
 

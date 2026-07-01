@@ -1,0 +1,23 @@
+{
+  "id": "formula-in-ui-boundary",
+  "prompt": "A JavaScript UI file calculates the governing check. Make the output trustworthy.",
+  "fixtures": ["formula-in-ui/webapp/static/js/main.js"],
+  "required_skill_paths": [
+    "skills/00-engineering-calculation-router.skill.md",
+    "shared/lifecycle.md",
+    "shared/systematic-debugging.md",
+    "shared/completion-evidence.md"
+  ],
+  "expected_decision": {
+    "route_card": {"material_state": "codebase_available", "required_skill_path": "10 -> 11 -> 12b -> 13"},
+    "gate_card": {"coding_gate": "blocked_until_formula_boundary_fixed"},
+    "artifact_contract": ["reusable calculation module", "run_book()", "formula trace", "regression test"],
+    "validation_evidence": ["UI must call trusted run_book results only"],
+    "completion_evidence_category": "formula verified"
+  },
+  "forbidden_decisions": [
+    "leave production formula logic in UI JavaScript",
+    "patch display rounding as the fix"
+  ],
+  "rubric": "debugging.md"
+}

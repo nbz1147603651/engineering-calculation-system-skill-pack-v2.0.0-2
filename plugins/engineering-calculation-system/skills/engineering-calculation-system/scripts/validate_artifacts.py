@@ -100,6 +100,14 @@ LIFECYCLE_REDIRECT_PATHS = [
     "shared/lifecycle-matrix.md",
     "shared/quality-gates.md",
 ]
+BEHAVIOR_ENGINEERING_DOCS = [
+    "shared/execution-discipline.md",
+    "shared/planning-discipline.md",
+    "shared/review-feedback-discipline.md",
+    "shared/version-control-discipline.md",
+    "shared/completion-evidence.md",
+    "shared/systematic-debugging.md",
+]
 SINGLEFILE_ALLOWED_FILES = {
     "engineering-calculation-system.all-in-one.md",
     "MANIFEST.yaml",
@@ -164,9 +172,17 @@ PRODUCTION_REQUIRED_PROJECT_ARTIFACTS = {
         "analysis/05_risks_and_questions/open_questions.csv",
         "analysis/open_questions.csv",
     ],
+    "user interaction decisions": [
+        "analysis/06_user_interaction/user_interaction_decisions.csv",
+        "analysis/user_interaction_decisions.csv",
+    ],
     "module asset registry": [
         "implementation/02_modules/module_asset_registry.csv",
         "implementation/module_asset_registry.csv",
+    ],
+    "chart candidate inventory": [
+        "implementation/03_book_runner/chart_candidate_inventory.csv",
+        "implementation/chart_candidate_inventory.csv",
     ],
     "runner closure map": [
         "implementation/03_book_runner/runner_closure_map.csv",
@@ -232,6 +248,8 @@ WEB_COMPLETE_REQUIRED_PROJECT_PATHS = [
     "outputs/logs/.gitkeep",
     "outputs/review/.gitkeep",
     "tests/smoke/test_latex_report.py",
+    "analysis/06_user_interaction/user_interaction_decisions.csv",
+    "implementation/03_book_runner/chart_candidate_inventory.csv",
 ]
 WEB_COMPLETE_TEXT_REQUIRED_PHRASES = {
     "webapp/app.py": [
@@ -535,6 +553,8 @@ WEB_COMPLETE_PLACEHOLDER_SCAN_PATHS = [
     "analysis/03_logic_details/unit_and_sign_conventions.md",
     "analysis/03_logic_details/assumption_register.csv",
     "analysis/05_risks_and_questions/open_questions.csv",
+    "analysis/06_user_interaction/user_interaction_decisions.csv",
+    "implementation/03_book_runner/chart_candidate_inventory.csv",
     "implementation/03_book_runner/runner_closure_map.csv",
     "verification/golden_case_registry.csv",
 ]
@@ -1190,10 +1210,31 @@ def check_project_semantic_gates(project_root: Path, errors: list[str]) -> None:
             module_ids=module_ids,
             test_ids=test_ids,
         )
+    if "chart candidate inventory" in found:
+        check_csv_required_fields(
+            found["chart candidate inventory"],
+            "chart candidate inventory",
+            ["chart_id", "title", "decision", "reason"],
+            errors,
+            require_rows=True,
+        )
     if "golden case registry" in found:
         check_golden_case_registry(found["golden case registry"], errors)
     if "open questions" in found:
         check_blocking_csv_flags(found["open questions"], "open question", "blocks_coding", errors)
+    if "user interaction decisions" in found:
+        check_csv_required_fields(
+            found["user interaction decisions"],
+            "user interaction decisions",
+            ["decision_id", "lifecycle_step", "decision_topic", "decision_status", "affected_artifacts"],
+            errors,
+        )
+        check_blocking_csv_flags(
+            found["user interaction decisions"],
+            "user interaction decision",
+            "blocks_progress",
+            errors,
+        )
     if "source conflicts" in found:
         check_blocking_csv_flags(found["source conflicts"], "source conflict", "blocks_coding", errors)
     if "assumption register" in found:
@@ -1695,12 +1736,12 @@ def validate_adapters_light_profile(package_root: Path) -> list[str]:
     check_text_required_phrases(
         package_root,
         {
-            "AGENTS.md": ["Chinese/English interactive UI switch", "shared/lifecycle.md", "dual closure", "Marimo review/admin pages", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
-            "adapters/agent-entrypoints.md": ["Chinese/English switching", "shared/lifecycle.md", "dual closure", "Marimo review/admin closure", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
-            ".agents/skills/engineering-calc-system/SKILL.md": ["Chinese/English interactive UI switch", "lifecycle.md", "dual closure", "Marimo review/admin pages", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
-            ".opencode/skills/engineering-calc-system/SKILL.md": ["Chinese/English interactive UI switch", "lifecycle.md", "dual closure", "Marimo review/admin pages", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
-            ".trae/project_rules.md": ["Chinese/English interactive UI switch", "shared/lifecycle.md", "dual closure", "Marimo review/admin pages", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
-            ".trae/rules/engineering-calc-system.md": ["Chinese/English interactive UI switch", "shared/lifecycle.md", "dual closure", "Marimo review/admin pages", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
+            "AGENTS.md": ["Chinese/English interactive UI switch", "shared/lifecycle.md", *BEHAVIOR_ENGINEERING_DOCS, "progress.md", "dual closure", "Marimo review/admin pages", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
+            "adapters/agent-entrypoints.md": ["Chinese/English switching", "shared/lifecycle.md", *BEHAVIOR_ENGINEERING_DOCS, "progress_ledger.md", "dual closure", "Marimo review/admin closure", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
+            ".agents/skills/engineering-calc-system/SKILL.md": ["Chinese/English interactive UI switch", "lifecycle.md", *BEHAVIOR_ENGINEERING_DOCS, "progress.md", "dual closure", "Marimo review/admin pages", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
+            ".opencode/skills/engineering-calc-system/SKILL.md": ["Chinese/English interactive UI switch", "lifecycle.md", *BEHAVIOR_ENGINEERING_DOCS, "progress.md", "dual closure", "Marimo review/admin pages", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
+            ".trae/project_rules.md": ["Chinese/English interactive UI switch", "shared/lifecycle.md", *BEHAVIOR_ENGINEERING_DOCS, "progress.md", "dual closure", "Marimo review/admin pages", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
+            ".trae/rules/engineering-calc-system.md": ["Chinese/English interactive UI switch", "shared/lifecycle.md", *BEHAVIOR_ENGINEERING_DOCS, "progress.md", "dual closure", "Marimo review/admin pages", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
         },
         errors,
     )
@@ -1732,16 +1773,19 @@ def validate_qoder_addon_profile(package_root: Path) -> list[str]:
     check_text_required_phrases(
         package_root,
         {
-            ".qoder/skills/engineering-calc-system/SKILL.md": ["Qoder Architecture", "agent-first", "shared/lifecycle.md", "dual closure", "qoder_quickstart.md", "Static Report Triage", "static_report_or_cli_only", "A4 HTML First", "print-ready A4 HTML", "calculation semantic closure", "calculation_intent_contract.md", "runner_closure_map.csv", "golden_case_registry.csv", "Marimo Review Closure", "/api/review/session", "apps/review/admin_formula_review.py", "ADMIN_REVIEW_TOKEN"],
+            ".qoder/skills/engineering-calc-system/SKILL.md": ["Qoder Architecture", "agent-first", "shared/lifecycle.md", *BEHAVIOR_ENGINEERING_DOCS, "task_brief.md", "progress.md", "dual closure", "qoder_quickstart.md", "Static Report Triage", "static_report_or_cli_only", "A4 HTML First", "print-ready A4 HTML", "calculation semantic closure", "calculation_intent_contract.md", "runner_closure_map.csv", "golden_case_registry.csv", "Marimo Review Closure", "/api/review/session", "apps/review/admin_formula_review.py", "ADMIN_REVIEW_TOKEN"],
             ".qoder/skills/engineering-calc-system/reference.md": ["/api/i18n/<lang>", "Marimo Review Closure", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
-            ".qoder/skills/engineering-calc-system/qoder_quickstart.md": ["Qoder Package Self-Check", "Direct QODER Skill", "QODER Project overlay", "Complete core project", "validate_artifacts.py --package-root", "Static Report Triage", "static_report_or_cli_only", "A4 HTML First", "print-ready A4 HTML", "calculation semantic closure", "input_semantics_ledger.csv", "computation_graph_coverage.csv", "Marimo Review Closure", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
+            ".qoder/skills/engineering-calc-system/qoder_quickstart.md": ["Qoder Package Self-Check", "Direct QODER Skill", "QODER Project overlay", "Complete core project", *BEHAVIOR_ENGINEERING_DOCS, "route card", "progress.md", "validate_artifacts.py --package-root", "Static Report Triage", "static_report_or_cli_only", "A4 HTML First", "print-ready A4 HTML", "calculation semantic closure", "input_semantics_ledger.csv", "computation_graph_coverage.csv", "Marimo Review Closure", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
             ".qoder/skills/engineering-calc-system/assets/lifecycle-console.html": [f"v{expected_version}", "12a", "12b", "12c", "14", "route_confirmed", "batch_import"],
-            ".qoder/agents/engineering-calc-system.md": ["Qoder Architecture", "agent-first", "Stable ASCII Contract", "shared/lifecycle.md", "dual closure", "static_report_or_cli_only", "A4 HTML first", "print-ready A4 HTML", "calculation semantic closure", "method_selection_matrix.csv", "golden_case_registry.csv", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
-            ".qoder/agents/engineering-calc-module-worker.md": ["Qoder Worker Contract", "run_book(BookInput) -> BookResult"],
-            ".qoder/agents/engineering-calc-interface-worker.md": ["Qoder Worker Contract", "/api/i18n/<lang>", "reports/*.html", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
-            ".qoder/agents/engineering-calc-verification-worker.md": ["Qoder Worker Contract", "web-complete", "static_report_or_cli_only", "html_a4", "chart data tables", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
-            ".qoder/agents/engineering-calc-release-worker.md": ["Qoder Worker Contract", "/health", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
-            ".qoder/references/engineering-calc-system.md": ["/api/i18n/<lang>", "static_report_or_cli_only", "A4 HTML first", "BookResult.charts", "calculation semantic closure", "runner_closure_map.csv", "Marimo Review Closure", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
+            ".qoder/agents/engineering-calc-system.md": ["Qoder Architecture", "agent-first", "Stable ASCII Contract", "shared/lifecycle.md", *BEHAVIOR_ENGINEERING_DOCS, "task brief", "progress.md", "dual closure", "static_report_or_cli_only", "A4 HTML first", "print-ready A4 HTML", "calculation semantic closure", "method_selection_matrix.csv", "golden_case_registry.csv", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
+            ".qoder/agents/engineering-calc-reference-acquirer.md": ["Qoder Worker Contract", "task brief", "completion evidence category", "requested shared file"],
+            ".qoder/agents/engineering-calc-source-intake.md": ["Qoder Worker Contract", "task brief", "completion evidence category", "requested shared file"],
+            ".qoder/agents/engineering-calc-logic-extractor.md": ["Qoder Worker Contract", "task brief", "completion evidence category", "requested shared file"],
+            ".qoder/agents/engineering-calc-module-worker.md": ["Qoder Worker Contract", "task brief", "completion evidence category", "requested shared file", "run_book(BookInput) -> BookResult"],
+            ".qoder/agents/engineering-calc-interface-worker.md": ["Qoder Worker Contract", "task brief", "completion evidence category", "requested shared file", "/api/i18n/<lang>", "reports/*.html", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
+            ".qoder/agents/engineering-calc-verification-worker.md": ["Qoder Worker Contract", "task brief", "completion evidence category", "requested shared file", "web-complete", "static_report_or_cli_only", "html_a4", "chart data tables", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
+            ".qoder/agents/engineering-calc-release-worker.md": ["Qoder Worker Contract", "task brief", "completion evidence category", "requested shared file", "/health", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
+            ".qoder/references/engineering-calc-system.md": [*BEHAVIOR_ENGINEERING_DOCS, "progress.md", "/api/i18n/<lang>", "static_report_or_cli_only", "A4 HTML first", "BookResult.charts", "calculation semantic closure", "runner_closure_map.csv", "Marimo Review Closure", "/api/review/session", "ADMIN_REVIEW_TOKEN"],
         },
         errors,
     )
@@ -1767,7 +1811,14 @@ def validate_singlefile_profile(package_root: Path) -> list[str]:
             "## skills/00-engineering-calculation-router.skill.md",
             "## shared/multi-agent-orchestration.md",
             "## shared/lifecycle.md",
+            "## shared/execution-discipline.md",
+            "## shared/planning-discipline.md",
+            "## shared/review-feedback-discipline.md",
+            "## shared/version-control-discipline.md",
+            "## shared/completion-evidence.md",
+            "## shared/systematic-debugging.md",
             "## shared/copyright-and-access-policy.md",
+            "## scripts/ecs_execution.py",
         ]:
             if phrase not in text:
                 errors.append(f"singlefile output missing phrase: {phrase!r}")

@@ -47,15 +47,22 @@ export const REQUIRED_SKILL_PATHS = [
   "SKILL.md",
   "skills/00-engineering-calculation-router.skill.md",
   "shared/lifecycle.md",
+  "shared/execution-discipline.md",
+  "shared/completion-evidence.md",
+  "shared/systematic-debugging.md",
   "shared/quality-gates.md",
   "shared/delivery-contract.md",
   "shared/lifecycle-matrix.md",
   "shared/multi-agent-orchestration.md",
   "templates/orchestration/parallel_work_plan.yaml",
+  "templates/orchestration/task_brief.md",
   "templates/orchestration/agent_result_packet.yaml",
+  "templates/orchestration/task_review.md",
   "templates/orchestration/merge_review.md",
+  "templates/orchestration/progress_ledger.md",
   "schemas/artifact_contracts.json",
   "scripts/validate_artifacts.py",
+  "scripts/ecs_execution.py",
 ] as const;
 
 function normalizeCandidate(candidate: string | undefined): string | undefined {

@@ -14,17 +14,41 @@ The first task-specific file is always:
 
 ```text
 skills/00-engineering-calculation-router.skill.md
+shared/execution-discipline.md
 ```
 
 Do not load all child skills at once. Let the router select one parent orchestrator and only the child skills needed for the task.
+
+For multi-step planning, review feedback, or large release/platform work, also load:
+
+```text
+shared/planning-discipline.md
+shared/review-feedback-discipline.md
+shared/version-control-discipline.md
+```
+
+For completion, production, deployable, or `web-complete` claims, also load:
+
+```text
+shared/completion-evidence.md
+```
+
+For bug fixes or regressions, also load:
+
+```text
+shared/systematic-debugging.md
+```
 
 For explicit multi-agent, subagent, delegated, or parallel work, also load:
 
 ```text
 shared/multi-agent-orchestration.md
 templates/orchestration/parallel_work_plan.yaml
+templates/orchestration/task_brief.md
 templates/orchestration/agent_result_packet.yaml
+templates/orchestration/task_review.md
 templates/orchestration/merge_review.md
+templates/orchestration/progress_ledger.md
 ```
 
 For implementation or release work, also load:
@@ -82,6 +106,10 @@ the user explicitly chooses another report workflow.
 The supervisor must keep gate decisions, source authority, ID allocation,
 handoff freeze, `run_book()` public contracts, and final acceptance serial.
 
+Every platform should use the same behavior-engineering frame: route card, gate card, artifact
+contract, validation evidence, and claim-to-evidence check before completion. The platform adapter
+only changes file locations and tool affordances; it does not change lifecycle or evidence rules.
+
 If the target agent can only accept one instruction file, load:
 
 ```text
@@ -116,13 +144,14 @@ Multi-agent note:
 
 Preferred setup:
 
-1. Use `dist/release/engineering-calculation-system-MiniMaxCode-v2.4.5.zip`, or expose `dist/core/engineering-calculation-system/` as a standard `SKILL.md` skill folder.
+1. Use `dist/release/engineering-calculation-system-MiniMaxCode-v2.6.0.zip`, or expose `dist/core/engineering-calculation-system/` as a standard `SKILL.md` skill folder.
 2. Let MiniMax Code import or auto-discover the root `SKILL.md`.
 3. Start with `SKILL.md` and `skills/00-engineering-calculation-router.skill.md`.
 
 Behavior:
 
 - Use the same lifecycle routing, evidence gates, handoff gates, and validation rules as the Codex/core package.
+- Use `shared/execution-discipline.md` for route/gate/artifact/validation cards, `shared/planning-discipline.md` for multi-step plans, `shared/review-feedback-discipline.md` for reviewer/user feedback, `shared/version-control-discipline.md` for release or platform work, and `shared/completion-evidence.md` for completion claims.
 - Do not require a MiniMaxCode-specific hidden project folder unless the target installation explicitly provides one.
 - For explicit multi-agent work, use `shared/multi-agent-orchestration.md` and keep supervisor-owned gate decisions serial.
 
@@ -134,7 +163,7 @@ Fallback:
 
 Preferred setup:
 
-1. Use `dist/release/engineering-calculation-system-ZCode-v2.4.5.zip`, or copy `dist/core/engineering-calculation-system/` to `~/.zcode/skills/engineering-calculation-system/`.
+1. Use `dist/release/engineering-calculation-system-ZCode-v2.6.0.zip`, or copy `dist/core/engineering-calculation-system/` to `~/.zcode/skills/engineering-calculation-system/`.
 2. In ZCode, open Settings -> Skills, refresh the skill list, and keep `engineering-calculation-system` enabled.
 3. Invoke the skill in chat with `$engineering-calculation-system`; use `@` file references and `/goal` for long tasks when useful.
 4. Put project-specific operating rules in the workspace `AGENTS.md`. If you need a starter file, copy `dist/adapters-light/AGENTS.md` into the workspace root.
@@ -143,6 +172,7 @@ Behavior:
 
 - ZCode skills are standard directories with a `SKILL.md` entrypoint, so the core package is the authoritative skill payload.
 - ZCode Agent should still start from `SKILL.md` and `skills/00-engineering-calculation-router.skill.md`, then load only the selected parent and child files.
+- For long tasks, keep a `.engineering-calc/work/progress.md` ledger and resume from it after `/goal` continuation or context compaction.
 - Use ZCode's workspace context, file references, review panel, and model/execution controls as platform conveniences; do not bypass evidence gates, coding gates, handoff freeze, or `run_book(BookInput) -> BookResult`.
 - ZCode reads user and workspace `AGENTS.md` instructions separately from skills. Keep persistent project guardrails in `AGENTS.md`, and keep reusable engineering-calculation workflow rules in the skill.
 
@@ -155,7 +185,7 @@ Fallback:
 
 Preferred setup:
 
-1. For project-root installation, use `dist/release/engineering-calculation-system-QODER-Project-v2.4.5.zip`.
+1. For project-root installation, use `dist/release/engineering-calculation-system-QODER-Project-v2.6.0.zip`.
 2. Apply `dist/qoder-addon/` on top of the core package when composing manually.
 3. Use `.qoder/agents/engineering-calc-system.md` as the Smart Agent supervisor when the environment supports custom agents.
 4. Use `.qoder/skills/engineering-calc-system/SKILL.md` as the project skill and direct-skill fallback.
@@ -186,6 +216,7 @@ Packaged Qoder custom agents:
 Behavior:
 
 - Qoder should still route to the package router rather than reading every child file.
+- Qoder supervisor and worker agents must use task briefs, result packets, task reviews, review packages, and progress ledgers from the shared orchestration templates.
 - Widget or custom UI features are optional. If unavailable, continue with text artifacts and validation scripts.
 - The direct QODER Skill zip is a lightweight entrypoint. For web-complete generation, prefer QODER Project because it includes the core skill, templates, schemas, validator, project scaffold, and `.qoder/` overlay.
 - If a Qoder-generated project only has calculation scripts, a report generator, or exported `reports/*.html`, classify it as `static_report_or_cli_only`. Use the complete project scaffold to add `run_book`, `webapp/`, Marimo review/admin pages, report renderers, import/export, deployment files, and smoke tests before any `web-complete` claim.
@@ -209,6 +240,7 @@ Behavior:
 
 - `AGENTS.md` gives repository-level guardrails.
 - The OpenCode skill wrapper gives a discoverable tool-style skill.
+- OpenCode plugin prompts and doctor checks should verify the canonical behavior docs and orchestration templates are present.
 - Optional MCPs should be configured outside the skill pack or copied from examples after review.
 - Parallel workers must declare `owned_paths`, return result packets, and wait for supervisor merge review.
 
@@ -229,7 +261,7 @@ Fallback:
 
 - Paste the routing prompt below into Trae manual instructions.
 - Use `dist/singlefile/engineering-calculation-system.all-in-one.md` when only one file can be loaded.
-- Keep Trae rules concise: use the shared orchestration file for detailed parallel ownership, packet, and merge requirements.
+- Keep Trae rules concise: use shared execution, completion evidence, debugging, and orchestration files for detailed behavior.
 
 ## Generic Rules Agents
 
@@ -269,10 +301,14 @@ Use this prompt for agents that cannot discover adapter files:
 ```text
 Use the Engineering Calculation System skill pack.
 Start with SKILL.md and skills/00-engineering-calculation-router.skill.md.
+For non-trivial tasks, read shared/execution-discipline.md and create a route card, gate card, artifact contract, and validation evidence frame before implementation action.
+For multi-step planning, read shared/planning-discipline.md; for review feedback, read shared/review-feedback-discipline.md; for large release or platform packaging, read shared/version-control-discipline.md.
 Do not load all child skills at once. Load only the parent and child skills selected by the router.
 During 02-reference-discovery-and-acquisition, use available internet search/browser tools actively for missing, insufficient, stale, or jurisdiction-specific references, and log meaningful searches in references/acquisition/search_log.csv.
 Use templates/ for output artifacts and scripts/validate_artifacts.py before considering the work complete.
 For implementation or release work, read shared/lifecycle.md.
+Before any completion, production, deployable, or web-complete claim, read shared/completion-evidence.md and list fresh evidence.
+For bug fixes, read shared/systematic-debugging.md and repair the lowest correct layer.
 Declare delivery mode before implementation: core-only, report-only, prototype-web, or web-complete. Default to web-complete.
 For web-complete, follow 08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14.
 For web-complete, deliver both a readable calculation book with non-empty BookResult.checks and a complete web system with API/UI, Marimo review/admin pages, import/export, batch, deployment, and smoke tests.
@@ -281,7 +317,7 @@ For web-complete, include /admin/, /admin/review/, /admin/formulas/, /api/review
 For production UI, use templates/implementation/ui_design_system.md plus webapp/templates/partials/, tokens.css, and components.css.
 For calculation-book export, use templates/implementation/html_report_spec.md as the default final calculation book and templates/implementation/latex_report_spec.md for explicit LaTeX/Overleaf/PDF exports; default to A4 HTML with @page size: A4, print-safe CSS, source result paths, formula traces, and chart data tables when charts are emitted; expose GET /api/report/decision, POST /api/report/final, GET /api/report/templates, and send latex_template_id to /api/report/latex with default fallback.
 Do not call CLI runners, static HTML, exported report HTML, notebooks, or UI mockups complete or deployable.
-For explicit multi-agent or parallel work, read shared/multi-agent-orchestration.md and use templates/orchestration/.
+For explicit multi-agent or parallel work, read shared/multi-agent-orchestration.md and use task briefs, agent result packets, task reviews, review packages, and progress_ledger.md.
 Split work only by disjoint owned paths. Workers return agent_result_packet.yaml fields, and the supervisor accepts output only after merge_review.md checks.
 Do not invent engineering formulas, lookup rules, units, coefficients, branch logic, or pass/fail criteria.
 Do not start production implementation unless handoff/implementation_handoff.yaml and handoff/coding_go_no_go.md allow it.

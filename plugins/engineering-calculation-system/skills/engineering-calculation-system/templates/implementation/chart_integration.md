@@ -7,7 +7,8 @@ Use this template to document how engineering charts are produced, placed, and v
 Charts are part of the calculation result contract. Build chart specifications from
 already-computed `BookResult` values in the book layer, then let the UI and report renderers
 display those specifications. Chart selection must be generic and metadata-driven: inspect the
-book's `result_path_registry`, `ReportContext`, review needs, and available result arrays/groups.
+book's `result_path_registry`, `ReportContext`, review needs, available result arrays/groups, and
+`implementation/03_book_runner/chart_candidate_inventory.csv`.
 Do not hardcode a universal chart set, chart IDs, result paths, or domain-specific labels across
 books. Include concise reviewer-useful charts when chartable data exists; otherwise record charts
 as not applicable.
@@ -71,15 +72,21 @@ class ChartSpec:
 
 ## Chart Candidate Inventory
 
-This table is a project-specific decision record, not a global required chart list. Replace the
-example rows with chart candidates derived from the current book.
+Use `templates/implementation/chart_candidate_inventory.csv` as a project-specific decision
+record, not a global required chart list. Every row should be derived from the current book's
+result paths and review workflow.
 
-| Chart ID | Name | Type | Data source | Trigger | Placement |
-| --- | --- | --- | --- | --- | --- |
-| `example_check_metric_summary` | Example check metric summary | bar | project-specific check metric path | repeated comparable metric exists | after governing/input summary |
-| `example_pair_comparison` | Example paired result comparison | grouped_bar | project-specific paired paths | two comparable values share categories/units | before detail table |
-| `example_profile` | Example profile or series | line | project-specific sequence/profile path | ordered numeric sequence exists | result detail or appendix |
-| to_be_defined | to_be_defined | to_be_defined | to_be_defined | to_be_defined | to_be_defined |
+Required CSV header:
+
+```text
+chart_id,title,chart_type,purpose,result_paths,units,trigger_condition,recommended_ui_location,recommended_report_location,decision,reason,source_result_paths,test_ids
+```
+
+Recommended `decision` values:
+
+```text
+emit | not_applicable | defer
+```
 
 Recommended workflow: list candidate result paths, decide whether each would help engineering
 review, and either emit a `ChartSpec` or record why it is not applicable. Common chart families

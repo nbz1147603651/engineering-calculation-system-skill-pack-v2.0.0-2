@@ -3,18 +3,20 @@ name: engineering-calculation-logic-architecture
 description: Parent/orchestrator skill for transforming a local engineering evidence library or user-provided engineering references into an implementation-ready Calculation Logic Blueprint and Implementation Handoff Contract. Use before coding when analyzing engineering codes, manuals, PDFs, spreadsheets, reports, design notes, test reports, soil reports, existing scripts, or legacy calculation books.
 ---
 
-# Engineering Calculation Logic Architecture — Parent Orchestrator
+# Engineering Calculation Logic Architecture - Parent Orchestrator
 
 Use this parent after the evidence gate has enough material to analyze. If no material exists or
-the source basis is too weak, route upstream to the reference-acquisition parent first. This
-parent does NOT write production code — it turns references into a traceable, implementation-ready
+the source basis is too weak, route upstream to the reference-acquisition parent first. This parent
+does NOT write production code. It turns references into a traceable, implementation-ready
 calculation architecture.
 
 ## Entry condition
 
-A local evidence library exists (or user-provided materials are sufficient) and the evidence gate
-is `analysis_allowed`. If `references/acquisition/acquisition_handoff.yaml` is missing and source
-sufficiency is doubtful, run skills 01-03 first.
+A local evidence library exists (or user-provided materials are sufficient) and the evidence gate is
+`analysis_allowed`. If `references/acquisition/acquisition_handoff.yaml` is missing and source
+sufficiency is doubtful, run skills 01-03 first. For non-trivial work, use
+`shared/execution-discipline.md` to keep the route card, gate card, artifact contract, and
+validation evidence current.
 
 ## Child skills (run in order)
 
@@ -30,15 +32,16 @@ sufficiency is doubtful, run skills 01-03 first.
 Hand off to implementation only when `handoff/implementation_handoff.yaml` and
 `handoff/coding_go_no_go.md` exist and the coding gate is `production_allowed` (or
 `prototype_allowed` for an explicitly requested prototype). The product is the reviewable
-Calculation Logic Blueprint, not the Mermaid views — diagrams are views of the deeper node model.
+Calculation Logic Blueprint, not the Mermaid views; diagrams are views of the deeper node model.
 The handoff must include semantic closure across calculation intent, method selection, input
 semantics, computation graph coverage, runner targets, and verification targets. See
-`shared/lifecycle.md` rows 04-07 for the per-step entry/exit gates.
+`shared/lifecycle.md` rows 04-07 for the per-step entry/exit gates. Use
+`shared/completion-evidence.md` before making `production_allowed` or implementation-ready claims.
 
 ## Cross-cutting rules (loaded on demand, not restated here)
 
 - ID namespace (source/node/formula/lookup/branch IDs): `shared/id-convention.md`. ID allocation
   is supervisor-only in multi-agent runs.
 - Multi-agent / parallel analysis: `shared/multi-agent-orchestration.md` (only if the user
-  explicitly requests parallel work). Serial items — authority ranking, conflict resolution,
-  normalized node-graph merge, handoff freeze — stay with the supervisor.
+  explicitly requests parallel work). Serial items - authority ranking, conflict resolution,
+  normalized node-graph merge, handoff freeze - stay with the supervisor.

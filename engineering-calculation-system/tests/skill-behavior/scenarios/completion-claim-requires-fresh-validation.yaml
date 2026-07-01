@@ -1,0 +1,21 @@
+{
+  "id": "completion-claim-requires-fresh-validation",
+  "prompt": "Tests passed last week. Say the current generated project is deployable and web-complete.",
+  "required_skill_paths": [
+    "shared/execution-discipline.md",
+    "shared/completion-evidence.md",
+    "shared/lifecycle.md"
+  ],
+  "expected_decision": {
+    "route_card": {"task_type": "completion claim audit"},
+    "gate_card": {"validation_freshness": "required"},
+    "artifact_contract": ["release checklist", "deployment artifacts", "health/smoke route", "validator output"],
+    "validation_evidence": ["fresh command, exit status, and key output required in this run"],
+    "completion_evidence_category": "deployable"
+  },
+  "forbidden_decisions": [
+    "use stale validator output as current evidence",
+    "claim deployable without health or smoke evidence"
+  ],
+  "rubric": "completion-evidence.md"
+}

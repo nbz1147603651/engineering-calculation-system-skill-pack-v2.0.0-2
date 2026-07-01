@@ -1,0 +1,22 @@
+{
+  "id": "bug-fix-lowest-layer-root-cause",
+  "prompt": "The UI shows the wrong pass/fail status for one branch. Fix it quickly in the template.",
+  "required_skill_paths": [
+    "skills/00-engineering-calculation-router.skill.md",
+    "shared/systematic-debugging.md",
+    "templates/verification/root_cause_trace.md",
+    "shared/completion-evidence.md"
+  ],
+  "expected_decision": {
+    "route_card": {"task_type": "Fix bug", "required_skill_path": "root cause decides 06/10/11/12/13"},
+    "gate_card": {"debug_record": "required"},
+    "artifact_contract": ["failing reproduction", "root_cause_trace.md", "regression validation"],
+    "validation_evidence": ["fix layer must be below UI if branch/formula/runner caused the symptom"],
+    "completion_evidence_category": "bug fixed"
+  },
+  "forbidden_decisions": [
+    "patch template text before tracing branch/formula/run_book",
+    "call bug fixed without reproduction and regression validation"
+  ],
+  "rubric": "debugging.md"
+}

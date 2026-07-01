@@ -44,7 +44,14 @@ REQUIRED_PLUGIN_PATHS = [
     "README.md",
     "skills/engineering-calculation-system/SKILL.md",
     "skills/engineering-calculation-system/shared/codex-plugin-adapter.md",
+    "skills/engineering-calculation-system/shared/execution-discipline.md",
+    "skills/engineering-calculation-system/shared/planning-discipline.md",
+    "skills/engineering-calculation-system/shared/review-feedback-discipline.md",
+    "skills/engineering-calculation-system/shared/version-control-discipline.md",
+    "skills/engineering-calculation-system/shared/completion-evidence.md",
+    "skills/engineering-calculation-system/shared/systematic-debugging.md",
     "skills/engineering-calculation-system/scripts/validate_artifacts.py",
+    "skills/engineering-calculation-system/scripts/ecs_execution.py",
     "overlays/engineering-calculation-system/shared/codex-plugin-adapter.md",
     "scripts/sync_from_core.py",
     "scripts/validate_plugin.py",
@@ -55,6 +62,12 @@ REQUIRED_SKILL_PATHS = [
     "skills/00-engineering-calculation-router.skill.md",
     "shared/codex-plugin-adapter.md",
     "shared/lifecycle.md",
+    "shared/execution-discipline.md",
+    "shared/planning-discipline.md",
+    "shared/review-feedback-discipline.md",
+    "shared/version-control-discipline.md",
+    "shared/completion-evidence.md",
+    "shared/systematic-debugging.md",
     "shared/quality-gates.md",
     "shared/delivery-contract.md",
     "shared/lifecycle-matrix.md",
@@ -62,8 +75,13 @@ REQUIRED_SKILL_PATHS = [
     "templates/orchestration/parallel_work_plan.yaml",
     "templates/orchestration/agent_result_packet.yaml",
     "templates/orchestration/merge_review.md",
+    "templates/orchestration/task_brief.md",
+    "templates/orchestration/task_review.md",
+    "templates/orchestration/progress_ledger.md",
+    "templates/verification/root_cause_trace.md",
     "schemas/artifact_contracts.json",
     "scripts/validate_artifacts.py",
+    "scripts/ecs_execution.py",
 ]
 
 REQUIRED_INTERFACE_STRINGS = [
@@ -279,6 +297,16 @@ def check_overlay_sync(errors: list[str]) -> None:
             errors.append(f"overlay file is out of sync in bundled skill: {overlay_rel.as_posix()}")
 
 
+def check_sync_script_capabilities(errors: list[str]) -> None:
+    script_path = PLUGIN_ROOT / "scripts" / "sync_from_core.py"
+    if not script_path.exists():
+        return
+    text = script_path.read_text(encoding="utf-8")
+    for phrase in ("--dry-run", "--force", "compare_trees", "check_dirty_destination"):
+        if phrase not in text:
+            errors.append(f"sync_from_core.py missing capability marker: {phrase}")
+
+
 def check_bundled_source_sync(errors: list[str]) -> None:
     if not SOURCE_SKILL_ROOT.exists():
         errors.append(f"source skill root is missing: {SOURCE_SKILL_ROOT}")
@@ -363,6 +391,7 @@ def main() -> int:
     check_marketplace(errors)
     check_skill_frontmatter(errors)
     check_overlay_sync(errors)
+    check_sync_script_capabilities(errors)
     check_bundled_source_sync(errors)
 
     if not args.skip_skill_validation:

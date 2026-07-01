@@ -69,6 +69,32 @@ core package instead of coding production modules.
 
 Before claiming completion, run `python scripts/validate_artifacts.py --package-root . --profile core --project <project-root> --delivery web-complete`.
 
+## Behavior Engineering Layer
+
+When the complete core package is available, read `shared/execution-discipline.md` after the
+router for every non-trivial task. Produce a route card, gate card, artifact contract, and
+validation evidence frame before implementation action.
+
+For multi-step plans, read `shared/planning-discipline.md` and require concrete goals,
+global constraints, exact files, interfaces, artifact outputs, validation commands, expected
+outputs, and stop conditions before implementation. For user feedback, external review, or worker
+reports, read `shared/review-feedback-discipline.md` before choosing fix, reject, or upstream
+route. For release, sync, or cross-platform packaging, read `shared/version-control-discipline.md`
+and record workspace isolation, baseline validation, dirty state, sync targets, and finishing
+options.
+
+Before any `source-backed`, `production_allowed`, `formula verified`, `report-ready`,
+`web-complete`, `deployable`, or `bug fixed` claim, read `shared/completion-evidence.md` and list
+fresh supporting artifacts and commands. Static HTML, visible UI, old command output, or a worker
+summary is not enough.
+
+For bug fixes, read `shared/systematic-debugging.md` and repair the lowest correct layer in the
+source -> formula/lookup/branch -> module -> `run_book()` -> API/batch -> report/UI chain.
+
+For delegated work, create task brief files, review worker result packets with task reviews and
+review packages, and resume from `.engineering-calc/work/progress.md` after long-running or
+compacted sessions.
+
 Marimo review closure is mandatory for `web-complete`: require `/admin/`, `/admin/review/`,
 `/admin/formulas/`, `/api/review/session`, `/api/review/state/<session_id>`,
 `apps/review/calculation_review.py`, `apps/review/admin_formula_review.py`,

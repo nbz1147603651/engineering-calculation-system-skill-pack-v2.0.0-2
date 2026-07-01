@@ -1,0 +1,35 @@
+{
+  "id": "review-feedback-source-conflict",
+  "prompt": "Reviewer says to change a load factor, but their value conflicts with the accepted source authority table.",
+  "required_skill_paths": [
+    "SKILL.md",
+    "skills/00-engineering-calculation-router.skill.md",
+    "shared/execution-discipline.md",
+    "shared/review-feedback-discipline.md",
+    "shared/completion-evidence.md"
+  ],
+  "expected_decision": {
+    "route_card": {
+      "task_type": "review feedback",
+      "review_feedback_mode": "source authority conflict"
+    },
+    "gate_card": {
+      "evidence_gate": "route upstream",
+      "coding_gate": "blocked until authority conflict is resolved"
+    },
+    "artifact_contract": [
+      "feedback card",
+      "source_conflicts.csv",
+      "source_authority_table.csv"
+    ],
+    "validation_evidence": [
+      "scripts/ecs_execution.py review-feedback-check --feedback <path>"
+    ],
+    "completion_evidence_category": "source-backed"
+  },
+  "forbidden_decisions": [
+    "silently change formula coefficient",
+    "resolve source conflict in UI or report template"
+  ],
+  "rubric": "review-feedback.md"
+}

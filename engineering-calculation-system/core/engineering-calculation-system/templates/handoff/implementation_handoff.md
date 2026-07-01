@@ -43,6 +43,18 @@ List the application factory, health endpoint, calculate endpoint, route files, 
 
 List required templates/static assets, expected BookInput form behavior, result display behavior, trace/review behavior, and the rule that frontend JavaScript and templates do not calculate engineering results. The default frontend format is a browser web app under `webapp/` using Jinja2 templates, Bootstrap 5, and vanilla JavaScript modules.
 
+## Report Localization And Template Contract
+
+Summarize supported report language modes (`en`, `zh`, `bilingual`), the selected/default language,
+the user interaction decision IDs, default HTML/LaTeX template IDs, and the rule that template
+replacement never changes calculation modules or `run_book()`.
+
+## Visualization Contract
+
+Summarize `implementation/03_book_runner/chart_candidate_inventory.csv`, which candidates are
+emitted or not applicable, the `ChartSpec` builder path, and the rule that charts consume
+already-computed BookResult values with source result paths.
+
 ## Operator Workflow Contract
 
 Record the decisions that make the tool convenient and reliable for repeated engineering use: field defaults, validation, import/export, governing summaries, warnings/errors, traces, report preview, batch comparison, and any justified frontend stack upgrade.

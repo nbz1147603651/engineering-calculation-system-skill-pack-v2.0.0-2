@@ -72,16 +72,16 @@ placeholder until the user chooses the repo with the **Repo...** button. See
 publish files:
 
 ```text
-dist/release/engineering-calculation-system-CODEX-v2.4.5.zip
-dist/release/engineering-calculation-system-MiniMaxCode-v2.4.5.zip
-dist/release/engineering-calculation-system-ZCode-v2.4.5.zip
-dist/release/engineering-calculation-system-QODER-v2.4.5.zip
-dist/release/engineering-calculation-system-QODER-Project-v2.4.5.zip
-dist/release/engineering-calculation-system-QoderCN-v2.4.5.zip
-dist/release/engineering-calculation-system-QoderCN-Project-v2.4.5.zip
-dist/release/engineering-calculation-system-TRAE-v2.4.5.zip
-dist/release/engineering-calculation-system-OpenCode-v2.4.5.zip
-dist/release/engineering-calculation-system-AGENTS-Generic-v2.4.5.zip
+dist/release/engineering-calculation-system-CODEX-v2.6.0.zip
+dist/release/engineering-calculation-system-MiniMaxCode-v2.6.0.zip
+dist/release/engineering-calculation-system-ZCode-v2.6.0.zip
+dist/release/engineering-calculation-system-QODER-v2.6.0.zip
+dist/release/engineering-calculation-system-QODER-Project-v2.6.0.zip
+dist/release/engineering-calculation-system-QoderCN-v2.6.0.zip
+dist/release/engineering-calculation-system-QoderCN-Project-v2.6.0.zip
+dist/release/engineering-calculation-system-TRAE-v2.6.0.zip
+dist/release/engineering-calculation-system-OpenCode-v2.6.0.zip
+dist/release/engineering-calculation-system-AGENTS-Generic-v2.6.0.zip
 ```
 
 Each zip contains one install folder plus `INSTALL.md`, except MiniMaxCode which is packaged as a MiniMax skills repository root:
@@ -157,10 +157,10 @@ This command builds every platform package (and the UI deployment exe). Pass
 Qoder, it creates:
 
 ```text
-engineering-calculation-system-QODER-v2.4.5.zip
+engineering-calculation-system-QODER-v2.6.0.zip
   Direct Skill import package with root SKILL.md, reference.md, and assets/.
 
-engineering-calculation-system-QODER-Project-v2.4.5.zip
+engineering-calculation-system-QODER-Project-v2.6.0.zip
   Project-root package with the supervisor agent, delegated worker agents,
   skill/resource layer, references, core templates, schemas, validator, and
   project scaffold.

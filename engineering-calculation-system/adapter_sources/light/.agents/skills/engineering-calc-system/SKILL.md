@@ -5,7 +5,7 @@ compatibility: generic-agent
 metadata:
   package: engineering-calculation-system-skill-pack
   entrypoint: ../../../SKILL.md
-version: 2.4.5
+version: 2.6.0
 ---
 
 # Engineering Calculation System
@@ -19,15 +19,27 @@ Read the root package entrypoint:
 ```text
 ../../../SKILL.md
 ../../../skills/00-engineering-calculation-router.skill.md
+../../../shared/execution-discipline.md
 ```
 
 Then read only the parent and child skill files selected by the router.
 
-Before implementation or release work, also read:
+For multi-step planning, review feedback, or large release/platform work, also read:
+
+```text
+../../../shared/planning-discipline.md
+../../../shared/review-feedback-discipline.md
+../../../shared/version-control-discipline.md
+```
+
+Before implementation, release, verification, or completion claims, also read:
 
 ```text
 ../../../shared/lifecycle.md
+../../../shared/completion-evidence.md
 ```
+
+For bug fixes or regressions, also read `../../../shared/systematic-debugging.md`.
 
 If the package shape does not include `skills/`, `shared/`, `templates/`,
 `schemas/`, `scripts/validate_artifacts.py`, and `project_template/`, treat the
@@ -39,8 +51,11 @@ For explicit multi-agent or parallel work, also read:
 ```text
 ../../../shared/multi-agent-orchestration.md
 ../../../templates/orchestration/parallel_work_plan.yaml
+../../../templates/orchestration/task_brief.md
 ../../../templates/orchestration/agent_result_packet.yaml
+../../../templates/orchestration/task_review.md
 ../../../templates/orchestration/merge_review.md
+../../../templates/orchestration/progress_ledger.md
 ```
 
 If the target agent cannot access multiple files reliably, use:
@@ -52,6 +67,12 @@ the generated dist/singlefile/engineering-calculation-system.all-in-one.md relea
 ## Hard Rules
 
 - Do not invent engineering formulas, lookup rules, units, coefficients, branch logic, or pass/fail criteria.
+- Produce route card, gate card, artifact contract, and validation evidence for non-trivial tasks.
+- Multi-step plans must name concrete files, interfaces, artifact outputs, validation commands, expected outputs, and stop conditions from `shared/planning-discipline.md`.
+- Review feedback must be classified through source authority, unit semantics, formula boundary, and lifecycle gate impact from `shared/review-feedback-discipline.md`.
+- Large release or platform packaging work must record workspace isolation, baseline validation, dirty state, sync targets, and finishing options from `shared/version-control-discipline.md`.
+- Completion claims must map to `shared/completion-evidence.md` and fresh validator output.
+- Bug fixes must trace the lowest correct layer before patching UI/report symptoms.
 - Do not skip evidence and handoff gates.
 - Keep all official calculations in reusable calculation modules and `run_book(BookInput) -> BookResult`.
 - Keep UI, reports, batch scripts, and review tools as thin consumers of trusted results.
@@ -65,6 +86,7 @@ the generated dist/singlefile/engineering-calculation-system.all-in-one.md relea
 - For calculation-book export, use `templates/implementation/latex_report_spec.md` and `templates/implementation/html_report_spec.md`; choose LaTeX/PDF when `latexmk` or `pdflatex` is installed and require successful compilation to `main.pdf`, otherwise use A4 HTML with `@page size: A4`; expose `GET /api/report/decision`, `POST /api/report/final`, `GET /api/report/templates`, and `/api/report/latex`.
 - Do not call CLI runners, static HTML, exported report HTML, notebooks, or UI mockups complete or deployable.
 - Split parallel work only by disjoint owned paths.
+- Resume long tasks from `.engineering-calc/work/progress.md` when available.
 - Keep gate decisions, source authority, ID allocation, handoff freeze, public runner contracts, and final acceptance with the supervisor.
 - Validate generated project artifacts with `scripts/validate_artifacts.py --profile core --delivery web-complete`.
 

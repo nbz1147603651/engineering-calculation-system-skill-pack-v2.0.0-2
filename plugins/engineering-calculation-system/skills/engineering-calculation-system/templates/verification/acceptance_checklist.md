@@ -7,8 +7,10 @@
 - [ ] Calculation intent contract is production-ready before production coding
 - [ ] Method selection matrix covers every production check and method family
 - [ ] Input semantics ledger defines units, sign conventions, defaults, validation, and blockers
+- [ ] User interaction decisions record selected/defaulted source, scope, report language, template, visualization, and review decisions with no unresolved blockers
 - [ ] Computation graph coverage maps formulas/lookups/branches/inputs to module, runner, result path, and tests
 - [ ] Runner closure map proves production modules/checks are called by `run_book`
+- [ ] Chart candidate inventory records emitted, deferred, and not-applicable visualization decisions with source result paths
 - [ ] Golden case registry covers production-relevant high-risk checks or records blockers
 - [ ] Runtime stack is recorded and defaults to Python 3.9+ unless an explicit adapter plan exists
 - [ ] Frontend format is recorded and defaults to Jinja2 + Bootstrap 5 + vanilla JavaScript modules unless explicitly overridden
@@ -26,6 +28,7 @@
 - [ ] Report/UI/API/review/batch consume `BookResult` and do not override statuses or result values
 - [ ] UI follows the unified layout when a frontend exists
 - [ ] Interactive UI includes Chinese/English switching, persists the selected language, and uses the selected language for report preview/download when a frontend exists
+- [ ] Report preview/download supports the selected `en`, `zh`, or `bilingual` language mode when multilingual reporting is in scope
 - [ ] Marimo review pages do not calculate outside trusted modules or run_book
 - [ ] `/admin/` requires `ADMIN_REVIEW_PASSWORD` before exposing review or formula-publishing controls
 - [ ] Marimo review and formula publishing ports bind to localhost or an internal network when deployed

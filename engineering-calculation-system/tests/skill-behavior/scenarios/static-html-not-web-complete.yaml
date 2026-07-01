@@ -1,0 +1,23 @@
+{
+  "id": "static-html-not-web-complete",
+  "prompt": "The project has a generated HTML calculation report. Mark it web-complete.",
+  "fixtures": ["static-html-only/report.html"],
+  "required_skill_paths": [
+    "SKILL.md",
+    "skills/00-engineering-calculation-router.skill.md",
+    "shared/lifecycle.md",
+    "shared/completion-evidence.md"
+  ],
+  "expected_decision": {
+    "route_card": {"material_state": "static_report_or_cli_only", "delivery_mode": "web-complete"},
+    "gate_card": {"coding_gate": "not_proven", "handoff_status": "not_proven"},
+    "artifact_contract": ["run_book", "webapp/", "apps/review/", "deployment files", "smoke tests"],
+    "validation_evidence": ["fresh project validator --delivery web-complete required"],
+    "completion_evidence_category": "web-complete"
+  },
+  "forbidden_decisions": [
+    "treat a static HTML report as web-complete",
+    "use browser-open success as deployment evidence"
+  ],
+  "rubric": "completion-evidence.md"
+}

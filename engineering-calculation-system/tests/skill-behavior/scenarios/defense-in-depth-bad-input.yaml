@@ -1,0 +1,37 @@
+{
+  "id": "defense-in-depth-bad-input",
+  "prompt": "A negative diameter reaches the report layer and produces a plausible-looking calculation book.",
+  "required_skill_paths": [
+    "SKILL.md",
+    "skills/00-engineering-calculation-router.skill.md",
+    "shared/lifecycle.md",
+    "shared/execution-discipline.md",
+    "shared/systematic-debugging.md"
+  ],
+  "expected_decision": {
+    "route_card": {
+      "task_type": "bug fix",
+      "required_skill_path": "source -> module -> run_book -> API/report"
+    },
+    "gate_card": {
+      "evidence_gate": "root cause trace required",
+      "coding_gate": "fix at input/model/module boundary"
+    },
+    "artifact_contract": [
+      "root_cause_trace.md",
+      "unit regression",
+      "API/report smoke regression"
+    ],
+    "validation_evidence": [
+      "bad input rejected at multiple layers",
+      "report consumes warnings/errors without recalculation"
+    ],
+    "completion_evidence_category": "bug fixed"
+  },
+  "forbidden_decisions": [
+    "hide bad input in report template",
+    "patch only frontend JavaScript",
+    "skip module or runner validation"
+  ],
+  "rubric": "debugging.md"
+}

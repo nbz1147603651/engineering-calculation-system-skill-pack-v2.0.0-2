@@ -135,6 +135,26 @@ frontend_contract:
     - engineering_formula_calculation_in_javascript
     - independent_pass_fail_logic_in_templates
 
+report_localization_contract:
+  default_language: en
+  supported_report_language_modes:
+    - en
+    - zh
+    - bilingual
+  decision_ledger: analysis/06_user_interaction/user_interaction_decisions.csv
+  rule: report preview and final export use the selected or defaulted language mode without changing symbols, units, source IDs, formula IDs, or result paths
+
+report_template_contract:
+  default_html_template_id: default_html_a4_calcbook
+  default_latex_template_id: default_engineering_calcbook
+  template_decision_ledger: analysis/06_user_interaction/user_interaction_decisions.csv
+  rule: template changes replace template-library entries and never modify calculation modules or run_book
+
+visualization_contract:
+  chart_candidate_inventory: implementation/03_book_runner/chart_candidate_inventory.csv
+  chart_builder: src/pkg/books/example_book/charts.py
+  rule: ChartSpec entries consume already-computed BookResult values and preserve source result paths
+
 operator_workflow_contract:
   quality_priority: operation_quality_and_reviewer_convenience_before_minimal_dependencies
   repeated_use_features:
@@ -175,6 +195,7 @@ semantic_closure_contract:
   calculation_intent_contract: analysis/02_logic_blueprint/calculation_intent_contract.md
   method_selection_matrix: analysis/02_logic_blueprint/method_selection_matrix.csv
   input_semantics_ledger: analysis/02_logic_blueprint/input_semantics_ledger.csv
+  user_interaction_decisions: analysis/06_user_interaction/user_interaction_decisions.csv
   computation_graph_coverage: analysis/03_logic_details/computation_graph_coverage.csv
   runner_closure_map: implementation/03_book_runner/runner_closure_map.csv
   golden_case_registry: verification/golden_case_registry.csv

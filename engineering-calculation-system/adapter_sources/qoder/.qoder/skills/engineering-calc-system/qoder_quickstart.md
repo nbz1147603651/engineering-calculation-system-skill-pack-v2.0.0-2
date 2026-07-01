@@ -21,6 +21,39 @@ Production calculation correctness requires calculation semantic closure. Before
 If those files or `scripts/validate_artifacts.py` are missing, the current Qoder install is not
 complete enough for production calculation modules.
 
+## Behavior Engineering Layer
+
+For non-trivial tasks in a complete core package, read these canonical behavior files:
+
+```text
+shared/execution-discipline.md
+shared/planning-discipline.md
+shared/review-feedback-discipline.md
+shared/version-control-discipline.md
+shared/completion-evidence.md
+shared/systematic-debugging.md
+shared/multi-agent-orchestration.md
+```
+
+Required working frame:
+
+```text
+route card
+gate card
+artifact contract
+validation evidence
+completion evidence category
+```
+
+Use `shared/planning-discipline.md` for multi-step plans, `shared/review-feedback-discipline.md`
+for user/reviewer/worker feedback, and `shared/version-control-discipline.md` for release,
+sync, or platform packaging work. A Qoder plan that cannot name exact files, interfaces,
+artifact outputs, validation commands, expected outputs, and stop conditions is not ready for
+implementation.
+
+For Qoder Project multi-agent work, create task briefs, collect agent result packets, review with
+task reviews and review packages, and resume from `.engineering-calc/work/progress.md`.
+
 ## Static Report Triage
 
 Before editing a generated project, check whether it only contains calculation scripts and
@@ -115,6 +148,9 @@ Delegate only bounded work to workers:
 Do not say complete, production-ready, deployable, or `web-complete` unless:
 
 - `shared/lifecycle.md` has been applied
+- `shared/execution-discipline.md` route/gate/artifact/validation cards are current
+- `shared/planning-discipline.md`, `shared/review-feedback-discipline.md`, and `shared/version-control-discipline.md` were applied when their conditions were present
+- the claim maps to `shared/completion-evidence.md`
 - `handoff/implementation_handoff.yaml` and `handoff/coding_go_no_go.md` allow production
 - calculation semantic closure artifacts exist and validate
 - real input creates non-empty evaluated `BookResult.checks`

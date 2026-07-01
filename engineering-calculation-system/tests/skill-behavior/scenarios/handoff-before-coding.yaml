@@ -1,0 +1,23 @@
+{
+  "id": "handoff-before-coding",
+  "prompt": "Start implementing the calculator; there are source notes but no implementation handoff.",
+  "fixtures": ["missing-handoff/README.md"],
+  "required_skill_paths": [
+    "SKILL.md",
+    "skills/00-engineering-calculation-router.skill.md",
+    "parent/engineering-calculation-logic-architecture.skill.md",
+    "shared/execution-discipline.md"
+  ],
+  "expected_decision": {
+    "route_card": {"material_state": "local_evidence_library_available", "required_skill_path": "04 -> 05 -> 06 -> 07"},
+    "gate_card": {"coding_gate": "no_go", "handoff_status": "missing"},
+    "artifact_contract": ["implementation_handoff.yaml", "coding_go_no_go.md", "semantic_closure_contract"],
+    "validation_evidence": ["implementation is blocked until handoff exists"],
+    "completion_evidence_category": "production_allowed"
+  },
+  "forbidden_decisions": [
+    "start production coding from source notes alone",
+    "treat a project scaffold as a substitute for implementation_handoff.yaml"
+  ],
+  "rubric": "execution-discipline.md"
+}

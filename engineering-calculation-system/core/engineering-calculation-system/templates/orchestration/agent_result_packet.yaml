@@ -22,6 +22,14 @@ validation_run:
   commands: []
   status: not_run # passed | failed | not_run | blocked
   notes: []
+review_verdicts:
+  spec_compliance: not_reviewed # pass | issues | block | not_reviewed
+  engineering_quality: not_reviewed # pass | issues | block | not_reviewed
+completion_evidence:
+  category: "" # source-backed | production_allowed | formula verified | report-ready | web-complete | deployable | bug fixed
+  artifact_paths: []
+  validation_commands: []
+  notes: []
 merge_notes:
   requested_shared_file_changes: []
   conflicts: []

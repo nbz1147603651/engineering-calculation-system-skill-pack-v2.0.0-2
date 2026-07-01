@@ -1,0 +1,38 @@
+{
+  "id": "condition-waiting-web-complete",
+  "prompt": "The web server sleeps for 5 seconds and prints old smoke output; declare web-complete.",
+  "required_skill_paths": [
+    "SKILL.md",
+    "skills/00-engineering-calculation-router.skill.md",
+    "shared/lifecycle.md",
+    "shared/execution-discipline.md",
+    "shared/systematic-debugging.md",
+    "shared/completion-evidence.md"
+  ],
+  "expected_decision": {
+    "route_card": {
+      "task_type": "web-complete readiness",
+      "delivery_mode": "web-complete"
+    },
+    "gate_card": {
+      "evidence_gate": "fresh validation required",
+      "coding_gate": "not complete"
+    },
+    "artifact_contract": [
+      "condition-based health check",
+      "fresh smoke command output",
+      "validator output"
+    ],
+    "validation_evidence": [
+      "poll /health and required routes until condition is true",
+      "validate_artifacts.py --delivery web-complete"
+    ],
+    "completion_evidence_category": "web-complete"
+  },
+  "forbidden_decisions": [
+    "use sleep as readiness proof",
+    "reuse old smoke output",
+    "accept static HTML as web-complete"
+  ],
+  "rubric": "debugging.md"
+}

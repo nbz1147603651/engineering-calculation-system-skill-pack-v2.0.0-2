@@ -11,6 +11,7 @@ Use this template to define how a report, review page, export, or batch artifact
 | Review depth | draft / review / final / prototype | to_be_defined | coding gate |
 | Report status | draft / review / final / superseded / prototype / not_for_construction | to_be_defined | coding gate |
 | Output format | html_a4 default / latex_pdf / html / latex / pdf / docx / xlsx / json / other | to_be_defined | user request / report selector |
+| Report language mode | en / zh / bilingual | to_be_defined | user interaction decision / i18n_pattern.md |
 | Automatic report decision | html_a4 default / latex_pdf explicit / manual_override | to_be_defined | GET /api/report/decision |
 | HTML template ID | default_html_a4_calcbook / custom_template_id / not_applicable | to_be_defined | html_report_spec.md |
 | Local LaTeX compiler | latexmk / pdflatex / not_available | to_be_defined | report selector |
@@ -18,6 +19,7 @@ Use this template to define how a report, review page, export, or batch artifact
 | LaTeX/Overleaf template | default_engineering_calcbook / user_supplied / not_applicable | to_be_defined | latex_report_spec.md |
 | LaTeX template interaction result | user_selected / user_declined / no_response_default | to_be_defined | latex_report_spec.md |
 | LaTeX template ID | default_engineering_calcbook / custom_template_id / not_applicable | to_be_defined | GET /api/report/templates |
+| User interaction ledger | analysis/06_user_interaction/user_interaction_decisions.csv | to_be_defined | decision_id references |
 | Saved input source | final_input.json / other | to_be_defined | output registry |
 | Saved result source | BookResult JSON / trusted BookResult | to_be_defined | output registry |
 | Verification method | smoke / regression / visual / manual review | to_be_defined | verification plan |
@@ -32,6 +34,7 @@ Use this template to define how a report, review page, export, or batch artifact
 | Templates do not calculate | to_be_defined | review or test |  |
 | Warnings and errors are preserved | to_be_defined | smoke test |  |
 | Traceability metadata is preserved | to_be_defined | result/report metadata |  |
+| User interaction decisions have no blockers | to_be_defined | user_interaction_decisions.csv |  |
 | Renderer smoke test exists | to_be_defined | tests/smoke |  |
 | Charts preserve source result paths when present | to_be_defined | BookResult.charts / report smoke |  |
 | Figures preserve source references when present | to_be_defined | ReportContext.figures / report smoke |  |
@@ -58,13 +61,23 @@ Derive sections from the user request, calculation scope, result paths, review n
 
 Charts are optional only when no useful chartable result paths exist. For each book, evaluate the
 book-specific result-path registry, grouped numeric outputs, repeated categories, ordered series,
-and reviewer workflow needs. When useful data exists, charts should come from `BookResult.charts`
-or an equivalent `ChartSpec` list built by the book layer from already-computed values, with data
-tables for A4 HTML printing. Do not hardcode chart IDs or chart paths from another book.
+reviewer workflow needs, and `implementation/03_book_runner/chart_candidate_inventory.csv`. When
+useful data exists, charts should come from `BookResult.charts` or an equivalent `ChartSpec` list
+built by the book layer from already-computed values, with data tables for A4 HTML printing. Do
+not hardcode chart IDs or chart paths from another book.
 
 | Chart ID | Title | Purpose | BookResult paths | Recommended report location | Recommended UI location | Visibility rule | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | to_be_defined | to_be_defined | to_be_defined | to_be_defined | after_input_summary / after_governing_summary / appendix | after_governing_summary / before_checks / result_detail | to_be_defined | templates render values only |
+
+## User Interaction Decisions
+
+Reference `analysis/06_user_interaction/user_interaction_decisions.csv` for report-impacting
+choices and defaults.
+
+| Decision ID | Topic | Status | Report impact | Blocks final report |
+| --- | --- | --- | --- | --- |
+| to_be_defined | report_language / template / audience / review_depth / output_format | user_selected / user_declined / no_response_default / confirmed / pending | to_be_defined | true / false |
 
 ## Report Figures
 

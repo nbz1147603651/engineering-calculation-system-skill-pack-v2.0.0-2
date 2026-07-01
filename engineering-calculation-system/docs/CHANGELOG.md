@@ -1,5 +1,33 @@
 # Changelog
 
+## v2.6.0 superpowers second-wave behavior stabilizers - 2026-07-01
+
+### Added - Planning, Feedback, And Platform Acceptance
+
+- Added canonical planning, review-feedback, and version-control discipline docs.
+- Added behavior scenarios for explicit skill triggers, placeholder-free plans, source-conflict feedback, condition-based web readiness, defense-in-depth bad input handling, and platform entrypoint loading.
+- Added `ecs_execution.py` checks for plan cards, review feedback cards, and platform matrix coverage.
+- Added a release platform acceptance report covering Codex, MiniMaxCode, ZCode, Qoder/QoderCN, TRAE, OpenCode, AGENTS Generic, and single-file fallback paths.
+
+### Changed - Cross-Platform Load Discipline
+
+- Extended root/router, Codex, Qoder/QoderCN, MiniMaxCode, ZCode, TRAE, OpenCode, and AGENTS-style entrypoints to load canonical behavior docs rather than duplicate gate rules.
+- Extended validators and release smoke checks so planning, feedback, version-control, completion evidence, debugging, and orchestration docs stay synchronized across generated packages.
+
+## v2.5.0 behavior engineering and architecture convergence - 2026-07-01
+
+### Added - Agent Execution Discipline
+
+- Added canonical execution discipline, completion evidence, and systematic debugging contracts.
+- Added behavior-scenario assets for source gaps, static HTML misclaims, UI formula leakage, missing handoff, missing Marimo/admin closure, stale validation, bug root cause, worker overreach, and ledger-based resume.
+- Added task brief, task review, progress ledger, root-cause trace, and `ecs_execution.py` helpers for long-running and delegated work.
+
+### Changed - Rule Consolidation
+
+- Reduced root/router/parent duplication by routing lifecycle gates to `shared/lifecycle.md` and completion claims to `shared/completion-evidence.md`.
+- Hardened Codex plugin sync with dry-run preview, dirty bundled-skill protection, and stale-file convergence checks.
+- Extended behavior-engineering load order and release validation across MiniMaxCode, ZCode, Qoder/QoderCN, TRAE, OpenCode, AGENTS Generic, and single-file/core payloads.
+
 ## v2.4.4 release version sync - 2026-06-23
 
 ### Changed - Version Metadata

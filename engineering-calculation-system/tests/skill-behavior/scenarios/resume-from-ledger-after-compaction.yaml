@@ -1,0 +1,22 @@
+{
+  "id": "resume-from-ledger-after-compaction",
+  "prompt": "Resume a long web-complete implementation after chat compaction.",
+  "required_skill_paths": [
+    "shared/execution-discipline.md",
+    "shared/multi-agent-orchestration.md",
+    "templates/orchestration/progress_ledger.md",
+    "scripts/ecs_execution.py"
+  ],
+  "expected_decision": {
+    "route_card": {"task_type": "resume long task"},
+    "gate_card": {"resume_source": ".engineering-calc/work/progress.md"},
+    "artifact_contract": ["progress ledger", "last route", "last gate", "validation evidence"],
+    "validation_evidence": ["resume from ledger instead of memory-only reconstruction"],
+    "completion_evidence_category": "web-complete"
+  },
+  "forbidden_decisions": [
+    "restart from scratch without checking ledger",
+    "declare completion based on pre-compaction memory"
+  ],
+  "rubric": "orchestration.md"
+}
