@@ -67,6 +67,52 @@ const platforms = [
   { name: 'ZCode', type: '用户级', icon: '⚡' },
 ]
 
+const INSTALL_COMMAND = 'pip install engineering-calculation-system'
+
+function selectElementText(element: HTMLElement) {
+  const selection = window.getSelection()
+  const range = document.createRange()
+  range.selectNodeContents(element)
+  selection?.removeAllRanges()
+  selection?.addRange(range)
+}
+
+async function copyToClipboard(text: string, fallbackElement?: HTMLElement | null): Promise<'copied' | 'selected'> {
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(text)
+      return 'copied'
+    } catch {
+      // Fall back to selection when the browser denies clipboard writes.
+    }
+  }
+
+  const textarea = document.createElement('textarea')
+  textarea.value = text
+  textarea.setAttribute('readonly', '')
+  textarea.style.position = 'fixed'
+  textarea.style.top = '0'
+  textarea.style.left = '0'
+  textarea.style.opacity = '0'
+  document.body.appendChild(textarea)
+  textarea.focus()
+  textarea.select()
+  textarea.setSelectionRange(0, text.length)
+  const copied = document.execCommand('copy')
+  textarea.remove()
+
+  if (copied) {
+    return 'copied'
+  }
+
+  if (fallbackElement) {
+    selectElementText(fallbackElement)
+    return 'selected'
+  }
+
+  throw new Error('Clipboard copy failed')
+}
+
 // ---- Animation Variants ----
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -92,7 +138,8 @@ function ParticlesCanvas() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    let animId: number
+    let animId: number | undefined
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const particles: { x: number; y: number; vx: number; vy: number; r: number; o: number }[] = []
 
     const resize = () => {
@@ -100,7 +147,7 @@ function ParticlesCanvas() {
       canvas.height = window.innerHeight
     }
     resize()
-    window.addEventListener('resize', resize)
+    window.addEventListener('resize', resize, { passive: true })
 
     for (let i = 0; i < 50; i++) {
       particles.push({
@@ -142,12 +189,14 @@ function ParticlesCanvas() {
           }
         }
       }
-      animId = requestAnimationFrame(draw)
+      if (!prefersReducedMotion) {
+        animId = requestAnimationFrame(draw)
+      }
     }
     draw()
 
     return () => {
-      cancelAnimationFrame(animId)
+      if (animId) cancelAnimationFrame(animId)
       window.removeEventListener('resize', resize)
     }
   }, [])
@@ -155,6 +204,7 @@ function ParticlesCanvas() {
   return (
     <canvas
       ref={canvasRef}
+      aria-hidden="true"
       className="fixed inset-0 pointer-events-none z-0"
       style={{ opacity: 0.6 }}
     />
@@ -169,6 +219,11 @@ function Counter({ value, suffix = '' }: { value: number; suffix?: string }) {
 
   useEffect(() => {
     if (!isInView) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setCount(value)
+      return
+    }
+
     let current = 0
     const step = Math.ceil(value / 30)
     const timer = setInterval(() => {
@@ -209,14 +264,15 @@ function Navbar() {
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60)
-    window.addEventListener('scroll', onScroll)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 nav-glass transition-all duration-400 ${scrolled ? 'scrolled' : ''}`}>
+    <nav aria-label="主导航" className={`fixed top-0 left-0 right-0 z-50 nav-glass transition-all duration-300 ${scrolled ? 'scrolled' : ''}`}>
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <a href="#" className="flex items-center gap-3">
+        <a href="#top" aria-label="返回首页" className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-sm">
             E
           </div>
@@ -230,7 +286,7 @@ function Navbar() {
               className="text-sm text-text2 hover:text-primary transition-colors relative group"
             >
               {item}
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-400 group-hover:w-full" />
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
             </a>
           ))}
         </div>
@@ -252,7 +308,7 @@ function Hero() {
   const opacity = useTransform(scrollY, [0, 400], [1, 0])
 
   return (
-    <section className="relative min-h-[800px] flex items-center overflow-hidden">
+    <section id="top" className="relative min-h-[800px] flex items-center overflow-hidden">
       {/* Background layers */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#F8FBFF] via-white to-[#E8F1F8]" />
       <div className="absolute inset-0 blueprint-bg" />
@@ -297,12 +353,12 @@ function Hero() {
             className="flex flex-wrap gap-4"
           >
             <a href="#install" className="btn-primary flex items-center gap-2">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg aria-hidden="true" focusable="false" className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
               安装技能包
             </a>
-            <a href="#features" className="px-8 py-3.5 rounded-xl border border-border hover:border-primary/30 text-text2 hover:text-primary transition-all duration-400 font-medium">
+            <a href="#features" className="px-8 py-3.5 rounded-lg border border-border hover:border-primary/30 text-text2 hover:text-primary transition-all duration-300 font-medium">
               了解更多
             </a>
           </motion.div>
@@ -433,7 +489,7 @@ function Features() {
       >
         {features.map((f, i) => (
           <motion.div key={f.title} variants={fadeUp} custom={i} className="glass-card p-8">
-            <div className="w-14 h-14 rounded-2xl bg-accent-pale flex items-center justify-center text-2xl mb-5">
+            <div className="w-14 h-14 rounded-lg bg-accent-pale flex items-center justify-center text-2xl mb-5">
               {f.icon}
             </div>
             <h3 className="text-lg font-bold mb-3 text-text">{f.title}</h3>
@@ -479,7 +535,7 @@ function Architecture() {
               key={p.num}
               variants={fadeUp}
               custom={i}
-              className="relative p-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 hover:border-primary/30 transition-all duration-400 group"
+              className="relative p-6 rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 hover:border-primary/30 transition-all duration-300 group"
             >
               <div className="font-mono text-xs text-primary-light mb-2">{p.num}</div>
               <h3 className="font-bold text-lg mb-2 group-hover:text-primary-light transition-colors">
@@ -500,7 +556,7 @@ function Architecture() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.5, duration: 0.6 }}
-          className="mt-16 p-8 rounded-2xl border border-primary/20 bg-primary/5 backdrop-blur-sm"
+          className="mt-16 p-8 rounded-lg border border-primary/20 bg-primary/5 backdrop-blur-sm"
         >
           <h3 className="font-bold text-lg mb-6 text-center text-white/90">7 大质量门控</h3>
           <div className="flex flex-wrap justify-center gap-3">
@@ -573,12 +629,18 @@ function Platforms() {
 
 // ---- Install CTA ----
 function Install() {
-  const [copied, setCopied] = useState(false)
+  const installCommandRef = useRef<HTMLElement>(null)
+  const [copyState, setCopyState] = useState<'idle' | 'copied' | 'selected' | 'error'>('idle')
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText('pip install engineering-calculation-system')
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+  const handleCopy = async () => {
+    try {
+      const result = await copyToClipboard(INSTALL_COMMAND, installCommandRef.current)
+      setCopyState(result)
+    } catch {
+      setCopyState('error')
+    } finally {
+      window.setTimeout(() => setCopyState('idle'), 2000)
+    }
   }
 
   return (
@@ -598,7 +660,7 @@ function Install() {
 
         {/* CLI Install */}
         <div className="relative group mb-8">
-          <div className="bg-[#0F172A] rounded-2xl p-6 text-left dark-blueprint-bg overflow-hidden">
+          <div className="bg-[#0F172A] rounded-lg p-6 text-left dark-blueprint-bg overflow-hidden">
             <div className="flex items-center gap-2 mb-4">
               <div className="window-dot bg-[#FF5F56]" />
               <div className="window-dot bg-[#FFBD2E]" />
@@ -607,12 +669,15 @@ function Install() {
             </div>
             <div className="font-mono text-sm flex items-center gap-3">
               <span className="text-primary-light">$</span>
-              <code className="text-white/90 flex-1">pip install engineering-calculation-system</code>
+              <code ref={installCommandRef} className="text-white/90 flex-1">{INSTALL_COMMAND}</code>
               <button
+                type="button"
                 onClick={handleCopy}
+                aria-label="复制或选中安装命令"
+                aria-live="polite"
                 className="text-white/40 hover:text-white transition-colors text-xs px-3 py-1 rounded-md border border-white/10 hover:border-white/30"
               >
-                {copied ? '✓ 已复制' : '复制'}
+                {copyState === 'copied' ? '✓ 已复制' : copyState === 'selected' ? '已选中' : copyState === 'error' ? '复制失败' : '复制'}
               </button>
             </div>
           </div>
@@ -657,7 +722,7 @@ function Footer() {
             <span className="font-bold text-white">Engineering Calculation System</span>
           </div>
           <div className="flex items-center gap-6 text-sm">
-            <a href="https://zjic-international.com" target="_blank" rel="noopener" className="hover:text-white transition-colors">
+            <a href="https://zjic-international.com" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">
               ZJIC International
             </a>
             <span className="text-white/20">|</span>
@@ -677,12 +742,14 @@ export default function App() {
     <div className="relative">
       <ParticlesCanvas />
       <Navbar />
-      <Hero />
-      <StatsRow />
-      <Features />
-      <Architecture />
-      <Platforms />
-      <Install />
+      <main>
+        <Hero />
+        <StatsRow />
+        <Features />
+        <Architecture />
+        <Platforms />
+        <Install />
+      </main>
       <Footer />
     </div>
   )
