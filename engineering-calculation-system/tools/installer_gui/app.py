@@ -191,58 +191,75 @@ class App(ctk.CTk):
         self._build_bottom(row=2)
 
     def _build_topbar(self, *, row: int) -> None:
-        bar = ctk.CTkFrame(self, height=56, corner_radius=0, fg_color=styles.ACCENT)
+        """Build the top navigation bar — NHS.UK / ZJIC style.
+
+        Solid NHS Blue bar with white text, segmented controls on the right.
+        """
+        bar = ctk.CTkFrame(
+            self, height=styles.TOPBAR_HEIGHT, corner_radius=0,
+            fg_color=styles.TOPBAR_FG,
+        )
         bar.grid(row=row, column=0, sticky="ew")
         bar.grid_columnconfigure(1, weight=1)
+        bar.grid_propagate(False)
 
+        # Brand title
         title = ctk.CTkLabel(
             bar,
             text=f"  {t('title')}",
             font=styles.FONT_TITLE,
-            text_color="white",
+            text_color=styles.TEXT_ON_PRIMARY,
             anchor="w",
         )
         title.grid(row=0, column=0, sticky="w", padx=styles.PAD)
 
+        # Version tag (NHS.UK .nhs-tag style)
         version = ctk.CTkLabel(
-            bar, text=f"v{self.version}", font=styles.FONT_SUBTITLE, text_color="#D9EAE5"
+            bar, text=f"v{self.version}", font=styles.FONT_TAG,
+            text_color=styles.ACCENT_PALE,
         )
-        version.grid(row=0, column=1, sticky="e", padx=styles.PAD)
+        version.grid(row=0, column=1, sticky="w", padx=(0, styles.PAD_SM))
 
-        # Language switcher
+        # Language switcher — compact segmented button
         self._lang_switch = ctk.CTkSegmentedButton(
             bar,
             values=[t("lang_en"), t("lang_zh")],
             command=self._on_language,
             height=26,
             font=styles.FONT_SMALL,
+            corner_radius=styles.BUTTON_RADIUS,
         )
         current_lang_label = t("lang_zh") if self._app_config.language == "zh" else t("lang_en")
         self._lang_switch.set(current_lang_label)
-        self._lang_switch.grid(row=0, column=2, padx=(0, 4))
+        self._lang_switch.grid(row=0, column=2, padx=(0, styles.PAD_XS))
 
+        # Theme switcher
         self._theme_switch = ctk.CTkSegmentedButton(
             bar,
             values=[t("theme_light"), t("theme_dark"), t("theme_system")],
             command=self._on_theme,
             height=26,
             font=styles.FONT_SMALL,
+            corner_radius=styles.BUTTON_RADIUS,
         )
         self._theme_switch.set(t(f"theme_{self._app_config.theme.lower()}"))
         self._theme_switch.grid(row=0, column=3, padx=(0, styles.PAD))
 
     def _build_main(self, *, row: int) -> None:
+        """Build the main card grid area with action bar."""
         main = ctk.CTkFrame(self, fg_color="transparent")
         main.grid(row=row, column=0, sticky="nsew", padx=styles.PAD, pady=styles.PAD)
         main.grid_columnconfigure(0, weight=1)
         main.grid_rowconfigure(0, weight=1)
 
-        # Scrollable card grid.
+        # Scrollable card grid with alternating section background
         scroll = ctk.CTkScrollableFrame(
-            main, label_text=t("target_agents"), fg_color="transparent"
+            main, label_text=t("target_agents"),
+            fg_color=(styles.SURFACE_ALT, styles.DARK_SURFACE),
+            corner_radius=styles.CARD_RADIUS,
         )
         scroll.grid(row=0, column=0, sticky="nsew")
-        # 4 columns of cards.
+        # 4 columns of cards
         for col in range(4):
             scroll.grid_columnconfigure(col, weight=1, uniform="card")
 
@@ -257,66 +274,101 @@ class App(ctk.CTk):
                 on_uninstall=self._on_uninstall,
                 on_pick_root=self._on_pick_root,
             )
-            card.grid(row=r, column=c, padx=8, pady=8, sticky="nsew")
+            card.grid(row=r, column=c, padx=styles.PAD_SM, pady=styles.PAD_SM, sticky="nsew")
             card.set_root_label(self._roots.get(spec.name))
             self._cards[spec.name] = card
 
-        # Refresh button row.
+        # --- Action bar (section divider + buttons) ---
+        divider = ctk.CTkFrame(main, height=3, fg_color=(styles.PRIMARY, styles.PRIMARY_LIGHT),
+                               corner_radius=0)
+        divider.grid(row=1, column=0, sticky="ew", pady=(styles.PAD, 0))
+
         actions = ctk.CTkFrame(main, fg_color="transparent")
-        actions.grid(row=1, column=0, sticky="ew", pady=(styles.PAD, 0))
+        actions.grid(row=2, column=0, sticky="ew", pady=(styles.PAD_SM, 0))
         actions.grid_columnconfigure(3, weight=1)
 
+        # Rescan button — secondary outline
         ctk.CTkButton(
             actions, text=t("btn_rescan"), width=110, command=self._refresh_all_detection,
-            fg_color=("#5B6B79", "#3F4753"), hover_color=("#4A5865", "#343B45"),
-        ).grid(row=0, column=0, padx=(0, 6))
+            corner_radius=styles.BUTTON_RADIUS,
+            fg_color=("transparent", "transparent"),
+            hover_color=(styles.ACCENT_PALE, "#2A3A50"),
+            text_color=(styles.TEXT_SECONDARY, "#9AA5B1"),
+            border_width=1,
+            border_color=(styles.BORDER, styles.DARK_BORDER),
+        ).grid(row=0, column=0, padx=(0, styles.PAD_SM))
+
+        # Build All button — primary solid
         ctk.CTkButton(
             actions, text=t("btn_build_all"), width=160, command=self._on_build_all,
-            fg_color=styles.ACCENT, hover_color=styles.ACCENT_HOVER,
-        ).grid(row=0, column=1, padx=6)
-        # In frozen (exe) mode the repo root is chosen by the user, so surface a
-        # button to set/inspect it. Source mode hides this (auto-detected).
+            corner_radius=styles.BUTTON_RADIUS,
+            fg_color=(styles.PRIMARY, styles.PRIMARY_DARK),
+            hover_color=(styles.PRIMARY_DARK, styles.PRIMARY),
+            text_color=styles.TEXT_ON_PRIMARY,
+        ).grid(row=0, column=1, padx=(0, styles.PAD_SM))
+
+        # In frozen (exe) mode the repo root is chosen by the user
         if deployer.is_frozen():
             self._repo_root_label = ctk.CTkLabel(
                 actions, text=t("repo_not_set"), font=styles.FONT_SMALL, anchor="e",
-                text_color=("#6B7480", "#9AA5B1"),
+                text_color=(styles.TEXT_TERTIARY, "#768692"),
             )
-            self._repo_root_label.grid(row=0, column=2, sticky="e", padx=(6, 6))
+            self._repo_root_label.grid(row=0, column=2, sticky="e", padx=(styles.PAD_SM, styles.PAD_SM))
             ctk.CTkButton(
                 actions, text=t("btn_repo"), width=80, command=self._change_repo_root,
-                fg_color=("#5B6B79", "#3F4753"), hover_color=("#4A5865", "#343B45"),
-            ).grid(row=0, column=3, padx=(0, 6))
+                corner_radius=styles.BUTTON_RADIUS,
+                fg_color=("transparent", "transparent"),
+                hover_color=(styles.ACCENT_PALE, "#2A3A50"),
+                text_color=(styles.TEXT_SECONDARY, "#9AA5B1"),
+                border_width=1,
+                border_color=(styles.BORDER, styles.DARK_BORDER),
+            ).grid(row=0, column=3, padx=(0, styles.PAD_SM))
             if deployer.REPO_ROOT is not None:
                 self._repo_root_label.configure(text=f"{t('repo_prefix')}{deployer.REPO_ROOT}")
+
+        # Status label
         self._status_label = ctk.CTkLabel(
-            actions, text=t("status_ready"), font=styles.FONT_SMALL, anchor="e", text_color=("#6B7480", "#9AA5B1")
+            actions, text=t("status_ready"), font=styles.FONT_SMALL, anchor="e",
+            text_color=(styles.TEXT_TERTIARY, "#768692"),
         )
         self._status_label.grid(row=0, column=4, sticky="e", padx=styles.PAD)
 
     def _build_bottom(self, *, row: int) -> None:
+        """Build the bottom log + progress + controls area."""
         bottom = ctk.CTkFrame(self, fg_color="transparent")
         bottom.grid(row=row, column=0, sticky="ew", padx=styles.PAD, pady=(0, styles.PAD))
         bottom.grid_columnconfigure(0, weight=1)
 
+        # Progress bar row
         self._progress = widgets.ProgressRow(bottom)
         self._progress.grid(row=0, column=0, sticky="ew", pady=(0, styles.PAD_SM))
 
+        # Log panel with left accent bar
         self._log = widgets.LogPanel(bottom, height=180)
         self._log.grid(row=1, column=0, sticky="ew")
 
-        # Bottom control row.
+        # Bottom control row
         ctrl = ctk.CTkFrame(bottom, fg_color="transparent")
         ctrl.grid(row=2, column=0, sticky="ew", pady=(styles.PAD_SM, 0))
         ctrl.grid_columnconfigure(1, weight=1)
 
+        # Clear log — secondary outline
         ctk.CTkButton(
             ctrl, text=t("btn_clear_log"), width=100, command=self._log.clear,
-            fg_color=("#5B6B79", "#3F4753"), hover_color=("#4A5865", "#343B45"),
-        ).grid(row=0, column=0, padx=(0, 6))
+            corner_radius=styles.BUTTON_RADIUS,
+            fg_color=("transparent", "transparent"),
+            hover_color=(styles.ACCENT_PALE, "#2A3A50"),
+            text_color=(styles.TEXT_SECONDARY, "#9AA5B1"),
+            border_width=1,
+            border_color=(styles.BORDER, styles.DARK_BORDER),
+        ).grid(row=0, column=0, padx=(0, styles.PAD_SM))
 
+        # Stop button — danger solid
         self._stop_btn = ctk.CTkButton(
             ctrl, text=t("btn_stop"), width=100, state="disabled",
+            corner_radius=styles.BUTTON_RADIUS,
             fg_color=styles.DANGER, hover_color=styles.DANGER_HOVER,
+            text_color=styles.TEXT_ON_PRIMARY,
             command=self._on_stop,
         )
         self._stop_btn.grid(row=0, column=2, sticky="e")
