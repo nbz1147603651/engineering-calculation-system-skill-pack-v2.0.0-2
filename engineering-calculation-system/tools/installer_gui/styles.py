@@ -94,16 +94,16 @@ PAD_SM = 8
 PAD_XS = 4
 CARD_W = 280
 CARD_H = 180
-CARD_RADIUS = 4                  # Minimal radius - NHS.UK style
-BUTTON_RADIUS = 4
+CARD_RADIUS = 10
+BUTTON_RADIUS = 8
 TAG_RADIUS = 2
 
-# Border widths (simulated via CTk border_width)
+# Border widths
 BORDER_W = 1
 BORDER_W_THICK = 3               # Left accent bar
 
 # Top bar
-TOPBAR_HEIGHT = 52
+TOPBAR_HEIGHT = 56
 TOPBAR_FG = PRIMARY
 TOPBAR_FG_DARK = PRIMARY_DARK
 

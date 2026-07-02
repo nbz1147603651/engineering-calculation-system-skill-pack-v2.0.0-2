@@ -1,12 +1,20 @@
 {
   "name": "ecs-homepage",
   "private": true,
-  "version": "0.0.0",
+  "version": "2.6.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "preview:host": "vite preview --host 0.0.0.0",
+    "version:sync": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/sync-version.ps1",
+    "version:check": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check-version.ps1",
+    "package:static": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/package-static.ps1",
+    "package:linux-web": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/package-static.ps1",
+    "docker:build": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/docker-build.ps1",
+    "docker:up": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/docker-up.ps1",
+    "docker:down": "docker compose down"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.2",

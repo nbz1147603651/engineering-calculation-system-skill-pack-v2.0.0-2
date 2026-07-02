@@ -99,6 +99,30 @@ OpenCode zip:      copy copy-to-project-root/ contents to the OpenCode project r
 AGENTS Generic zip: copy copy-to-project-root/ contents to an AGENTS.md-compatible project root
 ```
 
+## Qoder / Qoder CN Deployment Choice
+
+For Qoder and Qoder CN, the recommended setup is:
+
+```text
+user-level install: once per machine/user profile
+project-level install: once per serious or production project
+```
+
+Use the user-level install to make reusable agents, skills, and references
+available globally in the IDE. Use the project-level package to give the current
+workspace the complete core skill, shared contracts, templates, schemas,
+validator, project scaffold, and project-local `.qoder/` or `.lingma/` overlay.
+
+If you only want a lightweight router or a quick skill import, the direct QODER
+Skill zip or the QoderCN user zip is enough. If the task must produce
+`web-complete`, production-ready, deployable, or source-backed calculation
+software, deploy the project package as well:
+
+```text
+Qoder:   user-level once + QODER Project zip per project
+QoderCN: user-level once + QoderCN Project zip per project
+```
+
 MiniMax Code local verification on Windows:
 
 ```powershell
@@ -121,17 +145,18 @@ After copying the folder, refresh ZCode Settings -> Skills and keep the skill
 enabled. ZCode project-specific guardrails belong in the workspace `AGENTS.md`;
 the reusable engineering-calculation workflow remains in the skill folder.
 
-For QODER web-complete generation, prefer the QODER Project zip. The direct
-QODER zip keeps `SKILL.md` at the archive root for QODER skill-import
-compatibility, but it does not contain the core templates, schemas, validator,
-or project scaffold by itself.
+For QODER web-complete generation, use the QODER Project zip in the target
+project. The direct QODER zip keeps `SKILL.md` at the archive root for QODER
+skill-import compatibility, but it does not contain the core templates, schemas,
+validator, or project scaffold by itself.
 
 For Qoder CN IDE, use the QoderCN user zip for user-level reusable Skills and
-Agents under `~/.lingma/`, or the QoderCN Project zip for project-level
-`.lingma/agents` and `.lingma/skills`. Official Qoder CN documentation also
-mentions `.qodercn` for the IDE process/cache and `QoderCN.exe`; this package
-uses `.lingma` for custom Skill/Agent resources because that is the documented
-resource location for Qoder CN IDE custom agents and skills.
+Agents under `~/.lingma/`, and use the QoderCN Project zip for project-level
+`.lingma/agents` and `.lingma/skills` when the current workspace needs full
+project capability. Official Qoder CN documentation also mentions `.qodercn`
+for the IDE process/cache and `QoderCN.exe`; this package uses `.lingma` for
+custom Skill/Agent resources because that is the documented resource location
+for Qoder CN IDE custom agents and skills.
 
 Qoder import mode check:
 
@@ -166,8 +191,8 @@ engineering-calculation-system-QODER-Project-v2.6.0.zip
   project scaffold.
 ```
 
-Use QODER Project when you want multiple Qoder custom agents installed together.
-Use the direct QODER Skill zip only when the target flow is Qoder Skill import.
+Use QODER Project for serious Qoder project work. Use the direct QODER Skill zip
+only when the target flow is Qoder Skill import or lightweight routing.
 
 For a local user-level Qoder install from this source checkout:
 

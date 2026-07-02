@@ -1,0 +1,16 @@
+services:
+  ecs-homepage:
+    build:
+      context: .
+      args:
+        ECS_HOMEPAGE_VERSION: ${ECS_HOMEPAGE_VERSION:-0.0.0}
+    image: ecs-homepage:${ECS_HOMEPAGE_VERSION:-local}
+    restart: unless-stopped
+    ports:
+      - "${ECS_HOMEPAGE_PORT:-8080}:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/healthz >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s

@@ -1,18 +1,18 @@
 # Deployment Console (GUI)
 
-A clean desktop UI to detect target agent programs and deploy the Engineering
+A Qt desktop UI to detect target agent programs and deploy the Engineering
 Calculation System skill pack / plugin to each of them in one click.
 
 ```text
 engineering-calculation-system/tools/installer_gui/
-├── app.py        # main window (entry point)
-├── agents.py     # 8 target agents metadata (single source of truth)
-├── detector.py   # program + deployment detection
-├── deployer.py   # build + copy + backup + verify (reuses build_release.py)
-├── workers.py    # background thread + event queue
-├── widgets.py    # agent card / log panel / progress bar
-├── styles.py     # palette + typography
-└── launch.bat    # Windows double-click launcher
+|-- app.py        # lightweight entry point and PySide6 dependency check
+|-- qt_app.py     # PySide6 main window, QAbstractTableModel, delegates
+|-- agents.py     # target agent metadata
+|-- detector.py   # program + deployment detection
+|-- deployer.py   # build + copy + backup + verify
+|-- workers.py    # background thread + event queue
+|-- styles.py     # palette + typography tokens
+`-- launch.bat    # Windows double-click launcher
 ```
 
 ## Run
@@ -23,30 +23,44 @@ python engineering-calculation-system/tools/installer_gui/app.py
 # or double-click engineering-calculation-system/tools/installer_gui/launch.bat
 ```
 
-Requires Python 3.9+ and `customtkinter`. If `customtkinter` is missing the
-console offers to install it on first run (`pip install customtkinter`).
+Requires Python 3.9+ and `PySide6`. If `PySide6` is missing the console offers
+to install it on first run (`pip install PySide6`).
 
-### Run from the distributable exe
+## UI architecture
 
-A self-contained Windows exe (no Python needed on the target machine) is built
-as a release profile:
+The console uses Qt's model/view stack:
+
+- `AgentTableModel` subclasses `QAbstractTableModel` and owns the product rows,
+  selected deployment mode, roots, detection state, and busy state.
+- `AgentFilterProxyModel` provides search plus all/needs-action filtering
+  without rebuilding widgets.
+- A compact `QTableView` replaces the old card grid. The selected row drives a
+  details panel with deployment mode, deploy, verify, folder, open-root, and
+  remove actions.
+- Worker events are drained by a `QTimer`; completion refreshes only the affected
+  agent row when possible.
+- The activity log keeps a bounded in-memory tail so long deploy output does not
+  make the UI progressively heavier.
+
+## Run from the distributable exe
+
+A self-contained Windows exe is built as a release profile:
 
 ```bash
 python tools/build_release.py --profile ui-client
 ```
 
-This produces `dist/ui-client/engineering-calc-system-installer-v<version>.exe`
-(~28 MB). Double-click to run, or copy it to any Windows machine and run there.
+This produces `dist/ui-client/engineering-calc-system-installer-v<version>.exe`.
+Double-click to run, or copy it to any Windows machine and run there.
 
-Because the exe is a *deployment tool* and does not bundle the skill source, it
-needs the **skill-pack repository folder** (the one containing
+Because the exe is a deployment tool and does not bundle the skill source, it
+needs the skill-pack repository folder (the one containing
 `tools/build_release.py`) before it can build release profiles. On startup it
 honors `ECS_REPO_ROOT`, searches parent folders near the exe, then uses any
 saved repo path. If none is valid, it starts without a popup and creates a local
 `workspace/` placeholder; use the **Repo...** button to select the real repo
 before building or deploying. The exe still needs a system Python 3.9+ on `PATH`
-to run `build_release.py` for skill-pack builds (the exe itself only
-orchestrates copies/deploys). Set `ECS_REPO_ROOT` to pre-fill the repo path:
+to run `build_release.py` for skill-pack builds.
 
 ```powershell
 $env:ECS_REPO_ROOT = "C:\path\to\engineering-calculation-system"
@@ -54,12 +68,12 @@ $env:ECS_REPO_ROOT = "C:\path\to\engineering-calculation-system"
 ```
 
 To rebuild the whole release (skill packs + UI exe) in one command, drop the
-`--profile` flag. Use `--no-ui-client` to skip the ~40s PyInstaller step during
-fast iteration:
+`--profile` flag. Use `--no-ui-client` to skip the PyInstaller step during fast
+iteration:
 
 ```bash
-python tools/build_release.py             # everything, including the exe
-python tools/build_release.py --no-ui-client   # skip the exe build
+python tools/build_release.py
+python tools/build_release.py --no-ui-client
 ```
 
 If PyInstaller is not installed, the `ui-client` profile writes a README
@@ -67,58 +81,66 @@ explaining `pip install pyinstaller` instead of failing the whole release.
 
 ## What it does
 
-The console targets ten agents. Each is shown as a card with two status dots:
+The console lists eight agent products. Qoder and Qoder CN expose their user
+folder / selected project deployment choice in the details panel instead of
+duplicating table rows. Each row shows the currently selected mode:
 
-- **program** — is the agent's CLI / home directory present on this machine?
-- **deployed** — is the skill already installed at that agent's root?
+- **program**: whether the agent CLI / home directory is present on this machine
+- **deployment**: whether the skill is already installed at that agent root
+- **target**: the default install location or the selected project root
+- **profiles**: release profiles needed for that target
 
-| Agent | Kind | Default install root | Verify |
-| --- | --- | --- | --- |
-| Codex | user | `~/.codex/skills/engineering-calculation-system/` | `SKILL.md` sentinel |
-| MiniMax Code | user | `~/.mavis/skills/engineering-calculation-system/` | `mavis skill show …` |
-| ZCode | user | `~/.zcode/skills/engineering-calculation-system/` | `SKILL.md` sentinel |
-| Qoder (user) | user | `QODER_HOME` or `~/.qoder` | `install_qoder_user.py --audit` |
-| Qoder Project | project | pick a project root | `.qoder/agents/engineering-calc-system.md` |
-| Qoder CN (user) | user | `QODER_CN_HOME`, `QODERCN_HOME`, `LINGMA_HOME`, or `~/.lingma` | `install_qoder_user.py --product qodercn --audit` |
-| Qoder CN Project | project | pick a project root | `.lingma/agents/engineering-calc-system.md` |
-| Trae | project | pick a project root | `.trae/project_rules.md` |
-| OpenCode | project | pick a project root | `.opencode/skills/.../SKILL.md` |
-| AGENTS Generic | project | pick a project root | `AGENTS.md` + `.agents/skills/...` |
+| Agent | Target location | Verify |
+| --- | --- | --- |
+| Codex | `~/.codex/skills/engineering-calculation-system/` | `SKILL.md` sentinel |
+| MiniMax Code | `~/.mavis/skills/engineering-calculation-system/` | `mavis skill show ...` |
+| ZCode | `~/.zcode/skills/engineering-calculation-system/` | `SKILL.md` sentinel |
+| Qoder | user folder: `QODER_HOME` or `~/.qoder`; selected project: writes `.qoder/` configuration | user audit or `.qoder/agents/engineering-calc-system.md` |
+| Qoder CN | user folder: `QODER_CN_HOME`, `QODERCN_HOME`, `LINGMA_HOME`, or `~/.lingma`; selected project: writes `.lingma/` configuration | user audit or `.lingma/agents/engineering-calc-system.md` |
+| Trae | selected project root, writes `.trae/` and `AGENTS.md` | `.trae/project_rules.md` |
+| OpenCode | selected project root, writes `.opencode/` | `.opencode/skills/.../SKILL.md` |
+| AGENTS Generic | selected project root, writes `AGENTS.md` and `.agents/` | `AGENTS.md` + `.agents/skills/...` |
 
-### Buttons
+## Qoder / Qoder CN modes
 
-- **Deploy** — builds the needed release profile(s) via `tools/build_release.py`,
-  then copies the right overlay into the agent's install root. Existing files
-  are backed up to `<name>.bak.<timestamp>` before being overwritten.
-- **Verify** — re-checks the sentinel file (and runs `mavis skill show` for
-  MiniMax, or `install_qoder_user.py --audit` for Qoder/Qoder CN user-level).
-- **Remove** — uninstalls only this package's managed files (Qoder user-level
-  and Qoder CN user-level delegate to `install_qoder_user.py --uninstall`).
-- **Folder…** (project agents) — choose the project root to overlay into.
-- **Build all profiles** — runs every release profile in `release_config.json`
-  so subsequent deploys skip the build step.
-- **Re-scan** — re-runs detection for all cards.
-- **Stop** — requests a cooperative cancel of the running job.
+For Qoder and Qoder CN, choose both modes when you are setting up real project
+work:
 
-### Safety
+```text
+User folder       install once per machine/user profile
+Selected project  deploy once per serious or production project
+```
 
-- No file is ever silently overwritten; the previous copy is renamed to
+The user-folder mode installs reusable agents, skills, and references so the IDE
+can discover the Engineering Calculation System globally. The selected-project
+mode writes the project-local `.qoder/` or `.lingma/` overlay alongside the core
+skill package, templates, schemas, validator, and project scaffold. That
+project-level layer is required before claiming `web-complete`, deployable, or
+production-ready output.
+
+Use only the user-folder mode for lightweight routing, quick skill/resource
+availability, or exploratory guidance. Use selected-project mode whenever the
+current workspace should receive the full engineering calculation workflow.
+
+## Actions
+
+- **Deploy** builds needed release profiles via `tools/build_release.py`, then
+  copies the right overlay into the agent root. Existing files are backed up to
+  `<name>.bak.<timestamp>` before being overwritten.
+- **Verify** re-checks the sentinel file and any supported CLI/audit command.
+- **Choose user folder... / Choose project root...** changes the install location or
+  selects the concrete project root for project overlays. If a project overlay
+  has no selected project root, **Deploy** opens the picker first.
+- **Open target** opens the selected install/project location in the OS file manager.
+- **Remove** uninstalls only this package's managed files.
+- **Build all profiles** runs every release profile in `release_config.json`.
+- **Re-scan** re-runs detection for all visible targets.
+- **Stop** requests a cooperative cancel of the running job.
+
+## Safety
+
+- No file is silently overwritten; the previous copy is renamed to
   `<name>.bak.<YYYYMMDD-HHMMSS>`.
-- Uninstall removes only files this package owns (known overlay tree +
-  sentinels); user content is untouched.
-- All long-running work happens on a background thread, so the window stays
-  responsive. Output streams into the log panel at the bottom.
-
-## How it reuses existing tooling
-
-The console does **not** reimplement build or install logic:
-
-- `deployer.build_profiles()` shells out to `python tools/build_release.py
-  --profile <p>` for each required profile.
-- The Qoder and Qoder CN user-level deploy/verify/uninstall shells out to
-  `python tools/install_qoder_user.py` with `--build` / `--audit` / `--uninstall`.
-  Qoder CN passes `--product qodercn` and defaults to `~/.lingma`.
-- Version and profile list are read from `tools/release_config.json`.
-
-So any change to `release_config.json`, `build_release.py`, or
-`install_qoder_user.py` is picked up automatically — no GUI changes needed.
+- Uninstall removes only files this package owns.
+- Long-running work happens on a background thread, so the window stays
+  responsive while output streams into the log panel.

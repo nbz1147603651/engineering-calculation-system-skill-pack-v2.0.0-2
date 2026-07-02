@@ -164,6 +164,20 @@ OpenCode:      copy-to-project-root/
 AGENTS Generic: copy-to-project-root/
 ```
 
+Qoder and Qoder CN have two deployment layers. For real project work, install
+the user-level resources once per machine/user profile, then deploy the matching
+Project package into each serious or production project:
+
+```text
+Qoder:   user-level once + QODER Project per project
+QoderCN: user-level once + QoderCN Project per project
+```
+
+The user-level layer gives global reusable agents, skills, and references. The
+project-level layer gives the current workspace the complete core package,
+templates, schemas, validator, project scaffold, and `.qoder/` or `.lingma/`
+overlay required for `web-complete` or production-ready claims.
+
 The MiniMaxCode package follows MiniMax's skills repository layout with `skills/engineering-calculation-system/SKILL.md`. For this machine, the local MiniMax Code / Mavis user skill root is `%USERPROFILE%/.mavis/skills/`; for sharing, the same archive can be published as a Github repository root and imported through MiniMax Code. The ZCode package follows ZCode's user skill directory shape: copy `engineering-calculation-system/` to `%USERPROFILE%/.zcode/skills/engineering-calculation-system/`, refresh Settings -> Skills, keep the skill enabled, and invoke it with `$engineering-calculation-system`. Put persistent ZCode project guardrails in the workspace `AGENTS.md`. The QODER package is for direct QODER Skill upload and is intentionally lightweight. For Qoder Smart Agent workflows and QODER web-complete generation, prefer QODER Project because it includes the custom agent supervisor, delegated worker agents, skill/resource layer, core runtime files, templates, schemas, validator, project scaffold, and `.qoder/` overlay. Qoder CN uses the same Qoder supervisor/worker skill resources, remapped to user-level `~/.lingma` or project-root `.lingma/` for Qoder CN IDE custom Skills and Agents. The QODER Project, QoderCN Project, TRAE, OpenCode, and AGENTS Generic packages are already merged with the core runtime files, so users can copy the matching package contents directly. Use the raw core and overlay profiles only when debugging or repackaging.
 
 Release metadata and classified install targets are maintained in:

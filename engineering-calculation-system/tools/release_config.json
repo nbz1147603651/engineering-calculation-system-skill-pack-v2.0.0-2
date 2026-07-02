@@ -47,14 +47,31 @@
   "ui_client": {
     "entry_module": "installer_gui.app",
     "exe_name_template": "engineering-calc-system-installer-v{version}",
-    "collect_all": [
-      "customtkinter"
-    ],
+    "collect_all": [],
     "collect_submodules": [
       "installer_gui"
     ],
     "onefile": true,
-    "windowed": true
+    "windowed": true,
+    "icon": "tools/installer_gui/assets/brand-logo.ico",
+    "data_files": [
+      [
+        "tools/installer_gui/assets/brand-logo.ico",
+        "installer_gui/assets"
+      ],
+      [
+        "tools/installer_gui/assets/brand-logo.png",
+        "installer_gui/assets"
+      ],
+      [
+        "tools/installer_gui/assets/brand-logo.svg",
+        "installer_gui/assets"
+      ],
+      [
+        "tools/installer_gui/assets/platform-logos",
+        "installer_gui/assets/platform-logos"
+      ]
+    ]
   },
   "singlefile_prefixes": [
     "SKILL.md",
@@ -120,7 +137,7 @@
     {
       "name": "QODER",
       "path": ".",
-      "install_text": "Upload this zip directly from QODER's Skills / Install Skill flow. This is the direct skill/resource entrypoint; for Qoder Smart Agent workflows, prefer the QODER Project package so the custom agent and supporting skill resources are installed together.",
+      "install_text": "Upload this zip directly from QODER's Skills / Install Skill flow. This is the direct skill/resource entrypoint for lightweight routing. For full project work, install Qoder user-level resources once and also deploy the QODER Project package into each project root.",
       "include_core": false,
       "payload_at_root": true,
       "include_install_guide": false,
@@ -134,7 +151,8 @@
       "notes": [
         "This archive places SKILL.md at the zip root for QODER skill import compatibility.",
         "Read qoder_quickstart.md first to run the Qoder Package Self-Check and decide whether the current install is direct skill, project overlay, or complete core package.",
-        "For web-complete generation, prefer the QODER Project package because it includes the core skill, templates, schemas, validator, project scaffold, and .qoder overlay.",
+        "For web-complete generation, deploy the QODER Project package into the current project because it includes the core skill, templates, schemas, validator, project scaffold, and .qoder overlay.",
+        "Recommended deployment choice: user-level install once for reusable Qoder agents/skills/references, plus QODER Project once per production project.",
         "If only this direct skill is installed, it is a lightweight entrypoint, not the complete project template.",
         "Qoder Smart Agent mode should use `.qoder/agents/engineering-calc-system.md` as the supervisor and keep long references outside `.qoder/agents/`.",
         "Multiple Qoder worker agents are packaged by the QODER Project archive, not by the direct Skill archive."
@@ -143,7 +161,7 @@
     {
       "name": "QODER Project",
       "path": "Qoder/copy-to-project-root",
-      "install_text": "Copy the contents of this folder into the root of the QODER project.",
+      "install_text": "Copy the contents of this folder into the root of the QODER project. This is the required package for full Qoder project capability; pair it with one user-level install when you want reusable agents and skills available globally.",
       "include_adapter_docs": true,
       "copies": [
         {
@@ -154,6 +172,7 @@
       ],
       "notes": [
         "This directory already merges the core skill, shared adapter docs, and `.qoder/` files.",
+        "Recommended deployment choice: install Qoder user-level resources once for global discovery, then deploy this project package into every serious/production Qoder project.",
         "Recommended Qoder architecture: `.qoder/agents/engineering-calc-system.md` is the Smart Agent supervisor; `.qoder/agents/engineering-calc-*.md` are delegated worker agents; `.qoder/skills/engineering-calc-system/` is the skill/resource layer; `.qoder/references/` stores long references so they are not listed as disabled agents.",
         "Start new Qoder projects by reading `.qoder/skills/engineering-calc-system/qoder_quickstart.md`, then let the supervisor classify install shape, material state, delivery mode, lifecycle path, and gate status.",
         "A single `python tools/build_release.py` run packages the full Qoder multi-agent program into the QODER Project archive.",
@@ -164,7 +183,7 @@
     {
       "name": "QoderCN",
       "path": "QoderCN/copy-to-user-home",
-      "install_text": "Copy the contents of this folder into the Qoder CN user resource directory, typically `~/.lingma/` for Qoder CN IDE custom Skills and Agents. You can also deploy from source with `python tools/install_qoder_user.py --product qodercn --build`.",
+      "install_text": "Copy the contents of this folder into the Qoder CN user resource directory, typically `~/.lingma/` for Qoder CN IDE custom Skills and Agents. This is the reusable user-level layer; deploy QoderCN Project into each serious/production project for full capability. You can also deploy from source with `python tools/install_qoder_user.py --product qodercn --build`.",
       "include_core": false,
       "copies": [
         {
@@ -184,6 +203,7 @@
         }
       ],
       "notes": [
+        "Recommended deployment choice: QoderCN user-level once for reusable agents/skills/references, plus QoderCN Project once per production project.",
         "Alibaba Cloud Qoder CN docs describe user-level custom agents under `~/.lingma/agents/<agentName>.md` and user-level skills under `~/.lingma/skills/{skill-name}/SKILL.md` for IDE use.",
         "Qoder CN was formerly Tongyi Lingma; current IDE process/cache paths may still include `.qodercn`, while custom Skill/Agent resources remain compatible with the Lingma resource layout.",
         "This package reuses the Qoder supervisor, worker agents, skill resources, and references without renaming internal agent IDs."
@@ -192,7 +212,7 @@
     {
       "name": "QoderCN Project",
       "path": "QoderCN/copy-to-project-root",
-      "install_text": "Copy the contents of this folder into the root of the Qoder CN project.",
+      "install_text": "Copy the contents of this folder into the root of the Qoder CN project. This is the required package for full Qoder CN project capability; pair it with one user-level install when you want reusable agents and skills available globally.",
       "include_adapter_docs": true,
       "copies": [
         {
@@ -203,6 +223,7 @@
       ],
       "notes": [
         "This directory already merges the core skill, shared adapter docs, and `.lingma/` files.",
+        "Recommended deployment choice: install Qoder CN user-level resources once for global discovery, then deploy this project package into every serious/production Qoder CN project.",
         "Qoder CN IDE custom agents are documented at `${project}/.lingma/agents/<agentName>.md`; project-level Skills are documented at `.lingma/skills/{skill-name}/SKILL.md`.",
         "Use `.lingma/agents/engineering-calc-system.md` as the supervisor and `.lingma/skills/engineering-calc-system/` as the skill/resource layer."
       ]

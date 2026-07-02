@@ -6,7 +6,9 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 import hashlib
+import os
 import shutil
+import struct
 import subprocess
 import sys
 import tempfile
@@ -265,6 +267,50 @@ def require_text(path: Path, phrases: list[str], *, context: str) -> None:
         raise RuntimeError(f"{context} missing required phrase(s): {', '.join(missing)}")
 
 
+def validate_windows_icon(icon_path: Path) -> None:
+    """Require Windows-friendly small icon layers for Explorer list/detail views."""
+    data = icon_path.read_bytes()
+    if len(data) < 6:
+        raise RuntimeError(f"ui-client icon is not a valid .ico file: {icon_path}")
+    reserved, icon_type, count = struct.unpack_from("<HHH", data, 0)
+    if reserved != 0 or icon_type != 1 or count <= 0:
+        raise RuntimeError(f"ui-client icon is not a valid Windows icon: {icon_path}")
+
+    entries: dict[int, tuple[int, int]] = {}
+    for index in range(count):
+        offset = 6 + index * 16
+        if offset + 16 > len(data):
+            raise RuntimeError(f"ui-client icon directory is truncated: {icon_path}")
+        width_byte, height_byte, _colors, _reserved, _planes, bit_count, size, image_offset = struct.unpack_from(
+            "<BBBBHHII",
+            data,
+            offset,
+        )
+        width = 256 if width_byte == 0 else width_byte
+        height = 256 if height_byte == 0 else height_byte
+        if width != height:
+            continue
+        if image_offset + size > len(data):
+            raise RuntimeError(f"ui-client icon image data is truncated: {icon_path}")
+        entries[width] = (bit_count, image_offset)
+
+    required_sizes = {16, 32, 48, 256}
+    missing = sorted(required_sizes - set(entries))
+    if missing:
+        raise RuntimeError(
+            f"ui-client icon must include Explorer-friendly sizes: {', '.join(map(str, missing))}"
+        )
+
+    for size in (16, 32, 48):
+        bit_count, image_offset = entries[size]
+        if bit_count != 32:
+            raise RuntimeError(f"ui-client icon size {size} must be 32-bit RGBA")
+        if data[image_offset : image_offset + 8] == b"\x89PNG\r\n\x1a\n":
+            raise RuntimeError(
+                f"ui-client icon size {size} is PNG-compressed; use DIB/BGRA for Explorer list views"
+            )
+
+
 def iter_files(root: Path, *, include_indexes: bool = False) -> list[Path]:
     files: list[Path] = []
     for path in root.rglob("*"):
@@ -433,6 +479,8 @@ def build_ui_client() -> Path:
     collect_submodules = tuple(UI_CLIENT_CONFIG.get("collect_submodules", ()))
     onefile = bool(UI_CLIENT_CONFIG.get("onefile", True))
     windowed = bool(UI_CLIENT_CONFIG.get("windowed", True))
+    icon = UI_CLIENT_CONFIG.get("icon")
+    data_files = tuple(UI_CLIENT_CONFIG.get("data_files", ()))
 
     try:
         import PyInstaller  # noqa: F401
@@ -454,9 +502,6 @@ def build_ui_client() -> Path:
     tools_dir = REPO_ROOT / "tools"
     bootstrap = profile_root / "_entry_bootstrap.py"
     bootstrap.write_text(
-        "import sys\n"
-        "from pathlib import Path\n"
-        f"sys.path.insert(0, r'{tools_dir}')\n"
         f"from {entry_module} import main\n"
         "main()\n",
         encoding="utf-8",
@@ -471,6 +516,7 @@ def build_ui_client() -> Path:
         f"--distpath={profile_root}",
         f"--workpath={(profile_root / '_build').as_posix()}",
         f"--specpath={(profile_root / '_spec').as_posix()}",
+        f"--paths={tools_dir}",
         "--noconfirm",
         "--clean",
     ]
@@ -478,10 +524,24 @@ def build_ui_client() -> Path:
         argv.append("--onefile")
     if windowed:
         argv.append("--windowed")
+    if icon:
+        icon_path = REPO_ROOT / str(icon)
+        if not icon_path.exists():
+            raise RuntimeError(f"ui-client icon not found: {icon_path}")
+        validate_windows_icon(icon_path)
+        argv.append(f"--icon={icon_path}")
     for pkg in collect_all:
         argv.append(f"--collect-all={pkg}")
     for mod in collect_submodules:
         argv.append(f"--collect-submodules={mod}")
+    for item in data_files:
+        if not isinstance(item, (list, tuple)) or len(item) != 2:
+            raise RuntimeError(f"ui-client data_files entries must be [source, target], got: {item!r}")
+        source = REPO_ROOT / str(item[0])
+        target = str(item[1])
+        if not source.exists():
+            raise RuntimeError(f"ui-client data file not found: {source}")
+        argv.append(f"--add-data={source}{os.pathsep}{target}")
 
     print(f"ui-client: running PyInstaller -> {exe_name}")
     result = subprocess.run(argv, cwd=str(REPO_ROOT))

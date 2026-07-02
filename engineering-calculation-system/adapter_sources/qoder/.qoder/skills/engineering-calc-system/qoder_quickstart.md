@@ -2,6 +2,24 @@
 
 This is the short operator guide for the Engineering Calculation System in Qoder.
 
+## Which Deployment Should I Use?
+
+For serious or production project work, use both layers:
+
+```text
+User-level Qoder/Qoder CN install: once per machine/user profile
+Project-level QODER Project/QoderCN Project install: once per project
+```
+
+The user-level install makes reusable agents, skills, and references available
+globally. The project-level install gives the current workspace the complete
+core package, templates, schemas, validator, project scaffold, and `.qoder/` or
+`.lingma/` overlay. That project-level layer is required before claiming
+`web-complete`, deployable, or production-ready output.
+
+Use a direct QODER Skill import by itself only for lightweight routing,
+exploratory guidance, or checking what is missing from a project.
+
 ## Qoder Package Self-Check
 
 Classify the current install before doing implementation or release work:
