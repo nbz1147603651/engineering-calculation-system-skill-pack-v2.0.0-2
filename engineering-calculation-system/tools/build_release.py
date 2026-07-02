@@ -213,7 +213,7 @@ ZCODE_SKILL_ROOT = "skills/engineering-calculation-system"
 ZCODE_SKILL_ENTRYPOINT = f"{ZCODE_SKILL_ROOT}/SKILL.md"
 ZCODE_PLUGIN_REQUIRED_PATHS = [
     ".zcode-plugin/plugin.json",
-    ".zcode-plugin/marketplace.json",
+    "marketplace.json",
     "README.md",
     "docs/ADAPTATION.md",
     "scripts/sync_from_core.py",
@@ -244,6 +244,7 @@ ZCODE_SKILL_REQUIRED_PHRASES = [
 ZCODE_ADAPTER_REQUIRED_PHRASES = [
     "ZCode Plugin Adapter",
     ".zcode-plugin/plugin.json",
+    "marketplace.json",
     "Goal Mode",
     "AGENTS.md",
     "shared/completion-evidence.md",
@@ -507,13 +508,19 @@ def build_source_dev() -> Path:
 
 def sync_zcode_plugin_metadata(plugin_root: Path) -> None:
     plugin_version = zcode_plugin_version(VERSION, CREATED_AT)
-    for rel_path in (".zcode-plugin/plugin.json", ".zcode-plugin/marketplace.json"):
-        path = plugin_root / rel_path
-        if not path.exists():
-            continue
-        data = json.loads(path.read_text(encoding="utf-8"))
-        data["version"] = plugin_version
-        write_json_lf(path, data)
+    manifest_path = plugin_root / ".zcode-plugin" / "plugin.json"
+    if manifest_path.exists():
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest["version"] = plugin_version
+        write_json_lf(manifest_path, manifest)
+
+    marketplace_path = plugin_root / "marketplace.json"
+    if marketplace_path.exists():
+        marketplace = json.loads(marketplace_path.read_text(encoding="utf-8"))
+        for entry in marketplace.get("plugins", []):
+            if isinstance(entry, dict) and entry.get("name") == ZCODE_PLUGIN_NAME:
+                entry["version"] = plugin_version
+        write_json_lf(marketplace_path, marketplace)
 
 
 def build_zcode_plugin() -> Path:
@@ -976,7 +983,7 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
             context=context,
         )
         require_text(
-            payload_root / ".zcode-plugin" / "marketplace.json",
+            payload_root / "marketplace.json",
             [
                 "\"source\": \".\"",
                 ZCODE_PLUGIN_NAME,

@@ -199,6 +199,7 @@ def skill_deployed(agent_name: str, install_root: Path | None) -> tuple[bool, st
         "codex": [root / "SKILL.md"],
         "minimax": [root / "engineering-calculation-system" / "SKILL.md"],
         "zcode": [
+            root / "marketplace.json",
             root / ".zcode-plugin" / "plugin.json",
             root / "skills" / "engineering-calculation-system" / "SKILL.md",
         ],

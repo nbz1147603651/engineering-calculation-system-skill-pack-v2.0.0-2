@@ -33,8 +33,8 @@ only.
 This folder is self-contained. All ZCode-specific changes live here:
 
 ```text
+marketplace.json
 .zcode-plugin/plugin.json
-.zcode-plugin/marketplace.json
 docs/ADAPTATION.md
 overlays/
 scripts/
@@ -47,9 +47,14 @@ the router. That adapter maps the platform-neutral engineering workflow onto
 ZCode workspace editing, file references, review panels, plugin discovery, and
 long-task continuation boundaries.
 
+`marketplace.json` is the local marketplace manifest ZCode can add from the
+Discover tab. `.zcode-plugin/plugin.json` is the plugin manifest ZCode probes
+after the plugin is selected from that marketplace.
+
 ## Layout
 
 ```text
+marketplace.json
 .zcode-plugin/plugin.json
 docs/ADAPTATION.md
 overlays/engineering-calculation-system/shared/zcode-plugin-adapter.md

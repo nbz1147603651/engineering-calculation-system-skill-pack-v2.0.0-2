@@ -21,7 +21,7 @@ sys.path.insert(0, str(TOOLS_ROOT))
 from versioning import release_created_at, release_version, zcode_plugin_version
 
 MANIFEST_PATH = PLUGIN_ROOT / ".zcode-plugin" / "plugin.json"
-MARKETPLACE_PATH = PLUGIN_ROOT / ".zcode-plugin" / "marketplace.json"
+MARKETPLACE_PATH = PLUGIN_ROOT / "marketplace.json"
 RELEASE_CONFIG_PATH = REPO_ROOT / "engineering-calculation-system" / "tools" / "release_config.json"
 INSTALLER_GUI_ROOT = REPO_ROOT / "engineering-calculation-system" / "tools" / "installer_gui"
 SOURCE_SKILL_ROOT = REPO_ROOT / "engineering-calculation-system" / "core" / "engineering-calculation-system"
@@ -49,7 +49,7 @@ file references, Goal Mode, review flow, and user-facing completion rules.
 
 REQUIRED_PLUGIN_PATHS = [
     ".zcode-plugin/plugin.json",
-    ".zcode-plugin/marketplace.json",
+    "marketplace.json",
     "README.md",
     "docs/ADAPTATION.md",
     ZCODE_SKILL_ENTRYPOINT,
@@ -239,6 +239,10 @@ def check_marketplace(errors: list[str]) -> None:
     marketplace = load_json(MARKETPLACE_PATH, errors, "ZCode marketplace")
     if not marketplace:
         return
+    if marketplace.get("name") != f"{ZCODE_PLUGIN_NAME}-marketplace":
+        errors.append(f"ZCode marketplace name must be {ZCODE_PLUGIN_NAME}-marketplace")
+    if marketplace.get("version") != 1:
+        errors.append("ZCode marketplace version must be 1")
     plugins = marketplace.get("plugins")
     if not isinstance(plugins, list):
         errors.append("ZCode marketplace must contain a plugins list")
@@ -252,8 +256,8 @@ def check_marketplace(errors: list[str]) -> None:
         errors.append("ZCode marketplace entry source must be .")
     if entry.get("category") != "development":
         errors.append("ZCode marketplace entry category must be development")
-    if marketplace.get("version") != EXPECTED_PLUGIN_VERSION:
-        errors.append(f"ZCode marketplace version must be {EXPECTED_PLUGIN_VERSION}")
+    if entry.get("version") != EXPECTED_PLUGIN_VERSION:
+        errors.append(f"ZCode marketplace plugin version must be {EXPECTED_PLUGIN_VERSION}")
 
 
 def check_skill_frontmatter(errors: list[str]) -> None:
@@ -343,6 +347,7 @@ def check_gui_deployment_support(errors: list[str]) -> None:
             f"needs_profiles=(\"{ZCODE_PROFILE}\",)",
         ],
         "detector.py": [
+            "marketplace.json",
             ".zcode-plugin",
             "skills",
             "engineering-calculation-system",

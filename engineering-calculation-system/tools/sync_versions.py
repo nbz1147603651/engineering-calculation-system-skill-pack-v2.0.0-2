@@ -93,7 +93,13 @@ def sync_codex_manifest(version: str, created_at: str) -> None:
 def sync_zcode_manifest(version: str, created_at: str) -> None:
     plugin_version = zcode_plugin_version(version, created_at)
     sync_manifest_version(ZCODE_PLUGIN_ROOT / ".zcode-plugin" / "plugin.json", plugin_version, required=False)
-    sync_manifest_version(ZCODE_PLUGIN_ROOT / ".zcode-plugin" / "marketplace.json", plugin_version, required=False)
+    marketplace_path = ZCODE_PLUGIN_ROOT / "marketplace.json"
+    if marketplace_path.exists():
+        marketplace = json.loads(marketplace_path.read_text(encoding="utf-8"))
+        for entry in marketplace.get("plugins", []):
+            if isinstance(entry, dict) and entry.get("name") == ZCODE_PLUGIN_ROOT.name:
+                entry["version"] = plugin_version
+        write_json_lf(marketplace_path, marketplace)
 
 
 def sync_bundled_skill(plugin_root: Path) -> None:

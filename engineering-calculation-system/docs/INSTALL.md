@@ -92,7 +92,7 @@ Each zip contains one install folder plus `INSTALL.md`, except MiniMaxCode which
 ```text
 CODEX zip:         copy engineering-calculation-system/ to the Codex skills directory
 MiniMaxCode zip:   local install by copying skills/engineering-calculation-system/ to %USERPROFILE%/.mavis/skills/engineering-calculation-system/; Github import remains supported
-ZCode zip:         install engineering-calculation-system-zcode/ from Settings -> Plugins or copy to ~/.zcode/plugins/engineering-calculation-system-zcode/
+ZCode zip:         add engineering-calculation-system-zcode/ as a local marketplace source from Settings -> Plugins -> Discover -> +, then click Get on the plugin card
 QODER zip:         upload the zip directly in QODER Skills / Install Skill; this is a lightweight skill/resource entrypoint
 QODER Project zip: copy copy-to-project-root/ contents to the QODER project root; this is the recommended Qoder Smart Agent setup
 QoderCN zip:       copy copy-to-user-home/ contents to ~/.lingma/ for Qoder CN IDE user-level Skills and Agents
@@ -141,12 +141,14 @@ from Github.
 ZCode local verification:
 
 ```powershell
+Test-Path "$env:USERPROFILE\.zcode\plugins\engineering-calculation-system-zcode\marketplace.json"
 Test-Path "$env:USERPROFILE\.zcode\plugins\engineering-calculation-system-zcode\.zcode-plugin\plugin.json"
 Test-Path "$env:USERPROFILE\.zcode\plugins\engineering-calculation-system-zcode\skills\engineering-calculation-system\SKILL.md"
 ```
 
-After installing or copying the plugin folder, refresh ZCode Settings -> Plugins
-and keep the plugin enabled. ZCode project-specific guardrails belong in the
+After copying the plugin folder, add that folder as a local marketplace source
+from ZCode Settings -> Plugins -> Discover -> +, click Get on the plugin card,
+refresh Settings -> Plugins, and keep the plugin enabled. ZCode project-specific guardrails belong in the
 workspace `AGENTS.md`; reusable engineering-calculation workflow rules remain
 inside the plugin skill. If plugin import is unavailable, copy the plugin's
 `skills/engineering-calculation-system/` folder to

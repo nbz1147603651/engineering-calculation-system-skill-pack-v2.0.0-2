@@ -24,7 +24,7 @@ plugin wrapper
 ## What Is ZCode-Specific
 
 - `.zcode-plugin/plugin.json` exposes the package to ZCode as one plugin.
-- `.zcode-plugin/marketplace.json` lets a local path or Git source enumerate the
+- Root `marketplace.json` lets a local path or Git source enumerate the
   plugin when ZCode is using marketplace-style import.
 - `shared/zcode-plugin-adapter.md` maps the skill pack to ZCode workspace,
   file-reference, review-panel, continuation, and plugin-discovery conventions.

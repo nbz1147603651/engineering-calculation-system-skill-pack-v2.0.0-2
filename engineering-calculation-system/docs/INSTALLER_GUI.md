@@ -94,12 +94,15 @@ duplicating table rows. Each row shows the currently selected mode:
 | --- | --- | --- |
 | Codex | `~/.codex/skills/engineering-calculation-system/` | `SKILL.md` sentinel |
 | MiniMax Code | `~/.mavis/skills/engineering-calculation-system/` | `mavis skill show ...` |
-| ZCode | `~/.zcode/plugins/engineering-calculation-system-zcode/` | `.zcode-plugin/plugin.json` + plugin skill sentinel |
+| ZCode | `~/.zcode/plugins/engineering-calculation-system-zcode/` | root `marketplace.json` + `.zcode-plugin/plugin.json` + plugin skill sentinel |
 | Qoder | user folder: `QODER_HOME` or `~/.qoder`; selected project: writes `.qoder/` configuration | user audit or `.qoder/agents/engineering-calc-system.md` |
 | Qoder CN | user folder: `QODER_CN_HOME`, `QODERCN_HOME`, `LINGMA_HOME`, or `~/.lingma`; selected project: writes `.lingma/` configuration | user audit or `.lingma/agents/engineering-calc-system.md` |
 | Trae | selected project root, writes `.trae/` and `AGENTS.md` | `.trae/project_rules.md` |
 | OpenCode | selected project root, writes `.opencode/` | `.opencode/skills/.../SKILL.md` |
 | AGENTS Generic | selected project root, writes `AGENTS.md` and `.agents/` | `AGENTS.md` + `.agents/skills/...` |
+
+For ZCode, Deploy stages a local marketplace folder. Add that folder in ZCode
+Settings -> Plugins -> Discover -> +, then install the plugin card with Get.
 
 ## Qoder / Qoder CN modes
 

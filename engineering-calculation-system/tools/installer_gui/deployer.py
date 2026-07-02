@@ -425,7 +425,7 @@ def uninstall_minimax(ctx: DeployContext) -> None:
 
 
 # --------------------------------------------------------------------------- #
-# ZCode - plugin under ~/.zcode/plugins/<plugin-name>/
+# ZCode - local marketplace folder under ~/.zcode/plugins/<plugin-name>/
 # --------------------------------------------------------------------------- #
 
 def deploy_zcode(ctx: DeployContext) -> None:

@@ -1,0 +1,20 @@
+{
+  "name": "engineering-calculation-system-zcode-marketplace",
+  "version": 1,
+  "description": "Local ZCode marketplace for the Engineering Calculation System plugin.",
+  "owner": {
+    "name": "Engineering Calculation System"
+  },
+  "plugins": [
+    {
+      "name": "engineering-calculation-system-zcode",
+      "version": "2.6.0+zcode.20260701",
+      "description": "Source-backed engineering calculation workflow packaged as a ZCode plugin.",
+      "author": {
+        "name": "Engineering Calculation System"
+      },
+      "category": "development",
+      "source": "."
+    }
+  ]
+}
