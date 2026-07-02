@@ -1,0 +1,47 @@
+{
+  "name": "engineering-calculation-system-zcode",
+  "version": "2.6.0+zcode.20260701",
+  "description": "ZCode plugin wrapper for the Engineering Calculation System skill pack.",
+  "author": {
+    "name": "Engineering Calculation System"
+  },
+  "license": "UNLICENSED",
+  "keywords": [
+    "zcode",
+    "zcode-plugin",
+    "skills",
+    "engineering-calculation",
+    "calculation-software",
+    "traceability"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Engineering Calculation System for ZCode",
+    "shortDescription": "ZCode plugin for auditable engineering calculators.",
+    "longDescription": "Packages the Engineering Calculation System skill pack for ZCode plugin management, including lifecycle routing, reference acquisition, source-backed formula extraction, implementation handoff, reusable calculation modules, reports, verification, and deployable web calculation system guidance.",
+    "developerName": "Engineering Calculation System",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Skills",
+      "Workflow",
+      "Engineering Calculations",
+      "Traceability",
+      "ZCode Plugin"
+    ],
+    "defaultPrompt": [
+      "Build a traceable engineering calculation web app.",
+      "Assess whether my engineering references are sufficient.",
+      "Create a source-backed implementation handoff."
+    ],
+    "brandColor": "#2563EB",
+    "screenshots": []
+  },
+  "zcode": {
+    "entrypoint": "skills/engineering-calculation-system/SKILL.md",
+    "skillName": "engineering-calculation-system",
+    "components": [
+      "skills"
+    ],
+    "workspaceInstructions": "AGENTS.md"
+  }
+}

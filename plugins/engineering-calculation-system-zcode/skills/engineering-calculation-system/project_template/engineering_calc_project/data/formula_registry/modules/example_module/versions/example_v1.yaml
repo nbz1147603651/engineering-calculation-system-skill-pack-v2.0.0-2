@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "module_id": "example_module",
+  "version_id": "example_v1",
+  "status": "published",
+  "published_at": "2026-06-17T00:00:00+00:00",
+  "published_by": "system",
+  "description": "Example declaration used by the scaffold to prove formula registry wiring.",
+  "formulas": [
+    {
+      "formula_id": "F-EXAMPLE-001",
+      "name": "Example utilization",
+      "expression": "demand / capacity",
+      "expression_tex": "\\eta = \\frac{|D|}{|C|}",
+      "engineering_explanation": "Template review check comparing recorded demand with available capacity. Replace with source-backed engineering checks before project use.",
+      "display_icon": "bi-clipboard2-data",
+      "variables": [
+        {"name": "demand", "symbol": "D", "unit": "kN", "description": "Recorded demand supplied by the input package"},
+        {"name": "capacity", "symbol": "C", "unit": "kN", "description": "Recorded capacity supplied by the input package"}
+      ],
+      "output": {"name": "utilization", "unit": "-"},
+      "source_refs": ["SCAFFOLD-EXAMPLE"],
+      "limits": [
+        {"condition": "capacity > 0", "behavior": "error_if_false"}
+      ],
+      "test_cases": [
+        {
+          "name": "half utilization",
+          "inputs": {"demand": 50, "capacity": 100},
+          "expected": 0.5,
+          "tolerance": 1e-09
+        }
+      ]
+    }
+  ]
+}

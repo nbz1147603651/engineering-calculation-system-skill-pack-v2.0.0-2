@@ -22,6 +22,7 @@ from versioning import (
     sync_json_version,
     sync_skill_frontmatter_versions,
     write_json_lf,
+    zcode_plugin_version,
 )
 
 
@@ -29,6 +30,7 @@ CORE_SKILL_ROOT = REPO_ROOT / "core" / "engineering-calculation-system"
 LIGHT_ADAPTER_ROOT = REPO_ROOT / "adapter_sources" / "light"
 QODER_ADAPTER_ROOT = REPO_ROOT / "adapter_sources" / "qoder"
 PLUGIN_ROOT = WORKSPACE_ROOT / "plugins" / "engineering-calculation-system"
+ZCODE_PLUGIN_ROOT = WORKSPACE_ROOT / "plugins" / "engineering-calculation-system-zcode"
 OPENCODE_ROOT = WORKSPACE_ROOT / "opencodeplugin"
 INSTALLER_GUI_INIT = REPO_ROOT / "tools" / "installer_gui" / "__init__.py"
 
@@ -71,16 +73,32 @@ def sync_opencode_package(version: str) -> None:
     write_json_lf(package_path, package)
 
 
+def sync_manifest_version(path: Path, version: str, *, required: bool = True) -> None:
+    if not path.exists():
+        if required:
+            raise FileNotFoundError(path)
+        return
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    manifest["version"] = version
+    write_json_lf(path, manifest)
+
+
 def sync_codex_manifest(version: str, created_at: str) -> None:
-    manifest_path = PLUGIN_ROOT / ".codex-plugin" / "plugin.json"
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    manifest["version"] = codex_plugin_version(version, created_at)
-    write_json_lf(manifest_path, manifest)
+    sync_manifest_version(
+        PLUGIN_ROOT / ".codex-plugin" / "plugin.json",
+        codex_plugin_version(version, created_at),
+    )
 
 
-def sync_codex_bundled_skill() -> None:
-    """Refresh the Codex plugin's bundled skill from the canonical core package."""
-    script = PLUGIN_ROOT / "scripts" / "sync_from_core.py"
+def sync_zcode_manifest(version: str, created_at: str) -> None:
+    plugin_version = zcode_plugin_version(version, created_at)
+    sync_manifest_version(ZCODE_PLUGIN_ROOT / ".zcode-plugin" / "plugin.json", plugin_version, required=False)
+    sync_manifest_version(ZCODE_PLUGIN_ROOT / ".zcode-plugin" / "marketplace.json", plugin_version, required=False)
+
+
+def sync_bundled_skill(plugin_root: Path) -> None:
+    """Refresh a plugin's bundled skill from the canonical core package."""
+    script = plugin_root / "scripts" / "sync_from_core.py"
     if not script.exists():
         return
     subprocess.run(
@@ -91,9 +109,17 @@ def sync_codex_bundled_skill() -> None:
             str(CORE_SKILL_ROOT),
             "--no-validate",
         ],
-        cwd=str(PLUGIN_ROOT),
+        cwd=str(plugin_root),
         check=True,
     )
+
+
+def sync_codex_bundled_skill() -> None:
+    sync_bundled_skill(PLUGIN_ROOT)
+
+
+def sync_zcode_bundled_skill() -> None:
+    sync_bundled_skill(ZCODE_PLUGIN_ROOT)
 
 
 def sync_current_docs(version: str) -> None:
@@ -127,9 +153,11 @@ def sync_versions(version: str, created_at: str) -> None:
     sync_skill_frontmatter_versions(LIGHT_ADAPTER_ROOT, version)
     sync_skill_frontmatter_versions(QODER_ADAPTER_ROOT, version)
     sync_codex_bundled_skill()
+    sync_zcode_bundled_skill()
     sync_installer_gui_version(version)
     sync_opencode_package(version)
     sync_codex_manifest(version, created_at)
+    sync_zcode_manifest(version, created_at)
     sync_current_docs(version)
 
 

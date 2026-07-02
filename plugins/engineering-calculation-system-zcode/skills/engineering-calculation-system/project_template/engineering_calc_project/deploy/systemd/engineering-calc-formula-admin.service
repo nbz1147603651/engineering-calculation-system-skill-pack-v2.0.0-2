@@ -1,0 +1,15 @@
+[Unit]
+Description=Engineering Calculation Formula Review Admin Service
+After=network.target engineering-calc.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/engineering-calc
+EnvironmentFile=/opt/engineering-calc/deploy/env.example
+Environment=PYTHONPATH=/opt/engineering-calc/src
+ExecStart=/opt/engineering-calc/.venv/bin/marimo run apps/review/admin_formula_review.py --host 127.0.0.1 --port ${FORMULA_ADMIN_PORT} --base-url ${FORMULA_ADMIN_BASE_URL} --headless --token --token-password ${ADMIN_REVIEW_TOKEN}
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

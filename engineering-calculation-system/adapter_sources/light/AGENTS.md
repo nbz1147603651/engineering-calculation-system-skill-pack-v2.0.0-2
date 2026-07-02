@@ -90,8 +90,8 @@ fallback before claiming `web-complete`.
 ## Platform Notes
 
 - OpenCode should discover the wrapper skill at `.opencode/skills/engineering-calc-system/SKILL.md`.
-- ZCode should install the core skill folder at `~/.zcode/skills/engineering-calculation-system/` and invoke it with `$engineering-calculation-system`.
-- ZCode project-specific guardrails belong in the workspace `AGENTS.md`; keep the root `SKILL.md` as the skill entrypoint.
+- ZCode should install the `engineering-calculation-system-zcode` plugin through Settings -> Plugins or a local/Git marketplace source. The plugin exposes `skills/engineering-calculation-system/SKILL.md` as its skill component.
+- ZCode project-specific guardrails belong in the workspace `AGENTS.md`; reusable workflow rules belong in the plugin skill. ZCode reads user `~/.zcode/AGENTS.md` first, then the current workspace `AGENTS.md`.
 - MiniMaxCode, ZCode, OpenCode, Trae, and generic AGENTS-style installs all use the same behavior-engineering contracts: `shared/execution-discipline.md`, `shared/planning-discipline.md`, `shared/review-feedback-discipline.md`, `shared/version-control-discipline.md`, `shared/completion-evidence.md`, and `shared/systematic-debugging.md`.
 - Cross-tool skill clients may use `.agents/skills/engineering-calc-system/SKILL.md`.
 - MiniMax Code can use the `MiniMaxCode` release zip or the standard root `SKILL.md` package.

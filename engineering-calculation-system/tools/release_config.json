@@ -7,6 +7,7 @@
     "qoder-addon",
     "singlefile",
     "source-dev",
+    "zcode-plugin",
     "ui-client"
   ],
   "default_all_profiles": [
@@ -15,6 +16,7 @@
     "qoder-addon",
     "singlefile",
     "source-dev",
+    "zcode-plugin",
     "ui-client"
   ],
   "release_required_profiles": [
@@ -22,7 +24,8 @@
     "adapters-light",
     "qoder-addon",
     "singlefile",
-    "source-dev"
+    "source-dev",
+    "zcode-plugin"
   ],
   "publish_targets": [
     "CODEX",
@@ -125,13 +128,21 @@
     },
     {
       "name": "ZCode",
-      "path": "ZCode/engineering-calculation-system",
-      "install_text": "Copy this folder to `~/.zcode/skills/engineering-calculation-system/`, then refresh and enable the skill from ZCode Settings -> Skills. You can also import/copy it through ZCode's Skills UI. Invoke it in chat with `$engineering-calculation-system` and keep project-specific guardrails in the workspace `AGENTS.md`.",
-      "include_adapter_docs": true,
+      "path": "ZCode/engineering-calculation-system-zcode",
+      "install_text": "Install this plugin folder from ZCode Settings -> Plugins using a local path, Git source, or custom marketplace source. For manual filesystem install, copy it to `~/.zcode/plugins/engineering-calculation-system-zcode/`, refresh Settings -> Plugins, enable the plugin, and use its bundled Engineering Calculation System skill from the Plugin skills surface.",
+      "include_core": false,
+      "copies": [
+        {
+          "profile": "zcode-plugin",
+          "source": "engineering-calculation-system-zcode",
+          "target": "."
+        }
+      ],
       "notes": [
-        "ZCode user skills use the directory shape `~/.zcode/skills/<skill-name>/SKILL.md`.",
-        "The root `SKILL.md` remains the authoritative entrypoint; ZCode does not need a separate hidden project overlay for the core skill.",
-        "For project-level behavior, place `AGENTS.md` in the ZCode workspace root; ZCode reads workspace `AGENTS.md` as the primary project instruction source."
+        "ZCode plugin management is currently Beta; the plugin bundles the skill under `skills/engineering-calculation-system/SKILL.md`.",
+        "The plugin can be imported from a local path or Git/marketplace source; `.zcode-plugin/marketplace.json` points back to this plugin folder for path-based marketplace import.",
+        "Legacy user-skill install remains a fallback: copy `skills/engineering-calculation-system/` to `~/.zcode/skills/engineering-calculation-system/` if plugin import is unavailable.",
+        "For project-level behavior, place `AGENTS.md` in the ZCode workspace root; ZCode reads user `~/.zcode/AGENTS.md` first and workspace `AGENTS.md` as the primary project instruction source."
       ]
     },
     {

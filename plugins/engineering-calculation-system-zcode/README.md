@@ -1,0 +1,96 @@
+# Engineering Calculation System ZCode Plugin
+
+This plugin packages the Engineering Calculation System skill pack for ZCode.
+The skill pack remains the core runtime; the plugin is the installation and
+discovery boundary for ZCode's Codex-like plugin manager.
+
+## Why Plugin, Not Only Skill
+
+Use the raw skill directly only when ZCode is configured for legacy
+`~/.zcode/skills/<skill-name>/` discovery. Use this plugin when ZCode can
+install plugins from Settings -> Plugins or an imported marketplace source,
+because the package includes:
+
+- a ZCode plugin manifest
+- a local marketplace descriptor for path-based import
+- a root `SKILL.md` entrypoint inside `skills/engineering-calculation-system/`
+- parent and child phase skills
+- shared contracts and quality gates
+- artifact templates and schemas
+- validation scripts
+- a runnable project scaffold
+
+The plugin currently exposes skills only. It intentionally does not declare
+hooks, MCP servers, or apps until ZCode-native implementations exist.
+
+ZCode's current plugin management is Beta. The package follows the documented
+component layout: a plugin can bundle skills, commands, subagents, MCP servers,
+hooks, and LSP integrations, while this plugin starts with the skill component
+only.
+
+## ZCode Adaptation
+
+This folder is self-contained. All ZCode-specific changes live here:
+
+```text
+.zcode-plugin/plugin.json
+.zcode-plugin/marketplace.json
+docs/ADAPTATION.md
+overlays/
+scripts/
+skills/
+```
+
+The bundled skill entrypoint loads
+`skills/engineering-calculation-system/shared/zcode-plugin-adapter.md` before
+the router. That adapter maps the platform-neutral engineering workflow onto
+ZCode workspace editing, file references, review panels, plugin discovery, and
+long-task continuation boundaries.
+
+## Layout
+
+```text
+.zcode-plugin/plugin.json
+docs/ADAPTATION.md
+overlays/engineering-calculation-system/shared/zcode-plugin-adapter.md
+scripts/sync_from_core.py
+scripts/validate_plugin.py
+skills/engineering-calculation-system/SKILL.md
+skills/engineering-calculation-system/parent/
+skills/engineering-calculation-system/skills/
+skills/engineering-calculation-system/shared/
+skills/engineering-calculation-system/templates/
+skills/engineering-calculation-system/scripts/
+skills/engineering-calculation-system/project_template/
+```
+
+## Source
+
+The bundled skill copy was initialized from:
+
+```text
+engineering-calculation-system/core/engineering-calculation-system/
+```
+
+## Validate
+
+From this plugin folder:
+
+```bash
+python scripts/validate_plugin.py
+```
+
+The plugin doctor checks the manifest, ZCode adapter files, overlay
+synchronization, bundled-source drift, and the bundled core skill package.
+
+## Refresh From Core
+
+When the source skill pack changes, refresh the bundled copy and reapply the
+ZCode overlay:
+
+```bash
+python scripts/sync_from_core.py
+```
+
+This script reads from the repository source package by default and writes only
+inside this plugin folder.

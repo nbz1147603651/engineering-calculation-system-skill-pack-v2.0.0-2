@@ -1,0 +1,2 @@
+decision_id,lifecycle_step,decision_topic,question,default_if_no_response,user_response,decision_status,source_or_reason,affected_artifacts,blocks_progress
+UID-001,12a-report-context-and-rendering,report_language,Use English as default report language while keeping Chinese toggle available,en,en,defaulted,Project template default,webapp/i18n.py;src/pkg/report/html_renderer.py,false

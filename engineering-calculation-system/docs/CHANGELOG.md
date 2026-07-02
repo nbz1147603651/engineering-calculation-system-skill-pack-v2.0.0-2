@@ -36,13 +36,14 @@
 - Synchronized core skill frontmatter, artifact contracts, adapter skill frontmatter, Codex plugin manifest, OpenCode package metadata, installer GUI metadata, and current install docs from the central version source.
 - Updated ZCode release target packaging.
 
-## Unreleased - ZCode skill adaptation
+## Unreleased - ZCode plugin adaptation
 
-### Added - ZCode Target
+### Changed - ZCode Plugin Target
 
-- Added a ZCode release target that packages the core `SKILL.md` skill folder for `~/.zcode/skills/engineering-calculation-system/`.
-- Added ZCode to the deployment console as a user-level target with conservative program and sentinel detection.
-- Documented ZCode loading behavior, `$engineering-calculation-system` invocation, and workspace `AGENTS.md` guardrails in adapter and install docs.
+- Converted the ZCode release target from a bare user-skill folder to the `engineering-calculation-system-zcode` plugin package.
+- Added a ZCode plugin manifest, local marketplace descriptor, adapter overlay, sync script, validator, and release profile.
+- Updated the deployment console to install and verify `~/.zcode/plugins/engineering-calculation-system-zcode/`.
+- Documented ZCode plugin loading behavior, plugin skills, Goal Mode usage, and workspace `AGENTS.md` guardrails in adapter and install docs.
 
 ## v2.4.3 release version sync - 2026-06-22
 

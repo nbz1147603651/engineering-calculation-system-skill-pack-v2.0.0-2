@@ -17,7 +17,7 @@ export const platforms = [
   { id: 'qoder-cn', name: 'QoderCN' },
   { id: 'trae', name: 'Trae' },
   { id: 'opencode', name: 'Opencode' },
-  { id: 'zcode', name: 'Zcode' },
+  { id: 'zcode', name: 'ZCode' },
   { id: 'minimax-code', name: 'MiniMaxCode' },
 ] as const
 

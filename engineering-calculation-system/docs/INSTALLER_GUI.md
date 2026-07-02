@@ -94,7 +94,7 @@ duplicating table rows. Each row shows the currently selected mode:
 | --- | --- | --- |
 | Codex | `~/.codex/skills/engineering-calculation-system/` | `SKILL.md` sentinel |
 | MiniMax Code | `~/.mavis/skills/engineering-calculation-system/` | `mavis skill show ...` |
-| ZCode | `~/.zcode/skills/engineering-calculation-system/` | `SKILL.md` sentinel |
+| ZCode | `~/.zcode/plugins/engineering-calculation-system-zcode/` | `.zcode-plugin/plugin.json` + plugin skill sentinel |
 | Qoder | user folder: `QODER_HOME` or `~/.qoder`; selected project: writes `.qoder/` configuration | user audit or `.qoder/agents/engineering-calc-system.md` |
 | Qoder CN | user folder: `QODER_CN_HOME`, `QODERCN_HOME`, `LINGMA_HOME`, or `~/.lingma`; selected project: writes `.lingma/` configuration | user audit or `.lingma/agents/engineering-calc-system.md` |
 | Trae | selected project root, writes `.trae/` and `AGENTS.md` | `.trae/project_rules.md` |

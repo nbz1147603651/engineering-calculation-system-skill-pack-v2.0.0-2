@@ -37,7 +37,7 @@ def _mavis_root() -> Path:
 
 
 def _zcode_root() -> Path:
-    return Path.home() / ".zcode" / "skills" / "engineering-calculation-system"
+    return Path.home() / ".zcode" / "plugins" / "engineering-calculation-system-zcode"
 
 
 def _qoder_root() -> Path:
@@ -131,7 +131,7 @@ def _build_specs() -> list[AgentSpec]:
             deploy_fn=deployer.deploy_zcode,
             verify_fn=deployer.verify_zcode,
             uninstall_fn=deployer.uninstall_zcode,
-            needs_profiles=("core",),
+            needs_profiles=("zcode-plugin",),
         ),
         AgentSpec(
             name="qoder",

@@ -45,6 +45,9 @@ dist/adapters-light/
 dist/qoder-addon/
   Optional Qoder/Qoder CN overlay. Apply only when the target agent needs Qoder-specific files.
 
+dist/zcode-plugin/
+  ZCode plugin package source. The published ZCode zip installs this plugin instead of a bare skill folder.
+
 dist/singlefile/engineering-calculation-system.all-in-one.md
   Generated fallback for agents that cannot load multiple files.
 
@@ -89,7 +92,7 @@ Each zip contains one install folder plus `INSTALL.md`, except MiniMaxCode which
 ```text
 CODEX zip:         copy engineering-calculation-system/ to the Codex skills directory
 MiniMaxCode zip:   local install by copying skills/engineering-calculation-system/ to %USERPROFILE%/.mavis/skills/engineering-calculation-system/; Github import remains supported
-ZCode zip:         copy engineering-calculation-system/ to ~/.zcode/skills/engineering-calculation-system/, refresh Settings -> Skills, then invoke with $engineering-calculation-system
+ZCode zip:         install engineering-calculation-system-zcode/ from Settings -> Plugins or copy to ~/.zcode/plugins/engineering-calculation-system-zcode/
 QODER zip:         upload the zip directly in QODER Skills / Install Skill; this is a lightweight skill/resource entrypoint
 QODER Project zip: copy copy-to-project-root/ contents to the QODER project root; this is the recommended Qoder Smart Agent setup
 QoderCN zip:       copy copy-to-user-home/ contents to ~/.lingma/ for Qoder CN IDE user-level Skills and Agents
@@ -138,12 +141,16 @@ from Github.
 ZCode local verification:
 
 ```powershell
-Test-Path "$env:USERPROFILE\.zcode\skills\engineering-calculation-system\SKILL.md"
+Test-Path "$env:USERPROFILE\.zcode\plugins\engineering-calculation-system-zcode\.zcode-plugin\plugin.json"
+Test-Path "$env:USERPROFILE\.zcode\plugins\engineering-calculation-system-zcode\skills\engineering-calculation-system\SKILL.md"
 ```
 
-After copying the folder, refresh ZCode Settings -> Skills and keep the skill
-enabled. ZCode project-specific guardrails belong in the workspace `AGENTS.md`;
-the reusable engineering-calculation workflow remains in the skill folder.
+After installing or copying the plugin folder, refresh ZCode Settings -> Plugins
+and keep the plugin enabled. ZCode project-specific guardrails belong in the
+workspace `AGENTS.md`; reusable engineering-calculation workflow rules remain
+inside the plugin skill. If plugin import is unavailable, copy the plugin's
+`skills/engineering-calculation-system/` folder to
+`~/.zcode/skills/engineering-calculation-system/` as a legacy fallback.
 
 For QODER web-complete generation, use the QODER Project zip in the target
 project. The direct QODER zip keeps `SKILL.md` at the archive root for QODER
@@ -254,7 +261,7 @@ Update that file first when changing the package version, release date, publish 
 
 ## Overlay Usage
 
-The platform release zips are the recommended install path. Use the MiniMaxCode zip for MiniMax Code standard skill import or discovery. Use the ZCode zip for ZCode user-skill installation or Skills UI import. Use the QODER zip for direct QODER Skill upload; use the QODER Project, QoderCN Project, TRAE, and OpenCode packages when copying an overlay into a project root. Use the QoderCN zip for Qoder CN user-level `~/.lingma` install. Use raw overlays only when developing or debugging a release profile:
+The platform release zips are the recommended install path. Use the MiniMaxCode zip for MiniMax Code standard skill import or discovery. Use the ZCode zip for ZCode plugin installation or custom marketplace import. Use the QODER zip for direct QODER Skill upload; use the QODER Project, QoderCN Project, TRAE, and OpenCode packages when copying an overlay into a project root. Use the QoderCN zip for Qoder CN user-level `~/.lingma` install. Use raw overlays only when developing or debugging a release profile:
 
 ```text
 core install root: dist/core/engineering-calculation-system/

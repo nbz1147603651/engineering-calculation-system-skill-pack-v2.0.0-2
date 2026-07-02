@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 import hashlib
+import json
 import os
 import shutil
 import struct
@@ -19,13 +20,17 @@ from versioning import (
     assert_skill_frontmatter_versions,
     load_release_config,
     sync_skill_frontmatter_versions,
+    write_json_lf,
+    zcode_plugin_version,
 )
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+WORKSPACE_ROOT = REPO_ROOT.parent
 CORE_SOURCE = REPO_ROOT / "core" / "engineering-calculation-system"
 LIGHT_ADAPTER_SOURCE = REPO_ROOT / "adapter_sources" / "light"
 QODER_ADAPTER_SOURCE = REPO_ROOT / "adapter_sources" / "qoder"
+ZCODE_PLUGIN_SOURCE = WORKSPACE_ROOT / "plugins" / "engineering-calculation-system-zcode"
 DIST_ROOT = REPO_ROOT / "dist"
 RELEASE_ROOT = DIST_ROOT / "release"
 
@@ -183,7 +188,7 @@ CANONICAL_BEHAVIOR_DOCS = (
 PLATFORM_ENTRYPOINTS = {
     "CODEX": "SKILL.md",
     "MiniMaxCode": "skills/engineering-calculation-system/SKILL.md",
-    "ZCode": "SKILL.md",
+    "ZCode": "skills/engineering-calculation-system/SKILL.md",
     "QODER": "SKILL.md",
     "QODER Project": ".qoder/agents/engineering-calc-system.md",
     "QoderCN": "agents/engineering-calc-system.md",
@@ -197,10 +202,52 @@ PLATFORM_FALLBACKS = {
     "QODER": "Direct skill is lightweight; use QODER Project plus complete core package before web-complete claims.",
     "QoderCN": "User-level resources are lightweight; use QoderCN Project plus complete core package for web-complete claims.",
     "MiniMaxCode": "If repository import cannot traverse files, use the same skills/engineering-calculation-system root or singlefile fallback.",
+    "ZCode": "If plugin import is unavailable, use the legacy skills/engineering-calculation-system folder or singlefile fallback.",
     "TRAE": "If rules cannot traverse the package, paste the singlefile fallback.",
     "OpenCode": "If project skills cannot traverse the package, use .agents wrapper or singlefile fallback.",
     "AGENTS Generic": "If repository rules are the only available entrypoint, use AGENTS.md plus SKILL.md or singlefile fallback.",
 }
+
+ZCODE_PLUGIN_NAME = "engineering-calculation-system-zcode"
+ZCODE_SKILL_ROOT = "skills/engineering-calculation-system"
+ZCODE_SKILL_ENTRYPOINT = f"{ZCODE_SKILL_ROOT}/SKILL.md"
+ZCODE_PLUGIN_REQUIRED_PATHS = [
+    ".zcode-plugin/plugin.json",
+    ".zcode-plugin/marketplace.json",
+    "README.md",
+    "docs/ADAPTATION.md",
+    "scripts/sync_from_core.py",
+    "scripts/validate_plugin.py",
+    ZCODE_SKILL_ENTRYPOINT,
+    f"{ZCODE_SKILL_ROOT}/shared/zcode-plugin-adapter.md",
+    f"{ZCODE_SKILL_ROOT}/shared/lifecycle.md",
+    f"{ZCODE_SKILL_ROOT}/shared/execution-discipline.md",
+    f"{ZCODE_SKILL_ROOT}/shared/planning-discipline.md",
+    f"{ZCODE_SKILL_ROOT}/shared/review-feedback-discipline.md",
+    f"{ZCODE_SKILL_ROOT}/shared/version-control-discipline.md",
+    f"{ZCODE_SKILL_ROOT}/shared/completion-evidence.md",
+    f"{ZCODE_SKILL_ROOT}/scripts/validate_artifacts.py",
+    f"{ZCODE_SKILL_ROOT}/project_template/engineering_calc_project/src/pkg/core/capabilities.py",
+]
+ZCODE_SKILL_REQUIRED_PHRASES = [
+    "name: engineering-calculation-system",
+    "shared/zcode-plugin-adapter.md",
+    "shared/lifecycle.md",
+    "shared/execution-discipline.md",
+    "shared/planning-discipline.md",
+    "shared/review-feedback-discipline.md",
+    "shared/version-control-discipline.md",
+    "shared/completion-evidence.md",
+    "dual closure",
+    "run_book(BookInput) -> BookResult",
+]
+ZCODE_ADAPTER_REQUIRED_PHRASES = [
+    "ZCode Plugin Adapter",
+    ".zcode-plugin/plugin.json",
+    "Goal Mode",
+    "AGENTS.md",
+    "shared/completion-evidence.md",
+]
 
 
 def should_skip(path: Path, *, include_indexes: bool = False) -> bool:
@@ -458,6 +505,28 @@ def build_source_dev() -> Path:
     return profile_root
 
 
+def sync_zcode_plugin_metadata(plugin_root: Path) -> None:
+    plugin_version = zcode_plugin_version(VERSION, CREATED_AT)
+    for rel_path in (".zcode-plugin/plugin.json", ".zcode-plugin/marketplace.json"):
+        path = plugin_root / rel_path
+        if not path.exists():
+            continue
+        data = json.loads(path.read_text(encoding="utf-8"))
+        data["version"] = plugin_version
+        write_json_lf(path, data)
+
+
+def build_zcode_plugin() -> Path:
+    profile_root = DIST_ROOT / "zcode-plugin"
+    clean_dir(profile_root)
+    copy_tree(ZCODE_PLUGIN_SOURCE, profile_root / ZCODE_PLUGIN_NAME)
+    sync_frontmatter_versions(profile_root)
+    assert_frontmatter_versions(profile_root)
+    sync_zcode_plugin_metadata(profile_root / ZCODE_PLUGIN_NAME)
+    write_indexes(profile_root, "engineering-calculation-system-zcode-plugin")
+    return profile_root
+
+
 def build_ui_client() -> Path:
     """Build the one-click deployment console as a Windows single-file exe.
 
@@ -570,6 +639,7 @@ def build_profile(profile: str) -> Path:
         "qoder-addon": build_qoder_addon,
         "singlefile": build_singlefile,
         "source-dev": build_source_dev,
+        "zcode-plugin": build_zcode_plugin,
         "ui-client": build_ui_client,
     }
     return builders[profile]()
@@ -890,6 +960,37 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
                 "dual closure",
                 "BookResult.checks",
             ],
+            context=context,
+        )
+        return
+
+    if target.name == "ZCode":
+        require_paths(payload_root, ZCODE_PLUGIN_REQUIRED_PATHS, context=context)
+        require_text(
+            payload_root / ".zcode-plugin" / "plugin.json",
+            [
+                ZCODE_PLUGIN_NAME,
+                "\"skills\": \"./skills/\"",
+                f"\"entrypoint\": \"{ZCODE_SKILL_ENTRYPOINT}\"",
+            ],
+            context=context,
+        )
+        require_text(
+            payload_root / ".zcode-plugin" / "marketplace.json",
+            [
+                "\"source\": \".\"",
+                ZCODE_PLUGIN_NAME,
+            ],
+            context=context,
+        )
+        require_text(
+            payload_root / Path(ZCODE_SKILL_ENTRYPOINT),
+            ZCODE_SKILL_REQUIRED_PHRASES,
+            context=context,
+        )
+        require_text(
+            payload_root / Path(ZCODE_SKILL_ROOT) / "shared" / "zcode-plugin-adapter.md",
+            ZCODE_ADAPTER_REQUIRED_PHRASES,
             context=context,
         )
         return
@@ -1260,6 +1361,8 @@ def canonical_docs_summary(target: BundleTarget) -> str:
         return "Text reminders only in user-level overlay; project/core package required for web-complete."
     if target.name == "MiniMaxCode":
         return "Bundled under skills/engineering-calculation-system/shared/."
+    if target.name == "ZCode":
+        return "Bundled under plugin skills/engineering-calculation-system/shared/."
     return "Bundled at package root under shared/."
 
 
@@ -1291,6 +1394,8 @@ def write_platform_acceptance_report(archives: list[ReleaseArchive]) -> None:
             adapter = "Lightweight skill/resource entrypoint; do not claim web-complete alone."
         elif target.name == "MiniMaxCode":
             adapter = "Repository skill layout under skills/engineering-calculation-system."
+        elif target.name == "ZCode":
+            adapter = "Plugin-managed skill component; enable from ZCode Plugins, then use plugin skills."
         fallback = PLATFORM_FALLBACKS.get(
             target.name,
             "Use dist/singlefile/engineering-calculation-system.all-in-one.md if multi-file loading is unavailable.",

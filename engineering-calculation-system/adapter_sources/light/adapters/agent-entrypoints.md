@@ -163,21 +163,23 @@ Fallback:
 
 Preferred setup:
 
-1. Use `dist/release/engineering-calculation-system-ZCode-v2.6.0.zip`, or copy `dist/core/engineering-calculation-system/` to `~/.zcode/skills/engineering-calculation-system/`.
-2. In ZCode, open Settings -> Skills, refresh the skill list, and keep `engineering-calculation-system` enabled.
-3. Invoke the skill in chat with `$engineering-calculation-system`; use `@` file references and `/goal` for long tasks when useful.
-4. Put project-specific operating rules in the workspace `AGENTS.md`. If you need a starter file, copy `dist/adapters-light/AGENTS.md` into the workspace root.
+1. Use `dist/release/engineering-calculation-system-ZCode-v2.6.0.zip`, which now contains the `engineering-calculation-system-zcode` plugin folder.
+2. In ZCode, open Settings -> Plugins, add the plugin from a local path, Git source, or custom marketplace source, then enable it. ZCode plugin management is currently Beta.
+3. The plugin exposes its skill component at `skills/engineering-calculation-system/SKILL.md`; select it from the Plugin skills surface or the input skill/command picker.
+4. Use `@` file references, Review, execution modes, and `/goal` for long tasks when useful.
+5. Put project-specific operating rules in the workspace `AGENTS.md`. If you need a starter file, copy `dist/adapters-light/AGENTS.md` into the workspace root.
 
 Behavior:
 
-- ZCode skills are standard directories with a `SKILL.md` entrypoint, so the core package is the authoritative skill payload.
-- ZCode Agent should still start from `SKILL.md` and `skills/00-engineering-calculation-router.skill.md`, then load only the selected parent and child files.
+- ZCode plugins can bundle skills, commands, subagents, MCP servers, hooks, and LSP integrations. This package starts with the skill component only.
+- ZCode Agent should start from the plugin skill entrypoint and `skills/00-engineering-calculation-router.skill.md`, then load only the selected parent and child files.
 - For long tasks, keep a `.engineering-calc/work/progress.md` ledger and resume from it after `/goal` continuation or context compaction.
 - Use ZCode's workspace context, file references, review panel, and model/execution controls as platform conveniences; do not bypass evidence gates, coding gates, handoff freeze, or `run_book(BookInput) -> BookResult`.
-- ZCode reads user and workspace `AGENTS.md` instructions separately from skills. Keep persistent project guardrails in `AGENTS.md`, and keep reusable engineering-calculation workflow rules in the skill.
+- ZCode reads user `~/.zcode/AGENTS.md` and current workspace `AGENTS.md` instructions separately from skills. It does not recursively merge nested `AGENTS.md` files, so keep persistent project guardrails in the workspace root.
 
 Fallback:
 
+- If ZCode plugin import is unavailable, copy the plugin's `skills/engineering-calculation-system/` folder to `~/.zcode/skills/engineering-calculation-system/` as a legacy user skill.
 - If ZCode cannot traverse the multi-file skill directory, use `dist/singlefile/engineering-calculation-system.all-in-one.md` as the attached/pasted fallback.
 - If only project instructions are available, use `AGENTS.md` plus the routing prompt below.
 

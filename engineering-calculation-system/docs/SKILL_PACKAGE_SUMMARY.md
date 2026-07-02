@@ -158,6 +158,7 @@ dist/adapters-light/                         optional AGENTS/OpenCode/Trae/gener
 dist/qoder-addon/                            optional Qoder overlay
 dist/singlefile/                             generated all-in-one fallback
 dist/source-dev/                             development/reference bundle
+dist/zcode-plugin/                           ZCode plugin package source
 dist/release/                                platform release zips and checksums
   engineering-calculation-system-CODEX-v2.6.0.zip
   engineering-calculation-system-MiniMaxCode-v2.6.0.zip
@@ -171,7 +172,7 @@ dist/release/                                platform release zips and checksums
 tools/release_config.json                    release metadata and platform publish target config
 ```
 
-`engineering-calculation-system-MiniMaxCode-v2.6.0.zip` keeps the standard root `SKILL.md` layout for MiniMax Code import or auto-discovery. `engineering-calculation-system-ZCode-v2.6.0.zip` installs the same core skill folder under `~/.zcode/skills/engineering-calculation-system/` for ZCode. `engineering-calculation-system-QODER-v2.6.0.zip` is a direct QODER Skill upload package with `SKILL.md` at the zip root. `engineering-calculation-system-QODER-Project-v2.6.0.zip` is the QODER project-root overlay package.
+`engineering-calculation-system-MiniMaxCode-v2.6.0.zip` keeps the standard root `SKILL.md` layout for MiniMax Code import or auto-discovery. `engineering-calculation-system-ZCode-v2.6.0.zip` now installs the `engineering-calculation-system-zcode` plugin, with the core skill exposed under `skills/engineering-calculation-system/SKILL.md`. `engineering-calculation-system-QODER-v2.6.0.zip` is a direct QODER Skill upload package with `SKILL.md` at the zip root. `engineering-calculation-system-QODER-Project-v2.6.0.zip` is the QODER project-root overlay package.
 
 ## Best use
 

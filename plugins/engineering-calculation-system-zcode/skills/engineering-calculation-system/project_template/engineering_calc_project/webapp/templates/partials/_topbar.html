@@ -1,0 +1,53 @@
+<!-- Standard application top bar. Keep action placement stable across calculation books. -->
+<nav class="navbar navbar-expand-lg navbar-light bg-primary-gradient sticky-top app-topbar">
+    <div class="container-fluid">
+        <a class="navbar-brand d-flex align-items-center" href="./">
+            <i class="bi bi-calculator me-2"></i>
+            <span class="fw-bold" data-i18n="app_title">Engineering Calculator</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <button class="btn btn-outline-primary btn-sm me-2 mt-1" id="btnImportJson" data-i18n="nav_import">
+                        Import JSON
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="btn btn-outline-primary btn-sm me-2 mt-1" id="btnExportJson" data-i18n="nav_export">
+                        Export JSON
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <a class="btn btn-outline-warning btn-sm me-2 mt-1 disabled" id="btnAdminReview" target="_blank" rel="noopener" title="Marimo review status is loading.">
+                        <i class="bi bi-journal-check me-1"></i>
+                        <span data-i18n="nav_admin_review">Marimo Review</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <small id="adminReviewStatus" class="navbar-text text-warning-emphasis me-2"></small>
+                </li>
+            </ul>
+            <div class="d-flex align-items-center gap-2 topbar-actions">
+                <div class="btn-group btn-group-sm" role="group" id="langToggle" aria-label="Language" data-i18n-title="language_label">
+                    <button type="button" class="btn btn-outline-primary active" data-lang="en" aria-pressed="true" data-i18n-title="language_english">EN</button>
+                    <button type="button" class="btn btn-outline-primary" data-lang="zh" aria-pressed="false" data-i18n-title="language_chinese">ZH</button>
+                </div>
+                <button class="btn btn-warning btn-sm fw-bold" id="btnPreviewReport" disabled>
+                    <i class="bi bi-file-earmark-text me-1"></i>
+                    <span data-i18n="nav_preview">Preview Calc Book</span>
+                </button>
+                <label class="visually-hidden" for="latexTemplateSelect" data-i18n="latex_template_label">LaTeX template</label>
+                <select class="form-select form-select-sm topbar-template-select" id="latexTemplateSelect" aria-label="LaTeX template" data-i18n-title="latex_template_label">
+                    <option value="default_engineering_calcbook" data-i18n="latex_template_default">Default template</option>
+                </select>
+                <button class="btn btn-outline-primary btn-sm fw-bold" id="btnDownloadLatex" disabled>
+                    <i class="bi bi-file-earmark-zip me-1"></i>
+                    <span data-i18n="nav_download_latex">LaTeX</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</nav>

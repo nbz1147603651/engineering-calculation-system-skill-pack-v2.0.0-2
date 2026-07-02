@@ -104,3 +104,7 @@ def assert_skill_frontmatter_versions(root: Path, version: str) -> None:
 
 def codex_plugin_version(version: str, created_at: str) -> str:
     return f"{version}+codex.{created_at.replace('-', '')}"
+
+
+def zcode_plugin_version(version: str, created_at: str) -> str:
+    return f"{version}+zcode.{created_at.replace('-', '')}"

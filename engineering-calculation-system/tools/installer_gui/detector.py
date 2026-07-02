@@ -168,6 +168,8 @@ PROGRAM_DETECTORS = {
     "agents-generic": detect_agents_generic_program,
 }
 
+STRICT_SENTINEL_AGENTS = {"zcode"}
+
 
 def program_installed(agent_name: str) -> tuple[bool, str]:
     detector = PROGRAM_DETECTORS.get(agent_name)
@@ -196,7 +198,10 @@ def skill_deployed(agent_name: str, install_root: Path | None) -> tuple[bool, st
     sentinels = {
         "codex": [root / "SKILL.md"],
         "minimax": [root / "engineering-calculation-system" / "SKILL.md"],
-        "zcode": [root / "SKILL.md"],
+        "zcode": [
+            root / ".zcode-plugin" / "plugin.json",
+            root / "skills" / "engineering-calculation-system" / "SKILL.md",
+        ],
         "qoder": [
             root / "agents" / "engineering-calc-system.md",
             root / "skills" / "engineering-calc-system" / "SKILL.md",
@@ -228,7 +233,15 @@ def skill_deployed(agent_name: str, install_root: Path | None) -> tuple[bool, st
     if not candidates:
         return False, f"{t('detector_no_sentinel')}: {agent_name}"
 
-    present = [p for p in candidates if _file_exists(p)]
+    present: list[Path] = []
+    missing: list[Path] = []
+    for candidate in candidates:
+        (present if _file_exists(candidate) else missing).append(candidate)
+
+    if agent_name in STRICT_SENTINEL_AGENTS:
+        if missing:
+            return False, f"{t('detector_sentinel_missing')} {missing[0]}"
+        return True, f"sentinels found: {', '.join(str(p) for p in present)}"
     if present:
         return True, f"sentinel found: {present[0]}"
     return False, f"{t('detector_sentinel_missing')} {root}"

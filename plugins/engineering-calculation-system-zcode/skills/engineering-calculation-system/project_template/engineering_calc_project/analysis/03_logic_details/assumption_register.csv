@@ -1,0 +1,2 @@
+assumption_id,assumption,source_reference,reason,program_handling,blocks_production
+A001,Demand and capacity are supplied in the same unit,S01,Template demonstration keeps unit conversion out of scope,Validate numeric values and report unit,false

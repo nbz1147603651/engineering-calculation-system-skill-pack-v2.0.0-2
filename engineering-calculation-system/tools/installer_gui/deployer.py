@@ -64,6 +64,7 @@ DIST_ROOT: Path = (REPO_ROOT / "dist") if REPO_ROOT else Path("dist")
 DIST_CORE: Path = DIST_ROOT / "core" / "engineering-calculation-system"
 DIST_ADAPTERS_LIGHT: Path = DIST_ROOT / "adapters-light"
 DIST_QODER_ADDON: Path = DIST_ROOT / "qoder-addon"
+DIST_ZCODE_PLUGIN: Path = DIST_ROOT / "zcode-plugin" / "engineering-calculation-system-zcode"
 
 
 def is_frozen() -> bool:
@@ -82,7 +83,7 @@ def set_repo_root(path: Path | None, *, validate: bool = True) -> None:
     False when pointing at a workspace directory that may not yet contain
     the full skill-pack source (deploy / build will fail gracefully later).
     """
-    global REPO_ROOT, TOOLS_DIR, BUILD_SCRIPT, QODER_INSTALL_SCRIPT, DIST_ROOT, DIST_CORE, DIST_ADAPTERS_LIGHT, DIST_QODER_ADDON
+    global REPO_ROOT, TOOLS_DIR, BUILD_SCRIPT, QODER_INSTALL_SCRIPT, DIST_ROOT, DIST_CORE, DIST_ADAPTERS_LIGHT, DIST_QODER_ADDON, DIST_ZCODE_PLUGIN
     candidate = Path(path).expanduser() if path else None
     if validate and candidate is not None and not (candidate / "tools" / "build_release.py").exists():
         raise DeployError(
@@ -96,6 +97,7 @@ def set_repo_root(path: Path | None, *, validate: bool = True) -> None:
     DIST_CORE = DIST_ROOT / "core" / "engineering-calculation-system"
     DIST_ADAPTERS_LIGHT = DIST_ROOT / "adapters-light"
     DIST_QODER_ADDON = DIST_ROOT / "qoder-addon"
+    DIST_ZCODE_PLUGIN = DIST_ROOT / "zcode-plugin" / "engineering-calculation-system-zcode"
 
 
 def resolve_python() -> str:
@@ -225,6 +227,7 @@ def ensure_profiles(profiles: tuple[str, ...], *, log: LogFn, progress: Progress
         "core": DIST_CORE,
         "adapters-light": DIST_ADAPTERS_LIGHT,
         "qoder-addon": DIST_QODER_ADDON,
+        "zcode-plugin": DIST_ZCODE_PLUGIN,
     }
     missing = tuple(p for p in profiles if not profile_to_dist.get(p, Path("__none__")).exists())
     if not missing:
@@ -422,14 +425,14 @@ def uninstall_minimax(ctx: DeployContext) -> None:
 
 
 # --------------------------------------------------------------------------- #
-# ZCode - user skills under ~/.zcode/skills/<skill-name>/
+# ZCode - plugin under ~/.zcode/plugins/<plugin-name>/
 # --------------------------------------------------------------------------- #
 
 def deploy_zcode(ctx: DeployContext) -> None:
     root = _resolve_root(ctx)
-    ensure_profiles(("core",), log=ctx.log, progress=ctx.progress)
-    ctx.progress(0.7, "copying ZCode skill")
-    _copy_tree(DIST_CORE, root, log=ctx.log)
+    ensure_profiles(("zcode-plugin",), log=ctx.log, progress=ctx.progress)
+    ctx.progress(0.7, "copying ZCode plugin")
+    _copy_tree(DIST_ZCODE_PLUGIN, root, log=ctx.log)
     ctx.progress(1.0, t("deploy_zcode_done"))
 
 

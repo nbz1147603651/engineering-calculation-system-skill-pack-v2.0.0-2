@@ -1,0 +1,47 @@
+package_id: to_be_defined
+schema_version: 0.1.0
+created_at: to_be_defined
+created_by: to_be_defined
+project_or_book: to_be_defined
+package_status: draft # draft | review | final | imported | superseded
+source_basis:
+  design_code: to_be_defined
+  design_code_version: to_be_defined
+  source_ids: []
+inputs:
+  final_input_json: null
+  draft_input_json: null
+  batch_control: null
+results:
+  book_result_json: null
+  report_context_json: null
+reports:
+  html: []
+  pdf: []
+  docx: []
+  xlsx: []
+imported_reports:
+  - report_import_id: RPT-IMPORT-001
+    original_filename: to_be_defined
+    role: comparison # comparison | regression_reference | client_report | prior_version
+    local_path: to_be_defined
+    sha256: to_be_defined
+    trust_level: untrusted # untrusted | reference | approved
+files:
+  - path: to_be_defined
+    role: input
+    sha256: to_be_defined
+    size_bytes: 0
+hashes:
+  input_hash: to_be_defined
+  result_hash: to_be_defined
+versions:
+  package_version: to_be_defined
+  runner_version: to_be_defined
+  report_template_version: to_be_defined
+validation:
+  normalized_inputs: false
+  run_book_executed: false
+  verification_passed: false
+  notes: []
+
