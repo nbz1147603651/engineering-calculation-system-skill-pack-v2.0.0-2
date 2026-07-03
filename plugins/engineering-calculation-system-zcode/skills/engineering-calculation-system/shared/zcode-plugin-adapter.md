@@ -8,6 +8,8 @@ child skills, shared gates, templates, or validators.
 ## Loading Contract
 
 - Treat `.zcode-plugin/plugin.json` as the install and discovery manifest.
+- Keep its skill component declaration as `"skills": "skills"` so ZCode
+  registers the plugin `skills/` directory.
 - Treat root `marketplace.json` as the local/Git marketplace descriptor
   when ZCode imports this package as a marketplace source.
 - Treat `skills/engineering-calculation-system/SKILL.md` as the skill entrypoint

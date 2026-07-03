@@ -14,7 +14,7 @@
     "calculation-software",
     "traceability"
   ],
-  "skills": "./skills/",
+  "skills": "skills",
   "interface": {
     "displayName": "Engineering Calculation System for ZCode",
     "shortDescription": "ZCode plugin for auditable engineering calculators.",

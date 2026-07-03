@@ -977,7 +977,7 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
             payload_root / ".zcode-plugin" / "plugin.json",
             [
                 ZCODE_PLUGIN_NAME,
-                "\"skills\": \"./skills/\"",
+                "\"skills\": \"skills\"",
                 f"\"entrypoint\": \"{ZCODE_SKILL_ENTRYPOINT}\"",
             ],
             context=context,

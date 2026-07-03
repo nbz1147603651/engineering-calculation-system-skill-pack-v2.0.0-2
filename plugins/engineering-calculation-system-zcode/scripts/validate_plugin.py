@@ -172,10 +172,10 @@ def check_manifest(manifest: dict[str, Any], errors: list[str]) -> None:
     if version != EXPECTED_PLUGIN_VERSION:
         errors.append(f"manifest version must be {EXPECTED_PLUGIN_VERSION}")
 
-    if manifest.get("skills") != "./skills/":
-        errors.append("manifest skills path must be ./skills/")
+    if manifest.get("skills") != "skills":
+        errors.append('manifest skills component must be "skills" for ZCode plugin discovery')
     elif not (PLUGIN_ROOT / Path(ZCODE_SKILL_ENTRYPOINT)).exists():
-        errors.append("manifest skills path does not expose engineering-calculation-system/SKILL.md")
+        errors.append("manifest skills component does not expose engineering-calculation-system/SKILL.md")
 
     description = manifest.get("description")
     if not isinstance(description, str) or not description.strip():

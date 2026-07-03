@@ -238,12 +238,16 @@ _TRANSLATIONS: dict[Language, dict[str, str]] = {
         "deploy_zcode_notice": (
             "[notice] ZCode does not currently auto-discover staged local plugin folders. "
             "This deploy only prepares a local marketplace at {path}. "
-            "Open ZCode Settings -> Plugins -> Discover -> +, add this folder, then click Get."
+            "Open ZCode Settings -> Plugins -> Discover -> +, add this folder, then click Get. "
+            "If the plugin is installed but its skill is missing, uninstall the old ZCode entry, "
+            "refresh the marketplace, click Get again, then refresh Settings -> Skills."
         ),
         "deploy_zcode_notice_zh": (
             "[说明] 当前 ZCode 不会自动发现已暂存的本地插件目录。"
             "本次部署只是把本地插件市场准备到 {path}。"
             "请打开 ZCode 设置 -> 插件 -> 发现 -> +，添加此目录，然后点击获取。"
+            "如果插件已安装但技能缺失，请先卸载旧的 ZCode 插件条目，刷新插件市场，"
+            "重新点击获取，然后刷新 设置 -> 技能。"
         ),
         "deploy_zcode_done": "ZCode local marketplace staged; client-side add/Get is still required.",
         "deploy_zcode_done_zh": "ZCode 本地插件市场已就绪；客户端仍需手动添加并获取。",

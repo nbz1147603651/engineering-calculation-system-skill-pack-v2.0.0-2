@@ -103,6 +103,10 @@ duplicating table rows. Each row shows the currently selected mode:
 
 For ZCode, Deploy stages a local marketplace folder. Add that folder in ZCode
 Settings -> Plugins -> Discover -> +, then install the plugin card with Get.
+The GUI cannot force the ZCode client to replace a previously cached plugin
+copy. If the plugin is installed but the skill is absent, uninstall the old
+entry in ZCode, refresh the marketplace, click Get again, then refresh
+Settings -> Skills and check the Plugin skills group.
 
 ## Qoder / Qoder CN modes
 

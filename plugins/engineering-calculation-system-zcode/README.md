@@ -49,7 +49,21 @@ long-task continuation boundaries.
 
 `marketplace.json` is the local marketplace manifest ZCode can add from the
 Discover tab. `.zcode-plugin/plugin.json` is the plugin manifest ZCode probes
-after the plugin is selected from that marketplace.
+after the plugin is selected from that marketplace. The manifest intentionally
+declares `"skills": "skills"`, matching ZCode's native plugin component form
+used by current official plugins.
+
+## Install And Discovery Notes
+
+ZCode currently requires the client-side marketplace flow after local staging:
+open Settings -> Plugins -> Discover -> +, add this folder, click Get on the
+plugin card, and keep it enabled.
+
+If an older copy was already imported and Settings -> Skills does not show the
+skill under Plugin skills, uninstall the old plugin entry from ZCode's
+Installed tab, refresh the marketplace, then click Get again. ZCode may keep a
+cached plugin copy by source/version, so reusing a stale cache can leave the old
+`"skills": "./skills/"` manifest in effect even after the staged folder changes.
 
 ## Layout
 
