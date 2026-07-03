@@ -129,7 +129,7 @@
     {
       "name": "ZCode",
       "path": "ZCode/engineering-calculation-system-zcode",
-      "install_text": "Install this folder as a local ZCode marketplace source from Settings -> Plugins -> Discover -> +, then click Get on the Engineering Calculation System card and keep it enabled. If a previous cached copy is already installed but the skill is missing, uninstall that plugin entry, refresh the marketplace, and click Get again so ZCode reads the current `.zcode-plugin/plugin.json` with `\"skills\": \"skills\"`. For manual filesystem staging, copy the folder to `~/.zcode/plugins/engineering-calculation-system-zcode/`, add that folder as a local marketplace source, refresh Settings -> Plugins, and use its bundled skill from the Plugin skills surface.",
+      "install_text": "Install this folder as a local ZCode marketplace source from Settings -> Plugins -> Discover -> +, then click Get on the Engineering Calculation System card and keep it enabled. If a previous cached copy is already installed but the skills are missing or still show as a single old entry, uninstall that plugin entry, refresh the marketplace, and click Get again so ZCode reads the current `.zcode-plugin/plugin.json` with `\"skills\": \"skills\"`. For manual filesystem staging, copy the folder to `~/.zcode/plugins/engineering-calculation-system-zcode/`, add that folder as a local marketplace source, refresh Settings -> Plugins, and use its bundled skills from the Plugin skills surface.",
       "include_core": false,
       "copies": [
         {
@@ -139,7 +139,7 @@
         }
       ],
       "notes": [
-        "ZCode plugin management is currently Beta; the plugin bundles the skill under `skills/engineering-calculation-system/SKILL.md`.",
+        "ZCode plugin management is currently Beta; the plugin exposes four skills: the main `engineering-calculation-system` entry plus layered reference-acquisition, logic-architecture, and book-delivery entries.",
         "The plugin manifest uses ZCode's native skill component declaration: `\"skills\": \"skills\"`; stale cached installs that still have `\"skills\": \"./skills/\"` should be uninstalled and installed again.",
         "The plugin can be imported from a local path or Git/marketplace source; root `marketplace.json` points back to this plugin folder for path-based marketplace import.",
         "Legacy user-skill install remains a fallback: copy `skills/engineering-calculation-system/` to `~/.zcode/skills/engineering-calculation-system/` if plugin import is unavailable.",

@@ -26,6 +26,11 @@ plugin wrapper
 - `.zcode-plugin/plugin.json` exposes the package to ZCode as one plugin.
 - The plugin manifest declares the skill component as `"skills": "skills"`,
   the directory-name form used by current ZCode plugin discovery.
+- ZCode-visible layering is implemented with additional top-level skill
+  wrappers under `skills/engineering-calculation-reference-acquisition/`,
+  `skills/engineering-calculation-logic-architecture/`, and
+  `skills/engineering-calculation-book-delivery/`. They route into the
+  canonical parent files instead of duplicating the package.
 - Root `marketplace.json` lets a local path or Git source enumerate the
   plugin when ZCode is using marketplace-style import.
 - `shared/zcode-plugin-adapter.md` maps the skill pack to ZCode workspace,

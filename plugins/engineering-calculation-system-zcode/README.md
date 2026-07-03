@@ -14,6 +14,8 @@ because the package includes:
 - a ZCode plugin manifest
 - a local marketplace descriptor for path-based import
 - a root `SKILL.md` entrypoint inside `skills/engineering-calculation-system/`
+- layered ZCode entrypoint skills for reference acquisition, logic
+  architecture, and calculation-book delivery
 - parent and child phase skills
 - shared contracts and quality gates
 - artifact templates and schemas
@@ -53,6 +55,11 @@ after the plugin is selected from that marketplace. The manifest intentionally
 declares `"skills": "skills"`, matching ZCode's native plugin component form
 used by current official plugins.
 
+ZCode only lists directories that contain `SKILL.md` as plugin skills. The
+canonical package remains under `skills/engineering-calculation-system/`; the
+three additional top-level entries are thin ZCode launch points that route into
+the canonical parent files.
+
 ## Install And Discovery Notes
 
 ZCode currently requires the client-side marketplace flow after local staging:
@@ -75,6 +82,9 @@ overlays/engineering-calculation-system/shared/zcode-plugin-adapter.md
 scripts/sync_from_core.py
 scripts/validate_plugin.py
 skills/engineering-calculation-system/SKILL.md
+skills/engineering-calculation-reference-acquisition/SKILL.md
+skills/engineering-calculation-logic-architecture/SKILL.md
+skills/engineering-calculation-book-delivery/SKILL.md
 skills/engineering-calculation-system/parent/
 skills/engineering-calculation-system/skills/
 skills/engineering-calculation-system/shared/

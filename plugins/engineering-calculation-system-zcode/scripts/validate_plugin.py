@@ -37,6 +37,11 @@ ZCODE_SKILL_ROOT = "skills/engineering-calculation-system"
 ZCODE_SKILL_ENTRYPOINT = f"{ZCODE_SKILL_ROOT}/SKILL.md"
 ZCODE_ADAPTER_REL = "shared/zcode-plugin-adapter.md"
 ZCODE_BUNDLED_ADAPTER = f"{ZCODE_SKILL_ROOT}/{ZCODE_ADAPTER_REL}"
+ZCODE_LAYERED_ENTRYPOINTS = {
+    "engineering-calculation-reference-acquisition": "parent/engineering-calculation-reference-acquisition.skill.md",
+    "engineering-calculation-logic-architecture": "parent/engineering-calculation-logic-architecture.skill.md",
+    "engineering-calculation-book-delivery": "parent/engineering-calculation-book.skill.md",
+}
 
 ZCODE_BLOCK = """## ZCode Plugin Adapter
 
@@ -54,6 +59,9 @@ REQUIRED_PLUGIN_PATHS = [
     "docs/ADAPTATION.md",
     ZCODE_SKILL_ENTRYPOINT,
     ZCODE_BUNDLED_ADAPTER,
+    "skills/engineering-calculation-reference-acquisition/SKILL.md",
+    "skills/engineering-calculation-logic-architecture/SKILL.md",
+    "skills/engineering-calculation-book-delivery/SKILL.md",
     f"{ZCODE_SKILL_ROOT}/shared/execution-discipline.md",
     f"{ZCODE_SKILL_ROOT}/shared/planning-discipline.md",
     f"{ZCODE_SKILL_ROOT}/shared/review-feedback-discipline.md",
@@ -277,6 +285,26 @@ def check_skill_frontmatter(errors: list[str]) -> None:
         errors.append("bundled SKILL.md is missing the ZCode Plugin Adapter section")
     elif router_index >= 0 and adapter_index > router_index:
         errors.append("bundled SKILL.md must load the ZCode adapter before the router")
+
+    for name, canonical_parent in ZCODE_LAYERED_ENTRYPOINTS.items():
+        wrapper_path = PLUGIN_ROOT / "skills" / name / "SKILL.md"
+        if not wrapper_path.exists():
+            errors.append(f"missing layered ZCode skill entrypoint: skills/{name}/SKILL.md")
+            continue
+        wrapper_text = wrapper_path.read_text(encoding="utf-8")
+        if not wrapper_text.startswith("---"):
+            errors.append(f"layered ZCode skill {name} is missing YAML frontmatter")
+        if f"name: {name}" not in wrapper_text:
+            errors.append(f"layered ZCode skill {name} frontmatter name is missing or changed")
+        require_phrases(
+            wrapper_text,
+            [
+                "../engineering-calculation-system/SKILL.md",
+                f"../engineering-calculation-system/{canonical_parent}",
+            ],
+            errors,
+            f"layered ZCode skill {name}",
+        )
 
 
 def check_overlay_sync(errors: list[str]) -> None:

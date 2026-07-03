@@ -201,6 +201,9 @@ def skill_deployed(agent_name: str, install_root: Path | None) -> tuple[bool, st
         "zcode": [
             root / "marketplace.json",
             root / ".zcode-plugin" / "plugin.json",
+            root / "skills" / "engineering-calculation-book-delivery" / "SKILL.md",
+            root / "skills" / "engineering-calculation-logic-architecture" / "SKILL.md",
+            root / "skills" / "engineering-calculation-reference-acquisition" / "SKILL.md",
             root / "skills" / "engineering-calculation-system" / "SKILL.md",
         ],
         "qoder": [

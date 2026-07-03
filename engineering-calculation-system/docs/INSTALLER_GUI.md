@@ -107,6 +107,9 @@ The GUI cannot force the ZCode client to replace a previously cached plugin
 copy. If the plugin is installed but the skill is absent, uninstall the old
 entry in ZCode, refresh the marketplace, click Get again, then refresh
 Settings -> Skills and check the Plugin skills group.
+The ZCode plugin should list four skills after refresh: the main
+`engineering-calculation-system` entry plus three layered entries for
+reference acquisition, logic architecture, and calculation-book delivery.
 
 ## Qoder / Qoder CN modes
 

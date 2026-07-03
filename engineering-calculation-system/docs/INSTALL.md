@@ -150,7 +150,7 @@ Select-String "$env:USERPROFILE\.zcode\plugins\engineering-calculation-system-zc
 After copying the plugin folder, add that folder as a local marketplace source
 from ZCode Settings -> Plugins -> Discover -> +, click Get on the plugin card,
 refresh Settings -> Plugins, and keep the plugin enabled. Then refresh
-Settings -> Skills and confirm `engineering-calculation-system` appears under
+Settings -> Skills and confirm the plugin skills appear under
 Plugin skills. If an older imported copy remains installed and the skill is
 missing, uninstall that plugin entry from ZCode's Installed tab, refresh the
 marketplace, and click Get again so ZCode replaces the cached manifest. ZCode
