@@ -433,6 +433,7 @@ def deploy_zcode(ctx: DeployContext) -> None:
     ensure_profiles(("zcode-plugin",), log=ctx.log, progress=ctx.progress)
     ctx.progress(0.7, "copying ZCode plugin")
     _copy_tree(DIST_ZCODE_PLUGIN, root, log=ctx.log)
+    ctx.log(t("deploy_zcode_notice", path=root))
     ctx.progress(1.0, t("deploy_zcode_done"))
 
 

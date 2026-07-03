@@ -235,8 +235,18 @@ _TRANSLATIONS: dict[Language, dict[str, str]] = {
         "deploy_minimax_done_zh": "MiniMax 部署完成",
         "uninstall_minimax_done": "[done] MiniMax skill removed",
         "uninstall_minimax_done_zh": "[完成] MiniMax 技能已移除",
-        "deploy_zcode_done": "ZCode local marketplace staged; add this folder in Settings -> Plugins -> Discover -> +, then click Get.",
-        "deploy_zcode_done_zh": "ZCode 本地插件市场已就绪；请在 设置 -> 插件 -> 发现 -> + 添加此目录，然后点击获取。",
+        "deploy_zcode_notice": (
+            "[notice] ZCode does not currently auto-discover staged local plugin folders. "
+            "This deploy only prepares a local marketplace at {path}. "
+            "Open ZCode Settings -> Plugins -> Discover -> +, add this folder, then click Get."
+        ),
+        "deploy_zcode_notice_zh": (
+            "[说明] 当前 ZCode 不会自动发现已暂存的本地插件目录。"
+            "本次部署只是把本地插件市场准备到 {path}。"
+            "请打开 ZCode 设置 -> 插件 -> 发现 -> +，添加此目录，然后点击获取。"
+        ),
+        "deploy_zcode_done": "ZCode local marketplace staged; client-side add/Get is still required.",
+        "deploy_zcode_done_zh": "ZCode 本地插件市场已就绪；客户端仍需手动添加并获取。",
         "uninstall_zcode_done": "[done] ZCode plugin removed",
         "uninstall_zcode_done_zh": "[完成] ZCode 插件已移除",
         "deploy_qoder_user_done": "Qoder user overlay installed",
