@@ -12,10 +12,11 @@ child skills, shared gates, templates, or validators.
   registers the plugin `skills/` directory.
 - Treat root `marketplace.json` as the local/Git marketplace descriptor
   when ZCode imports this package as a marketplace source.
-- Treat `skills/engineering-calculation-system/SKILL.md` as the skill entrypoint
-  exposed by the plugin.
-- If the user selects a layered ZCode entrypoint skill, treat it as a thin
-  launcher into this same canonical package and its named parent orchestrator.
+- Treat `skills/engineering-calculation-system/SKILL.md` as the full-package
+  skill entrypoint exposed by the plugin.
+- If the user selects a parent-layer or lifecycle-phase ZCode entrypoint skill,
+  treat it as a thin launcher into this same canonical package and its named
+  parent or child file.
 - Load `skills/00-engineering-calculation-router.skill.md` after this adapter,
   then load only the parent and child files selected by the router.
 - Keep reusable workflow rules in the bundled skill. Keep project-specific

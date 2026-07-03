@@ -13,10 +13,12 @@ because the package includes:
 
 - a ZCode plugin manifest
 - a local marketplace descriptor for path-based import
+- official-style `package.json` metadata for cache/package tooling
 - a root `SKILL.md` entrypoint inside `skills/engineering-calculation-system/`
-- layered ZCode entrypoint skills for reference acquisition, logic
+- parent-layer ZCode entrypoint skills for reference acquisition, logic
   architecture, and calculation-book delivery
-- parent and child phase skills
+- lifecycle-phase ZCode entrypoint skills for router, 01-14 child workflows,
+  and 12a/12b/12c interface subflows
 - shared contracts and quality gates
 - artifact templates and schemas
 - validation scripts
@@ -57,8 +59,11 @@ used by current official plugins.
 
 ZCode only lists directories that contain `SKILL.md` as plugin skills. The
 canonical package remains under `skills/engineering-calculation-system/`; the
-three additional top-level entries are thin ZCode launch points that route into
-the canonical parent files.
+additional top-level entries are thin ZCode launch points that route into the
+canonical parent and child files. This mirrors the current official-plugin
+pattern used by packages such as `superpowers`: keep the plugin manifest simple,
+then expose task-sized skills as first-class `skills/<name>/SKILL.md`
+directories.
 
 ## Install And Discovery Notes
 
@@ -76,6 +81,7 @@ cached plugin copy by source/version, so reusing a stale cache can leave the old
 
 ```text
 marketplace.json
+package.json
 .zcode-plugin/plugin.json
 docs/ADAPTATION.md
 overlays/engineering-calculation-system/shared/zcode-plugin-adapter.md
@@ -85,6 +91,7 @@ skills/engineering-calculation-system/SKILL.md
 skills/engineering-calculation-reference-acquisition/SKILL.md
 skills/engineering-calculation-logic-architecture/SKILL.md
 skills/engineering-calculation-book-delivery/SKILL.md
+skills/engineering-calculation-*/SKILL.md
 skills/engineering-calculation-system/parent/
 skills/engineering-calculation-system/skills/
 skills/engineering-calculation-system/shared/

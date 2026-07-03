@@ -26,11 +26,12 @@ plugin wrapper
 - `.zcode-plugin/plugin.json` exposes the package to ZCode as one plugin.
 - The plugin manifest declares the skill component as `"skills": "skills"`,
   the directory-name form used by current ZCode plugin discovery.
-- ZCode-visible layering is implemented with additional top-level skill
-  wrappers under `skills/engineering-calculation-reference-acquisition/`,
-  `skills/engineering-calculation-logic-architecture/`, and
-  `skills/engineering-calculation-book-delivery/`. They route into the
-  canonical parent files instead of duplicating the package.
+- ZCode-visible routing is implemented with top-level skill wrappers for the
+  main package, the three parent layers, and every lifecycle phase. Each wrapper
+  routes into the canonical parent or child file instead of duplicating the
+  package.
+- `package.json` follows the official-plugin cache metadata pattern observed in
+  ZCode's bundled plugins; it is version-synchronized with the manifest.
 - Root `marketplace.json` lets a local path or Git source enumerate the
   plugin when ZCode is using marketplace-style import.
 - `shared/zcode-plugin-adapter.md` maps the skill pack to ZCode workspace,
@@ -53,4 +54,7 @@ of the engineering workflow.
 ZCode plugins can bundle skills, commands, subagents, MCP servers, hooks, and
 LSP integrations. This plugin currently declares skills only because there are
 no ZCode-native command, subagent, MCP, hook, or LSP implementations for this
-package yet. They can be added later without changing the bundled skill root.
+package yet. The official `superpowers` package may carry a `hooks/` directory,
+but its manifest still relies on `"skills": "skills"` for skill discovery; this
+plugin therefore avoids declaring synthetic hooks until they provide real
+ZCode-native behavior.

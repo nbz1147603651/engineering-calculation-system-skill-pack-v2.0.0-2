@@ -44,6 +44,7 @@
 - Added a ZCode plugin manifest, local marketplace descriptor, adapter overlay, sync script, validator, and release profile.
 - Updated the deployment console to install and verify `~/.zcode/plugins/engineering-calculation-system-zcode/`.
 - Documented ZCode plugin loading behavior, plugin skills, Goal Mode usage, and workspace `AGENTS.md` guardrails in adapter and install docs.
+- Aligned the ZCode plugin with official-plugin structure by adding package metadata and exposing the main package skill, three parent-layer skills, and lifecycle phase skills as top-level plugin entrypoints.
 
 ## v2.4.3 release version sync - 2026-06-22
 

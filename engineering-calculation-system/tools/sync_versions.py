@@ -93,6 +93,7 @@ def sync_codex_manifest(version: str, created_at: str) -> None:
 def sync_zcode_manifest(version: str, created_at: str) -> None:
     plugin_version = zcode_plugin_version(version, created_at)
     sync_manifest_version(ZCODE_PLUGIN_ROOT / ".zcode-plugin" / "plugin.json", plugin_version, required=False)
+    sync_manifest_version(ZCODE_PLUGIN_ROOT / "package.json", plugin_version, required=False)
     marketplace_path = ZCODE_PLUGIN_ROOT / "marketplace.json"
     if marketplace_path.exists():
         marketplace = json.loads(marketplace_path.read_text(encoding="utf-8"))

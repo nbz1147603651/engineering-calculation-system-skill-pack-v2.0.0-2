@@ -172,7 +172,7 @@ dist/release/                                platform release zips and checksums
 tools/release_config.json                    release metadata and platform publish target config
 ```
 
-`engineering-calculation-system-MiniMaxCode-v2.6.0.zip` keeps the standard root `SKILL.md` layout for MiniMax Code import or auto-discovery. `engineering-calculation-system-ZCode-v2.6.0.zip` now installs the `engineering-calculation-system-zcode` plugin, with the core skill exposed under `skills/engineering-calculation-system/SKILL.md` and three layered ZCode launch skills for reference acquisition, logic architecture, and calculation-book delivery. `engineering-calculation-system-QODER-v2.6.0.zip` is a direct QODER Skill upload package with `SKILL.md` at the zip root. `engineering-calculation-system-QODER-Project-v2.6.0.zip` is the QODER project-root overlay package.
+`engineering-calculation-system-MiniMaxCode-v2.6.0.zip` keeps the standard root `SKILL.md` layout for MiniMax Code import or auto-discovery. `engineering-calculation-system-ZCode-v2.6.0.zip` now installs the `engineering-calculation-system-zcode` plugin, with the core skill exposed under `skills/engineering-calculation-system/SKILL.md`, three parent-layer ZCode launch skills, and lifecycle phase launch skills for router, 01-14, and 12a/12b/12c workflows. `engineering-calculation-system-QODER-v2.6.0.zip` is a direct QODER Skill upload package with `SKILL.md` at the zip root. `engineering-calculation-system-QODER-Project-v2.6.0.zip` is the QODER project-root overlay package.
 
 ## Best use
 

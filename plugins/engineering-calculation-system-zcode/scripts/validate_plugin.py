@@ -22,6 +22,7 @@ from versioning import release_created_at, release_version, zcode_plugin_version
 
 MANIFEST_PATH = PLUGIN_ROOT / ".zcode-plugin" / "plugin.json"
 MARKETPLACE_PATH = PLUGIN_ROOT / "marketplace.json"
+PACKAGE_JSON_PATH = PLUGIN_ROOT / "package.json"
 RELEASE_CONFIG_PATH = REPO_ROOT / "engineering-calculation-system" / "tools" / "release_config.json"
 INSTALLER_GUI_ROOT = REPO_ROOT / "engineering-calculation-system" / "tools" / "installer_gui"
 SOURCE_SKILL_ROOT = REPO_ROOT / "engineering-calculation-system" / "core" / "engineering-calculation-system"
@@ -37,11 +38,30 @@ ZCODE_SKILL_ROOT = "skills/engineering-calculation-system"
 ZCODE_SKILL_ENTRYPOINT = f"{ZCODE_SKILL_ROOT}/SKILL.md"
 ZCODE_ADAPTER_REL = "shared/zcode-plugin-adapter.md"
 ZCODE_BUNDLED_ADAPTER = f"{ZCODE_SKILL_ROOT}/{ZCODE_ADAPTER_REL}"
-ZCODE_LAYERED_ENTRYPOINTS = {
+ZCODE_ENTRYPOINTS = {
     "engineering-calculation-reference-acquisition": "parent/engineering-calculation-reference-acquisition.skill.md",
     "engineering-calculation-logic-architecture": "parent/engineering-calculation-logic-architecture.skill.md",
     "engineering-calculation-book-delivery": "parent/engineering-calculation-book.skill.md",
+    "engineering-calculation-router": "skills/00-engineering-calculation-router.skill.md",
+    "engineering-calculation-reference-adequacy": "skills/01-reference-adequacy-and-gap-assessment.skill.md",
+    "engineering-calculation-reference-discovery": "skills/02-reference-discovery-and-acquisition.skill.md",
+    "engineering-calculation-reference-library": "skills/03-reference-persistence-and-local-library.skill.md",
+    "engineering-calculation-source-intake": "skills/04-source-intake-and-authority.skill.md",
+    "engineering-calculation-logic-blueprint": "skills/05-engineering-logic-blueprint.skill.md",
+    "engineering-calculation-formula-extraction": "skills/06-formula-lookup-branch-extraction.skill.md",
+    "engineering-calculation-implementation-handoff": "skills/07-implementation-handoff-contract.skill.md",
+    "engineering-calculation-book-architecture": "skills/08-calculation-book-architecture.skill.md",
+    "engineering-calculation-core-data-models": "skills/09-core-and-data-models.skill.md",
+    "engineering-calculation-reusable-modules": "skills/10-reusable-calculation-modules.skill.md",
+    "engineering-calculation-book-runner": "skills/11-book-runner-and-governing-summary.skill.md",
+    "engineering-calculation-report-review-batch": "skills/12-report-review-batch-interfaces.skill.md",
+    "engineering-calculation-report-rendering": "skills/12a-report-context-and-rendering.skill.md",
+    "engineering-calculation-review-interfaces": "skills/12b-frontend-and-review-interfaces.skill.md",
+    "engineering-calculation-batch-packages": "skills/12c-batch-import-export-packages.skill.md",
+    "engineering-calculation-verification": "skills/13-verification-regression-traceability.skill.md",
+    "engineering-calculation-cloud-deployment": "skills/14-cloud-web-release-deployment.skill.md",
 }
+ZCODE_ENTRYPOINT_SKILL_PATHS = [f"skills/{name}/SKILL.md" for name in ZCODE_ENTRYPOINTS]
 
 ZCODE_BLOCK = """## ZCode Plugin Adapter
 
@@ -55,13 +75,12 @@ file references, Goal Mode, review flow, and user-facing completion rules.
 REQUIRED_PLUGIN_PATHS = [
     ".zcode-plugin/plugin.json",
     "marketplace.json",
+    "package.json",
     "README.md",
     "docs/ADAPTATION.md",
     ZCODE_SKILL_ENTRYPOINT,
     ZCODE_BUNDLED_ADAPTER,
-    "skills/engineering-calculation-reference-acquisition/SKILL.md",
-    "skills/engineering-calculation-logic-architecture/SKILL.md",
-    "skills/engineering-calculation-book-delivery/SKILL.md",
+    *ZCODE_ENTRYPOINT_SKILL_PATHS,
     f"{ZCODE_SKILL_ROOT}/shared/execution-discipline.md",
     f"{ZCODE_SKILL_ROOT}/shared/planning-discipline.md",
     f"{ZCODE_SKILL_ROOT}/shared/review-feedback-discipline.md",
@@ -268,6 +287,20 @@ def check_marketplace(errors: list[str]) -> None:
         errors.append(f"ZCode marketplace plugin version must be {EXPECTED_PLUGIN_VERSION}")
 
 
+def check_package_json(errors: list[str]) -> None:
+    package = load_json(PACKAGE_JSON_PATH, errors, "ZCode plugin package metadata")
+    if not package:
+        return
+    if package.get("name") != "@engineering-calculation-system/zcode-plugin":
+        errors.append("package.json name must be @engineering-calculation-system/zcode-plugin")
+    if package.get("version") != EXPECTED_PLUGIN_VERSION:
+        errors.append(f"package.json version must be {EXPECTED_PLUGIN_VERSION}")
+    if package.get("private") is not True:
+        errors.append("package.json private must be true")
+    if not isinstance(package.get("description"), str) or not package["description"].strip():
+        errors.append("package.json description must be a non-empty string")
+
+
 def check_skill_frontmatter(errors: list[str]) -> None:
     skill_path = SKILL_ROOT / "SKILL.md"
     if not skill_path.exists():
@@ -286,24 +319,24 @@ def check_skill_frontmatter(errors: list[str]) -> None:
     elif router_index >= 0 and adapter_index > router_index:
         errors.append("bundled SKILL.md must load the ZCode adapter before the router")
 
-    for name, canonical_parent in ZCODE_LAYERED_ENTRYPOINTS.items():
+    for name, canonical_file in ZCODE_ENTRYPOINTS.items():
         wrapper_path = PLUGIN_ROOT / "skills" / name / "SKILL.md"
         if not wrapper_path.exists():
-            errors.append(f"missing layered ZCode skill entrypoint: skills/{name}/SKILL.md")
+            errors.append(f"missing ZCode skill entrypoint: skills/{name}/SKILL.md")
             continue
         wrapper_text = wrapper_path.read_text(encoding="utf-8")
         if not wrapper_text.startswith("---"):
-            errors.append(f"layered ZCode skill {name} is missing YAML frontmatter")
+            errors.append(f"ZCode skill {name} is missing YAML frontmatter")
         if f"name: {name}" not in wrapper_text:
-            errors.append(f"layered ZCode skill {name} frontmatter name is missing or changed")
+            errors.append(f"ZCode skill {name} frontmatter name is missing or changed")
         require_phrases(
             wrapper_text,
             [
                 "../engineering-calculation-system/SKILL.md",
-                f"../engineering-calculation-system/{canonical_parent}",
+                f"../engineering-calculation-system/{canonical_file}",
             ],
             errors,
-            f"layered ZCode skill {name}",
+            f"ZCode skill {name}",
         )
 
 
@@ -472,6 +505,7 @@ def main() -> int:
     if manifest:
         check_manifest(manifest, errors)
     check_marketplace(errors)
+    check_package_json(errors)
     check_skill_frontmatter(errors)
     check_overlay_sync(errors)
     check_sync_script_capabilities(errors)

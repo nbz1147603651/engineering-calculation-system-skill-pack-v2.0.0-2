@@ -211,17 +211,39 @@ PLATFORM_FALLBACKS = {
 ZCODE_PLUGIN_NAME = "engineering-calculation-system-zcode"
 ZCODE_SKILL_ROOT = "skills/engineering-calculation-system"
 ZCODE_SKILL_ENTRYPOINT = f"{ZCODE_SKILL_ROOT}/SKILL.md"
+ZCODE_ENTRYPOINT_SKILLS = [
+    "skills/engineering-calculation-reference-acquisition/SKILL.md",
+    "skills/engineering-calculation-logic-architecture/SKILL.md",
+    "skills/engineering-calculation-book-delivery/SKILL.md",
+    "skills/engineering-calculation-router/SKILL.md",
+    "skills/engineering-calculation-reference-adequacy/SKILL.md",
+    "skills/engineering-calculation-reference-discovery/SKILL.md",
+    "skills/engineering-calculation-reference-library/SKILL.md",
+    "skills/engineering-calculation-source-intake/SKILL.md",
+    "skills/engineering-calculation-logic-blueprint/SKILL.md",
+    "skills/engineering-calculation-formula-extraction/SKILL.md",
+    "skills/engineering-calculation-implementation-handoff/SKILL.md",
+    "skills/engineering-calculation-book-architecture/SKILL.md",
+    "skills/engineering-calculation-core-data-models/SKILL.md",
+    "skills/engineering-calculation-reusable-modules/SKILL.md",
+    "skills/engineering-calculation-book-runner/SKILL.md",
+    "skills/engineering-calculation-report-review-batch/SKILL.md",
+    "skills/engineering-calculation-report-rendering/SKILL.md",
+    "skills/engineering-calculation-review-interfaces/SKILL.md",
+    "skills/engineering-calculation-batch-packages/SKILL.md",
+    "skills/engineering-calculation-verification/SKILL.md",
+    "skills/engineering-calculation-cloud-deployment/SKILL.md",
+]
 ZCODE_PLUGIN_REQUIRED_PATHS = [
     ".zcode-plugin/plugin.json",
     "marketplace.json",
+    "package.json",
     "README.md",
     "docs/ADAPTATION.md",
     "scripts/sync_from_core.py",
     "scripts/validate_plugin.py",
     ZCODE_SKILL_ENTRYPOINT,
-    "skills/engineering-calculation-reference-acquisition/SKILL.md",
-    "skills/engineering-calculation-logic-architecture/SKILL.md",
-    "skills/engineering-calculation-book-delivery/SKILL.md",
+    *ZCODE_ENTRYPOINT_SKILLS,
     f"{ZCODE_SKILL_ROOT}/shared/zcode-plugin-adapter.md",
     f"{ZCODE_SKILL_ROOT}/shared/lifecycle.md",
     f"{ZCODE_SKILL_ROOT}/shared/execution-discipline.md",
@@ -524,6 +546,12 @@ def sync_zcode_plugin_metadata(plugin_root: Path) -> None:
             if isinstance(entry, dict) and entry.get("name") == ZCODE_PLUGIN_NAME:
                 entry["version"] = plugin_version
         write_json_lf(marketplace_path, marketplace)
+
+    package_path = plugin_root / "package.json"
+    if package_path.exists():
+        package = json.loads(package_path.read_text(encoding="utf-8"))
+        package["version"] = plugin_version
+        write_json_lf(package_path, package)
 
 
 def build_zcode_plugin() -> Path:
