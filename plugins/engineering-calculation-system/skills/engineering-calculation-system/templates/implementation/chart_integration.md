@@ -93,6 +93,26 @@ review, and either emit a `ChartSpec` or record why it is not applicable. Common
 include comparable metrics, paired values, profiles, envelopes, distributions, or schematics, but
 the actual charts must come from the current book's result data and stable paths.
 
+## Engineering Chart Family Catalog
+
+Use this catalog as a prompt for candidate discovery, not as a mandatory universal chart set.
+Every emitted chart still needs current-book result paths, units, trigger conditions, and tests.
+
+| Family | Typical chart_type | Use when | Required source paths |
+| --- | --- | --- | --- |
+| Utilization / margin ranking | `bar`, `sorted_bar` | Reviewers need the governing checks and near-governing checks quickly | check utilization or margin paths plus limits |
+| Demand vs capacity | `grouped_bar`, `paired_bar` | Demand/capacity comparison is meaningful in the same unit | demand paths and capacity paths |
+| Load case / combination envelope | `line`, `area`, `envelope` | Multiple load cases control different stations, members, depths, or locations | case IDs, station/location paths, response paths |
+| Profile with depth / station | `profile`, `line` | Soil, pile, beam, wall, pipe, or member results vary along a coordinate | coordinate paths, response paths, units |
+| Interaction / design surface | `scatter`, `interaction_curve` | Two or more demands interact, such as axial-moment or shear-moment checks | x/y demand paths, capacity/limit curve paths |
+| Lookup / interpolation audit | `step`, `line`, `table_chart` | Reviewer must see table points, interpolation interval, or selected coefficient | lookup input, table row/column, coefficient, source table |
+| Distribution / batch summary | `histogram`, `box`, `bar` | Batch or repeated cases need outlier and spread review | case IDs, metric paths, status paths |
+| Schematic / figure-backed review | `schematic`, `figure_overlay` | Geometry, load path, section, or layout improves review | figure ID/path plus labeled result paths |
+
+When a useful family is not emitted, add a `not_applicable` or `defer` row with a concrete reason
+such as "only one check exists", "units are mixed", "no station coordinate is present", or
+"source basis does not define an interaction curve".
+
 ## Builder Pattern
 
 ```python
@@ -180,4 +200,6 @@ frontend shell tests assert chartsSection exists
 chart data includes source result paths
 no UI/report template computes engineering formulas, utilization, or status
 non-finite chart values are sanitized before JSON output
+visual/report QA confirms emitted charts are non-empty, printable, and not clipped on A4 pages
+chart candidate inventory includes emit/not_applicable/defer decisions for high-value families
 ```

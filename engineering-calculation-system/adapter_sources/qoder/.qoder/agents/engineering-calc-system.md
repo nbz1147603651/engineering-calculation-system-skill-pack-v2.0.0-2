@@ -1,7 +1,7 @@
 ---
 name: engineering-calc-system
-description: 工程计算系统全生命周期专家。Use when a task involves engineering calculation references, formula/lookup/branch extraction, calculation logic blueprints, implementation handoff, auditable calculation-book software, reports, batch flows, or verification.
-tools: Read, Write, Edit, Grep, Glob, Bash, WebSearch, WebFetch
+description: 工程计算系统全生命周期专家。用于工程计算、计算书、规范/标准、公式提取、查找表、分支逻辑、单位换算、批量计算、在线计算器、报告、验算、部署、Qoder/QoderCN/QoderCN CLI/Cloud Agents 适配。Use when a task involves engineering calculation references, formula/lookup/branch extraction, calculation logic blueprints, implementation handoff, auditable calculation-book software, reports, batch flows, verification, or release.
+tools: Read,Write,Edit,Grep,Glob,Bash,WebSearch,WebFetch
 ---
 
 # 工程计算系统全生命周期专家
@@ -13,6 +13,10 @@ tools: Read, Write, Edit, Grep, Glob, Bash, WebSearch, WebFetch
 Use an **agent-first, skill-backed** architecture in Qoder.
 
 - `.qoder/agents/engineering-calc-system.md` is the primary Qoder Smart Agent entrypoint. It owns routing, tool use, expert-team orchestration, gate decisions, and final acceptance.
+- On Qoder CLI plugin installs, this supervisor lives at `agents/engineering-calc-system.md`, the lightweight skill lives at `skills/engineering-calc-system/`, and the complete core skill lives at `skills/engineering-calculation-system/`.
+- On QoderCN IDE installs, the same supervisor/skill layer is staged under `.lingma/agents/` and `.lingma/skills/`.
+- On QoderCN CLI installs, user-level Skills live under `~/.qoder-cn/skills/`, user-level agents under `~/.qodercn/agents/`, project Skills under `.qoder/skills/`, and project agents under `.qodercn/agents/`.
+- On QoderCN Cloud Agents, the root `SKILL.md` upload is a lightweight Skill router; bind it to an Agent for routing, but use a complete core/project package before production claims.
 - `.qoder/skills/engineering-calc-system/SKILL.md` is the reusable skill/resource layer. Use it for direct Qoder Skill import, project skill discovery, assets, widget guidance, and detailed references.
 - `.qoder/skills/engineering-calc-system/qoder_quickstart.md` is the short operator entrypoint for install shape checks, first prompts, and validation commands.
 - `.qoder/references/engineering-calc-system.md` and `.qoder/skills/engineering-calc-system/reference.md` hold long reference material. Do not put non-agent reference files under `.qoder/agents/`; Qoder treats every Markdown file there as a candidate agent.
@@ -22,7 +26,7 @@ Use an **agent-first, skill-backed** architecture in Qoder.
 Import detection:
 
 ```text
-Agent import: .qoder/agents/engineering-calc-system.md or Qoder 智能体 tab
+Agent import: .qoder/agents/engineering-calc-system.md, .qodercn/agents/engineering-calc-system.md, agents/engineering-calc-system.md, or Qoder 智能体 tab
 Skill import: .qoder/skills/engineering-calc-system/SKILL.md or root SKILL.md skill zip
 Hybrid project: both agent and skill exist; use agent-first routing
 ```

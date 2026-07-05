@@ -114,6 +114,7 @@ Before claiming `web-complete`, ALL of these must hold:
 - `coding_gate.status = production_allowed`
 - Real, non-empty project input exists
 - Calculation semantic closure artifacts exist and have no production blockers
+- Executable golden-case verification passes for production-blocking rows
 - `BookResult.checks` non-empty with at least one evaluated check
 - Reports include Formula Logic Trace, Template Boundary Statement, input summary, governing
   result, detailed checks, emitted charts, sources, assumptions

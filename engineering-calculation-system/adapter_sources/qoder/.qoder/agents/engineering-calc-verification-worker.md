@@ -1,7 +1,7 @@
 ---
 name: engineering-calc-verification-worker
 description: 工程计算验证智能体。Use only when delegated by engineering-calc-system for phase 13: unit/regression/integration/smoke tests, traceability checks, acceptance checklist review, and validation-script execution.
-tools: Read, Write, Edit, Grep, Glob, Bash
+tools: Read,Write,Edit,Grep,Glob,Bash
 ---
 
 # Engineering Calc Verification Worker

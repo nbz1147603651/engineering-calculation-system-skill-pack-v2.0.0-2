@@ -197,6 +197,10 @@ _TRANSLATIONS: dict[Language, dict[str, str]] = {
         "summary_qodercn_zh": "~/.lingma 覆盖层（Qoder CN 技能/智能体）",
         "summary_qodercn_project": "Project-root .lingma/ overlay for Qoder CN",
         "summary_qodercn_project_zh": "项目根目录 .lingma/ 覆盖层（Qoder CN）",
+        "summary_qoderworkcn": "Official QoderWork CN expert-kit folder + upload zip",
+        "summary_qoderworkcn_zh": "官方 QoderWork CN 专家套件目录 + 上传 zip",
+        "summary_workbuddy": "Tencent WorkBuddy expert-kit folder + upload zip",
+        "summary_workbuddy_zh": "腾讯 WorkBuddy 专家套件目录 + 上传 zip",
         "summary_trae": "Project-root .trae/ + AGENTS.md overlay",
         "summary_trae_zh": "项目根目录 .trae/ + AGENTS.md 覆盖层",
         "summary_opencode": "Project-root .opencode/ overlay",
@@ -212,6 +216,10 @@ _TRANSLATIONS: dict[Language, dict[str, str]] = {
         "name_qodercn_user_zh": "Qoder CN（用户级）",
         "name_qodercn_project": "Qoder CN Project",
         "name_qodercn_project_zh": "Qoder CN 项目级",
+        "name_qoderworkcn": "QoderWork CN Expert Kit",
+        "name_qoderworkcn_zh": "QoderWork CN 专家套件",
+        "name_workbuddy": "WorkBuddy Expert Kit",
+        "name_workbuddy_zh": "WorkBuddy 专家套件",
         "name_agents_generic": "AGENTS Generic",
         "name_agents_generic_zh": "AGENTS 通用",
         # Deployer messages
@@ -264,6 +272,34 @@ _TRANSLATIONS: dict[Language, dict[str, str]] = {
         "deploy_qodercn_user_done_zh": "Qoder CN 用户级覆盖层已安装",
         "uninstall_qodercn_user_done": "[done] Qoder CN user overlay removed",
         "uninstall_qodercn_user_done_zh": "[完成] Qoder CN 用户级覆盖层已移除",
+        "deploy_qoderworkcn_notice": (
+            "[notice] QoderWork CN installs expert kits through the client upload flow. "
+            "This deployment prepared an official `.qoder-plugin` kit at {path} and an upload zip at {zip}. "
+            "Open QoderWork CN -> Extensions -> Expert Kits -> + Add -> Upload Kit, then select the zip."
+        ),
+        "deploy_qoderworkcn_notice_zh": (
+            "[说明] QoderWork CN 通过客户端上传流程安装专家套件。"
+            "本次部署已在 {path} 准备官方 `.qoder-plugin` 套件目录，并在 {zip} 生成上传 zip。"
+            "请打开 QoderWork CN -> 扩展 -> 专家套件 -> + 添加 -> 上传套件，然后选择该 zip。"
+        ),
+        "deploy_qoderworkcn_done": "QoderWork CN expert-kit upload package ready",
+        "deploy_qoderworkcn_done_zh": "QoderWork CN 专家套件上传包已就绪",
+        "uninstall_qoderworkcn_done": "[done] QoderWork CN expert-kit staging removed",
+        "uninstall_qoderworkcn_done_zh": "[完成] QoderWork CN 专家套件暂存已移除",
+        "deploy_workbuddy_notice": (
+            "[notice] WorkBuddy installs custom skills or expert kits through the client import flow. "
+            "This deployment prepared a WorkBuddy-ready `.qoder-plugin` kit at {path} and an upload zip at {zip}. "
+            "Open WorkBuddy -> Skills Marketplace / Expert Center -> custom import or upload, then select the zip."
+        ),
+        "deploy_workbuddy_notice_zh": (
+            "[说明] WorkBuddy 通过客户端的技能市场、专家中心或自定义导入流程安装专家套件。"
+            "本次部署已在 {path} 准备 WorkBuddy 可用的 `.qoder-plugin` 套件目录，并在 {zip} 生成上传 zip。"
+            "请打开 WorkBuddy 的技能市场/专家中心/自定义导入入口，然后选择该 zip。"
+        ),
+        "deploy_workbuddy_done": "WorkBuddy expert-kit upload package ready",
+        "deploy_workbuddy_done_zh": "WorkBuddy 专家套件上传包已就绪",
+        "uninstall_workbuddy_done": "[done] WorkBuddy expert-kit staging removed",
+        "uninstall_workbuddy_done_zh": "[完成] WorkBuddy 专家套件暂存已移除",
         "deploy_project_done": "{agent} project overlay deployed",
         "deploy_project_done_zh": "{agent} 项目覆盖层已部署",
         "uninstall_qoder_project_done": "[done] .qoder overlay removed (core skill left intact)",
@@ -287,6 +323,10 @@ _TRANSLATIONS: dict[Language, dict[str, str]] = {
         "detector_qoder_not_found_zh": "qoder CLI 不在 PATH 中且 ~/.qoder 不存在",
         "detector_qodercn_not_found": "QoderCN/Lingma executable not on PATH and ~/.qodercn / ~/.lingma absent",
         "detector_qodercn_not_found_zh": "QoderCN/Lingma 可执行文件不在 PATH 中且 ~/.qodercn / ~/.lingma 不存在",
+        "detector_qoderworkcn_not_found": "QoderWork CN app/CLI not on PATH and ~/.qoderwork absent",
+        "detector_qoderworkcn_not_found_zh": "QoderWork CN 应用/CLI 不在 PATH 中且 ~/.qoderwork 不存在",
+        "detector_workbuddy_not_found": "WorkBuddy app/CLI not on PATH and ~/.workbuddy absent",
+        "detector_workbuddy_not_found_zh": "WorkBuddy 应用/CLI 不在 PATH 中且 ~/.workbuddy 不存在",
         "detector_trae_not_found": "trae CLI not on PATH (project-overlay install only)",
         "detector_trae_not_found_zh": "trae CLI 不在 PATH 中（仅支持项目覆盖层安装）",
         "detector_opencode_not_found": "opencode CLI not on PATH (project-overlay install only)",

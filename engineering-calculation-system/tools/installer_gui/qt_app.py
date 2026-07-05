@@ -89,7 +89,15 @@ def _load_release_meta() -> tuple[str, tuple[str, ...]]:
     except (OSError, ValueError):
         from . import __version__ as pkg_version
 
-        return pkg_version, ("core", "adapters-light", "qoder-addon", "singlefile", "source-dev", "ui-client")
+        return pkg_version, (
+            "core",
+            "adapters-light",
+            "qoder-addon",
+            "qoderworkcn-plugin",
+            "singlefile",
+            "source-dev",
+            "ui-client",
+        )
 
 
 def _asset_path(name: str) -> Path:
@@ -107,6 +115,8 @@ AGENT_LOGOS = {
     "qoder-project": "qoder.png",
     "qodercn": "qoder-cn.png",
     "qodercn-project": "qoder-cn.png",
+    "qoderworkcn": "qoderwork-cn.png",
+    "workbuddy": "workbuddy.png",
     "trae": "trae.png",
     "opencode": "opencode.png",
 }

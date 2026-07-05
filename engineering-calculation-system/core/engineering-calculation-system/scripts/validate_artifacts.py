@@ -94,7 +94,14 @@ TEXT_FILE_SUFFIXES = {
     ".yaml",
     ".yml",
 }
-MOJIBAKE_MARKERS = ("\u922b", "\u9225")
+MOJIBAKE_MARKERS = (
+    "\u922b",  # mojibake marker seen in box-drawing/comment text
+    "\u9225",  # mojibake marker seen in punctuation
+    "\u9239",  # mojibake marker seen in section separators
+    "\u93b5",  # mojibake marker seen in Chinese UI text
+    "\u947b",  # mojibake marker seen in Chinese UI text
+    "\ufffd",  # replacement character
+)
 LIFECYCLE_REDIRECT_PATHS = [
     "shared/delivery-contract.md",
     "shared/lifecycle-matrix.md",

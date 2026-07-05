@@ -6,7 +6,7 @@ Build releases from the source checkout:
 python tools/build_release.py
 ```
 
-With no arguments, the build creates every release profile plus ten publish-ready platform zips under `dist/release/`.
+With no arguments, the build creates every release profile plus sixteen publish-ready platform zips under `dist/release/`.
 
 ## Version Management
 
@@ -45,6 +45,9 @@ dist/adapters-light/
 dist/qoder-addon/
   Optional Qoder/Qoder CN overlay. Apply only when the target agent needs Qoder-specific files.
 
+dist/qoder-plugin/
+  Qoder CLI plugin package source with .qoder-plugin/plugin.json, agents/, skills/, references/, and adapters/.
+
 dist/zcode-plugin/
   ZCode plugin package source. The published ZCode zip installs this plugin instead of a bare skill folder.
 
@@ -59,7 +62,7 @@ dist/ui-client/
   Produced by `python tools/build_release.py --profile ui-client`. See docs/INSTALLER_GUI.md.
 
 dist/release/
-  CODEX, MiniMaxCode, ZCode, QODER Skill, QODER project, QoderCN user/project, TRAE, OpenCode, and AGENTS Generic release zips, checksums, and RELEASE_INDEX.md.
+  CODEX, MiniMaxCode, ZCode, QODER Skill/project/plugin, QoderCN IDE/CLI/Cloud Agents, QoderWorkCN, WorkBuddy, TRAE, OpenCode, and AGENTS Generic release zips, checksums, and RELEASE_INDEX.md.
 ```
 
 The `ui-client` profile builds a self-contained `engineering-calc-system-installer-v<version>.exe`
@@ -80,8 +83,14 @@ dist/release/engineering-calculation-system-MiniMaxCode-v2.6.0.zip
 dist/release/engineering-calculation-system-ZCode-v2.6.0.zip
 dist/release/engineering-calculation-system-QODER-v2.6.0.zip
 dist/release/engineering-calculation-system-QODER-Project-v2.6.0.zip
+dist/release/engineering-calculation-system-Qoder-CLI-Plugin-v2.6.0.zip
 dist/release/engineering-calculation-system-QoderCN-v2.6.0.zip
 dist/release/engineering-calculation-system-QoderCN-Project-v2.6.0.zip
+dist/release/engineering-calculation-system-QoderCN-CLI-v2.6.0.zip
+dist/release/engineering-calculation-system-QoderCN-CLI-Project-v2.6.0.zip
+dist/release/engineering-calculation-system-QoderCN-Cloud-Agents-v2.6.0.zip
+dist/release/engineering-calculation-system-QoderWorkCN-v2.6.0.zip
+dist/release/engineering-calculation-system-WorkBuddy-v2.6.0.zip
 dist/release/engineering-calculation-system-TRAE-v2.6.0.zip
 dist/release/engineering-calculation-system-OpenCode-v2.6.0.zip
 dist/release/engineering-calculation-system-AGENTS-Generic-v2.6.0.zip
@@ -95,16 +104,22 @@ MiniMaxCode zip:   local install by copying skills/engineering-calculation-syste
 ZCode zip:         add engineering-calculation-system-zcode/ as a local marketplace source from Settings -> Plugins -> Discover -> +, then click Get on the plugin card
 QODER zip:         upload the zip directly in QODER Skills / Install Skill; this is a lightweight skill/resource entrypoint
 QODER Project zip: copy copy-to-project-root/ contents to the QODER project root; this is the recommended Qoder Smart Agent setup
+Qoder CLI Plugin zip: install through Qoder CLI plugin management; .qoder-plugin/plugin.json is at the zip root
 QoderCN zip:       copy copy-to-user-home/ contents to ~/.lingma/ for Qoder CN IDE user-level Skills and Agents
 QoderCN Project zip: copy copy-to-project-root/ contents to the Qoder CN project root; it installs a .lingma/ project overlay
+QoderCN CLI zip:   copy copy-to-user-home/ contents to the user home, preserving .qoder-cn/ and .qodercn/
+QoderCN CLI Project zip: copy copy-to-project-root/ contents to the QoderCN CLI project root; it installs .qoder/skills and .qodercn/agents
+QoderCN Cloud Agents zip: upload the zip as a Cloud Agents custom Skill; SKILL.md is at the zip root
+QoderWorkCN zip:   upload the zip through QoderWork CN Expert Kits; .qoder-plugin/plugin.json is at the zip root
+WorkBuddy zip:     upload through WorkBuddy Skills Marketplace / Expert Center import when available; .qoder-plugin/plugin.json is at the zip root
 TRAE zip:          copy copy-to-project-root/ contents to the TRAE project root
 OpenCode zip:      copy copy-to-project-root/ contents to the OpenCode project root
 AGENTS Generic zip: copy copy-to-project-root/ contents to an AGENTS.md-compatible project root
 ```
 
-## Qoder / Qoder CN Deployment Choice
+## Qoder Product Deployment Choice
 
-For Qoder and Qoder CN, the recommended setup is:
+For Qoder and Qoder CN-family products, the recommended setup is:
 
 ```text
 user-level install: once per machine/user profile
@@ -123,8 +138,21 @@ software, deploy the project package as well:
 
 ```text
 Qoder:   user-level once + QODER Project zip per project
-QoderCN: user-level once + QoderCN Project zip per project
+QoderCN IDE: user-level once + QoderCN Project zip per project
+QoderCN CLI: user-level once + QoderCN CLI Project zip per project
 ```
+
+Product-specific paths:
+
+| Product | User/global layer | Project layer | Recommended release zip |
+| --- | --- | --- | --- |
+| Qoder direct Skill | root `SKILL.md` upload | use QODER Project for production | `engineering-calculation-system-QODER-v2.6.0.zip` |
+| Qoder Project | `~/.qoder/skills`, `~/.qoder/agents` via `install_qoder_user.py` | `.qoder/skills`, `.qoder/agents` | `engineering-calculation-system-QODER-Project-v2.6.0.zip` |
+| Qoder CLI Plugin | plugin root `.qoder-plugin/plugin.json` | plugin-managed `skills/` and `agents/` | `engineering-calculation-system-Qoder-CLI-Plugin-v2.6.0.zip` |
+| QoderCN IDE | `~/.lingma/skills`, `~/.lingma/agents` | `.lingma/skills`, `.lingma/agents` | `engineering-calculation-system-QoderCN-v2.6.0.zip`, `engineering-calculation-system-QoderCN-Project-v2.6.0.zip` |
+| QoderCN CLI | `~/.qoder-cn/skills`, `~/.qodercn/agents` | `.qoder/skills`, `.qodercn/agents` | `engineering-calculation-system-QoderCN-CLI-v2.6.0.zip`, `engineering-calculation-system-QoderCN-CLI-Project-v2.6.0.zip` |
+| QoderCN Cloud Agents | uploaded Skill zip, then bind to Agent | cloud Agent skill list | `engineering-calculation-system-QoderCN-Cloud-Agents-v2.6.0.zip` |
+| QoderWorkCN | Expert Kit upload | kit-managed | `engineering-calculation-system-QoderWorkCN-v2.6.0.zip` |
 
 MiniMax Code local verification on Windows:
 
@@ -173,6 +201,44 @@ for the IDE process/cache and `QoderCN.exe`; this package uses `.lingma` for
 custom Skill/Agent resources because that is the documented resource location
 for Qoder CN IDE custom agents and skills.
 
+For QoderCN CLI, use the QoderCN CLI user zip for the documented split
+user-level resource layout:
+
+```text
+~/.qoder-cn/skills/engineering-calc-system/SKILL.md
+~/.qodercn/agents/engineering-calc-system.md
+~/.qodercn/references/engineering-calc-system.md
+```
+
+Use the QoderCN CLI Project zip in each serious CLI project:
+
+```text
+.qoder/skills/engineering-calc-system/SKILL.md
+.qodercn/agents/engineering-calc-system.md
+.qodercn/references/engineering-calc-system.md
+```
+
+Do not substitute the QoderCN IDE `.lingma` package for the QoderCN CLI
+`.qoder-cn` / `.qodercn` package; they target different documented product
+surfaces.
+
+For QoderCN Cloud Agents, upload
+`engineering-calculation-system-QoderCN-Cloud-Agents-v2.6.0.zip` as a custom
+Skill. The archive root contains `SKILL.md`, `reference.md`,
+`qoder_quickstart.md`, and `assets/`, and is intentionally small for the Cloud
+Agents Skill upload limit. After upload, bind the returned Skill ID/version to
+the target Agent. The bind API replaces the Agent's `skills` list, so preserve
+existing Agent skill bindings before updating. This cloud Skill is still a
+lightweight router; production `web-complete` work must use a complete
+core/project package.
+
+For Qoder CLI plugin installs, use
+`engineering-calculation-system-Qoder-CLI-Plugin-v2.6.0.zip`. Its root contains
+`.qoder-plugin/plugin.json`, `skills/engineering-calculation-system/`,
+`skills/engineering-calc-system/`, `agents/`, `references/`, and `adapters/`.
+The plugin is the best Qoder CLI packaging shape when you want one installable
+bundle with both the supervisor agents and the complete core skill.
+
 Qoder import mode check:
 
 ```text
@@ -204,6 +270,21 @@ engineering-calculation-system-QODER-Project-v2.6.0.zip
   Project-root package with the supervisor agent, delegated worker agents,
   skill/resource layer, references, core templates, schemas, validator, and
   project scaffold.
+
+engineering-calculation-system-Qoder-CLI-Plugin-v2.6.0.zip
+  Qoder CLI plugin package with .qoder-plugin/plugin.json at the zip root and
+  complete core skill resources under skills/engineering-calculation-system/.
+
+engineering-calculation-system-QoderCN-CLI-v2.6.0.zip
+  QoderCN CLI user-level split package for ~/.qoder-cn/skills and
+  ~/.qodercn/agents.
+
+engineering-calculation-system-QoderCN-CLI-Project-v2.6.0.zip
+  QoderCN CLI project-root package with .qoder/skills, .qodercn/agents,
+  complete core templates, schemas, validator, and project scaffold.
+
+engineering-calculation-system-QoderCN-Cloud-Agents-v2.6.0.zip
+  QoderCN Cloud Agents Skill upload package with root SKILL.md.
 ```
 
 Use QODER Project for serious Qoder project work. Use the direct QODER Skill zip
@@ -253,6 +334,7 @@ To build only one layer during development:
 python tools/build_release.py --profile core
 python tools/build_release.py --profile adapters-light
 python tools/build_release.py --profile qoder-addon
+python tools/build_release.py --profile qoder-plugin
 python tools/build_release.py --profile singlefile
 python tools/build_release.py --profile ui-client
 ```
@@ -269,11 +351,12 @@ Update that file first when changing the package version, release date, publish 
 
 ## Overlay Usage
 
-The platform release zips are the recommended install path. Use the MiniMaxCode zip for MiniMax Code standard skill import or discovery. Use the ZCode zip for ZCode plugin installation or custom marketplace import. Use the QODER zip for direct QODER Skill upload; use the QODER Project, QoderCN Project, TRAE, and OpenCode packages when copying an overlay into a project root. Use the QoderCN zip for Qoder CN user-level `~/.lingma` install. Use raw overlays only when developing or debugging a release profile:
+The platform release zips are the recommended install path. Use the MiniMaxCode zip for MiniMax Code standard skill import or discovery. Use the ZCode zip for ZCode plugin installation or custom marketplace import. Use the QODER zip for direct QODER Skill upload; use the QODER Project, QoderCN Project, QoderCN CLI Project, TRAE, and OpenCode packages when copying an overlay into a project root. Use the Qoder CLI Plugin zip for Qoder CLI plugin install, the QoderCN zip for Qoder CN IDE user-level `~/.lingma` install, the QoderCN CLI zip for the CLI split `~/.qoder-cn` / `~/.qodercn` user install, and the QoderCN Cloud Agents zip for custom Skill upload. Use raw overlays only when developing or debugging a release profile:
 
 ```text
 core install root: dist/core/engineering-calculation-system/
 overlay source:    dist/adapters-light/ or dist/qoder-addon/
+plugin source:     dist/qoder-plugin/
 ```
 
 The light adapter overlay provides:
@@ -292,6 +375,17 @@ The Qoder/Qoder CN addon provides:
 .qoder/
 ```
 
+The Qoder CLI plugin source provides:
+
+```text
+.qoder-plugin/plugin.json
+skills/engineering-calculation-system/
+skills/engineering-calc-system/
+agents/
+references/
+adapters/
+```
+
 Inside `.qoder/`, the Smart Agent entrypoint is
 `.qoder/agents/engineering-calc-system.md`; the skill/resource layer is
 `.qoder/skills/engineering-calc-system/`; long non-agent reference material is
@@ -300,6 +394,10 @@ stored under `.qoder/references/`.
 For Qoder CN release packages, the same internal overlay is remapped to
 `agents/`, `skills/`, and `references/` for user-level `~/.lingma` install, or
 to project-root `.lingma/` for project-level install.
+
+For QoderCN CLI release packages, the same internal overlay is remapped to
+`.qoder-cn/skills/` plus `.qodercn/agents/` for user-level install, or to
+project-root `.qoder/skills/` plus `.qodercn/agents/` for project-level install.
 
 The QODER Project package also includes delegated worker agents:
 

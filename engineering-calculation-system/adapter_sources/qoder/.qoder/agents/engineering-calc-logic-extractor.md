@@ -1,7 +1,7 @@
 ---
 name: engineering-calc-logic-extractor
 description: 工程计算逻辑提取智能体。Use only when delegated by engineering-calc-system for phases 05-07: calculation blueprint, formula inventory, lookup/branch extraction, unit conventions, assumptions, risks, and implementation handoff drafts.
-tools: Read, Write, Edit, Grep, Glob, Bash, WebSearch, WebFetch
+tools: Read,Write,Edit,Grep,Glob,Bash,WebSearch,WebFetch
 ---
 
 # Engineering Calc Logic Extractor

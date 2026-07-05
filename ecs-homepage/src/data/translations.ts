@@ -35,7 +35,7 @@ export const translations = {
       body: '从参考文献采集到可审计的 Web 计算应用，为 AI Agent 赋予完整的工程计算软件全生命周期交付能力。14 步流水线，7 大门控，杜绝跳步。',
       primaryCta: '安装技能包',
       secondaryCta: '了解更多',
-      tags: ['Python 3.9+', '7 平台', 'GUI 安装器', '多 Agent 编排'],
+      tags: ['Python 3.9+', '9 平台', 'GUI 安装器', '多 Agent 编排'],
     },
     terminal: {
       title: 'ecs-skill-orchestrator',
@@ -48,7 +48,7 @@ export const translations = {
     },
     stats: [
       { value: 18, label: '子技能模块', suffix: '' },
-      { value: 7, label: '支持平台', suffix: '' },
+      { value: 9, label: '支持平台', suffix: '' },
       { value: 14, label: '生命周期阶段', suffix: '' },
       { value: 7, label: '质量门控', suffix: '' },
     ],
@@ -105,7 +105,7 @@ export const translations = {
     ],
     platformsSection: {
       title: '跨平台一键安装',
-      subtitle: '支持 7 个主流 AI Agent 编程平台，GUI 安装器开箱即用',
+      subtitle: '支持 9 个主流 AI Agent 编程与办公平台，GUI 安装器开箱即用',
     },
     install: {
       title: '快速开始',
@@ -121,7 +121,7 @@ export const translations = {
         {
           icon: '🖥️',
           title: 'GUI 安装器',
-          desc: '图形化安装 ECS 技能包，快速接入 7 个 AI Agent 编程平台',
+          desc: '图形化安装 ECS 技能包，快速接入 9 个 AI Agent 编程与办公平台，包含专家套件上传包',
           command: 'python -m installer_gui',
         },
         {
@@ -172,7 +172,7 @@ export const translations = {
       body: 'From reference acquisition to auditable web calculation apps, ECS gives AI agents a complete delivery workflow for engineering calculation software. 14 pipeline stages, 7 gates, no skipped steps.',
       primaryCta: 'Install skill pack',
       secondaryCta: 'Explore more',
-      tags: ['Python 3.9+', '7 platforms', 'GUI installer', 'Multi-agent orchestration'],
+      tags: ['Python 3.9+', '9 platforms', 'GUI installer', 'Multi-agent orchestration'],
     },
     terminal: {
       title: 'ecs-skill-orchestrator',
@@ -185,7 +185,7 @@ export const translations = {
     },
     stats: [
       { value: 18, label: 'Sub-skill modules', suffix: '' },
-      { value: 7, label: 'Supported platforms', suffix: '' },
+      { value: 9, label: 'Supported platforms', suffix: '' },
       { value: 14, label: 'Lifecycle stages', suffix: '' },
       { value: 7, label: 'Quality gates', suffix: '' },
     ],
@@ -242,7 +242,7 @@ export const translations = {
     ],
     platformsSection: {
       title: 'One-Click Cross-Platform Installation',
-      subtitle: 'Supports 7 mainstream AI agent coding platforms, with a GUI installer ready out of the box.',
+      subtitle: 'Supports 9 mainstream AI agent coding and office platforms, with a GUI installer ready out of the box.',
     },
     install: {
       title: 'Quick Start',
@@ -258,7 +258,7 @@ export const translations = {
         {
           icon: '🖥️',
           title: 'GUI Installer',
-          desc: 'Install the ECS skill pack into 7 AI agent coding platforms from a guided graphical installer.',
+          desc: 'Install the ECS skill pack into 9 AI agent coding and office platforms, including expert-kit upload packages.',
           command: 'python -m installer_gui',
         },
         {

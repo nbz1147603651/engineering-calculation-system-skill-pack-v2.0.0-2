@@ -20,6 +20,20 @@ core package, templates, schemas, validator, project scaffold, and `.qoder/` or
 Use a direct QODER Skill import by itself only for lightweight routing,
 exploratory guidance, or checking what is missing from a project.
 
+## Qoder Product Map
+
+| Product | User/global path | Project path | Use when |
+| --- | --- | --- | --- |
+| Qoder IDE / Qoder CLI project | `~/.qoder/skills/`, `~/.qoder/agents/` or plugin `skills/`/`agents/` | `.qoder/skills/`, `.qoder/agents/` | Standard Qoder Smart Agent and Skill workflows. |
+| Qoder CLI Plugin | plugin root with `.qoder-plugin/plugin.json`, `skills/`, `agents/` | plugin-managed | Best for Qoder CLI plugin install and reusable bundled core skill resources. |
+| QoderCN IDE | `~/.lingma/skills/`, `~/.lingma/agents/` | `.lingma/skills/`, `.lingma/agents/` | QoderCN IDE custom Skills and Agents. |
+| QoderCN CLI | `~/.qoder-cn/skills/`, `~/.qodercn/agents/` | `.qoder/skills/`, `.qodercn/agents/` | QoderCN CLI Skills plus Subagents, using the documented split resource layout. |
+| QoderCN Cloud Agents | uploaded Skill zip with root `SKILL.md` | Agent-bound cloud Skill | Cloud Agent routing and governance; still lightweight until a complete project/core package is available. |
+| QoderWorkCN | Expert Kit zip with `.qoder-plugin/plugin.json` at root | kit-managed | Organization/shared expert kit distribution. |
+
+Do not mix the QoderCN IDE `.lingma` package with the QoderCN CLI `.qoder-cn`
+and `.qodercn` package. They target different documented product surfaces.
+
 ## Qoder Package Self-Check
 
 Classify the current install before doing implementation or release work:

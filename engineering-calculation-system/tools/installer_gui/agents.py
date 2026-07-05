@@ -55,6 +55,22 @@ def _qodercn_root() -> Path:
     return Path.home() / ".lingma"
 
 
+def _qoderworkcn_root() -> Path:
+    for env_name in ("QODERWORK_CN_KIT_HOME", "QODERWORK_KIT_HOME"):
+        configured = os.environ.get(env_name)
+        if configured:
+            return Path(configured).expanduser()
+    return Path.home() / "QoderWorkCN-Expert-Kits" / "engineering-calculation-system-qoderworkcn"
+
+
+def _workbuddy_root() -> Path:
+    for env_name in ("WORKBUDDY_KIT_HOME", "WORKBUDDY_HOME", "TENCENT_WORKBUDDY_HOME"):
+        configured = os.environ.get(env_name)
+        if configured:
+            return Path(configured).expanduser()
+    return Path.home() / "WorkBuddy-Expert-Kits" / "engineering-calculation-system-workbuddy"
+
+
 # Project-overlay agents have no default root; the user picks one.
 def _no_default() -> Path | None:
     return None
@@ -180,6 +196,30 @@ def _build_specs() -> list[AgentSpec]:
             verify_fn=deployer.verify_qodercn_project,
             uninstall_fn=deployer.uninstall_qodercn_project,
             needs_profiles=("core", "qoder-addon"),
+        ),
+        AgentSpec(
+            name="qoderworkcn",
+            display_name=t("name_qoderworkcn"),
+            icon="QW",
+            kind="user",
+            summary=t("summary_qoderworkcn"),
+            default_root_fn=_qoderworkcn_root,
+            deploy_fn=deployer.deploy_qoderworkcn_plugin,
+            verify_fn=deployer.verify_qoderworkcn_plugin,
+            uninstall_fn=deployer.uninstall_qoderworkcn_plugin,
+            needs_profiles=("qoderworkcn-plugin",),
+        ),
+        AgentSpec(
+            name="workbuddy",
+            display_name=t("name_workbuddy"),
+            icon="WB",
+            kind="user",
+            summary=t("summary_workbuddy"),
+            default_root_fn=_workbuddy_root,
+            deploy_fn=deployer.deploy_workbuddy_plugin,
+            verify_fn=deployer.verify_workbuddy_plugin,
+            uninstall_fn=deployer.uninstall_workbuddy_plugin,
+            needs_profiles=("qoderworkcn-plugin",),
         ),
         AgentSpec(
             name="trae",

@@ -122,6 +122,59 @@ def detect_qodercn_program() -> tuple[bool, str]:
     return False, t("detector_qodercn_not_found")
 
 
+def detect_qoderworkcn_program() -> tuple[bool, str]:
+    """QoderWork CN: desktop executable, qodercli, or known QoderWork state dir."""
+    for name in (
+        "qoderwork",
+        "qoderworkcn",
+        "QoderWork",
+        "QoderWorkCN",
+        "QoderWork.exe",
+        "QoderWorkCN.exe",
+        "qodercli",
+    ):
+        exe = _exe_on_path(name)
+        if exe:
+            return True, f"CLI/app found: {exe}"
+    configured = os.environ.get("QODERWORK_CN_HOME") or os.environ.get("QODERWORK_HOME")
+    if configured:
+        home = Path(configured).expanduser()
+        if _dir_exists(home):
+            return True, f"home dir found: {home}"
+    for home in (_home() / ".qoderwork", _home() / ".qoderwork-cn", _home() / ".qoderworkcn"):
+        if _dir_exists(home):
+            return True, f"home dir found: {home}"
+    return False, t("detector_qoderworkcn_not_found")
+
+
+def detect_workbuddy_program() -> tuple[bool, str]:
+    """Tencent WorkBuddy: desktop executable, CodeBuddy launcher, or known state dir."""
+    for name in (
+        "workbuddy",
+        "WorkBuddy",
+        "WorkBuddy.exe",
+        "codebuddy",
+        "CodeBuddy",
+        "CodeBuddy.exe",
+    ):
+        exe = _exe_on_path(name)
+        if exe:
+            return True, f"CLI/app found: {exe}"
+    configured = (
+        os.environ.get("WORKBUDDY_HOME")
+        or os.environ.get("TENCENT_WORKBUDDY_HOME")
+        or os.environ.get("WORKBUDDY_KIT_HOME")
+    )
+    if configured:
+        home = Path(configured).expanduser()
+        if _dir_exists(home):
+            return True, f"home dir found: {home}"
+    for home in (_home() / ".workbuddy", _home() / ".workbuddy-cn", _home() / "WorkBuddy"):
+        if _dir_exists(home):
+            return True, f"home dir found: {home}"
+    return False, t("detector_workbuddy_not_found")
+
+
 def detect_zcode_program() -> tuple[bool, str]:
     """ZCode desktop app: ``zcode`` on PATH, or a ``~/.zcode`` home directory."""
     exe = _exe_on_path("zcode")
@@ -163,12 +216,14 @@ PROGRAM_DETECTORS = {
     "qoder-project": detect_qoder_program,
     "qodercn": detect_qodercn_program,
     "qodercn-project": detect_qodercn_program,
+    "qoderworkcn": detect_qoderworkcn_program,
+    "workbuddy": detect_workbuddy_program,
     "trae": detect_trae_program,
     "opencode": detect_opencode_program,
     "agents-generic": detect_agents_generic_program,
 }
 
-STRICT_SENTINEL_AGENTS = {"zcode"}
+STRICT_SENTINEL_AGENTS = {"zcode", "qoderworkcn", "workbuddy"}
 
 
 def program_installed(agent_name: str) -> tuple[bool, str]:
@@ -220,6 +275,20 @@ def skill_deployed(agent_name: str, install_root: Path | None) -> tuple[bool, st
         "qodercn-project": [
             root / ".lingma" / "agents" / "engineering-calc-system.md",
             root / ".qodercn" / "agents" / "engineering-calc-system.md",
+        ],
+        "qoderworkcn": [
+            root / ".qoder-plugin" / "plugin.json",
+            root / "qoder.md",
+            root / "skills" / "engineering-calculation-system" / "SKILL.md",
+            root / "skills" / "engineering-calc-system" / "SKILL.md",
+            root / "agents" / "engineering-calc-system.md",
+        ],
+        "workbuddy": [
+            root / ".qoder-plugin" / "plugin.json",
+            root / "qoder.md",
+            root / "skills" / "engineering-calculation-system" / "SKILL.md",
+            root / "skills" / "engineering-calc-system" / "SKILL.md",
+            root / "agents" / "engineering-calc-system.md",
         ],
         "trae": [
             root / ".trae" / "project_rules.md",

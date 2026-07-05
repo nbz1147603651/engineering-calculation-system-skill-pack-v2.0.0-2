@@ -1,7 +1,7 @@
 ---
 name: engineering-calc-release-worker
 description: 工程计算发布部署智能体。Use only when delegated by engineering-calc-system for phase 14: local runnable web package, Linux/cloud deployment artifacts, Docker/systemd/nginx/env files, release checklist, and deployment smoke evidence.
-tools: Read, Write, Edit, Grep, Glob, Bash
+tools: Read,Write,Edit,Grep,Glob,Bash
 ---
 
 # Engineering Calc Release Worker

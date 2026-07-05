@@ -5,6 +5,8 @@
     "core",
     "adapters-light",
     "qoder-addon",
+    "qoder-plugin",
+    "qoderworkcn-plugin",
     "singlefile",
     "source-dev",
     "zcode-plugin",
@@ -14,6 +16,8 @@
     "core",
     "adapters-light",
     "qoder-addon",
+    "qoder-plugin",
+    "qoderworkcn-plugin",
     "singlefile",
     "source-dev",
     "zcode-plugin",
@@ -23,6 +27,8 @@
     "core",
     "adapters-light",
     "qoder-addon",
+    "qoder-plugin",
+    "qoderworkcn-plugin",
     "singlefile",
     "source-dev",
     "zcode-plugin"
@@ -33,8 +39,14 @@
     "ZCode",
     "QODER",
     "QODER Project",
+    "Qoder CLI Plugin",
     "QoderCN",
     "QoderCN Project",
+    "QoderCN CLI",
+    "QoderCN CLI Project",
+    "QoderCN Cloud Agents",
+    "QoderWorkCN",
+    "WorkBuddy",
     "TRAE",
     "OpenCode",
     "AGENTS Generic"
@@ -193,6 +205,27 @@
       ]
     },
     {
+      "name": "Qoder CLI Plugin",
+      "path": "Qoder/cli-plugin",
+      "install_text": "Install this zip or directory through Qoder CLI plugin management. The zip root contains `.qoder-plugin/plugin.json`, complete core skill resources, Qoder-compatible supervisor/worker agents, references, and adapter docs.",
+      "include_core": false,
+      "payload_at_root": true,
+      "include_install_guide": false,
+      "copies": [
+        {
+          "profile": "qoder-plugin",
+          "source": ".",
+          "target": "."
+        }
+      ],
+      "notes": [
+        "This is the official Qoder CLI plugin layout: `.qoder-plugin/plugin.json`, `skills/`, `agents/`, `references/`, `qoder.md`, `CONNECTORS.md`, and `README.md`.",
+        "The plugin includes the complete core package at `skills/engineering-calculation-system/` so Qoder CLI can use templates, schemas, validators, project scaffold, and shared lifecycle contracts.",
+        "The Qoder quickstart layer is preserved at `skills/engineering-calc-system/` for direct skill-style routing, but production work should route to the bundled complete core skill.",
+        "No external Connector is required by default; project-specific connectors should be authorized explicitly in the target Qoder CLI task."
+      ]
+    },
+    {
       "name": "QoderCN",
       "path": "QoderCN/copy-to-user-home",
       "install_text": "Copy the contents of this folder into the Qoder CN user resource directory, typically `~/.lingma/` for Qoder CN IDE custom Skills and Agents. This is the reusable user-level layer; deploy QoderCN Project into each serious/production project for full capability. You can also deploy from source with `python tools/install_qoder_user.py --product qodercn --build`.",
@@ -238,6 +271,125 @@
         "Recommended deployment choice: install Qoder CN user-level resources once for global discovery, then deploy this project package into every serious/production Qoder CN project.",
         "Qoder CN IDE custom agents are documented at `${project}/.lingma/agents/<agentName>.md`; project-level Skills are documented at `.lingma/skills/{skill-name}/SKILL.md`.",
         "Use `.lingma/agents/engineering-calc-system.md` as the supervisor and `.lingma/skills/engineering-calc-system/` as the skill/resource layer."
+      ]
+    },
+    {
+      "name": "QoderCN CLI",
+      "path": "QoderCN-CLI/copy-to-user-home",
+      "install_text": "Copy the contents of this folder into the QoderCN CLI user's home directory, preserving both `.qoder-cn/` and `.qodercn/`. Skills go under `~/.qoder-cn/skills/{skill-name}/SKILL.md`; custom agents go under `~/.qodercn/agents/<agentName>.md`.",
+      "include_core": false,
+      "copies": [
+        {
+          "profile": "qoder-addon",
+          "source": ".qoder/skills",
+          "target": ".qoder-cn/skills"
+        },
+        {
+          "profile": "qoder-addon",
+          "source": ".qoder/agents",
+          "target": ".qodercn/agents"
+        },
+        {
+          "profile": "qoder-addon",
+          "source": ".qoder/references",
+          "target": ".qodercn/references"
+        }
+      ],
+      "notes": [
+        "This package follows the QoderCN CLI split user-resource layout documented by Alibaba Cloud: user Skills under `~/.qoder-cn/skills/` and user Subagents under `~/.qodercn/agents/`.",
+        "It is a reusable user-level layer only. For source-backed production or `web-complete` work, also deploy QoderCN CLI Project into the project root.",
+        "Keep `.qodercn/references/` with `.qodercn/agents/` so agent-relative reference links continue to resolve."
+      ]
+    },
+    {
+      "name": "QoderCN CLI Project",
+      "path": "QoderCN-CLI/copy-to-project-root",
+      "install_text": "Copy the contents of this folder into the root of the QoderCN CLI project. This package keeps project Skills under `.qoder/skills/` and project custom agents/references under `.qodercn/`, matching the documented QoderCN CLI split layout while also bundling the complete core package.",
+      "include_adapter_docs": true,
+      "copies": [
+        {
+          "profile": "qoder-addon",
+          "source": ".qoder/skills",
+          "target": ".qoder/skills"
+        },
+        {
+          "profile": "qoder-addon",
+          "source": ".qoder/agents",
+          "target": ".qodercn/agents"
+        },
+        {
+          "profile": "qoder-addon",
+          "source": ".qoder/references",
+          "target": ".qodercn/references"
+        }
+      ],
+      "notes": [
+        "This directory already merges the core skill, shared adapter docs, `.qoder/skills`, and `.qodercn/agents` files.",
+        "Recommended deployment choice: install QoderCN CLI user resources once for global discovery, then deploy this project package into every serious/production QoderCN CLI project.",
+        "Use `.qodercn/agents/engineering-calc-system.md` as the supervisor and `.qoder/skills/engineering-calc-system/` as the skill/resource layer.",
+        "Do not replace this package with the QoderCN IDE `.lingma` package; the CLI and IDE product lines use different documented resource paths."
+      ]
+    },
+    {
+      "name": "QoderCN Cloud Agents",
+      "path": "QoderCN/cloud-agents-skill",
+      "install_text": "Upload this zip to QoderCN Cloud Agents as a custom Skill. The zip root contains `SKILL.md`, `reference.md`, `qoder_quickstart.md`, and `assets/`, which matches the Cloud Agents Skill upload model and stays below the documented 10 MB Skill zip limit.",
+      "include_core": false,
+      "payload_at_root": true,
+      "include_install_guide": false,
+      "copies": [
+        {
+          "profile": "qoder-addon",
+          "source": ".qoder/skills/engineering-calc-system",
+          "target": "."
+        }
+      ],
+      "notes": [
+        "This is a Cloud Agents Skill upload package, not a local IDE/CLI project overlay.",
+        "After uploading, bind the returned Skill ID/version to the target Agent through the Cloud Agents API or UI. The bind API replaces the Agent `skills` list, so preserve any existing skills before updating.",
+        "This direct Skill remains a lightweight router. For production `web-complete` engineering software, the target project still needs the complete core package, templates, schemas, validator, and project scaffold."
+      ]
+    },
+    {
+      "name": "QoderWorkCN",
+      "path": "QoderWorkCN/upload-kit",
+      "install_text": "Upload this zip directly from QoderWork CN's Expert Kits flow: Extensions -> Expert Kits -> + Add -> Upload Kit. The zip root contains `.qoder-plugin/plugin.json`, complete core skill resources, QoderWork CN-native supervisor/worker agents, references, and adapter docs.",
+      "include_core": false,
+      "payload_at_root": true,
+      "include_install_guide": false,
+      "copies": [
+        {
+          "profile": "qoderworkcn-plugin",
+          "source": ".",
+          "target": "."
+        }
+      ],
+      "notes": [
+        "This is the official QoderWork CN Plugin / Expert Kit layout: `.qoder-plugin/plugin.json`, `skills/`, `agents/`, `references/`, `qoder.md`, `CONNECTORS.md`, and `README.md`.",
+        "The kit includes the complete core package at `skills/engineering-calculation-system/` so QoderWork CN can use templates, schemas, validators, project scaffold, and shared lifecycle contracts.",
+        "The QoderWork CN quick-entry layer is generated at `skills/engineering-calc-system/` with native expert-kit paths and no legacy project-overlay instructions.",
+        "No external Connector is required by default; project-specific connectors should be authorized explicitly inside QoderWork CN."
+      ]
+    },
+    {
+      "name": "WorkBuddy",
+      "path": "WorkBuddy/upload-kit",
+      "install_text": "Prepare this upload kit for Tencent WorkBuddy's Skills Marketplace / Expert Center import flow. The zip root contains `.qoder-plugin/plugin.json`, complete core skill resources, supervisor/worker agents, references, and adapter docs; if the WorkBuddy client labels the import flow differently, choose the generated zip from the custom skill or expert-kit upload entry.",
+      "include_core": false,
+      "payload_at_root": true,
+      "include_install_guide": true,
+      "copies": [
+        {
+          "profile": "qoderworkcn-plugin",
+          "source": ".",
+          "target": "."
+        }
+      ],
+      "notes": [
+        "WorkBuddy is positioned as a Tencent AI Agent workbench with expert teams, a skills marketplace, customizable skills, MCP expansion, and Tencent office ecosystem connectivity.",
+        "This package keeps the official expert-kit upload structure so WorkBuddy can import the same complete lifecycle assets used by QoderWork CN.",
+        "Use the full core skill at `skills/engineering-calculation-system/` for web-complete engineering calculation delivery; the lightweight Qoder-compatible skill remains available at `skills/engineering-calc-system/`.",
+        "No external Connector is required by default; authorize project-specific connectors explicitly inside WorkBuddy."
       ]
     },
     {

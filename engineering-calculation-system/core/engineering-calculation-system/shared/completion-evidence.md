@@ -11,7 +11,7 @@ file defines the evidence needed to make claims about that lifecycle.
 | `source-backed` | `references/source_registry.yaml`, source cards or evidence manifest, search/retrieval logs, source authority table | memory, generic engineering knowledge, a copied formula without source ID |
 | `analysis_allowed` | acquisition handoff plus source intake, authority/conflict records, and no blocking source gaps | a PDF exists, one source was found |
 | `production_allowed` | `handoff/implementation_handoff.yaml`, `handoff/coding_go_no_go.md`, calculation intent, method selection, input semantics, graph coverage, runner closure, golden-case targets | UI/report completeness, prototype gate, partial semantic closure |
-| `formula verified` | formula/lookup/branch inventory, reusable module tests, formula traces, golden cases or regression references | formula appears in code, manual spot check |
+| `formula verified` | formula/lookup/branch inventory, reusable module tests, formula traces, executable golden-case runner output, golden cases or regression references | formula appears in code, manual spot check, unexecuted registry rows |
 | `report-ready` | A4 HTML report sections, Formula Logic Trace, Template Boundary Statement, sources, assumptions, chart data tables when charts exist | static HTML alone, visual polish |
 | `web-complete` | `shared/lifecycle.md` Web-Complete Exit Gate plus a fresh `validate_artifacts.py --delivery web-complete` pass for the project | CLI runner, notebook, static export, old validator output |
 | `deployable` | deployment files, env examples, health/smoke route, release checklist, and fresh validation evidence | Dockerfile exists, app opened once |

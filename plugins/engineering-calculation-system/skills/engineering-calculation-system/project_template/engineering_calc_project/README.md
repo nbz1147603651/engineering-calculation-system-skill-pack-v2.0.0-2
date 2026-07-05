@@ -50,6 +50,7 @@ From this directory:
 
 ```bash
 python3 -B -m pytest -q -p no:cacheprovider
+python3 scripts/verify_golden_cases.py --project-root .
 ```
 
 ## Run Locally

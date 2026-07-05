@@ -24,6 +24,7 @@ import shutil
 import subprocess
 import sys
 import time
+import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
@@ -64,6 +65,7 @@ DIST_ROOT: Path = (REPO_ROOT / "dist") if REPO_ROOT else Path("dist")
 DIST_CORE: Path = DIST_ROOT / "core" / "engineering-calculation-system"
 DIST_ADAPTERS_LIGHT: Path = DIST_ROOT / "adapters-light"
 DIST_QODER_ADDON: Path = DIST_ROOT / "qoder-addon"
+DIST_QODERWORKCN_PLUGIN: Path = DIST_ROOT / "qoderworkcn-plugin"
 DIST_ZCODE_PLUGIN: Path = DIST_ROOT / "zcode-plugin" / "engineering-calculation-system-zcode"
 
 
@@ -83,7 +85,7 @@ def set_repo_root(path: Path | None, *, validate: bool = True) -> None:
     False when pointing at a workspace directory that may not yet contain
     the full skill-pack source (deploy / build will fail gracefully later).
     """
-    global REPO_ROOT, TOOLS_DIR, BUILD_SCRIPT, QODER_INSTALL_SCRIPT, DIST_ROOT, DIST_CORE, DIST_ADAPTERS_LIGHT, DIST_QODER_ADDON, DIST_ZCODE_PLUGIN
+    global REPO_ROOT, TOOLS_DIR, BUILD_SCRIPT, QODER_INSTALL_SCRIPT, DIST_ROOT, DIST_CORE, DIST_ADAPTERS_LIGHT, DIST_QODER_ADDON, DIST_QODERWORKCN_PLUGIN, DIST_ZCODE_PLUGIN
     candidate = Path(path).expanduser() if path else None
     if validate and candidate is not None and not (candidate / "tools" / "build_release.py").exists():
         raise DeployError(
@@ -97,6 +99,7 @@ def set_repo_root(path: Path | None, *, validate: bool = True) -> None:
     DIST_CORE = DIST_ROOT / "core" / "engineering-calculation-system"
     DIST_ADAPTERS_LIGHT = DIST_ROOT / "adapters-light"
     DIST_QODER_ADDON = DIST_ROOT / "qoder-addon"
+    DIST_QODERWORKCN_PLUGIN = DIST_ROOT / "qoderworkcn-plugin"
     DIST_ZCODE_PLUGIN = DIST_ROOT / "zcode-plugin" / "engineering-calculation-system-zcode"
 
 
@@ -227,6 +230,7 @@ def ensure_profiles(profiles: tuple[str, ...], *, log: LogFn, progress: Progress
         "core": DIST_CORE,
         "adapters-light": DIST_ADAPTERS_LIGHT,
         "qoder-addon": DIST_QODER_ADDON,
+        "qoderworkcn-plugin": DIST_QODERWORKCN_PLUGIN,
         "zcode-plugin": DIST_ZCODE_PLUGIN,
     }
     missing = tuple(p for p in profiles if not profile_to_dist.get(p, Path("__none__")).exists())
@@ -557,6 +561,128 @@ def uninstall_qodercn_user(ctx: DeployContext) -> None:
     if rc != 0:
         raise DeployError(f"install_qoder_user.py --product qodercn --uninstall failed (exit {rc})")
     ctx.log(t("uninstall_qodercn_user_done"))
+
+
+# --------------------------------------------------------------------------- #
+# QoderWork CN Expert Kit - official .qoder-plugin upload package
+# --------------------------------------------------------------------------- #
+
+def _write_upload_zip(source_root: Path, zip_path: Path, *, log: LogFn) -> None:
+    if not source_root.exists():
+        raise DeployError(t("deployer_source_missing", src=source_root))
+    if zip_path.exists():
+        _backup(zip_path, log=log)
+    zip_path.parent.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        for path in sorted(source_root.rglob("*")):
+            if not path.is_file():
+                continue
+            rel = path.relative_to(source_root).as_posix()
+            info = zipfile.ZipInfo(rel, date_time=(2026, 6, 17, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info.external_attr = 0o644 << 16
+            archive.writestr(info, path.read_bytes())
+    log(f"[zip] {source_root} -> {zip_path}")
+
+
+def deploy_qoderworkcn_plugin(ctx: DeployContext) -> None:
+    root = _resolve_root(ctx)
+    ensure_profiles(("qoderworkcn-plugin",), log=ctx.log, progress=ctx.progress)
+    ctx.progress(0.65, "copying QoderWork CN expert kit")
+    _copy_tree(DIST_QODERWORKCN_PLUGIN, root, log=ctx.log)
+    zip_path = root.with_suffix(".zip")
+    ctx.progress(0.9, "creating QoderWork CN upload zip")
+    _write_upload_zip(root, zip_path, log=ctx.log)
+    ctx.log(t("deploy_qoderworkcn_notice", path=root, zip=zip_path))
+    ctx.progress(1.0, t("deploy_qoderworkcn_done"))
+
+
+def verify_qoderworkcn_plugin(ctx: DeployContext) -> bool:
+    root = _resolve_root(ctx)
+    ok, detail = detector.skill_deployed("qoderworkcn", root)
+    ctx.log(f"[verify] {detail}")
+    zip_path = root.with_suffix(".zip")
+    if not ok:
+        return False
+    if not zip_path.exists():
+        ctx.log(f"[verify] upload zip missing: {zip_path}")
+        return False
+    with zipfile.ZipFile(zip_path) as archive:
+        names = set(archive.namelist())
+    required = {
+        ".qoder-plugin/plugin.json",
+        "skills/engineering-calculation-system/SKILL.md",
+        "skills/engineering-calc-system/SKILL.md",
+        "agents/engineering-calc-system.md",
+        "qoder.md",
+    }
+    missing = sorted(required - names)
+    if missing:
+        ctx.log(f"[verify] upload zip missing: {', '.join(missing)}")
+        return False
+    ctx.log(f"[verify] upload zip ready: {zip_path}")
+    return True
+
+
+def deploy_workbuddy_plugin(ctx: DeployContext) -> None:
+    root = _resolve_root(ctx)
+    ensure_profiles(("qoderworkcn-plugin",), log=ctx.log, progress=ctx.progress)
+    ctx.progress(0.65, "copying WorkBuddy expert kit")
+    _copy_tree(DIST_QODERWORKCN_PLUGIN, root, log=ctx.log)
+    zip_path = root.with_suffix(".zip")
+    ctx.progress(0.9, "creating WorkBuddy upload zip")
+    _write_upload_zip(root, zip_path, log=ctx.log)
+    ctx.log(t("deploy_workbuddy_notice", path=root, zip=zip_path))
+    ctx.progress(1.0, t("deploy_workbuddy_done"))
+
+
+def verify_workbuddy_plugin(ctx: DeployContext) -> bool:
+    root = _resolve_root(ctx)
+    ok, detail = detector.skill_deployed("workbuddy", root)
+    ctx.log(f"[verify] {detail}")
+    zip_path = root.with_suffix(".zip")
+    if not ok:
+        return False
+    if not zip_path.exists():
+        ctx.log(f"[verify] upload zip missing: {zip_path}")
+        return False
+    with zipfile.ZipFile(zip_path) as archive:
+        names = set(archive.namelist())
+    required = {
+        ".qoder-plugin/plugin.json",
+        "skills/engineering-calculation-system/SKILL.md",
+        "skills/engineering-calc-system/SKILL.md",
+        "agents/engineering-calc-system.md",
+        "qoder.md",
+    }
+    missing = sorted(required - names)
+    if missing:
+        ctx.log(f"[verify] upload zip missing: {', '.join(missing)}")
+        return False
+    ctx.log(f"[verify] upload zip ready: {zip_path}")
+    return True
+
+
+def uninstall_qoderworkcn_plugin(ctx: DeployContext) -> None:
+    root = _resolve_root(ctx)
+    _remove_managed(root, log=ctx.log)
+    _remove_managed(root.with_suffix(".zip"), log=ctx.log)
+    for sibling in root.parent.glob(f"{root.name}.bak.*"):
+        _remove_managed(sibling, log=ctx.log)
+    for sibling in root.parent.glob(f"{root.name}.zip.bak.*"):
+        _remove_managed(sibling, log=ctx.log)
+    ctx.log(t("uninstall_qoderworkcn_done"))
+
+
+def uninstall_workbuddy_plugin(ctx: DeployContext) -> None:
+    root = _resolve_root(ctx)
+    _remove_managed(root, log=ctx.log)
+    _remove_managed(root.with_suffix(".zip"), log=ctx.log)
+    for sibling in root.parent.glob(f"{root.name}.bak.*"):
+        _remove_managed(sibling, log=ctx.log)
+    for sibling in root.parent.glob(f"{root.name}.zip.bak.*"):
+        _remove_managed(sibling, log=ctx.log)
+    ctx.log(t("uninstall_workbuddy_done"))
 
 
 # --------------------------------------------------------------------------- #

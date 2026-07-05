@@ -16,6 +16,7 @@ one component, because the package includes:
 - artifact templates and schemas
 - validation scripts
 - a runnable project scaffold
+- Codex-specific adapter and quickstart guidance
 
 The plugin currently exposes skills only. It intentionally does not declare MCP
 servers, hooks, or apps until those integrations exist.
@@ -27,6 +28,7 @@ This folder is self-contained. All Codex-specific changes live here:
 ```text
 .codex-plugin/plugin.json
 docs/ADAPTATION.md
+docs/CODEX_QUICKSTART.md
 overlays/
 scripts/
 skills/
@@ -46,6 +48,7 @@ docs/ADAPTATION.md
 overlays/engineering-calculation-system/shared/codex-plugin-adapter.md
 scripts/sync_from_core.py
 scripts/validate_plugin.py
+docs/CODEX_QUICKSTART.md
 skills/engineering-calculation-system/SKILL.md
 skills/engineering-calculation-system/parent/
 skills/engineering-calculation-system/skills/
@@ -73,7 +76,25 @@ python scripts/validate_plugin.py
 
 The plugin doctor checks the manifest, local marketplace discoverability,
 required Codex adapter files, overlay synchronization, bundled-source drift,
-and the bundled core skill package.
+the bundled core skill package, the bundled web-complete project template, and
+the executable golden-case runner.
+
+## Codex Quickstart
+
+See `docs/CODEX_QUICKSTART.md` for Codex-first prompts, workspace rules, and
+validation commands. The shortest smoke path is:
+
+```bash
+python scripts/validate_plugin.py
+```
+
+For the generated project template specifically:
+
+```bash
+cd skills/engineering-calculation-system/project_template/engineering_calc_project
+python scripts/verify_golden_cases.py --project-root .
+python -m pytest
+```
 
 ## Refresh From Core
 

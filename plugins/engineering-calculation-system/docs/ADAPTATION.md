@@ -26,11 +26,13 @@ plugin wrapper
 - `shared/codex-plugin-adapter.md` maps the skill pack to Codex workspace,
   web/search, CodeGraph, edit, validation, and multi-agent conventions.
 - `scripts/validate_plugin.py` validates the plugin wrapper, local marketplace
-  entry, overlay synchronization, bundled-source drift, and bundled core skill
-  package.
+  entry, overlay synchronization, bundled-source drift, bundled core skill
+  package, bundled web-complete project template, and golden-case runner.
 - `scripts/sync_from_core.py` refreshes the bundled skill from the source core
   package and reapplies the Codex overlay.
 - `overlays/` stores plugin-only additions so future syncs do not lose them.
+- `docs/CODEX_QUICKSTART.md` gives Codex-first prompts, workspace rules, and
+  validation commands for users and maintainers.
 
 ## What Is Not Codex-Specific
 

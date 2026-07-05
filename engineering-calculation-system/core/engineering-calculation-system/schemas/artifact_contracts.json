@@ -103,6 +103,8 @@
     "project_template/engineering_calc_project/src/pkg/report/report_selector.py",
     "project_template/engineering_calc_project/src/pkg/books/example_book/book_runner.py",
     "project_template/engineering_calc_project/src/pkg/books/example_book/charts.py",
+    "project_template/engineering_calc_project/scripts/verify_golden_cases.py",
+    "project_template/engineering_calc_project/tests/regression/test_golden_cases.py",
     "project_template/engineering_calc_project/tests/smoke/test_web_routes.py",
     "project_template/engineering_calc_project/tests/smoke/test_latex_report.py"
   ],
@@ -696,6 +698,7 @@
     "implementation/03_book_runner/runner_closure_map.csv",
     "verification/test_matrix.csv",
     "verification/golden_case_registry.csv",
+    "scripts/verify_golden_cases.py",
     "tests/smoke/example_input.json",
     "apps/review/admin_formula_review.py",
     "data/formula_registry/active_versions.yaml",
@@ -762,6 +765,7 @@
     "latex/generated/.gitkeep",
     "latex/output/.gitkeep",
     "tests/integration/test_book_runner.py",
+    "tests/regression/test_golden_cases.py",
     "tests/unit/test_formula_registry.py",
     "tests/smoke/test_web_routes.py",
     "tests/smoke/test_latex_report.py"
@@ -970,6 +974,16 @@
       "build_book_charts",
       "CheckResult",
       "source_result_paths"
+    ],
+    "scripts/verify_golden_cases.py": [
+      "run_golden_cases",
+      "run_book",
+      "expected_result_path",
+      "tolerance"
+    ],
+    "tests/regression/test_golden_cases.py": [
+      "run_golden_cases",
+      "test_registered_golden_cases"
     ],
     "tests/smoke/test_web_routes.py": [
       "/health",

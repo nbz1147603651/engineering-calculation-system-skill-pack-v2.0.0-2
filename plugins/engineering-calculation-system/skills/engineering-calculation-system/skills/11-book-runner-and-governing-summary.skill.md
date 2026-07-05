@@ -27,9 +27,13 @@ one official calculation path for the book.
    governing_utilization_or_margin, governing_limit, critical_load_case/combination, controlling
    location/member/foundation if applicable, warnings_count, errors_count.
 3. Build chart specs (`src/<pkg>/books/<book_name>/charts.py`) from the book-specific result-path
-   registry, review needs, and available `BookResult` fields. Do not hardcode a universal chart
-   set or copy example chart IDs into unrelated books. Chart specs package already-computed values
-   with source result paths and recommended UI/report locations; they never calculate.
+   registry, review needs, and available `BookResult` fields. Use
+   `templates/implementation/chart_integration.md` to review high-value chart families
+   (utilization ranking, demand/capacity, envelopes, profiles, interactions, lookup audits,
+   distributions, and schematic/figure-backed review) without treating them as a universal chart
+   set. Do not hardcode a universal chart set or copy example chart IDs into unrelated books.
+   Chart specs package already-computed values with source result paths and recommended UI/report
+   locations; they never calculate.
    Record the decision basis in
    `implementation/03_book_runner/chart_candidate_inventory.csv`
    (`templates/implementation/chart_candidate_inventory.csv`): each candidate result group,

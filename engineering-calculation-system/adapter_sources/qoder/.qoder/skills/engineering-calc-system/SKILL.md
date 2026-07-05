@@ -1,6 +1,6 @@
 ---
 name: engineering-calc-system
-description: 工程计算系统全生命周期专家。Use when a task involves engineering calculation references, formula/lookup/branch extraction, calculation logic blueprints, implementation handoff, auditable calculation-book software, reports, batch flows, or verification.
+description: 工程计算系统全生命周期专家。用于工程计算、计算书、规范/标准、公式提取、查找表、分支逻辑、单位换算、批量计算、在线计算器、报告、验算、部署、Qoder/QoderCN/QoderCN CLI/Cloud Agents 适配。Use when a task involves engineering calculation references, formula/lookup/branch extraction, calculation logic blueprints, implementation handoff, auditable calculation-book software, reports, batch flows, verification, or release.
 version: 2.6.0
 ---
 
@@ -81,6 +81,10 @@ the handoff.
 Use an **agent-first, skill-backed** architecture when Qoder custom agents are available.
 
 - If `.qoder/agents/engineering-calc-system.md` exists, treat it as the supervisor and this skill as the reusable skill/resource layer.
+- On Qoder CLI plugin installs, map `.qoder/agents/` to `agents/`, `.qoder/skills/engineering-calc-system/` to `skills/engineering-calc-system/`, and the complete core package to `skills/engineering-calculation-system/`.
+- On QoderCN IDE installs, map `.qoder/...` to `.lingma/...`.
+- On QoderCN CLI installs, map user Skills to `~/.qoder-cn/skills/engineering-calc-system/`, user agents to `~/.qodercn/agents/`, project Skills to `.qoder/skills/engineering-calc-system/`, and project agents to `.qodercn/agents/`.
+- On QoderCN Cloud Agents, this direct Skill zip is uploadable because `SKILL.md` is at the zip root, but it remains a lightweight router until a complete project/core package is available.
 - If this skill is imported directly through QODER Skills / Install Skill, treat it as a lightweight entrypoint. It can route and guide work, but it is not the full project template by itself.
 - Read `qoder_quickstart.md` first when a Qoder user asks how to install, start, audit, or validate this package.
 - Keep long references in `reference.md` or `.qoder/references/engineering-calc-system.md`. Do not place non-agent reference files in `.qoder/agents/`, because Qoder scans Markdown files there as custom agents.
@@ -113,7 +117,7 @@ scripts/validate_artifacts.py
 project_template/
 ```
 
-如果当前 Qoder 安装只有 `SKILL.md`、`reference.md` 和 `assets/`，这只是 direct skill 轻量入口，不是完整项目模板。要产出 `web-complete` 交付物，优先使用 `engineering-calculation-system-QODER-Project-v2.4.1.zip` 的 `copy-to-project-root/`，或加载完整 single-file fallback。
+如果当前 Qoder 安装只有 `SKILL.md`、`reference.md` 和 `assets/`，这只是 direct skill 轻量入口，不是完整项目模板。要产出 `web-complete` 交付物，优先使用 `engineering-calculation-system-QODER-Project-v2.6.0.zip`、`engineering-calculation-system-QoderCN-CLI-Project-v2.6.0.zip` 等项目包的 `copy-to-project-root/`，或加载完整 single-file fallback。
 
 若 `../../../shared/lifecycle.md` 可用，必须先读取它。否则按本文件和 `reference.md` 中的同名契约执行。
 

@@ -1,7 +1,7 @@
 ---
 name: engineering-calc-module-worker
 description: 工程计算模块实现智能体。Use only when delegated by engineering-calc-system for phases 08-11: architecture slices, typed data models, reusable calculation modules, module tests, formula traces, and official runner support.
-tools: Read, Write, Edit, Grep, Glob, Bash
+tools: Read,Write,Edit,Grep,Glob,Bash
 ---
 
 # Engineering Calc Module Worker

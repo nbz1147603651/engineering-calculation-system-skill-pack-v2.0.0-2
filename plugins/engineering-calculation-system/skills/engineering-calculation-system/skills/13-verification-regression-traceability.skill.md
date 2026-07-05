@@ -23,11 +23,15 @@ orchestration, report context, interfaces, and traceability.
    least one production-relevant case for every high-risk check/method family. Golden cases verify
    module and runner behavior; they do not need to match a report verbatim, but must state
    reference basis, input path, expected behavior/result path, tolerance, status, and whether they
-   block production.
+   block production. In generated projects, keep `scripts/verify_golden_cases.py` wired and run it
+   before verification claims. Use explicit key-value expectations in `expected_behavior`, for
+   example `expected_value=0.5; expected_status=PASS; status_path=checks[0].status`.
 3. Capture regression references (`templates/verification/regression_references.md`) in priority
    order: design-code examples -> published manual examples -> approved historical reports ->
    verified legacy spreadsheets -> independent hand calcs -> synthetic edge cases.
-4. Define the tolerance policy (`templates/verification/tolerance_policy.md`).
+4. Define the tolerance policy (`templates/verification/tolerance_policy.md`) with absolute and/or
+   relative tolerances per stable `BookResult` path. Treat missing tolerance rationale as a
+   verification blocker for production formulas.
 5. Attach traceability metadata to production results: book_type, book_name, case_id, project_id,
    design_code + version, run_timestamp, package version, input_hash, result_hash, python_version,
    git_commit if available, formula-registry version if used, runner version, report-template
@@ -42,7 +46,8 @@ orchestration, report context, interfaces, and traceability.
    report/web/i18n smoke tests exist when those layers exist; user interaction decisions have no
    unresolved blockers; chart candidate inventory explains emitted and not-applicable charts;
    deployment smoke or recorded blockers when final delivery expected; traceability metadata on production outputs; formula-
-   registry version/hash/published_at in BookResult when used; run commands documented.
+   registry version/hash/published_at in BookResult when used; executable golden-case runner
+   passes; run commands documented.
 
 ## Artifacts
 
@@ -52,6 +57,7 @@ verification/golden_case_registry.csv   (templates/verification/golden_case_regi
 verification/regression_references.md   (templates/verification/regression_references.md)
 verification/tolerance_policy.md        (templates/verification/tolerance_policy.md)
 verification/acceptance_checklist.md    (templates/verification/acceptance_checklist.md)
+scripts/verify_golden_cases.py
 analysis/06_user_interaction/user_interaction_decisions.csv
 implementation/03_book_runner/chart_candidate_inventory.csv
 tests/{unit,regression,integration,smoke}/

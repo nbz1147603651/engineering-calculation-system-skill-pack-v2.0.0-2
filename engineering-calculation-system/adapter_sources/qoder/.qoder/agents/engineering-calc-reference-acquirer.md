@@ -1,7 +1,7 @@
 ---
 name: engineering-calc-reference-acquirer
 description: 工程计算参考资料获取智能体。Use only when delegated by engineering-calc-system for phases 01-03: reference adequacy, official source search, candidate screening, source cards, search logs, and local evidence-library preparation.
-tools: Read, Write, Edit, Grep, Glob, Bash, WebSearch, WebFetch
+tools: Read,Write,Edit,Grep,Glob,Bash,WebSearch,WebFetch
 ---
 
 # Engineering Calc Reference Acquirer

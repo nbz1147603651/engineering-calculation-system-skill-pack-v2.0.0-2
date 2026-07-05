@@ -33,6 +33,7 @@ QODER_ADAPTER_SOURCE = REPO_ROOT / "adapter_sources" / "qoder"
 ZCODE_PLUGIN_SOURCE = WORKSPACE_ROOT / "plugins" / "engineering-calculation-system-zcode"
 DIST_ROOT = REPO_ROOT / "dist"
 RELEASE_ROOT = DIST_ROOT / "release"
+QODERWORKCN_PLUGIN_NAME = "engineering-calculation-system"
 
 EXCLUDED_DIR_NAMES = {
     ".git",
@@ -191,8 +192,14 @@ PLATFORM_ENTRYPOINTS = {
     "ZCode": "skills/engineering-calculation-system/SKILL.md",
     "QODER": "SKILL.md",
     "QODER Project": ".qoder/agents/engineering-calc-system.md",
+    "Qoder CLI Plugin": ".qoder-plugin/plugin.json",
     "QoderCN": "agents/engineering-calc-system.md",
     "QoderCN Project": ".lingma/agents/engineering-calc-system.md",
+    "QoderCN CLI": ".qodercn/agents/engineering-calc-system.md",
+    "QoderCN CLI Project": ".qodercn/agents/engineering-calc-system.md",
+    "QoderCN Cloud Agents": "SKILL.md",
+    "QoderWorkCN": ".qoder-plugin/plugin.json",
+    "WorkBuddy": ".qoder-plugin/plugin.json",
     "TRAE": ".trae/project_rules.md",
     "OpenCode": ".opencode/skills/engineering-calc-system/SKILL.md",
     "AGENTS Generic": "AGENTS.md",
@@ -200,7 +207,13 @@ PLATFORM_ENTRYPOINTS = {
 
 PLATFORM_FALLBACKS = {
     "QODER": "Direct skill is lightweight; use QODER Project plus complete core package before web-complete claims.",
+    "Qoder CLI Plugin": "Install with Qoder CLI plugin management; if plugin install is unavailable, use QODER Project or the direct QODER Skill zip.",
     "QoderCN": "User-level resources are lightweight; use QoderCN Project plus complete core package for web-complete claims.",
+    "QoderCN CLI": "Copy both .qoder-cn and .qodercn folders to the user home; use QoderCN CLI Project plus complete core package for web-complete claims.",
+    "QoderCN CLI Project": "Project package is complete; keep .qoder/skills and .qodercn/agents together so QoderCN CLI can discover both Skills and Subagents.",
+    "QoderCN Cloud Agents": "Upload the root SKILL.md zip to QoderCN Cloud Agents Skills; bind it to an Agent only after preserving that Agent's existing skills list.",
+    "QoderWorkCN": "Upload the generated expert-kit zip through QoderWork CN Expert Kits; if plugin import cannot traverse files, use the bundled full core skill or singlefile fallback.",
+    "WorkBuddy": "Upload the generated expert-kit zip through WorkBuddy Skills Marketplace / Expert Center import; if import cannot traverse files, use the bundled full core skill or singlefile fallback.",
     "MiniMaxCode": "If repository import cannot traverse files, use the same skills/engineering-calculation-system root or singlefile fallback.",
     "ZCode": "If plugin import is unavailable, use the legacy skills/engineering-calculation-system folder or singlefile fallback.",
     "TRAE": "If rules cannot traverse the package, paste the singlefile fallback.",
@@ -275,6 +288,42 @@ ZCODE_ADAPTER_REQUIRED_PHRASES = [
     "shared/completion-evidence.md",
 ]
 
+QODERWORKCN_AGENT_FILES = [
+    "engineering-calc-system.md",
+    "engineering-calc-reference-acquirer.md",
+    "engineering-calc-source-intake.md",
+    "engineering-calc-logic-extractor.md",
+    "engineering-calc-module-worker.md",
+    "engineering-calc-interface-worker.md",
+    "engineering-calc-verification-worker.md",
+    "engineering-calc-release-worker.md",
+]
+QODERWORKCN_REQUIRED_PATHS = [
+    ".qoder-plugin/plugin.json",
+    "qoder.md",
+    "README.md",
+    "CONNECTORS.md",
+    "skills/engineering-calculation-system/SKILL.md",
+    "skills/engineering-calculation-system/shared/lifecycle.md",
+    "skills/engineering-calculation-system/shared/execution-discipline.md",
+    "skills/engineering-calculation-system/shared/planning-discipline.md",
+    "skills/engineering-calculation-system/shared/version-control-discipline.md",
+    "skills/engineering-calculation-system/shared/completion-evidence.md",
+    "skills/engineering-calculation-system/scripts/validate_artifacts.py",
+    "skills/engineering-calculation-system/project_template/engineering_calc_project/webapp/routes.py",
+    "skills/engineering-calc-system/SKILL.md",
+    "skills/engineering-calc-system/reference.md",
+    "skills/engineering-calc-system/qoder_quickstart.md",
+    "skills/engineering-calc-system/assets/lifecycle-console.html",
+    "references/engineering-calc-system.md",
+    "adapters/agent-entrypoints.md",
+    "adapters/mcp-recommendations.md",
+    *[f"agents/{name}" for name in QODERWORKCN_AGENT_FILES],
+]
+
+QODER_PLUGIN_NAME = "engineering-calculation-system-qoder"
+QODER_PLUGIN_REQUIRED_PATHS = QODERWORKCN_REQUIRED_PATHS
+
 
 def should_skip(path: Path, *, include_indexes: bool = False) -> bool:
     if any(part in EXCLUDED_DIR_NAMES for part in path.parts):
@@ -338,6 +387,13 @@ def require_text(path: Path, phrases: list[str], *, context: str) -> None:
     missing = [phrase for phrase in phrases if phrase not in text]
     if missing:
         raise RuntimeError(f"{context} missing required phrase(s): {', '.join(missing)}")
+
+
+def require_text_absent(path: Path, phrases: list[str], *, context: str) -> None:
+    text = path.read_text(encoding="utf-8")
+    present = [phrase for phrase in phrases if phrase in text]
+    if present:
+        raise RuntimeError(f"{context} contains forbidden phrase(s): {', '.join(present)}")
 
 
 def validate_windows_icon(icon_path: Path) -> None:
@@ -483,6 +539,848 @@ def build_qoder_addon() -> Path:
     sync_frontmatter_versions(profile_root)
     assert_frontmatter_versions(profile_root)
     write_indexes(profile_root, "engineering-calculation-system-qoder-addon")
+    return profile_root
+
+
+def write_qoderworkcn_manifest(profile_root: Path) -> None:
+    (profile_root / ".qoder-plugin").mkdir(parents=True, exist_ok=True)
+    manifest = {
+        "name": QODERWORKCN_PLUGIN_NAME,
+        "version": VERSION,
+        "description": (
+            "Expert kit for source-backed engineering calculation software: "
+            "reference acquisition, logic extraction, implementation handoff, "
+            "auditable calculation-book apps, reports, batch flows, verification, "
+            "and deployment."
+        ),
+        "author": "Engineering Calculation System",
+        "homepage": "https://help.aliyun.com/zh/lingma/qoderwork-cn/user-guide/expert-kit",
+        "keywords": [
+            "qoderwork-cn",
+            "expert-kit",
+            "engineering-calculation",
+            "calculation-book",
+            "verification",
+        ],
+    }
+    write_json_lf(profile_root / ".qoder-plugin" / "plugin.json", manifest)
+
+
+def write_qoderworkcn_guides(profile_root: Path) -> None:
+    qoder_md = f"""# Engineering Calculation Expert Kit for QoderWork CN
+
+This directory is a QoderWork CN Plugin / Expert Kit. It follows the official
+expert-kit style layout: `.qoder-plugin/plugin.json`, `skills/`, `agents/`,
+optional connector metadata, and kit documentation.
+
+Use this kit when the user asks for engineering calculation references,
+formula/lookup/branch extraction, calculation logic blueprints, implementation
+handoff, auditable calculation-book software, reports, batch flows,
+verification, or deployment.
+
+## Official Root Layout
+
+This expert kit is self-contained at the zip root:
+
+```text
+.qoder-plugin/plugin.json              official plugin manifest
+qoder.md                               kit operating contract
+README.md                              install and first-use notes
+CONNECTORS.md                          connector dependency policy
+agents/                                supervisor and worker role instructions
+skills/engineering-calc-system/        QoderWork CN quick entry skill
+skills/engineering-calculation-system/ complete core skill package
+references/                            long platform-specific reference notes
+adapters/                              platform entrypoint and connector notes
+```
+
+## Operating Contract
+
+Use `agents/engineering-calc-system.md` as the QoderWork CN supervisor when role
+agents are exposed from the kit. Use `skills/engineering-calc-system/SKILL.md`
+as the short quick-entry skill and
+`skills/engineering-calculation-system/SKILL.md` as the complete lifecycle
+authority.
+
+The quick-entry skill does not replace the full core package. The full core skill
+carries the complete templates, schemas, project scaffold, scripts, and shared
+contracts required for production work.
+
+Before implementation, release, or completion claims, read these canonical
+contracts from `skills/engineering-calculation-system/shared/`:
+
+```text
+lifecycle.md
+execution-discipline.md
+planning-discipline.md
+review-feedback-discipline.md
+version-control-discipline.md
+completion-evidence.md
+systematic-debugging.md
+multi-agent-orchestration.md
+```
+
+For production calculation software, formulas and lookup logic must live only in
+reusable modules and the official `run_book(BookInput) -> BookResult` runner.
+UI, report templates, batch scripts, CSV/Excel files, and presentation code must
+consume computed results rather than calculate.
+
+For `web-complete`, use the full core skill, project template, validator, and
+deployment artifacts bundled in this kit. A static HTML report, notebook, UI
+mockup, or direct lightweight skill alone is not enough.
+
+Validate generated projects with:
+
+```bash
+python skills/engineering-calculation-system/scripts/validate_artifacts.py --package-root skills/engineering-calculation-system --profile core --project <project-root> --delivery web-complete
+```
+
+Kit version: {VERSION}
+"""
+    readme = f"""# Engineering Calculation System - QoderWork CN Expert Kit
+
+Version: {VERSION}
+
+This package is an upload-ready QoderWork CN Expert Kit. It contains:
+
+- `.qoder-plugin/plugin.json` metadata at the kit root.
+- `skills/engineering-calculation-system/`: the complete core skill package with
+  lifecycle contracts, templates, schemas, validators, and project scaffold.
+- `skills/engineering-calc-system/`: the QoderWork CN quick-entry skill and
+  lifecycle console asset.
+- `agents/`: supervisor and worker role instructions for the engineering
+  calculation lifecycle.
+- `references/`: long reference guidance kept outside agent files.
+- `adapters/`: cross-agent entrypoint and MCP recommendation notes.
+
+## Install In QoderWork CN
+
+1. Zip this directory so `.qoder-plugin/plugin.json` is at the zip root.
+2. Open QoderWork CN -> Extensions -> Expert Kits.
+3. Click `+ Add` -> Upload Kit.
+4. Select the generated zip and install it.
+
+The one-click deployment GUI creates both the staged directory and an upload zip
+with the required root structure.
+
+## First Use
+
+Start a new task and select this expert kit. Ask for an engineering calculation
+workflow, for example:
+
+```text
+Use the Engineering Calculation System expert kit to create a source-backed,
+web-complete calculation-book scaffold. Start by classifying material state and
+gate status.
+```
+
+The supervisor should classify install shape, material state, delivery mode,
+lifecycle path, and gate status before implementation work.
+"""
+    connectors = """# Connector Dependencies
+
+This expert kit has no required external Connector or MCP dependency.
+
+When a specific project needs source search, browser access, document parsing,
+code search, or GUI testing, use the tools/connectors already available in the
+current QoderWork CN task with explicit user authorization. Do not declare a
+required external Connector unless the workflow truly depends on a published
+marketplace connector.
+"""
+    (profile_root / "qoder.md").write_text(qoder_md, encoding="utf-8")
+    (profile_root / "README.md").write_text(readme, encoding="utf-8")
+    (profile_root / "CONNECTORS.md").write_text(connectors, encoding="utf-8")
+
+
+def write_qoderworkcn_native_layers(profile_root: Path) -> None:
+    skill_dir = profile_root / "skills" / "engineering-calc-system"
+    agents_dir = profile_root / "agents"
+    references_dir = profile_root / "references"
+    adapters_dir = profile_root / "adapters"
+
+    skill = f"""---
+name: engineering-calc-system
+description: QoderWork CN quick entry for the Engineering Calculation System expert kit. Use when a task involves engineering calculation references, formula or lookup extraction, calculation logic blueprints, implementation handoff, auditable calculation-book software, reports, batch flows, verification, or deployment.
+version: {VERSION}
+---
+
+# Engineering Calculation System - QoderWork CN Quick Entry
+
+This skill is the short QoderWork CN Expert Kit entrypoint. It is bundled with
+the complete core package in `skills/engineering-calculation-system/`; do not
+treat this quick entry as a replacement for the core lifecycle authority.
+
+## QoderWork CN Expert Kit Contract
+
+Use this expert kit for source-backed engineering calculation workflows:
+reference acquisition, source intake, logic blueprinting, formula/lookup/branch
+extraction, implementation handoff, calculation modules, `run_book(BookInput) ->
+BookResult`, reports, review UI, batch flows, verification, and deployment.
+
+Start each non-trivial task by reading:
+
+```text
+qoder.md
+qoder_quickstart.md
+agents/engineering-calc-system.md
+skills/engineering-calculation-system/SKILL.md
+skills/engineering-calculation-system/skills/00-engineering-calculation-router.skill.md
+```
+
+For implementation, release, validation, or completion claims, use the canonical
+contracts under `skills/engineering-calculation-system/shared/`:
+
+```text
+lifecycle.md
+execution-discipline.md
+planning-discipline.md
+review-feedback-discipline.md
+version-control-discipline.md
+completion-evidence.md
+systematic-debugging.md
+multi-agent-orchestration.md
+```
+
+## Behavior Engineering Layer
+
+Before implementation action, produce a route card, gate card, artifact
+contract, and validation evidence frame. Use `web-complete` by default unless
+the user explicitly narrows scope.
+
+For production calculation software, formulas, lookup rules, branch decisions,
+and load-combination logic must live only in reusable calculation modules and
+the official `run_book(BookInput) -> BookResult` runner. UI, reports, batch
+scripts, spreadsheets, and presentation code consume computed results.
+
+For `web-complete`, the project must include API/UI, reports, import/export,
+batch, deployment artifacts, smoke tests, and Marimo review/admin closure. A
+static report, notebook, UI mockup, or single HTML export is not enough.
+
+## First Step
+
+Ask QoderWork CN to use the expert kit supervisor:
+
+```text
+Use the Engineering Calculation System expert kit supervisor. Classify material
+state, delivery mode, lifecycle route, evidence gate, coding gate, and immediate
+next artifacts before editing code.
+```
+
+Then validate generated projects with:
+
+```bash
+python skills/engineering-calculation-system/scripts/validate_artifacts.py --package-root skills/engineering-calculation-system --profile core --project <project-root> --delivery web-complete
+```
+"""
+
+    quickstart = f"""# QoderWork CN Expert Kit Quickstart
+
+Version: {VERSION}
+
+This package is a QoderWork CN Expert Kit, not a project overlay. Install it by
+uploading the generated zip through QoderWork CN -> Extensions -> Expert Kits ->
++ Add -> Upload Kit. The zip root must contain `.qoder-plugin/plugin.json`.
+
+## Expert Kit Self-Check
+
+Before implementation or release work, confirm the installed kit exposes:
+
+```text
+.qoder-plugin/plugin.json
+qoder.md
+agents/engineering-calc-system.md
+skills/engineering-calc-system/SKILL.md
+skills/engineering-calculation-system/SKILL.md
+skills/engineering-calculation-system/shared/lifecycle.md
+skills/engineering-calculation-system/scripts/validate_artifacts.py
+skills/engineering-calculation-system/project_template/
+```
+
+If the complete core package is unavailable, use the task only for routing,
+audit, or missing-artifact diagnosis. Do not claim `web-complete`,
+production-ready, or deployable output until the core validator can run.
+
+## Start Prompt
+
+```text
+Use the Engineering Calculation System expert kit. Start with qoder.md and the
+supervisor agent. Classify material state, delivery mode, required lifecycle
+path, evidence gate, coding gate, and next artifacts before implementation.
+```
+
+## Operating Flow
+
+1. Read `skills/engineering-calculation-system/SKILL.md`.
+2. Read the router at
+   `skills/engineering-calculation-system/skills/00-engineering-calculation-router.skill.md`.
+3. For non-trivial work, read `shared/execution-discipline.md` and prepare the
+   route card, gate card, artifact contract, and validation evidence frame.
+4. Load only the parent or child lifecycle skill required by the router.
+5. For implementation, release, or completion claims, read `shared/lifecycle.md`,
+   `shared/version-control-discipline.md`, and `shared/completion-evidence.md`.
+6. Use worker agents only for bounded delegated work. The supervisor keeps
+   lifecycle routing, source authority, evidence gates, ID namespaces, handoff
+   freeze, `run_book(BookInput) -> BookResult`, and final acceptance serial.
+
+## Validation Commands
+
+From the expert kit root:
+
+```bash
+python skills/engineering-calculation-system/scripts/validate_artifacts.py --package-root skills/engineering-calculation-system --profile core
+python skills/engineering-calculation-system/scripts/validate_artifacts.py --package-root skills/engineering-calculation-system --profile core --project <project-root> --delivery web-complete
+```
+
+From the source checkout:
+
+```bash
+python tools/build_release.py --profile qoderworkcn-plugin
+python tools/build_release.py --all --no-ui-client
+```
+
+## Completion Bar
+
+Do not claim complete, production-ready, deployable, or `web-complete` unless
+fresh validation evidence supports the exact claim. Static HTML, visible UI, old
+command output, or a worker summary is not enough.
+"""
+
+    reference = """# QoderWork CN Expert Kit Reference
+
+This reference is intentionally platform-specific. It explains how QoderWork CN
+should use the Engineering Calculation System expert kit after upload.
+
+## Capability Shape
+
+The kit packages a complete workflow, not just one atomic skill:
+
+- `agents/engineering-calc-system.md`: supervisor role for routing, gates,
+  delegation, and final acceptance.
+- `agents/engineering-calc-*.md`: bounded worker roles for acquisition,
+  source intake, logic extraction, modules, interfaces, verification, and
+  release support.
+- `skills/engineering-calc-system/`: short QoderWork CN quick-entry skill,
+  quickstart, reference, and lifecycle console asset.
+- `skills/engineering-calculation-system/`: complete lifecycle skill pack with
+  shared contracts, templates, schemas, validator, and project scaffold.
+- `CONNECTORS.md`: connector dependency policy. The kit has no required
+  external connector by default.
+
+## Routing Defaults
+
+Use `web-complete` by default for online calculators, calculation-book software,
+deployable web apps, reusable packages, batch workflows, and requests that do
+not explicitly narrow scope.
+
+Classify material state before coding:
+
+```text
+no_materials
+insufficient_materials
+materials_available_untrusted
+local_evidence_library_available
+analysis_handoff_available
+static_report_or_cli_only
+codebase_available
+```
+
+For bug fixes, identify the lowest correct repair layer:
+
+```text
+source/evidence -> formula_inventory/lookup_inventory/branch_inventory ->
+module -> run_book() -> API/batch -> report/UI
+```
+
+## Connector Policy
+
+MCP servers and external connectors are accelerators, not correctness
+dependencies. Use search, browser, document parsing, code search, and GUI
+testing tools only when available in the current QoderWork CN task and
+authorized by the user.
+"""
+
+    supervisor = """---
+name: engineering-calc-system
+description: QoderWork CN supervisor for the Engineering Calculation System expert kit. Use for source-backed engineering calculation workflows, lifecycle routing, gate decisions, worker delegation, validation evidence, and final acceptance.
+tools: Read, Write, Edit, Grep, Glob, Bash, WebSearch, WebFetch
+---
+
+# Engineering Calculation System Supervisor for QoderWork CN
+
+You are the supervisor for a QoderWork CN Expert Kit. Keep this platform shape
+clean: this kit is rooted at `.qoder-plugin/plugin.json`, with `agents/`,
+`skills/`, `references/`, `adapters/`, `qoder.md`, `README.md`, and
+`CONNECTORS.md` at the upload zip root.
+
+## QoderWork CN Expert Kit Architecture
+
+- Start from `qoder.md` for the kit-level operating contract.
+- Use `skills/engineering-calc-system/SKILL.md` as the quick-entry skill.
+- Use `skills/engineering-calculation-system/SKILL.md` as the complete lifecycle
+  authority.
+- Use `skills/engineering-calculation-system/shared/` as the canonical behavior
+  source.
+- Use `agents/engineering-calc-*.md` only for bounded delegated work.
+- Keep final lifecycle routing, source authority, evidence gates, ID allocation,
+  handoff freeze, `run_book(BookInput) -> BookResult`, production labels, and
+  release acceptance with this supervisor.
+
+## Behavior Engineering Layer
+
+For every non-trivial task, read the router and then
+`skills/engineering-calculation-system/shared/execution-discipline.md`. Produce:
+
+```text
+route card
+gate card
+artifact contract
+validation evidence
+completion evidence category
+```
+
+For multi-step plans, read
+`skills/engineering-calculation-system/shared/planning-discipline.md`.
+For user, reviewer, or worker feedback, read
+`skills/engineering-calculation-system/shared/review-feedback-discipline.md`.
+For release, package, sync, or platform work, read
+`skills/engineering-calculation-system/shared/version-control-discipline.md`.
+Before completion claims, read
+`skills/engineering-calculation-system/shared/completion-evidence.md`.
+
+## Lifecycle Defaults
+
+Default delivery mode is `web-complete` unless the user explicitly asks for a
+narrower `core-only`, `report-only`, or `prototype-web` output.
+
+Do not start production implementation unless `handoff/implementation_handoff.yaml`
+and `handoff/coding_go_no_go.md` allow it. Do not invent formulas, coefficients,
+units, lookup rules, branch logic, or source authority.
+
+If the target project contains only scripts, notebook output, or `reports/*.html`
+without `webapp/`, `apps/review/`, `src/pkg/report/`, `tests/smoke/`, `deploy/`,
+and `handoff/`, classify it as `static_report_or_cli_only`. Treat static reports
+as evidence or visual references, not as deployable runtime.
+
+## Formula Boundary
+
+Engineering formulas, lookup rules, branches, and load combinations live only in
+reusable modules and the official `run_book(BookInput) -> BookResult` runner.
+API, UI, reports, review notebooks, batch scripts, spreadsheets, and templates
+consume computed results and do not calculate.
+
+## Worker Agents
+
+Delegate only bounded tasks with owned paths and expected result packets:
+
+```text
+agents/engineering-calc-reference-acquirer.md     phases 01-03
+agents/engineering-calc-source-intake.md          phase 04
+agents/engineering-calc-logic-extractor.md        phases 05-07
+agents/engineering-calc-module-worker.md          phases 08-11
+agents/engineering-calc-interface-worker.md       phases 12/12a/12b/12c
+agents/engineering-calc-verification-worker.md    phase 13
+agents/engineering-calc-release-worker.md         phase 14
+```
+
+Workers may propose changes to shared files, but the supervisor accepts,
+rejects, or routes them upstream.
+
+## Validation
+
+For generated projects, run:
+
+```bash
+python skills/engineering-calculation-system/scripts/validate_artifacts.py --package-root skills/engineering-calculation-system --profile core --project <project-root> --delivery web-complete
+```
+
+For package maintenance, run the release builder and inspect the QoderWork CN
+archive before claiming the expert kit is ready.
+"""
+
+    entrypoints = """# QoderWork CN Expert Kit Entrypoints
+
+This package is uploaded through QoderWork CN Expert Kits. It is not a project
+overlay.
+
+Primary entrypoints:
+
+- `.qoder-plugin/plugin.json`: official plugin manifest.
+- `qoder.md`: kit operating contract.
+- `agents/engineering-calc-system.md`: supervisor role.
+- `skills/engineering-calc-system/SKILL.md`: quick-entry skill.
+- `skills/engineering-calculation-system/SKILL.md`: complete core lifecycle
+  skill.
+
+Use the supervisor for lifecycle routing and final acceptance. Use worker agents
+only after the supervisor creates a bounded task brief with owned paths and
+validation expectations.
+"""
+
+    mcp = """# QoderWork CN Connector And MCP Recommendations
+
+The Engineering Calculation System expert kit has no required external
+Connector or MCP dependency by default.
+
+Recommended optional accelerators, when available and authorized in the current
+QoderWork CN task:
+
+- web search and fetch for current standards, product data, laws, prices, or
+  unstable references
+- document parsing for user-provided PDFs, spreadsheets, and reports
+- code search and diagnostics for existing project audits
+- browser or GUI testing for web-complete smoke checks
+
+Do not add a required external connector unless the workflow truly depends on a
+published QoderWork CN connector and the user authorizes it.
+"""
+
+    (skill_dir / "SKILL.md").write_text(skill, encoding="utf-8")
+    (skill_dir / "qoder_quickstart.md").write_text(quickstart, encoding="utf-8")
+    (skill_dir / "reference.md").write_text(reference, encoding="utf-8")
+    (references_dir / "engineering-calc-system.md").write_text(reference, encoding="utf-8")
+    (agents_dir / "engineering-calc-system.md").write_text(supervisor, encoding="utf-8")
+    (adapters_dir / "agent-entrypoints.md").write_text(entrypoints, encoding="utf-8")
+    (adapters_dir / "mcp-recommendations.md").write_text(mcp, encoding="utf-8")
+
+    for path in sorted(agents_dir.glob("engineering-calc-*.md")):
+        if path.name == "engineering-calc-system.md":
+            continue
+        text = path.read_text(encoding="utf-8")
+        text = text.replace("## Qoder Worker Contract", "## QoderWork CN Expert Kit Worker Contract")
+        text = text.replace("Qoder Worker Contract", "QoderWork CN Expert Kit Worker Contract")
+        path.write_text(text, encoding="utf-8")
+
+
+def validate_qoderworkcn_plugin(profile_root: Path, *, context: str) -> None:
+    require_paths(profile_root, QODERWORKCN_REQUIRED_PATHS, context=context)
+    require_text(
+        profile_root / ".qoder-plugin" / "plugin.json",
+        [
+            f"\"name\": \"{QODERWORKCN_PLUGIN_NAME}\"",
+            f"\"version\": \"{VERSION}\"",
+            "\"qoderwork-cn\"",
+            "\"expert-kit\"",
+        ],
+        context=context,
+    )
+    require_text(
+        profile_root / "qoder.md",
+        [
+            "QoderWork CN Plugin / Expert Kit",
+            "Official Root Layout",
+            "skills/engineering-calculation-system/SKILL.md",
+            "agents/engineering-calc-system.md",
+            "run_book(BookInput) -> BookResult",
+            "validate_artifacts.py",
+        ],
+        context=context,
+    )
+    require_text(
+        profile_root / "skills" / "engineering-calculation-system" / "SKILL.md",
+        [
+            "name: engineering-calculation-system",
+            "shared/lifecycle.md",
+            "shared/execution-discipline.md",
+            "shared/planning-discipline.md",
+            "shared/version-control-discipline.md",
+            "shared/completion-evidence.md",
+            "run_book()",
+        ],
+        context=context,
+    )
+    require_text(
+        profile_root / "skills" / "engineering-calc-system" / "SKILL.md",
+        [
+            "QoderWork CN Expert Kit Contract",
+            "Behavior Engineering Layer",
+            "qoder_quickstart.md",
+            "skills/engineering-calculation-system/SKILL.md",
+            "web-complete",
+        ],
+        context=context,
+    )
+    require_text(
+        profile_root / "agents" / "engineering-calc-system.md",
+        [
+            "QoderWork CN Expert Kit Architecture",
+            "Behavior Engineering Layer",
+            "skills/engineering-calculation-system/shared/execution-discipline.md",
+            "static_report_or_cli_only",
+            "reports/*.html",
+        ],
+        context=context,
+    )
+    require_text(
+        profile_root / "skills" / "engineering-calc-system" / "qoder_quickstart.md",
+        [
+            "QoderWork CN Expert Kit Quickstart",
+            "Expert Kit Self-Check",
+            ".qoder-plugin/plugin.json",
+            "skills/engineering-calculation-system/scripts/validate_artifacts.py",
+        ],
+        context=context,
+    )
+    require_text(
+        profile_root / "adapters" / "agent-entrypoints.md",
+        [
+            "QoderWork CN Expert Kit Entrypoints",
+            ".qoder-plugin/plugin.json",
+            "agents/engineering-calc-system.md",
+        ],
+        context=context,
+    )
+    forbidden_native_phrases = [
+        "QODER Project",
+        "Direct QODER",
+        "Qoder Package Self-Check",
+        "Qoder Architecture",
+        ".qoder/",
+        "v2.4.1",
+        "2.4.1",
+        "Qoder-compatible",
+        "older Qoder",
+        "WorkBuddy",
+        "workbuddy",
+        "Tencent",
+        "tencent",
+    ]
+    for rel_path in [
+        "qoder.md",
+        "README.md",
+        "skills/engineering-calc-system/SKILL.md",
+        "skills/engineering-calc-system/qoder_quickstart.md",
+        "skills/engineering-calc-system/reference.md",
+        "agents/engineering-calc-system.md",
+        "references/engineering-calc-system.md",
+        "adapters/agent-entrypoints.md",
+        "adapters/mcp-recommendations.md",
+    ]:
+        require_text_absent(profile_root / rel_path, forbidden_native_phrases, context=context)
+
+
+def write_qoder_plugin_manifest(profile_root: Path) -> None:
+    (profile_root / ".qoder-plugin").mkdir(parents=True, exist_ok=True)
+    manifest = {
+        "name": QODER_PLUGIN_NAME,
+        "version": VERSION,
+        "description": (
+            "Qoder CLI plugin for source-backed engineering calculation software: "
+            "reference acquisition, logic extraction, implementation handoff, "
+            "auditable calculation-book apps, reports, batch flows, verification, "
+            "and deployment."
+        ),
+        "author": "Engineering Calculation System",
+        "homepage": "https://docs.qoder.com/en/cli/plugins",
+        "keywords": [
+            "qoder-cli",
+            "plugin",
+            "engineering-calculation",
+            "calculation-book",
+            "verification",
+        ],
+    }
+    write_json_lf(profile_root / ".qoder-plugin" / "plugin.json", manifest)
+
+
+def write_qoder_plugin_guides(profile_root: Path) -> None:
+    qoder_md = f"""# Engineering Calculation Plugin for Qoder CLI
+
+This directory is a Qoder CLI plugin. It follows the official plugin layout:
+`.qoder-plugin/plugin.json`, `skills/`, optional `agents/`, optional connector
+metadata, and plugin documentation.
+
+Use this plugin when the user asks for engineering calculation references,
+formula/lookup/branch extraction, calculation logic blueprints, implementation
+handoff, auditable calculation-book software, reports, batch flows,
+verification, or deployment.
+
+## Layout Map
+
+```text
+agents/                                -> Qoder custom agents
+skills/engineering-calc-system/        -> lightweight Qoder quickstart skill
+skills/engineering-calculation-system/ -> complete core skill package
+references/                            -> long non-agent reference material
+adapters/                              -> platform entrypoint and MCP guidance
+```
+
+## Operating Contract
+
+Start with `agents/engineering-calc-system.md` as the supervisor when custom
+agents are available. Use `skills/engineering-calculation-system/SKILL.md` for
+the complete lifecycle rules, templates, schemas, validators, project scaffold,
+and shared contracts required for production work.
+
+Before implementation, release, or completion claims, read these canonical
+contracts from `skills/engineering-calculation-system/shared/`:
+
+```text
+lifecycle.md
+execution-discipline.md
+planning-discipline.md
+review-feedback-discipline.md
+version-control-discipline.md
+completion-evidence.md
+systematic-debugging.md
+multi-agent-orchestration.md
+```
+
+For production calculation software, formulas and lookup logic must live only in
+reusable modules and the official `run_book(BookInput) -> BookResult` runner.
+UI, report templates, batch scripts, CSV/Excel files, and presentation code must
+consume computed results rather than calculate.
+
+For `web-complete`, use the full core skill, project template, validator, and
+deployment artifacts bundled in this plugin. A static HTML report, notebook, UI
+mockup, or direct lightweight skill alone is not enough.
+
+Validate generated projects with:
+
+```bash
+python skills/engineering-calculation-system/scripts/validate_artifacts.py --package-root skills/engineering-calculation-system --profile core --project <project-root> --delivery web-complete
+```
+
+Plugin version: {VERSION}
+"""
+    readme = f"""# Engineering Calculation System - Qoder CLI Plugin
+
+Version: {VERSION}
+
+This package is an install-ready Qoder CLI plugin. It contains:
+
+- `.qoder-plugin/plugin.json` metadata at the plugin root.
+- `skills/engineering-calculation-system/`: the complete core skill package.
+- `skills/engineering-calc-system/`: the Qoder-compatible quickstart skill.
+- `agents/`: supervisor and worker role instructions.
+- `references/`: long reference guidance kept outside agent files.
+- `adapters/`: cross-agent entrypoint and MCP recommendation notes.
+
+## Install
+
+Install this directory or zip through Qoder CLI plugin management, then start
+from the `engineering-calc-system` supervisor agent or the bundled skill.
+
+## First Use
+
+```text
+Use the Engineering Calculation System Qoder plugin to create a source-backed,
+web-complete calculation-book scaffold. Start by classifying material state and
+gate status.
+```
+"""
+    connectors = """# Connector Dependencies
+
+This plugin has no required external Connector or MCP dependency.
+
+When a specific project needs source search, browser access, document parsing,
+code search, or GUI testing, use the tools/connectors already available in the
+current Qoder task with explicit user authorization. Do not declare a required
+external Connector unless the workflow truly depends on a published marketplace
+connector.
+"""
+    (profile_root / "qoder.md").write_text(qoder_md, encoding="utf-8")
+    (profile_root / "README.md").write_text(readme, encoding="utf-8")
+    (profile_root / "CONNECTORS.md").write_text(connectors, encoding="utf-8")
+
+
+def validate_qoder_plugin(profile_root: Path, *, context: str) -> None:
+    require_paths(profile_root, QODER_PLUGIN_REQUIRED_PATHS, context=context)
+    require_text(
+        profile_root / ".qoder-plugin" / "plugin.json",
+        [
+            f"\"name\": \"{QODER_PLUGIN_NAME}\"",
+            f"\"version\": \"{VERSION}\"",
+            "\"qoder-cli\"",
+            "\"plugin\"",
+        ],
+        context=context,
+    )
+    require_text(
+        profile_root / "qoder.md",
+        [
+            "Qoder CLI plugin",
+            "Layout Map",
+            "skills/engineering-calculation-system/SKILL.md",
+            "agents/engineering-calc-system.md",
+            "run_book(BookInput) -> BookResult",
+            "validate_artifacts.py",
+        ],
+        context=context,
+    )
+    require_text(
+        profile_root / "skills" / "engineering-calculation-system" / "SKILL.md",
+        [
+            "name: engineering-calculation-system",
+            "shared/lifecycle.md",
+            "shared/execution-discipline.md",
+            "shared/planning-discipline.md",
+            "shared/version-control-discipline.md",
+            "shared/completion-evidence.md",
+            "run_book()",
+        ],
+        context=context,
+    )
+    require_text(
+        profile_root / "skills" / "engineering-calc-system" / "SKILL.md",
+        [
+            "Qoder Architecture",
+            "Behavior Engineering Layer",
+            "qoder_quickstart.md",
+            "web-complete",
+        ],
+        context=context,
+    )
+    require_text(
+        profile_root / "agents" / "engineering-calc-system.md",
+        [
+            "Qoder Architecture",
+            "Behavior Engineering Layer",
+            "shared/execution-discipline.md",
+            "static_report_or_cli_only",
+            "reports/*.html",
+        ],
+        context=context,
+    )
+
+
+def build_qoder_plugin() -> Path:
+    profile_root = DIST_ROOT / "qoder-plugin"
+    clean_dir(profile_root)
+    copy_tree(CORE_SOURCE, profile_root / "skills" / "engineering-calculation-system")
+    copy_tree(
+        QODER_ADAPTER_SOURCE / ".qoder" / "skills" / "engineering-calc-system",
+        profile_root / "skills" / "engineering-calc-system",
+    )
+    copy_tree(QODER_ADAPTER_SOURCE / ".qoder" / "agents", profile_root / "agents")
+    copy_tree(QODER_ADAPTER_SOURCE / ".qoder" / "references", profile_root / "references")
+    copy_tree(LIGHT_ADAPTER_SOURCE / "adapters", profile_root / "adapters")
+    write_qoder_plugin_manifest(profile_root)
+    write_qoder_plugin_guides(profile_root)
+    sync_frontmatter_versions(profile_root)
+    assert_frontmatter_versions(profile_root)
+    validate_qoder_plugin(profile_root, context="Qoder CLI plugin profile")
+    write_indexes(profile_root, "engineering-calculation-system-qoder-plugin")
+    return profile_root
+
+
+def build_qoderworkcn_plugin() -> Path:
+    profile_root = DIST_ROOT / "qoderworkcn-plugin"
+    clean_dir(profile_root)
+    copy_tree(CORE_SOURCE, profile_root / "skills" / "engineering-calculation-system")
+    copy_tree(
+        QODER_ADAPTER_SOURCE / ".qoder" / "skills" / "engineering-calc-system",
+        profile_root / "skills" / "engineering-calc-system",
+    )
+    copy_tree(QODER_ADAPTER_SOURCE / ".qoder" / "agents", profile_root / "agents")
+    copy_tree(QODER_ADAPTER_SOURCE / ".qoder" / "references", profile_root / "references")
+    copy_tree(LIGHT_ADAPTER_SOURCE / "adapters", profile_root / "adapters")
+    write_qoderworkcn_manifest(profile_root)
+    write_qoderworkcn_guides(profile_root)
+    write_qoderworkcn_native_layers(profile_root)
+    sync_frontmatter_versions(profile_root)
+    assert_frontmatter_versions(profile_root)
+    validate_qoderworkcn_plugin(profile_root, context="QoderWorkCN profile")
+    write_indexes(profile_root, "engineering-calculation-system-qoderworkcn-plugin")
     return profile_root
 
 
@@ -675,6 +1573,8 @@ def build_profile(profile: str) -> Path:
         "core": build_core,
         "adapters-light": build_adapters_light,
         "qoder-addon": build_qoder_addon,
+        "qoder-plugin": build_qoder_plugin,
+        "qoderworkcn-plugin": build_qoderworkcn_plugin,
         "singlefile": build_singlefile,
         "source-dev": build_source_dev,
         "zcode-plugin": build_zcode_plugin,
@@ -882,7 +1782,7 @@ def stage_target_payload(profile_roots: dict[str, Path], target: BundleTarget, p
 
 def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
     context = f"{target.name} payload"
-    if target.name == "QODER":
+    if target.name in {"QODER", "QoderCN Cloud Agents"}:
         require_paths(
             payload_root,
             [
@@ -1031,6 +1931,14 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
             ZCODE_ADAPTER_REQUIRED_PHRASES,
             context=context,
         )
+        return
+
+    if target.name == "Qoder CLI Plugin":
+        validate_qoder_plugin(payload_root, context=context)
+        return
+
+    if target.name in {"QoderWorkCN", "WorkBuddy"}:
+        validate_qoderworkcn_plugin(payload_root, context=context)
         return
 
     if target.include_core:
@@ -1207,6 +2115,36 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
             ".lingma/agents/engineering-calc-release-worker.md",
             ".lingma/references/engineering-calc-system.md",
         ],
+        "QoderCN CLI": [
+            ".qoder-cn/skills/engineering-calc-system/SKILL.md",
+            ".qoder-cn/skills/engineering-calc-system/reference.md",
+            ".qoder-cn/skills/engineering-calc-system/qoder_quickstart.md",
+            ".qoder-cn/skills/engineering-calc-system/assets/lifecycle-console.html",
+            ".qodercn/agents/engineering-calc-system.md",
+            ".qodercn/agents/engineering-calc-reference-acquirer.md",
+            ".qodercn/agents/engineering-calc-source-intake.md",
+            ".qodercn/agents/engineering-calc-logic-extractor.md",
+            ".qodercn/agents/engineering-calc-module-worker.md",
+            ".qodercn/agents/engineering-calc-interface-worker.md",
+            ".qodercn/agents/engineering-calc-verification-worker.md",
+            ".qodercn/agents/engineering-calc-release-worker.md",
+            ".qodercn/references/engineering-calc-system.md",
+        ],
+        "QoderCN CLI Project": [
+            ".qoder/skills/engineering-calc-system/SKILL.md",
+            ".qoder/skills/engineering-calc-system/reference.md",
+            ".qoder/skills/engineering-calc-system/qoder_quickstart.md",
+            ".qoder/skills/engineering-calc-system/assets/lifecycle-console.html",
+            ".qodercn/agents/engineering-calc-system.md",
+            ".qodercn/agents/engineering-calc-reference-acquirer.md",
+            ".qodercn/agents/engineering-calc-source-intake.md",
+            ".qodercn/agents/engineering-calc-logic-extractor.md",
+            ".qodercn/agents/engineering-calc-module-worker.md",
+            ".qodercn/agents/engineering-calc-interface-worker.md",
+            ".qodercn/agents/engineering-calc-verification-worker.md",
+            ".qodercn/agents/engineering-calc-release-worker.md",
+            ".qodercn/references/engineering-calc-system.md",
+        ],
         "TRAE": [
             ".trae/project_rules.md",
             ".trae/rules/engineering-calc-system.md",
@@ -1278,6 +2216,38 @@ def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
             require_text(
                 payload_root / ".lingma" / "agents" / "engineering-calc-system.md",
                 ["Behavior Engineering Layer", "shared/execution-discipline.md", "shared/planning-discipline.md", "shared/review-feedback-discipline.md", "shared/version-control-discipline.md", "shared/completion-evidence.md", "progress.md", "static_report_or_cli_only", "reports/*.html"],
+                context=context,
+            )
+        if target.name == "QoderCN CLI":
+            require_text(
+                payload_root / ".qoder-cn" / "skills" / "engineering-calc-system" / "assets" / "lifecycle-console.html",
+                [f"v{VERSION}", "12a", "12b", "12c", "14"],
+                context=context,
+            )
+            require_text(
+                payload_root / ".qoder-cn" / "skills" / "engineering-calc-system" / "qoder_quickstart.md",
+                ["Behavior Engineering Layer", "QoderCN CLI", "shared/execution-discipline.md", "shared/planning-discipline.md", "shared/review-feedback-discipline.md", "shared/version-control-discipline.md", "shared/completion-evidence.md", "progress.md"],
+                context=context,
+            )
+            require_text(
+                payload_root / ".qodercn" / "agents" / "engineering-calc-system.md",
+                ["Behavior Engineering Layer", "QoderCN CLI", "shared/execution-discipline.md", "shared/planning-discipline.md", "shared/review-feedback-discipline.md", "shared/version-control-discipline.md", "shared/completion-evidence.md", "progress.md", "static_report_or_cli_only", "reports/*.html"],
+                context=context,
+            )
+        if target.name == "QoderCN CLI Project":
+            require_text(
+                payload_root / ".qoder" / "skills" / "engineering-calc-system" / "assets" / "lifecycle-console.html",
+                [f"v{VERSION}", "12a", "12b", "12c", "14"],
+                context=context,
+            )
+            require_text(
+                payload_root / ".qoder" / "skills" / "engineering-calc-system" / "qoder_quickstart.md",
+                ["Behavior Engineering Layer", "QoderCN CLI", "shared/execution-discipline.md", "shared/planning-discipline.md", "shared/review-feedback-discipline.md", "shared/version-control-discipline.md", "shared/completion-evidence.md", "progress.md"],
+                context=context,
+            )
+            require_text(
+                payload_root / ".qodercn" / "agents" / "engineering-calc-system.md",
+                ["Behavior Engineering Layer", "QoderCN CLI", "shared/execution-discipline.md", "shared/planning-discipline.md", "shared/review-feedback-discipline.md", "shared/version-control-discipline.md", "shared/completion-evidence.md", "progress.md", "static_report_or_cli_only", "reports/*.html"],
                 context=context,
             )
 
@@ -1393,10 +2363,12 @@ def write_release_index(archives: list[ReleaseArchive]) -> None:
 
 
 def canonical_docs_summary(target: BundleTarget) -> str:
-    if target.name in {"QODER"}:
+    if target.name in {"QODER", "QoderCN Cloud Agents"}:
         return "Text reminders only; direct skill must route to QODER Project or complete core package."
-    if target.name in {"QoderCN"}:
+    if target.name in {"QoderCN", "QoderCN CLI"}:
         return "Text reminders only in user-level overlay; project/core package required for web-complete."
+    if target.name in {"Qoder CLI Plugin", "QoderWorkCN", "WorkBuddy"}:
+        return "Bundled under skills/engineering-calculation-system/shared/."
     if target.name == "MiniMaxCode":
         return "Bundled under skills/engineering-calculation-system/shared/."
     if target.name == "ZCode":
@@ -1426,10 +2398,16 @@ def write_platform_acceptance_report(archives: list[ReleaseArchive]) -> None:
         target = item.target
         entrypoint = PLATFORM_ENTRYPOINTS.get(target.name, "SKILL.md")
         adapter = "Use platform entrypoint, then root SKILL/router and canonical shared docs."
-        if target.name in {"QODER Project", "QoderCN Project"}:
+        if target.name in {"QODER Project", "QoderCN Project", "QoderCN CLI Project"}:
             adapter = "Agent-first supervisor; skill wrapper is the resource layer."
-        elif target.name in {"QODER", "QoderCN"}:
+        elif target.name in {"QODER", "QoderCN", "QoderCN CLI", "QoderCN Cloud Agents"}:
             adapter = "Lightweight skill/resource entrypoint; do not claim web-complete alone."
+        elif target.name == "Qoder CLI Plugin":
+            adapter = "Official .qoder-plugin layout for Qoder CLI; bundled full core skill is the production layer."
+        elif target.name == "QoderWorkCN":
+            adapter = "Official .qoder-plugin expert-kit layout with QoderWork CN-native agents, skills, references, and quick-entry docs."
+        elif target.name == "WorkBuddy":
+            adapter = "WorkBuddy-ready .qoder-plugin expert-kit layout with skills, expert agents, references, and quick-entry docs."
         elif target.name == "MiniMaxCode":
             adapter = "Repository skill layout under skills/engineering-calculation-system."
         elif target.name == "ZCode":

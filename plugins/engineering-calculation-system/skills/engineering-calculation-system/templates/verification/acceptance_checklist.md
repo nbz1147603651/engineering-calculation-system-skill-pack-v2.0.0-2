@@ -12,6 +12,7 @@
 - [ ] Runner closure map proves production modules/checks are called by `run_book`
 - [ ] Chart candidate inventory records emitted, deferred, and not-applicable visualization decisions with source result paths
 - [ ] Golden case registry covers production-relevant high-risk checks or records blockers
+- [ ] Executable golden-case runner passes for production-blocking rows
 - [ ] Runtime stack is recorded and defaults to Python 3.9+ unless an explicit adapter plan exists
 - [ ] Frontend format is recorded and defaults to Jinja2 + Bootstrap 5 + vanilla JavaScript modules unless explicitly overridden
 - [ ] Operator workflow decisions preserve input quality, review convenience, traceability, report preview, and import/export usability

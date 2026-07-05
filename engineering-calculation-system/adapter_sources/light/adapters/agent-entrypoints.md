@@ -188,10 +188,33 @@ Fallback:
 Preferred setup:
 
 1. For project-root installation, use `dist/release/engineering-calculation-system-QODER-Project-v2.6.0.zip`.
-2. Apply `dist/qoder-addon/` on top of the core package when composing manually.
-3. Use `.qoder/agents/engineering-calc-system.md` as the Smart Agent supervisor when the environment supports custom agents.
-4. Use `.qoder/skills/engineering-calc-system/SKILL.md` as the project skill and direct-skill fallback.
-5. Keep `.qoder/skills/engineering-calc-system/reference.md`, `.qoder/references/engineering-calc-system.md`, and assets with the Qoder wrapper.
+2. For Qoder CLI plugin installation, use `dist/release/engineering-calculation-system-Qoder-CLI-Plugin-v2.6.0.zip`, which keeps `.qoder-plugin/plugin.json`, `skills/`, and `agents/` at the zip root.
+3. Apply `dist/qoder-addon/` on top of the core package when composing manually.
+4. Apply `dist/qoder-plugin/` when composing a plugin manually.
+5. Use `.qoder/agents/engineering-calc-system.md` as the Smart Agent supervisor when the environment supports project custom agents.
+6. Use `.qoder/skills/engineering-calc-system/SKILL.md` as the project skill and direct-skill fallback.
+7. Keep `.qoder/skills/engineering-calc-system/reference.md`, `.qoder/references/engineering-calc-system.md`, and assets with the Qoder wrapper.
+
+Qoder product path map:
+
+| Product surface | Agent path | Skill path | Package |
+| --- | --- | --- | --- |
+| Qoder direct Skill | none | root `SKILL.md` | `engineering-calculation-system-QODER-v2.6.0.zip` |
+| Qoder Project | `.qoder/agents/engineering-calc-system.md` | `.qoder/skills/engineering-calc-system/SKILL.md` | `engineering-calculation-system-QODER-Project-v2.6.0.zip` |
+| Qoder CLI Plugin | `agents/engineering-calc-system.md` | `skills/engineering-calc-system/SKILL.md` plus full core at `skills/engineering-calculation-system/SKILL.md` | `engineering-calculation-system-Qoder-CLI-Plugin-v2.6.0.zip` |
+
+QoderCN product path map:
+
+| Product surface | Agent path | Skill path | Package |
+| --- | --- | --- | --- |
+| QoderCN IDE user | `~/.lingma/agents/engineering-calc-system.md` | `~/.lingma/skills/engineering-calc-system/SKILL.md` | `engineering-calculation-system-QoderCN-v2.6.0.zip` |
+| QoderCN IDE project | `.lingma/agents/engineering-calc-system.md` | `.lingma/skills/engineering-calc-system/SKILL.md` | `engineering-calculation-system-QoderCN-Project-v2.6.0.zip` |
+| QoderCN CLI user | `~/.qodercn/agents/engineering-calc-system.md` | `~/.qoder-cn/skills/engineering-calc-system/SKILL.md` | `engineering-calculation-system-QoderCN-CLI-v2.6.0.zip` |
+| QoderCN CLI project | `.qodercn/agents/engineering-calc-system.md` | `.qoder/skills/engineering-calc-system/SKILL.md` | `engineering-calculation-system-QoderCN-CLI-Project-v2.6.0.zip` |
+| QoderCN Cloud Agents | Agent-bound cloud Skill | root `SKILL.md` upload | `engineering-calculation-system-QoderCN-Cloud-Agents-v2.6.0.zip` |
+
+Do not mix QoderCN IDE `.lingma` packages with QoderCN CLI `.qoder-cn` /
+`.qodercn` packages. They target different documented product surfaces.
 
 Recommended Qoder architecture:
 

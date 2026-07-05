@@ -43,6 +43,7 @@ REQUIRED_PLUGIN_PATHS = [
     ".codex-plugin/plugin.json",
     "README.md",
     "skills/engineering-calculation-system/SKILL.md",
+    "docs/CODEX_QUICKSTART.md",
     "skills/engineering-calculation-system/shared/codex-plugin-adapter.md",
     "skills/engineering-calculation-system/shared/execution-discipline.md",
     "skills/engineering-calculation-system/shared/planning-discipline.md",
@@ -96,7 +97,31 @@ REQUIRED_KEYWORDS = {
     "codex",
     "codex-plugin",
     "engineering-calculation",
+    "source-backed",
+    "web-complete",
+    "golden-case",
 }
+
+REQUIRED_CAPABILITIES = {
+    "Lifecycle Routing",
+    "Formula Verification",
+    "Calculation Books",
+    "Golden-Case Regression",
+    "Web-Complete Delivery",
+    "Codex Workspace Validation",
+}
+
+REQUIRED_PROMPT_PHRASES = {
+    "route this project",
+    "web-complete",
+    "golden cases",
+}
+
+REQUIRED_MANIFEST_TEXT = (
+    "CodeGraph-aware",
+    "golden-case verification",
+    "web-complete",
+)
 
 
 def rel(path: Path) -> str:
@@ -159,6 +184,13 @@ def check_manifest(manifest: dict[str, Any], errors: list[str]) -> None:
     description = manifest.get("description")
     if not isinstance(description, str) or not description.strip():
         errors.append("manifest description must be a non-empty string")
+    elif "source-backed" not in description or "web-complete" not in description:
+        errors.append("manifest description should advertise source-backed and web-complete delivery")
+
+    long_description = str((manifest.get("interface") or {}).get("longDescription", ""))
+    for phrase in REQUIRED_MANIFEST_TEXT:
+        if phrase not in long_description:
+            errors.append(f"interface.longDescription missing Codex capability phrase: {phrase!r}")
 
     keywords = manifest.get("keywords")
     if not isinstance(keywords, list) or not all(isinstance(item, str) and item for item in keywords):
@@ -188,6 +220,10 @@ def check_manifest(manifest: dict[str, Any], errors: list[str]) -> None:
         errors.append("interface.capabilities must be a non-empty string list")
     elif not all(isinstance(item, str) and item.strip() for item in capabilities):
         errors.append("interface.capabilities must contain only non-empty strings")
+    else:
+        missing = REQUIRED_CAPABILITIES - set(capabilities)
+        if missing:
+            errors.append(f"interface.capabilities missing: {', '.join(sorted(missing))}")
 
     prompts = interface.get("defaultPrompt")
     if not isinstance(prompts, list) or not prompts:
@@ -200,6 +236,10 @@ def check_manifest(manifest: dict[str, Any], errors: list[str]) -> None:
                 errors.append(f"defaultPrompt[{index}] must be a non-empty string")
             elif len(prompt) > 128:
                 errors.append(f"defaultPrompt[{index}] exceeds 128 characters")
+        prompt_text = "\n".join(str(prompt).lower() for prompt in prompts)
+        for phrase in REQUIRED_PROMPT_PHRASES:
+            if phrase not in prompt_text:
+                errors.append(f"interface.defaultPrompt missing phrase: {phrase!r}")
 
     brand_color = interface.get("brandColor")
     if not isinstance(brand_color, str) or not HEX_COLOR_PATTERN.match(brand_color):
@@ -370,6 +410,57 @@ def run_skill_validation(errors: list[str]) -> None:
         )
 
 
+def run_project_template_validation(errors: list[str]) -> None:
+    validator = SKILL_ROOT / "scripts" / "validate_artifacts.py"
+    project_root = SKILL_ROOT / "project_template" / "engineering_calc_project"
+    if not validator.exists() or not project_root.exists():
+        errors.append("cannot run project-template validation because validator or template is missing")
+        return
+
+    command = [
+        sys.executable,
+        str(validator),
+        "--package-root",
+        str(SKILL_ROOT),
+        "--profile",
+        "core",
+        "--project",
+        str(project_root),
+        "--delivery",
+        "web-complete",
+    ]
+    env = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
+    completed = subprocess.run(command, text=True, capture_output=True, env=env)
+    if completed.returncode != 0:
+        errors.append(
+            "bundled web-complete project-template validation failed:\n"
+            + completed.stdout.strip()
+            + ("\n" + completed.stderr.strip() if completed.stderr.strip() else "")
+        )
+
+
+def run_golden_case_validation(errors: list[str]) -> None:
+    project_root = SKILL_ROOT / "project_template" / "engineering_calc_project"
+    runner = project_root / "scripts" / "verify_golden_cases.py"
+    if not runner.exists():
+        errors.append("bundled project template is missing scripts/verify_golden_cases.py")
+        return
+    command = [
+        sys.executable,
+        str(runner),
+        "--project-root",
+        str(project_root),
+    ]
+    env = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
+    completed = subprocess.run(command, text=True, capture_output=True, cwd=project_root, env=env)
+    if completed.returncode != 0:
+        errors.append(
+            "bundled golden-case validation failed:\n"
+            + completed.stdout.strip()
+            + ("\n" + completed.stderr.strip() if completed.stderr.strip() else "")
+        )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -396,6 +487,8 @@ def main() -> int:
 
     if not args.skip_skill_validation:
         run_skill_validation(errors)
+        run_project_template_validation(errors)
+        run_golden_case_validation(errors)
 
     if errors:
         print("Codex plugin validation failed:", file=sys.stderr)

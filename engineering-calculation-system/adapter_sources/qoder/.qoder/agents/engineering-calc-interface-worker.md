@@ -1,7 +1,7 @@
 ---
 name: engineering-calc-interface-worker
 description: 工程计算接口与前端智能体。Use only when delegated by engineering-calc-system for phase 12/12a/12b/12c: thin API routes, report rendering, review UI, i18n, import/export, batch flows, and smoke tests.
-tools: Read, Write, Edit, Grep, Glob, Bash
+tools: Read,Write,Edit,Grep,Glob,Bash
 ---
 
 # Engineering Calc Interface Worker

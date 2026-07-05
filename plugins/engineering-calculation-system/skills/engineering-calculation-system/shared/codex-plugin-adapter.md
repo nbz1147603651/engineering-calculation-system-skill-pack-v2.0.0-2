@@ -19,6 +19,10 @@ the same workflow inside a shared workspace.
 
 - Follow the root `SKILL.md` load order: read this adapter, then the router,
   then only the parent/child skills needed for the task.
+- Treat this plugin as the Codex distribution boundary. For normal user work,
+  the target workspace is the user's repository or generated project; the
+  plugin package is read-only unless the user explicitly asks for plugin
+  maintenance.
 - For multi-step plans, read `shared/planning-discipline.md` before editing.
   For user feedback, external review, or worker reports, read
   `shared/review-feedback-discipline.md` before choosing fix, reject, or
@@ -27,6 +31,10 @@ the same workflow inside a shared workspace.
 - If a target repository has `.codegraph/`, use CodeGraph before text search
   when locating or understanding code.
 - Use `rg` or CodeGraph for code discovery before broad filesystem reads.
+- When a task involves PDFs, spreadsheets, Word/PowerPoint artifacts, rendered
+  reports, or browser-visible web apps, use the relevant Codex-provided tools
+  and bundled workspace dependencies when available. Record unavailable tools
+  as validation or acquisition limitations instead of silently lowering gates.
 - Use `apply_patch` for manual edits and keep changes scoped to the requested
   workspace paths.
 - Run the relevant project tests and this package's validation script before
@@ -36,6 +44,47 @@ the same workflow inside a shared workspace.
   intentional.
 - Reference real local files with absolute paths in final responses when
   pointing the user to artifacts.
+
+## Codex Trigger And Routing
+
+Route through this skill pack when the user asks to build, inspect, verify, or
+deploy any engineering calculator, calculation book, source-backed report,
+formula module, batch calculator, review UI, or online calculation system. Do
+not wait for the exact words "engineering calculation" if the work clearly
+depends on formulas, standards, checks, capacities, loads, factors, or
+traceable calculation outputs.
+
+The first non-trivial response should establish:
+
+```text
+task_type:
+material_state:
+required_skill_path:
+delivery_mode:
+gate_status:
+completion_evidence_category:
+```
+
+Use `web-complete` by default for deployable or online calculator requests.
+Use narrower modes only when the user explicitly asks for a draft, prototype,
+core-only module, or report-only artifact.
+
+## Generated Project Bootstrap
+
+When creating a new calculator project, copy or recreate the scaffold pattern
+from `project_template/engineering_calc_project` into the target workspace and
+then customize the package, book name, sources, inputs, modules, UI, reports,
+and deployment files. Do not run production formulas from the template example
+book. Replace example logic with source-backed modules and keep all interfaces
+thin over `run_book(BookInput) -> BookResult`.
+
+Before claiming generated-project completion, run the appropriate subset:
+
+```bash
+python scripts/verify_golden_cases.py --project-root <project-root>
+python -m pytest
+python <skill-root>/scripts/validate_artifacts.py --package-root <skill-root> --profile core --project <project-root> --delivery web-complete
+```
 
 ## Reference Acquisition In Codex
 
@@ -79,6 +128,10 @@ python scripts/validate_artifacts.py --package-root <skill-root> --profile core 
 ```bash
 python scripts/validate_plugin.py
 ```
+
+The Codex plugin doctor is intentionally stronger than manifest validation: it
+also checks bundled-source sync, overlay sync, core artifact validation,
+web-complete project-template validation, and executable golden-case smoke.
 
 ## Completion Summary
 

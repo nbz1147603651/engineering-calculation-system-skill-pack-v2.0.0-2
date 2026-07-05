@@ -1,7 +1,7 @@
 {
   "name": "engineering-calculation-system",
   "version": "2.6.0+codex.20260701",
-  "description": "Codex plugin wrapper for the Engineering Calculation System skill pack.",
+  "description": "Codex plugin wrapper for source-backed engineering calculators, calculation books, verification, and web-complete delivery.",
   "license": "UNLICENSED",
   "keywords": [
     "codex",
@@ -9,25 +9,37 @@
     "skills",
     "engineering-calculation",
     "calculation-software",
-    "traceability"
+    "traceability",
+    "source-backed",
+    "calculation-book",
+    "web-complete",
+    "golden-case",
+    "codex-workflow"
   ],
   "skills": "./skills/",
   "interface": {
     "displayName": "Engineering Calculation System",
-    "shortDescription": "Lifecycle workflow for auditable engineering calculators.",
-    "longDescription": "Packages the Engineering Calculation System skill pack for Codex, including lifecycle routing, reference acquisition, source-backed formula extraction, implementation handoff, reusable calculation modules, reports, verification, and deployable web calculation system guidance.",
+    "shortDescription": "Source-backed engineering calculators, reports, and verification.",
+    "longDescription": "Packages the Engineering Calculation System skill pack for Codex with lifecycle routing, CodeGraph-aware project discovery, reference acquisition, source-backed formula extraction, implementation handoff, reusable calculation modules, calculation-book reports, golden-case verification, and deployable web-complete calculator guidance.",
     "developerName": "Engineering Calculation System",
     "category": "Developer Tools",
     "capabilities": [
       "Skills",
       "Workflow",
       "Engineering Calculations",
-      "Traceability"
+      "Traceability",
+      "Lifecycle Routing",
+      "Reference Acquisition",
+      "Formula Verification",
+      "Calculation Books",
+      "Golden-Case Regression",
+      "Web-Complete Delivery",
+      "Codex Workspace Validation"
     ],
     "defaultPrompt": [
-      "Build a traceable engineering calculation web app.",
-      "Assess whether my engineering references are sufficient.",
-      "Create a source-backed implementation handoff."
+      "Use Engineering Calculation System to route this project and produce gate cards.",
+      "Build a web-complete source-backed engineering calculator with reports.",
+      "Verify this calculation book with golden cases and artifact validation."
     ],
     "brandColor": "#2563EB",
     "screenshots": []

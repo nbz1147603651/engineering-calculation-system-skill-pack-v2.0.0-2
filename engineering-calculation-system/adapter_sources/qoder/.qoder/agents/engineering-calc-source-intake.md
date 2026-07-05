@@ -1,7 +1,7 @@
 ---
 name: engineering-calc-source-intake
 description: 工程计算源摄入智能体。Use only when delegated by engineering-calc-system for phase 04: source inventory, authority tables, conflict candidates, source limitations, and evidence-library intake from approved local/reference materials.
-tools: Read, Write, Edit, Grep, Glob, Bash, WebSearch, WebFetch
+tools: Read,Write,Edit,Grep,Glob,Bash,WebSearch,WebFetch
 ---
 
 # Engineering Calc Source Intake

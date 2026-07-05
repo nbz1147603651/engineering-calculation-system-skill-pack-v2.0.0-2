@@ -49,7 +49,9 @@ structured `ReportContext` that wraps trusted results without recalculating.
    summary, figures when `ReportContext.figures` or `BookResult.figures` are present, charts when
    `BookResult.charts` present, chart data tables with source result paths for emitted charts,
    check tables, formula-logic trace with readable calculation review cards, warnings/errors, traceability
-   metadata, template-boundary statement). If the user explicitly requests LaTeX/PDF or the
+   metadata, template-boundary statement). For chart-rich books, verify that chart visuals are
+   non-empty, printable, not clipped on A4, and still accompanied by data tables. If the user
+   explicitly requests LaTeX/PDF or the
    handoff requires it, generate the LaTeX/Overleaf export and compile locally when
    `latexmk`/`pdflatex` is available; PDF completion requires exit code 0 AND `main.pdf` exists.
    A failed requested LaTeX compile is a blocking failure, not a silent downgrade to HTML.
