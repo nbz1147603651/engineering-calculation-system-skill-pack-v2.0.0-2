@@ -31,6 +31,7 @@ from typing import Callable
 
 from . import detector
 from .i18n import t
+from .platform_contracts import ProfileCopy, UPLOAD_KIT_SENTINELS, get_contract
 
 
 # --------------------------------------------------------------------------- #
@@ -585,104 +586,91 @@ def _write_upload_zip(source_root: Path, zip_path: Path, *, log: LogFn) -> None:
     log(f"[zip] {source_root} -> {zip_path}")
 
 
-def deploy_qoderworkcn_plugin(ctx: DeployContext) -> None:
+def _deploy_upload_kit(
+    ctx: DeployContext,
+    *,
+    copy_message: str,
+    zip_message: str,
+    notice_key: str,
+    done_key: str,
+) -> None:
     root = _resolve_root(ctx)
     ensure_profiles(("qoderworkcn-plugin",), log=ctx.log, progress=ctx.progress)
-    ctx.progress(0.65, "copying QoderWork CN expert kit")
+    ctx.progress(0.65, copy_message)
     _copy_tree(DIST_QODERWORKCN_PLUGIN, root, log=ctx.log)
     zip_path = root.with_suffix(".zip")
-    ctx.progress(0.9, "creating QoderWork CN upload zip")
+    ctx.progress(0.9, zip_message)
     _write_upload_zip(root, zip_path, log=ctx.log)
-    ctx.log(t("deploy_qoderworkcn_notice", path=root, zip=zip_path))
-    ctx.progress(1.0, t("deploy_qoderworkcn_done"))
+    ctx.log(t(notice_key, path=root, zip=zip_path))
+    ctx.progress(1.0, t(done_key))
+
+
+def _verify_upload_kit(ctx: DeployContext, *, agent_name: str) -> bool:
+    root = _resolve_root(ctx)
+    ok, detail = detector.skill_deployed(agent_name, root)
+    ctx.log(f"[verify] {detail}")
+    zip_path = root.with_suffix(".zip")
+    if not ok:
+        return False
+    if not zip_path.exists():
+        ctx.log(f"[verify] upload zip missing: {zip_path}")
+        return False
+    with zipfile.ZipFile(zip_path) as archive:
+        names = set(archive.namelist())
+    required = set(UPLOAD_KIT_SENTINELS)
+    missing = sorted(required - names)
+    if missing:
+        ctx.log(f"[verify] upload zip missing: {', '.join(missing)}")
+        return False
+    ctx.log(f"[verify] upload zip ready: {zip_path}")
+    return True
+
+
+def _uninstall_upload_kit(ctx: DeployContext, *, done_key: str) -> None:
+    root = _resolve_root(ctx)
+    _remove_managed(root, log=ctx.log)
+    _remove_managed(root.with_suffix(".zip"), log=ctx.log)
+    for sibling in root.parent.glob(f"{root.name}.bak.*"):
+        _remove_managed(sibling, log=ctx.log)
+    for sibling in root.parent.glob(f"{root.name}.zip.bak.*"):
+        _remove_managed(sibling, log=ctx.log)
+    ctx.log(t(done_key))
+
+
+def deploy_qoderworkcn_plugin(ctx: DeployContext) -> None:
+    _deploy_upload_kit(
+        ctx,
+        copy_message="copying QoderWork CN expert kit",
+        zip_message="creating QoderWork CN upload zip",
+        notice_key="deploy_qoderworkcn_notice",
+        done_key="deploy_qoderworkcn_done",
+    )
 
 
 def verify_qoderworkcn_plugin(ctx: DeployContext) -> bool:
-    root = _resolve_root(ctx)
-    ok, detail = detector.skill_deployed("qoderworkcn", root)
-    ctx.log(f"[verify] {detail}")
-    zip_path = root.with_suffix(".zip")
-    if not ok:
-        return False
-    if not zip_path.exists():
-        ctx.log(f"[verify] upload zip missing: {zip_path}")
-        return False
-    with zipfile.ZipFile(zip_path) as archive:
-        names = set(archive.namelist())
-    required = {
-        ".qoder-plugin/plugin.json",
-        "skills/engineering-calculation-system/SKILL.md",
-        "skills/engineering-calc-system/SKILL.md",
-        "agents/engineering-calc-system.md",
-        "qoder.md",
-    }
-    missing = sorted(required - names)
-    if missing:
-        ctx.log(f"[verify] upload zip missing: {', '.join(missing)}")
-        return False
-    ctx.log(f"[verify] upload zip ready: {zip_path}")
-    return True
-
-
-def deploy_workbuddy_plugin(ctx: DeployContext) -> None:
-    root = _resolve_root(ctx)
-    ensure_profiles(("qoderworkcn-plugin",), log=ctx.log, progress=ctx.progress)
-    ctx.progress(0.65, "copying WorkBuddy expert kit")
-    _copy_tree(DIST_QODERWORKCN_PLUGIN, root, log=ctx.log)
-    zip_path = root.with_suffix(".zip")
-    ctx.progress(0.9, "creating WorkBuddy upload zip")
-    _write_upload_zip(root, zip_path, log=ctx.log)
-    ctx.log(t("deploy_workbuddy_notice", path=root, zip=zip_path))
-    ctx.progress(1.0, t("deploy_workbuddy_done"))
-
-
-def verify_workbuddy_plugin(ctx: DeployContext) -> bool:
-    root = _resolve_root(ctx)
-    ok, detail = detector.skill_deployed("workbuddy", root)
-    ctx.log(f"[verify] {detail}")
-    zip_path = root.with_suffix(".zip")
-    if not ok:
-        return False
-    if not zip_path.exists():
-        ctx.log(f"[verify] upload zip missing: {zip_path}")
-        return False
-    with zipfile.ZipFile(zip_path) as archive:
-        names = set(archive.namelist())
-    required = {
-        ".qoder-plugin/plugin.json",
-        "skills/engineering-calculation-system/SKILL.md",
-        "skills/engineering-calc-system/SKILL.md",
-        "agents/engineering-calc-system.md",
-        "qoder.md",
-    }
-    missing = sorted(required - names)
-    if missing:
-        ctx.log(f"[verify] upload zip missing: {', '.join(missing)}")
-        return False
-    ctx.log(f"[verify] upload zip ready: {zip_path}")
-    return True
+    return _verify_upload_kit(ctx, agent_name="qoderworkcn")
 
 
 def uninstall_qoderworkcn_plugin(ctx: DeployContext) -> None:
-    root = _resolve_root(ctx)
-    _remove_managed(root, log=ctx.log)
-    _remove_managed(root.with_suffix(".zip"), log=ctx.log)
-    for sibling in root.parent.glob(f"{root.name}.bak.*"):
-        _remove_managed(sibling, log=ctx.log)
-    for sibling in root.parent.glob(f"{root.name}.zip.bak.*"):
-        _remove_managed(sibling, log=ctx.log)
-    ctx.log(t("uninstall_qoderworkcn_done"))
+    _uninstall_upload_kit(ctx, done_key="uninstall_qoderworkcn_done")
+
+
+def deploy_workbuddy_plugin(ctx: DeployContext) -> None:
+    _deploy_upload_kit(
+        ctx,
+        copy_message="copying WorkBuddy expert kit",
+        zip_message="creating WorkBuddy upload zip",
+        notice_key="deploy_workbuddy_notice",
+        done_key="deploy_workbuddy_done",
+    )
+
+
+def verify_workbuddy_plugin(ctx: DeployContext) -> bool:
+    return _verify_upload_kit(ctx, agent_name="workbuddy")
 
 
 def uninstall_workbuddy_plugin(ctx: DeployContext) -> None:
-    root = _resolve_root(ctx)
-    _remove_managed(root, log=ctx.log)
-    _remove_managed(root.with_suffix(".zip"), log=ctx.log)
-    for sibling in root.parent.glob(f"{root.name}.bak.*"):
-        _remove_managed(sibling, log=ctx.log)
-    for sibling in root.parent.glob(f"{root.name}.zip.bak.*"):
-        _remove_managed(sibling, log=ctx.log)
-    ctx.log(t("uninstall_workbuddy_done"))
+    _uninstall_upload_kit(ctx, done_key="uninstall_workbuddy_done")
 
 
 # --------------------------------------------------------------------------- #
@@ -729,133 +717,135 @@ def _deploy_project_overlay(
     ctx.progress(1.0, t("deploy_project_done", agent=agent_name))
 
 
-# ---- Qoder Project ---- #
+def _profile_root(profile: str) -> Path:
+    roots = {
+        "core": DIST_CORE,
+        "adapters-light": DIST_ADAPTERS_LIGHT,
+        "qoder-addon": DIST_QODER_ADDON,
+        "qoderworkcn-plugin": DIST_QODERWORKCN_PLUGIN,
+        "zcode-plugin": DIST_ZCODE_PLUGIN,
+    }
+    try:
+        return roots[profile]
+    except KeyError as exc:
+        raise DeployError(f"unknown release profile for project overlay: {profile}") from exc
 
-def deploy_qoder_project(ctx: DeployContext) -> None:
+
+def _resolve_profile_copy(copy: ProfileCopy) -> tuple[Path, Path]:
+    source_root = _profile_root(copy.profile)
+    source = source_root if copy.source == "." else source_root / Path(copy.source)
+    return source, Path(copy.target)
+
+
+def _project_overlay_for(agent_name: str):
+    contract = get_contract(agent_name)
+    if contract is None or contract.project_overlay is None:
+        raise DeployError(f"agent has no project overlay contract: {agent_name}")
+    return contract.project_overlay
+
+
+def _deploy_contract_project_overlay(ctx: DeployContext, *, agent_name: str) -> None:
+    overlay = _project_overlay_for(agent_name)
     _deploy_project_overlay(
         ctx,
-        agent_name="Qoder Project",
-        overlay_copies=[(DIST_QODER_ADDON / ".qoder", Path(".qoder"))],
-        include_core=True,
+        agent_name=overlay.agent_label,
+        overlay_copies=[_resolve_profile_copy(copy) for copy in overlay.copies],
+        include_core=overlay.include_core,
     )
 
 
-def verify_qoder_project(ctx: DeployContext) -> bool:
+def _verify_contract_agent(ctx: DeployContext, *, agent_name: str) -> bool:
     root = _resolve_root(ctx)
-    ok, detail = detector.skill_deployed("qoder-project", root)
+    ok, detail = detector.skill_deployed(agent_name, root)
     ctx.log(f"[verify] {detail}")
     return ok
 
 
-def uninstall_qoder_project(ctx: DeployContext) -> None:
+def _uninstall_contract_project_overlay(ctx: DeployContext, *, agent_name: str, done_key: str) -> None:
     root = _resolve_root(ctx)
-    _remove_managed_and_backups(".qoder", root, log=ctx.log)
-    ctx.log(t("uninstall_qoder_project_done"))
+    overlay = _project_overlay_for(agent_name)
+    for path in overlay.uninstall_paths:
+        _remove_managed_and_backups(path, root, log=ctx.log)
+    ctx.log(t(done_key))
+
+
+# ---- Qoder Project ---- #
+
+def deploy_qoder_project(ctx: DeployContext) -> None:
+    _deploy_contract_project_overlay(ctx, agent_name="qoder-project")
+
+
+def verify_qoder_project(ctx: DeployContext) -> bool:
+    return _verify_contract_agent(ctx, agent_name="qoder-project")
+
+
+def uninstall_qoder_project(ctx: DeployContext) -> None:
+    _uninstall_contract_project_overlay(
+        ctx,
+        agent_name="qoder-project",
+        done_key="uninstall_qoder_project_done",
+    )
 
 
 # ---- Qoder CN Project ---- #
 
 def deploy_qodercn_project(ctx: DeployContext) -> None:
-    _deploy_project_overlay(
-        ctx,
-        agent_name="Qoder CN Project",
-        overlay_copies=[(DIST_QODER_ADDON / ".qoder", Path(".lingma"))],
-        include_core=True,
-    )
+    _deploy_contract_project_overlay(ctx, agent_name="qodercn-project")
 
 
 def verify_qodercn_project(ctx: DeployContext) -> bool:
-    root = _resolve_root(ctx)
-    ok, detail = detector.skill_deployed("qodercn-project", root)
-    ctx.log(f"[verify] {detail}")
-    return ok
+    return _verify_contract_agent(ctx, agent_name="qodercn-project")
 
 
 def uninstall_qodercn_project(ctx: DeployContext) -> None:
-    root = _resolve_root(ctx)
-    _remove_managed_and_backups(".lingma", root, log=ctx.log)
-    ctx.log(t("uninstall_qodercn_project_done"))
+    _uninstall_contract_project_overlay(
+        ctx,
+        agent_name="qodercn-project",
+        done_key="uninstall_qodercn_project_done",
+    )
 
 
 # ---- Trae ---- #
 
 def deploy_trae(ctx: DeployContext) -> None:
-    _deploy_project_overlay(
-        ctx,
-        agent_name="Trae",
-        overlay_copies=[
-            (DIST_ADAPTERS_LIGHT / ".trae", Path(".trae")),
-            (DIST_ADAPTERS_LIGHT / "AGENTS.md", Path("AGENTS.md")),
-        ],
-        include_core=True,
-    )
+    _deploy_contract_project_overlay(ctx, agent_name="trae")
 
 
 def verify_trae(ctx: DeployContext) -> bool:
-    root = _resolve_root(ctx)
-    ok, detail = detector.skill_deployed("trae", root)
-    ctx.log(f"[verify] {detail}")
-    return ok
+    return _verify_contract_agent(ctx, agent_name="trae")
 
 
 def uninstall_trae(ctx: DeployContext) -> None:
-    root = _resolve_root(ctx)
-    _remove_managed_and_backups(".trae", root, log=ctx.log)
-    _remove_managed_and_backups("AGENTS.md", root, log=ctx.log)
-    ctx.log(t("uninstall_trae_done"))
+    _uninstall_contract_project_overlay(ctx, agent_name="trae", done_key="uninstall_trae_done")
 
 
 # ---- OpenCode ---- #
 
 def deploy_opencode(ctx: DeployContext) -> None:
-    _deploy_project_overlay(
-        ctx,
-        agent_name="OpenCode",
-        overlay_copies=[
-            (DIST_ADAPTERS_LIGHT / ".opencode", Path(".opencode")),
-            (DIST_ADAPTERS_LIGHT / "AGENTS.md", Path("AGENTS.md")),
-        ],
-        include_core=True,
-    )
+    _deploy_contract_project_overlay(ctx, agent_name="opencode")
 
 
 def verify_opencode(ctx: DeployContext) -> bool:
-    root = _resolve_root(ctx)
-    ok, detail = detector.skill_deployed("opencode", root)
-    ctx.log(f"[verify] {detail}")
-    return ok
+    return _verify_contract_agent(ctx, agent_name="opencode")
 
 
 def uninstall_opencode(ctx: DeployContext) -> None:
-    root = _resolve_root(ctx)
-    _remove_managed_and_backups(".opencode", root, log=ctx.log)
-    _remove_managed_and_backups("AGENTS.md", root, log=ctx.log)
-    ctx.log(t("uninstall_opencode_done"))
+    _uninstall_contract_project_overlay(ctx, agent_name="opencode", done_key="uninstall_opencode_done")
 
 
 # ---- AGENTS Generic ---- #
 
 def deploy_agents_generic(ctx: DeployContext) -> None:
-    _deploy_project_overlay(
-        ctx,
-        agent_name="AGENTS Generic",
-        overlay_copies=[
-            (DIST_ADAPTERS_LIGHT / "AGENTS.md", Path("AGENTS.md")),
-            (DIST_ADAPTERS_LIGHT / ".agents", Path(".agents")),
-        ],
-        include_core=True,
-    )
+    _deploy_contract_project_overlay(ctx, agent_name="agents-generic")
 
 
 def verify_agents_generic(ctx: DeployContext) -> bool:
-    root = _resolve_root(ctx)
-    ok, detail = detector.skill_deployed("agents-generic", root)
-    ctx.log(f"[verify] {detail}")
-    return ok
+    return _verify_contract_agent(ctx, agent_name="agents-generic")
 
 
 def uninstall_agents_generic(ctx: DeployContext) -> None:
-    root = _resolve_root(ctx)
-    _remove_managed_and_backups(".agents", root, log=ctx.log)
-    _remove_managed_and_backups("AGENTS.md", root, log=ctx.log)
-    ctx.log(t("uninstall_agents_generic_done"))
+    _uninstall_contract_project_overlay(
+        ctx,
+        agent_name="agents-generic",
+        done_key="uninstall_agents_generic_done",
+    )

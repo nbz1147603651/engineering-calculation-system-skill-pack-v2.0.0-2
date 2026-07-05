@@ -1,4 +1,4 @@
-"""Agent metadata: the single source of truth for the deployment targets.
+"""Agent metadata rendered by the deployment UI.
 
 Each :class:`AgentSpec` knows how to:
 
@@ -8,72 +8,21 @@ Each :class:`AgentSpec` knows how to:
 * verify the deployment landed,
 * uninstall itself.
 
-The deploy/verify/uninstall *callables* live in :mod:`deployer`; this module
-only wires names to those callables plus display metadata, so the UI can render
-cards generically from a list.
+Platform contracts live in :mod:`platform_contracts`. The deploy/verify/
+uninstall *callables* live in :mod:`deployer`; this module only binds those
+callables to the declarative platform contracts so the UI can render cards
+generically from a list.
 """
 
 from __future__ import annotations
 
-import os
+import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable
 
-from . import detector
 from .i18n import t
-
-
-# --------------------------------------------------------------------------- #
-# Default install-root resolution (user-level agents)
-# --------------------------------------------------------------------------- #
-
-def _codex_root() -> Path:
-    return Path.home() / ".codex" / "skills" / "engineering-calculation-system"
-
-
-def _mavis_root() -> Path:
-    return Path.home() / ".mavis" / "skills" / "engineering-calculation-system"
-
-
-def _zcode_root() -> Path:
-    return Path.home() / ".zcode" / "plugins" / "engineering-calculation-system-zcode"
-
-
-def _qoder_root() -> Path:
-    configured = os.environ.get("QODER_HOME")
-    if configured:
-        return Path(configured).expanduser()
-    return Path.home() / ".qoder"
-
-
-def _qodercn_root() -> Path:
-    for env_name in ("QODER_CN_HOME", "QODERCN_HOME", "LINGMA_HOME"):
-        configured = os.environ.get(env_name)
-        if configured:
-            return Path(configured).expanduser()
-    return Path.home() / ".lingma"
-
-
-def _qoderworkcn_root() -> Path:
-    for env_name in ("QODERWORK_CN_KIT_HOME", "QODERWORK_KIT_HOME"):
-        configured = os.environ.get(env_name)
-        if configured:
-            return Path(configured).expanduser()
-    return Path.home() / "QoderWorkCN-Expert-Kits" / "engineering-calculation-system-qoderworkcn"
-
-
-def _workbuddy_root() -> Path:
-    for env_name in ("WORKBUDDY_KIT_HOME", "WORKBUDDY_HOME", "TENCENT_WORKBUDDY_HOME"):
-        configured = os.environ.get(env_name)
-        if configured:
-            return Path(configured).expanduser()
-    return Path.home() / "WorkBuddy-Expert-Kits" / "engineering-calculation-system-workbuddy"
-
-
-# Project-overlay agents have no default root; the user picks one.
-def _no_default() -> Path | None:
-    return None
+from .platform_contracts import AgentContract, CONTRACTS
 
 
 # --------------------------------------------------------------------------- #
@@ -108,156 +57,74 @@ def _build_specs() -> list[AgentSpec]:
     from . import deployer
 
     def mavis_cli_verify(root: Path | None) -> list[str] | None:
-        mavis_cmd = detector._exe_on_path("mavis") or str(Path.home() / ".mavis" / "bin" / "mavis.cmd")
+        mavis_cmd = shutil.which("mavis") or str(Path.home() / ".mavis" / "bin" / "mavis.cmd")
         return [mavis_cmd, "skill", "show", "engineering-calculation-system"]
 
-    return [
-        AgentSpec(
-            name="codex",
-            display_name="Codex",
-            icon="C",
-            kind="user",
-            summary=t("summary_codex"),
-            default_root_fn=_codex_root,
-            deploy_fn=deployer.deploy_codex,
-            verify_fn=deployer.verify_codex,
-            uninstall_fn=deployer.uninstall_codex,
-            needs_profiles=("core",),
+    callables = {
+        "codex": (deployer.deploy_codex, deployer.verify_codex, deployer.uninstall_codex),
+        "minimax": (deployer.deploy_minimax, deployer.verify_minimax, deployer.uninstall_minimax),
+        "zcode": (deployer.deploy_zcode, deployer.verify_zcode, deployer.uninstall_zcode),
+        "qoder": (deployer.deploy_qoder_user, deployer.verify_qoder_user, deployer.uninstall_qoder_user),
+        "qoder-project": (
+            deployer.deploy_qoder_project,
+            deployer.verify_qoder_project,
+            deployer.uninstall_qoder_project,
         ),
-        AgentSpec(
-            name="minimax",
-            display_name="MiniMax Code",
-            icon="M",
-            kind="user",
-            summary=t("summary_minimax"),
-            default_root_fn=_mavis_root,
-            deploy_fn=deployer.deploy_minimax,
-            verify_fn=deployer.verify_minimax,
-            uninstall_fn=deployer.uninstall_minimax,
-            needs_profiles=("core",),
-            cli_verify_fn=mavis_cli_verify,
+        "qodercn": (
+            deployer.deploy_qodercn_user,
+            deployer.verify_qodercn_user,
+            deployer.uninstall_qodercn_user,
         ),
-        AgentSpec(
-            name="zcode",
-            display_name="ZCode",
-            icon="Z",
-            kind="user",
-            summary=t("summary_zcode"),
-            default_root_fn=_zcode_root,
-            deploy_fn=deployer.deploy_zcode,
-            verify_fn=deployer.verify_zcode,
-            uninstall_fn=deployer.uninstall_zcode,
-            needs_profiles=("zcode-plugin",),
+        "qodercn-project": (
+            deployer.deploy_qodercn_project,
+            deployer.verify_qodercn_project,
+            deployer.uninstall_qodercn_project,
         ),
-        AgentSpec(
-            name="qoder",
-            display_name=t("name_qoder_user"),
-            icon="Q",
-            kind="user",
-            summary=t("summary_qoder"),
-            default_root_fn=_qoder_root,
-            deploy_fn=deployer.deploy_qoder_user,
-            verify_fn=deployer.verify_qoder_user,
-            uninstall_fn=deployer.uninstall_qoder_user,
-            needs_profiles=("qoder-addon",),
+        "qoderworkcn": (
+            deployer.deploy_qoderworkcn_plugin,
+            deployer.verify_qoderworkcn_plugin,
+            deployer.uninstall_qoderworkcn_plugin,
         ),
-        AgentSpec(
-            name="qoder-project",
-            display_name=t("name_qoder_project"),
-            icon="Q+",
-            kind="project",
-            summary=t("summary_qoder_project"),
-            default_root_fn=_no_default,
-            deploy_fn=deployer.deploy_qoder_project,
-            verify_fn=deployer.verify_qoder_project,
-            uninstall_fn=deployer.uninstall_qoder_project,
-            needs_profiles=("core", "qoder-addon"),
+        "workbuddy": (
+            deployer.deploy_workbuddy_plugin,
+            deployer.verify_workbuddy_plugin,
+            deployer.uninstall_workbuddy_plugin,
         ),
-        AgentSpec(
-            name="qodercn",
-            display_name=t("name_qodercn_user"),
-            icon="CN",
-            kind="user",
-            summary=t("summary_qodercn"),
-            default_root_fn=_qodercn_root,
-            deploy_fn=deployer.deploy_qodercn_user,
-            verify_fn=deployer.verify_qodercn_user,
-            uninstall_fn=deployer.uninstall_qodercn_user,
-            needs_profiles=("qoder-addon",),
+        "trae": (deployer.deploy_trae, deployer.verify_trae, deployer.uninstall_trae),
+        "opencode": (deployer.deploy_opencode, deployer.verify_opencode, deployer.uninstall_opencode),
+        "agents-generic": (
+            deployer.deploy_agents_generic,
+            deployer.verify_agents_generic,
+            deployer.uninstall_agents_generic,
         ),
-        AgentSpec(
-            name="qodercn-project",
-            display_name=t("name_qodercn_project"),
-            icon="CN+",
-            kind="project",
-            summary=t("summary_qodercn_project"),
-            default_root_fn=_no_default,
-            deploy_fn=deployer.deploy_qodercn_project,
-            verify_fn=deployer.verify_qodercn_project,
-            uninstall_fn=deployer.uninstall_qodercn_project,
-            needs_profiles=("core", "qoder-addon"),
-        ),
-        AgentSpec(
-            name="qoderworkcn",
-            display_name=t("name_qoderworkcn"),
-            icon="QW",
-            kind="user",
-            summary=t("summary_qoderworkcn"),
-            default_root_fn=_qoderworkcn_root,
-            deploy_fn=deployer.deploy_qoderworkcn_plugin,
-            verify_fn=deployer.verify_qoderworkcn_plugin,
-            uninstall_fn=deployer.uninstall_qoderworkcn_plugin,
-            needs_profiles=("qoderworkcn-plugin",),
-        ),
-        AgentSpec(
-            name="workbuddy",
-            display_name=t("name_workbuddy"),
-            icon="WB",
-            kind="user",
-            summary=t("summary_workbuddy"),
-            default_root_fn=_workbuddy_root,
-            deploy_fn=deployer.deploy_workbuddy_plugin,
-            verify_fn=deployer.verify_workbuddy_plugin,
-            uninstall_fn=deployer.uninstall_workbuddy_plugin,
-            needs_profiles=("qoderworkcn-plugin",),
-        ),
-        AgentSpec(
-            name="trae",
-            display_name="Trae",
-            icon="T",
-            kind="project",
-            summary=t("summary_trae"),
-            default_root_fn=_no_default,
-            deploy_fn=deployer.deploy_trae,
-            verify_fn=deployer.verify_trae,
-            uninstall_fn=deployer.uninstall_trae,
-            needs_profiles=("core", "adapters-light"),
-        ),
-        AgentSpec(
-            name="opencode",
-            display_name="OpenCode",
-            icon="O",
-            kind="project",
-            summary=t("summary_opencode"),
-            default_root_fn=_no_default,
-            deploy_fn=deployer.deploy_opencode,
-            verify_fn=deployer.verify_opencode,
-            uninstall_fn=deployer.uninstall_opencode,
-            needs_profiles=("core", "adapters-light"),
-        ),
-        AgentSpec(
-            name="agents-generic",
-            display_name=t("name_agents_generic"),
-            icon="A",
-            kind="project",
-            summary=t("summary_agents_generic"),
-            default_root_fn=_no_default,
-            deploy_fn=deployer.deploy_agents_generic,
-            verify_fn=deployer.verify_agents_generic,
-            uninstall_fn=deployer.uninstall_agents_generic,
-            needs_profiles=("core", "adapters-light"),
-        ),
-    ]
+    }
+
+    def display_name(contract: AgentContract) -> str:
+        if contract.display_name is not None:
+            return contract.display_name
+        if contract.display_name_key is not None:
+            return t(contract.display_name_key)
+        return contract.name
+
+    specs: list[AgentSpec] = []
+    for contract in CONTRACTS:
+        deploy_fn, verify_fn, uninstall_fn = callables[contract.name]
+        specs.append(
+            AgentSpec(
+                name=contract.name,
+                display_name=display_name(contract),
+                icon=contract.icon,
+                kind=contract.kind,
+                summary=t(contract.summary_key),
+                default_root_fn=contract.default_root_fn,
+                deploy_fn=deploy_fn,
+                verify_fn=verify_fn,
+                uninstall_fn=uninstall_fn,
+                needs_profiles=contract.needs_profiles,
+                cli_verify_fn=mavis_cli_verify if contract.name == "minimax" else None,
+            )
+        )
+    return specs
 
 
 _SPECS: list[AgentSpec] | None = None
