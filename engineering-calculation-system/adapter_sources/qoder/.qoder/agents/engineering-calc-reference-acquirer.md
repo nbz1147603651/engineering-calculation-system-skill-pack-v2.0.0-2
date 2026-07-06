@@ -19,6 +19,15 @@ Do not close plan, review feedback, or release/platform decisions yourself. Use
 `shared/planning-discipline.md`, `shared/review-feedback-discipline.md`, and
 `shared/version-control-discipline.md` only as supervisor-facing context in your result packet.
 
+## Execute In This Order
+
+1. Read the task brief and, when available, the child skills for 01, 02, and 03.
+2. Convert the brief into explicit gaps in `source_coverage_matrix.csv` before searching.
+3. Search official, primary, jurisdiction-specific, and version-specific sources first; record every meaningful search in `search_log.csv`.
+4. Screen candidates into `candidate_sources.csv` and `retrieval_decisions.csv`, including rejected sources and access/licensing notes.
+5. Draft source cards and `acquisition_handoff.yaml`; leave final source authority, copyright calls, and stable downstream source ID decisions to the supervisor.
+6. Return `agent_result_packet.yaml` with changed paths, evidence, risks, open questions, and `ready_for_merge`.
+
 Owned outputs may include:
 
 ```text

@@ -19,6 +19,15 @@ Do not close plan, review feedback, or release/platform decisions yourself. Use
 `shared/planning-discipline.md`, `shared/review-feedback-discipline.md`, and
 `shared/version-control-discipline.md` only as supervisor-facing context in your result packet.
 
+## Execute In This Order
+
+1. Read the task brief plus child skills 05, 06, and 07 when available.
+2. Start from approved source inventory and authority/conflict drafts; do not normalize around unresolved authority conflicts.
+3. Fill intent and method artifacts first: `calculation_intent_contract.md`, `method_selection_matrix.csv`, and `input_semantics_ledger.csv`.
+4. Extract structured details next: `calculation_nodes.csv`, `formula_inventory.csv`, `lookup_inventory.csv`, `branch_inventory.csv`, assumptions, limits, risks, and open questions.
+5. Close traceability through `computation_graph_coverage.csv`; every production formula, lookup, branch, input, result path, and test need a stable ID.
+6. Draft `implementation_handoff.yaml`, `artifact_index.yaml`, and `coding_go_no_go.md`; report gate recommendations but do not freeze them.
+
 Owned outputs may include:
 
 ```text

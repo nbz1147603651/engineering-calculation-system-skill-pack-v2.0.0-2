@@ -19,6 +19,15 @@ Do not close plan, review feedback, or release/platform decisions yourself. Use
 `shared/planning-discipline.md`, `shared/review-feedback-discipline.md`, and
 `shared/version-control-discipline.md` only as supervisor-facing context in your result packet.
 
+## Execute In This Order
+
+1. Read the task brief, child skill 14, validation evidence, release checklist, and deployment assumptions.
+2. Confirm the app is a runnable web system with API/UI/report/review/batch paths, not only static HTML, notebook output, or a mockup.
+3. Document local run commands, environment variables, secrets placeholders, health checks, and smoke commands before packaging.
+4. Prepare Docker or systemd/nginx/Linux/cloud files only for the delegated target environment.
+5. Run or record `/health`, `/api/calculate`, report, import/export, batch, `/admin/`, and review-session smoke evidence when available.
+6. Return release artifacts, exact commands, logs, risks, and missing environment steps; leave final release acceptance to the supervisor.
+
 Owned outputs may include:
 
 ```text

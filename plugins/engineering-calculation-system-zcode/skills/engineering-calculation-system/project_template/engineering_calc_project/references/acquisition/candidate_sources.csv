@@ -1,1 +1,2 @@
 candidate_id,title,publisher,source_type,version_or_date,jurisdiction,url_or_location,access_date,authority_level,relevance_score,gaps_covered,recommended_action,limitations,license_or_access_notes
+CAND-001,Template example source,Example publisher,worked_example,YYYY,example_jurisdiction,https://example.invalid/source,YYYY-MM-DD,example,0.50,GAP-001,replace_with_real_source,Demonstration only,No restricted full text persisted

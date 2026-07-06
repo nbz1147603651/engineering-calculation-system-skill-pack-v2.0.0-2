@@ -10,6 +10,13 @@ pack under `engineering-calculation-system/core/` remains the workflow
 source of truth; the Codex plugin under `plugins/engineering-calculation-system/`
 remains a separate platform wrapper.
 
+OpenCode support is intentionally hybrid. The TypeScript plugin provides
+diagnostic tools, optional advisory gates, installer behavior, and OpenCode
+registration, while the installed `.opencode/skills/engineering-calc-system/SKILL.md`,
+`.opencode/agents/`, and `.opencode/commands/` Markdown templates keep the same
+progressive-disclosure workflow visible to agents. Do not treat the runtime hook
+as a replacement for reading the shared skill pack and its lifecycle gates.
+
 ## Quick Install
 
 ```bash

@@ -19,6 +19,15 @@ Do not close plan, review feedback, or release/platform decisions yourself. Use
 `shared/planning-discipline.md`, `shared/review-feedback-discipline.md`, and
 `shared/version-control-discipline.md` only as supervisor-facing context in your result packet.
 
+## Execute In This Order
+
+1. Read the task brief, phase 04 child skill, acquisition handoff, source registry, source cards, extracted notes, and approved local evidence.
+2. Preserve existing source IDs, file names, hashes, and citation anchors; create requested source-card or registry changes as drafts if IDs are supervisor-owned.
+3. Build `source_inventory.yaml` from the evidence library and separate governing, example, background, and project-specific sources.
+4. Draft `source_authority_table.csv` with authority levels, scope, version, jurisdiction, applicability, and limitations.
+5. Draft `source_conflicts.csv` for any conflicting formulas, coefficients, table values, units, or applicability rules.
+6. Return a result packet with exact paths, unresolved authority questions, and any supervisor-owned changes requested.
+
 Owned outputs may include:
 
 ```text

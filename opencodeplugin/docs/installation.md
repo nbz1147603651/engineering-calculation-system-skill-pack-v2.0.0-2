@@ -32,6 +32,13 @@ dependency when needed. It also writes
 `.opencode/.engineering-calc-manifest.json` so updates can report which
 managed templates changed.
 
+This is a hybrid install: the TypeScript plugin supplies OpenCode tools,
+status/doctor checks, optional advisory gates, and the local plugin shim, while
+the generated Markdown assets under `.opencode/skills/`,
+`.opencode/agents/`, and `.opencode/commands/` preserve the normal ECS
+skill-reading workflow. The shared skill root remains the source of truth for
+formulas, lifecycle gates, templates, and validation.
+
 The installer refuses targets inside the Codex plugin or the shared
 skill pack. Install at a project root, not under
 `plugins/engineering-calculation-system/` or

@@ -1,1 +1,2 @@
 input_id,book_input_path,meaning,unit,sign_convention,coordinate_direction,source_reference,required,default_policy,validation_rule,used_by_nodes,blocks_production
+I-EXAMPLE-001,BookInput.example.value,Example engineering input meaning,kN,positive_compression,not_applicable,S01:clause_x,true,no_default,finite_and_nonnegative,N-EXAMPLE-001,true

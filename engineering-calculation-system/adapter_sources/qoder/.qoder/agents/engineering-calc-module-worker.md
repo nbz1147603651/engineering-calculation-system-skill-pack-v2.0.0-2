@@ -19,6 +19,15 @@ Do not close plan, review feedback, or release/platform decisions yourself. Use
 `shared/planning-discipline.md`, `shared/review-feedback-discipline.md`, and
 `shared/version-control-discipline.md` only as supervisor-facing context in your result packet.
 
+## Execute In This Order
+
+1. Read the task brief, child skills 08-11, `handoff/implementation_handoff.yaml`, `handoff/coding_go_no_go.md`, and assigned `owned_paths`.
+2. Confirm the coding gate allows the delegated scope before editing; if it does not, return blocked with missing evidence.
+3. Map handoff modules into typed core models, reusable library modules, formula traces, and independent tests before touching UI or reports.
+4. Implement formulas only in reusable modules; keep source references, units, warnings, errors, and intermediate values in typed results.
+5. Wire the official `run_book(BookInput) -> BookResult` sequence without changing public contracts unless the supervisor assigned that integrator role.
+6. Update module/runner artifacts such as `module_asset_registry.csv`, `runner_closure_map.csv`, and focused unit/regression/integration tests.
+
 Allowed owned paths may include:
 
 ```text

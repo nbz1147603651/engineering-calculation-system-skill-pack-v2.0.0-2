@@ -1,1 +1,2 @@
 search_id,gap_id,query,tool_or_location,date,results_reviewed,candidates_selected,notes
+SEARCH-EXAMPLE-001,GAP-EXAMPLE-001,official design code example calculation method,web_search,YYYY-MM-DD,5,CAND-EXAMPLE-001,Replace this row with real searches and dates

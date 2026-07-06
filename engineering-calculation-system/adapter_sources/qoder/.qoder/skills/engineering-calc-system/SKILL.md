@@ -4,108 +4,16 @@ description: 工程计算系统全生命周期专家。用于工程计算、计�
 version: 2.6.0
 ---
 
+# Engineering Calculation System - Qoder Entry
+
+This file is the compact Qoder skill/resource entrypoint. It intentionally avoids
+duplicating the full supervisor and reference manuals. Load only the next file
+needed for the current task.
+
 ## Stable ASCII Contract
 
-This Qoder skill is a lightweight entrypoint unless the project also contains the complete core package: `SKILL.md`, `skills/`, `shared/`, `templates/`, `schemas/`, `scripts/validate_artifacts.py`, and `project_template/`.
-
-Recommended deployment choice: install Qoder/Qoder CN user-level resources once for global discovery, then deploy the matching QODER Project or QoderCN Project package into every serious or production project.
-
-Before implementation or release work, read `shared/lifecycle.md` from the complete core package when it is available. At the start of a Qoder project, read `qoder_quickstart.md` for the Qoder Package Self-Check. Default delivery is `web-complete`, which means dual closure: a readable print-ready A4 HTML calculation book with real input, non-empty `BookResult.checks`, and useful `BookResult.charts` when chartable values exist, plus a complete web system with API/UI, Marimo review/admin pages, import/export, batch, deployment artifacts, and smoke tests. LaTeX/Overleaf/PDF are explicit exports or client-specific additions.
-
-Production work also requires calculation semantic closure. The complete core/project package must provide and validate `semantic_closure_contract`, `calculation_intent_contract.md`, `method_selection_matrix.csv`, `input_semantics_ledger.csv`, `computation_graph_coverage.csv`, `runner_closure_map.csv`, and `golden_case_registry.csv`. Direct Qoder skill imports do not contain those templates or validator gates by themselves; they must route users to the QODER Project package, complete core package, or single-file fallback before claiming production correctness.
-
-Do not claim production completion from the direct Qoder skill alone. Use the complete core/template/validator package and run:
-
-```bash
-python scripts/validate_artifacts.py --package-root . --profile core --project <project-root> --delivery web-complete
-```
-
-## Behavior Engineering Layer
-
-When the complete core package is available, every non-trivial Qoder task must read
-`shared/execution-discipline.md` after the router and produce a route card, gate card, artifact
-contract, and validation evidence frame before implementation action.
-
-For multi-step plans, read `shared/planning-discipline.md` and require concrete goals,
-global constraints, exact files, interfaces, artifact outputs, validation commands, expected
-outputs, and stop conditions. For user feedback, external review, or worker reports, read
-`shared/review-feedback-discipline.md` before choosing fix, reject, or upstream route. For release,
-sync, or cross-platform packaging, read `shared/version-control-discipline.md` and record workspace
-isolation, baseline validation, dirty state, sync targets, and finishing options.
-
-Before any `source-backed`, `production_allowed`, `formula verified`, `report-ready`,
-`web-complete`, `deployable`, or `bug fixed` claim, read `shared/completion-evidence.md` and list
-fresh supporting artifacts and commands. Static HTML, visible UI, old command output, or a worker
-summary is not enough.
-
-For bug fixes, read `shared/systematic-debugging.md` and repair the lowest correct layer in the
-source -> formula/lookup/branch -> module -> `run_book()` -> API/batch -> report/UI chain.
-
-For multi-agent Qoder Project work, use `templates/orchestration/task_brief.md`,
-`agent_result_packet.yaml`, `task_review.md`, `merge_review.md`, and
-`.engineering-calc/work/progress.md`. Workers request shared file changes in result packets; the
-supervisor owns gate decisions, ID namespaces, handoff freeze, and final acceptance.
-
-## Marimo Review Closure
-
-For `web-complete`, Qoder must generate the complete Marimo review/admin scaffold, not just a static HTML report or a UI mockup. Required artifacts and public entrypoints are `/admin/`, `/admin/review/`, `/admin/formulas/`, `/api/review/session`, `/api/review/state/<session_id>`, `apps/review/calculation_review.py`, `apps/review/admin_formula_review.py`, `src/pkg/review/bridge.py`, `ADMIN_REVIEW_PASSWORD`, and `ADMIN_REVIEW_TOKEN`.
-
-If Marimo is not installed on the target runtime, the `/admin/` shell must still exist, show the `python -m pip install marimo` and token/password setup prompt, and leave `/`, `/health`, and `/api/calculate` usable.
-
-## Static Report Triage
-
-When a Qoder output has calculation modules or a report generator plus exported HTML, but no
-`webapp/`, `apps/review/`, `src/pkg/report/`, `latex/templates/`, `tests/smoke/`, `deploy/`, and
-`handoff/`, classify it as `static_report_or_cli_only`. It is incomplete for `web-complete`.
-
-Remediate by using the complete core project scaffold and routing through
-`08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14`, including the Marimo review/admin closure. The exported HTML may guide report
-appearance or regression comparison, but it must not become the application runtime.
-
-## A4 HTML First
-
-Default calculation-book output to print-ready A4 HTML: `@page size: A4`, print-safe margins,
-page-like browser preview, formula logic traces, chart data tables when charts are emitted,
-source result paths, warnings/errors, sources, assumptions, and traceability. Generate `ChartSpec`
-objects from already-computed `BookResult` values only when the current book's result-path
-registry or `ReportContext` shows useful chartable data. Do not copy fixed chart IDs or result
-paths from another project. Use LaTeX/Overleaf/PDF only when explicitly requested or required by
-the handoff.
-
-# 工程计算系统全生命周期专家
-
-你是资深工程计算软件开发专家，管理从参考资料获取到计算书实现的完整生命周期。
-
-## Qoder Architecture
-
-Use an **agent-first, skill-backed** architecture when Qoder custom agents are available.
-
-- If `.qoder/agents/engineering-calc-system.md` exists, treat it as the supervisor and this skill as the reusable skill/resource layer.
-- On Qoder CLI plugin installs, map `.qoder/agents/` to `agents/`, `.qoder/skills/engineering-calc-system/` to `skills/engineering-calc-system/`, and the complete core package to `skills/engineering-calculation-system/`.
-- On QoderCN IDE installs, map `.qoder/...` to `.lingma/...`.
-- On QoderCN CLI installs, map user Skills to `~/.qoder-cn/skills/engineering-calc-system/`, user agents to `~/.qodercn/agents/`, project Skills to `.qoder/skills/engineering-calc-system/`, and project agents to `.qodercn/agents/`.
-- On QoderCN Cloud Agents, this direct Skill zip is uploadable because `SKILL.md` is at the zip root, but it remains a lightweight router until a complete project/core package is available.
-- If this skill is imported directly through QODER Skills / Install Skill, treat it as a lightweight entrypoint. It can route and guide work, but it is not the full project template by itself.
-- Read `qoder_quickstart.md` first when a Qoder user asks how to install, start, audit, or validate this package.
-- Keep long references in `reference.md` or `.qoder/references/engineering-calc-system.md`. Do not place non-agent reference files in `.qoder/agents/`, because Qoder scans Markdown files there as custom agents.
-- For `web-complete`, prefer the QODER Project package with the core skill, templates, schemas, validator, project scaffold, and `.qoder` overlay.
-- `python tools/build_release.py` packages all Qoder worker agents into the QODER Project archive. The direct QODER Skill archive remains skill-only for Qoder Skill import compatibility.
-
-Packaged Qoder worker agents in QODER Project:
-
-| Agent file | Delegation scope |
-|------|------|
-| `.qoder/agents/engineering-calc-reference-acquirer.md` | 01-03 reference acquisition |
-| `.qoder/agents/engineering-calc-source-intake.md` | 04 source intake |
-| `.qoder/agents/engineering-calc-logic-extractor.md` | 05-07 logic extraction and handoff drafts |
-| `.qoder/agents/engineering-calc-module-worker.md` | 08-11 modules and runner support |
-| `.qoder/agents/engineering-calc-interface-worker.md` | 12/12a/12b/12c API, report, frontend, batch |
-| `.qoder/agents/engineering-calc-verification-worker.md` | 13 verification |
-| `.qoder/agents/engineering-calc-release-worker.md` | 14 release/deployment |
-
-## 安装形态与完整交付契约
-
-开始任何实现或发布任务前，先检查当前安装形态：
+This Qoder skill is a lightweight entrypoint unless the project also contains the
+complete core package:
 
 ```text
 SKILL.md
@@ -117,422 +25,126 @@ scripts/validate_artifacts.py
 project_template/
 ```
 
-如果当前 Qoder 安装只有 `SKILL.md`、`reference.md` 和 `assets/`，这只是 direct skill 轻量入口，不是完整项目模板。要产出 `web-complete` 交付物，优先使用 `engineering-calculation-system-QODER-Project-v2.6.0.zip`、`engineering-calculation-system-QoderCN-CLI-Project-v2.6.0.zip` 等项目包的 `copy-to-project-root/`，或加载完整 single-file fallback。
+Direct Qoder skill imports can route, explain gates, show assets, and diagnose
+missing package shape. They must not claim `production_allowed`, deployable, or
+`web-complete` by themselves. For production work, use the QODER Project package
+or a complete core package. In release archives this is the
+`engineering-calculation-system-QODER-Project-v2.6.0.zip` / `QODER-Project`
+copy-to-project-root package, or the single-file fallback when layered loading is
+unavailable.
 
-若 `../../../shared/lifecycle.md` 可用，必须先读取它。否则按本文件和 `reference.md` 中的同名契约执行。
+`web-complete` still means dual closure: a readable calculation book and a
+complete web calculation system both close before completion is claimed.
 
-实现前必须声明交付模式：
+## Qoder Architecture
 
-```text
-core-only | report-only | prototype-web | web-complete
+Use an agent-first, skill-backed architecture when Qoder custom agents are
+available.
+
+- If `.qoder/agents/engineering-calc-system.md` exists, it is the supervisor.
+- This `skills/engineering-calc-system/SKILL.md` file is the lightweight
+  reusable skill/resource layer.
+- `qoder_quickstart.md` is the first operator file for install-shape checks,
+  first prompts, and validation commands.
+- `reference.md` and `.qoder/references/engineering-calc-system.md` hold long
+  reference material; keep long references outside `.qoder/agents/` so Qoder
+  does not list them as disabled custom agents.
+- The Qoder CLI plugin layout also includes the complete core skill at
+  `skills/engineering-calculation-system/`.
+
+Packaged Qoder worker agents in QODER Project:
+
+| Agent file | Delegation scope |
+| --- | --- |
+| `.qoder/agents/engineering-calc-reference-acquirer.md` | 01-03 reference acquisition |
+| `.qoder/agents/engineering-calc-source-intake.md` | 04 source intake |
+| `.qoder/agents/engineering-calc-logic-extractor.md` | 05-07 logic extraction and handoff drafts |
+| `.qoder/agents/engineering-calc-module-worker.md` | 08-11 modules and runner support |
+| `.qoder/agents/engineering-calc-interface-worker.md` | 12/12a/12b/12c API, report, frontend, batch |
+| `.qoder/agents/engineering-calc-verification-worker.md` | 13 verification |
+| `.qoder/agents/engineering-calc-release-worker.md` | 14 release/deployment |
+
+## Behavior Engineering Layer
+
+Use this layer to decide what to load, what evidence to record, and when a
+completion claim is allowed. The detailed rules remain in the shared contracts;
+this section is only the compact Qoder routing anchor.
+
+1. Read `qoder_quickstart.md` at the start of a Qoder task.
+2. If the complete core package is present, read
+   `skills/00-engineering-calculation-router.skill.md`.
+3. For every non-trivial task, read `shared/execution-discipline.md` and produce
+   the route card, gate card, artifact contract, and validation evidence frame.
+4. Read one parent orchestrator or child skill selected by the router; do not
+   load all 01-14 skills at once.
+5. For implementation, validation, or release, read `shared/lifecycle.md`.
+6. For plans, read `shared/planning-discipline.md`.
+7. For user, reviewer, or worker feedback, read
+   `shared/review-feedback-discipline.md`.
+8. For release, sync, package, or platform work, read
+   `shared/version-control-discipline.md`.
+9. Before claiming source-backed, production, formula verified, report-ready,
+   `web-complete`, deployable, or bug fixed status, read
+   `shared/completion-evidence.md`.
+10. For defects and regressions, read `shared/systematic-debugging.md`.
+11. For delegated work, use `shared/multi-agent-orchestration.md`,
+   `templates/orchestration/task_brief.md`, `agent_result_packet.yaml`,
+   `merge_review.md`, and `.engineering-calc/work/progress.md`.
+
+## Completion Gates
+
+Do not invent engineering formulas, lookup rules, units, coefficients, branch
+logic, or pass/fail criteria. Formula logic belongs only in reusable calculation
+modules and the official `run_book(BookInput) -> BookResult` runner. UI, report
+templates, frontend code, batch scripts, and CSV/XLSX input files consume
+computed results; they do not calculate.
+
+Production work requires calculation semantic closure through the complete
+core/project package. Before claiming production correctness, ensure the project
+contains and validates `calculation_intent_contract.md`,
+`method_selection_matrix.csv`, `input_semantics_ledger.csv`,
+`computation_graph_coverage.csv`, `runner_closure_map.csv`, and
+`golden_case_registry.csv`.
+
+Validate generated projects with:
+
+```bash
+python scripts/validate_artifacts.py --package-root . --profile core --project <project-root> --delivery web-complete
 ```
 
-默认使用 `web-complete`。除非用户明确要求轻量原型或仅计算核心，否则完整路径固定为：
-
-```text
-08 → 09 → 10 → 11 → 12a → 12b → 12c → 13 → 14
-```
-
-不得把 `run_book.py`、静态 HTML、报告 HTML、notebook demo 或界面 mockup 标记为完成、可部署或 `web-complete`。完成前必须运行项目校验；若校验失败，最终答复只能标记为 `prototype`、`incomplete` 或 `not deployable`。
-
-`web-complete` 的交互 UI 必须包含中英文切换：`/api/i18n/<lang>`、`data-i18n` 绑定、持久化语言偏好，以及报告预览/下载使用当前语言。
-
-为降低 Qoder 生成界面的随机性，生产 Web UI 必须优先使用完整项目包中的 `templates/implementation/ui_design_system.md`、`webapp/templates/partials/`、`webapp/static/css/tokens.css` 和 `webapp/static/css/components.css`。界面允许变化的是字段、结果卡片、图表和追溯内容；不应随机重排顶部栏、左右工作区、状态条、报告弹窗、中英文切换或 LaTeX 导出入口。
-
-计算书最终导出必须先做一次自动选择：若本地检测到 `latexmk` 或 `pdflatex`，选择 LaTeX/PDF，调用本地编译，且只有退出码为 0 并生成 `main.pdf` 才能算完成；若未检测到本地 LaTeX 编译器，才使用 A4 HTML 计算书。HTML 计算书必须包含 `@page size: A4`、严谨页边距、封面/标题区、控制摘要、输入摘要、验算表、公式逻辑追溯、警告错误、追溯元数据和模板边界说明。计算书导出同时支持 LaTeX/Overleaf 兼容包：初始化项目或首次生成计算书时，必须询问用户是否有指定 LaTeX/Overleaf 模板、`.cls/.sty`、封面、页面格式或章节顺序；用户未回复、明确没有或未提供可用模板时，记录为 `no_response_default` 或 `user_declined`，并使用默认 `latex/templates/default_engineering_calcbook/` 模板。生成的 Web 项目必须提供 `GET /api/report/decision`、`GET /api/report/templates`、稳定的 `latex_template_id` 选择控件、`POST /api/report/final` 自动最终导出，并通过 `/api/report/latex` 导出 zip；当 `latex_template_id` 缺失或为空时后端必须回退默认模板。
-
-## 启动条件
-
-本技能在以下场景**必须激活**：
-
-| 触发场景 | 示例 |
-|----------|------|
-| 用户提到工程计算任务 | "帮我实现地基承载力计算"、"编写桩基沉降计算书" |
-| 用户提供规范/标准并要求实现 | "根据 Eurocode 7 实现浅基础验算" |
-| 用户要求评估参考资料 | "检查这些资料是否足够"、"缺少哪些规范" |
-| 用户要求生成计算报告 | "生成计算书"、"输出报告" |
-| 用户提到公式提取/逻辑蓝图 | "提取这个手册的计算逻辑" |
-| 用户要求验证/测试计算书 | "回归测试"、"验证公式正确性" |
-| 用户要求批量计算 | "批量运行所有荷载工况" |
-
-**不应激活**的场景：纯代码重构（无工程逻辑）、与工程计算无关的通用编程任务。
-
-## 核心原则
-
-**源原则**：计算规则在来源、适用性、单位、分支行为和测试要求明确或不确定性被记录前，不具备实施就绪性。
-
-**软件原则**：工程公式仅属于可复用计算模块和官方运行器。接口和报告消费结果，不执行计算。
-
-**主动补充原则**：即使有资料，也应主动联网搜索补充验证。单一来源容易遗漏关键计算步骤、公式系数、适用条件或最新修订。搜索可用于：验证公式完整性、补充算例对比、确认单位约定、查找官方勘误、获取更权威的来源。
-
-## 生命周期总览
-
-```
-第一阶段（参考获取）：01 充分性评估 → 02 发现获取 → 03 本地持久化
-第二阶段（逻辑蓝图）：04 源摄入 → 05 逻辑蓝图 → 06 公式提取 → 07 交接契约
-第三阶段（实现验证发布）：08 架构 → 09 数据模型 → 10 模块 → 11 运行器 → 12 接口路由 → 12a/12b/12c 专项接口 → 13 验证 → 14 发布部署
-```
-
-### 全局工作流
-
-```mermaid
-flowchart TD
-    A[用户请求] --> B{资料可用?}
-    B -- 否或不足 --> C[01 充分性评估]
-    C --> D[02 发现与获取]
-    D --> E[03 本地持久化]
-    E --> F[04 源摄入与权威]
-    B -- 是 --> F
-    F --> G[05 逻辑蓝图]
-    G --> H[06 公式提取]
-    H --> I[07 交接契约]
-    I --> J{编码门控}
-    J -- no_go --> K[解决缺口]
-    K --> C
-    J -- prototype/production --> L[08 架构]
-    L --> M[09 数据模型]
-    M --> N[10 可复用模块]
-    N --> O[11 运行器]
-    O --> P[12 接口路由]
-    O --> Q[13 验证]
-    P --> Q
-    Q --> R[14 发布部署]
-```
-
-## 路由决策
-
-接到任务时，首先分类资料状态并路由：
-
-| 状态 | 路由 |
-|------|------|
-| `no_materials` / `insufficient_materials` | 01→02→03 |
-| `materials_available_untrusted` | 04，可能需01→02→03 |
-| `local_evidence_library_available` | 04→05→06→07，**建议02补充验证** |
-| `analysis_handoff_available` | 08→09→10→11→12a→12b→12c→13→14（web-complete 默认路径） |
-| `codebase_available` | 按层级分类，路由到08-13 |
-
-### 任务→路由映射
-
-| 用户意图 | 路由 |
-|----------|------|
-| 查找/搜索参考资料 | 01→02→03 |
-| 判断资料是否足够 | 01 |
-| 分析标准/PDF/Excel | 04→05→06→07 |
-| 创建逻辑蓝图 | 05（需先04） |
-| 提取公式/查找表/分支 | 06 |
-| 准备编码指导 | 07 |
-| 构建/重构计算软件 | 08→09→10→11→12a→12b→12c→13→14（除非明确降级为原型） |
-| 构建报告/批量接口 | 12 + 13 |
-| 添加测试/回归/追溯 | 13 |
-| 发布/部署/在线计算器 | 14（需先完成12b和13） |
-| 修复缺陷 | 识别最低正确层级 |
-
-### 路由前必检项
-
-```
-这是参考获取、分析还是实现？
-是否有用户来源/本地证据库/有效交接文件？
-是否需要辖区特定信息？
-是否涉及公式/查找/分支/单位？
-是否仅涉及展示/报告/批量？
-是否存在来源冲突？
-```
-
-### 路由决策输出
-
-```
-任务类型:
-资料状态:
-所需技能路径:
-所需输入产物:
-预期输出产物:
-门禁状态:
-立即下一步行动:
-```
-
-## 不可违反的规则
-
-1. **不得发明工程公式**：来源基础缺失时不得发明公式、查找规则、单位、系数或分支逻辑
-2. **不得跳过交接门控**：`implementation_handoff.yaml` 和 `coding_go_no_go.md` 允许前不得开始正式实现
-3. **公式隔离**：公式不得出现在UI/报告模板/CSV/批量脚本中。官方计算必须流经 `run_book(BookInput) -> BookResult`
-4. **版权合规**：不得绕过付费墙/登录墙/许可限制
-
-### 版权规则
-
-仅持久化：用户提供的、明确授权的、可公开下载的、公共领域的文档。对版权来源仅保存：源卡片、书目元数据、条款标识符、简短摘录、释义笔记。
-
-**禁止**：绕过付费墙、使用未授权副本、移除访问控制、复制完整标准、使用未验证AI摘要。
-
-## 质量门禁
-
-### 证据门禁
-
-`evidence_no_go` → `search_required` → `partial_analysis_allowed` → `analysis_allowed`
-
-默认规则：无管控来源→`search_required`；仅够粗略→`partial_analysis_allowed`；够追溯蓝图→`analysis_allowed`
-
-### 交接门禁
-
-`no_go` → `prototype_allowed` → `production_allowed`
-
-默认规则：关键公式/查找/管控规范缺失/单位不清/冲突未解决→`no_go`；缺回归参考但公式清晰→`prototype_allowed`；全部定义→`production_allowed`
-
-### 实现门禁
-
-公式仅在模块中、唯一`run_book()`、类型化模型、单位转换仅在边界、警告错误保留、路径稳定、测试全通过、追溯元数据已保存。
-
-### 报告生产门禁
-
-报告标记`final`前：生产决策已记录、状态明确、来源允许生产、从已保存BookResult生成、ReportContext完整、模板不计算、冒烟测试通过。缺失则用`draft`/`review`/`prototype`/`not_for_construction`。
-
-### 发布部署门禁
-
-最终 Web 计算程序标记为完成或可部署前：本地运行命令已记录并 smoke-tested，`/health` 可用，生产入口、环境变量、Docker 或 systemd/nginx 路径、release checklist 和部署 smoke 记录齐全，且交付物不是只有静态 HTML、报告 HTML 或 mockup。
-
-## 约定速查
-
-### ID 体系
-
-```
-来源: S01, S02... / CAND-001 / GAP-001 / SEARCH-001 / DEC-001 / COV-001
-分析: N001(节点) / F001(公式) / L001(查找) / B001(分支) / A001(假设) / V001(验证) / RISK-001 / Q001
-实现: MOD-001(模块) / PATH-001(路径) / T001(测试)
-```
-下游引用后不得回收ID。
-
-### 内部单位
-
-`长度:m 面积:m² 体积:m³ 力:kN 应力:kPa 重度:kN/m³ 弯矩:kNm 沉降:mm 角度输入:degree 角度内部:radian`
-
-规则：输入边界转换→模块内用内部单位→展示边界格式化→模型存单位元数据→拒绝模糊维度→不混用degree/radian。
-
-### 状态语义
-
-```
-PASS: utilization <= limit + tolerance
-FAIL: utilization > limit + tolerance
-WARNING: 结果存在但需关注
-ERROR: 计算无法完成
-NEEDS_CONFIRMATION: 需确认来源/假设
-NOT_APPLICABLE / NOT_EVALUATED
-```
-
-### 文件命名
-
-来源：`S01_<name>.<ext>` / `CODE-01_<name>.<ext>` / `MANUAL-01_<name>.<ext>`
-分析/实现：lowercase snake_case。`artifact_index.yaml`引用后不得重命名。
-
-### 结果路径
-
-稳定路径示例：`bearing.status`, `governing.overall_status`, `warnings.count`。模板引用路径，不重新计算。
-
-## 项目结构
-
-```
-engineering_calc_project/
-├── analysis/          # 01_source/02_blueprint/03_details/04_diagrams/05_risks
-├── handoff/           # implementation_handoff.yaml + artifact_index + coding_go_no_go
-├── implementation/    # 00_arch/01_models/02_modules/03_runner/04_interfaces/05_acceptance
-├── references/        # acquisition/ + source_cards/ + raw/ + extracted/ + snapshots/ + registry
-├── src/pkg/           # core/ + libraries/ + books/ + interfaces/ + report/
-├── tests/             # unit/ + regression/ + integration/ + smoke/
-├── verification/      # test_matrix + regression_refs + tolerance + acceptance
-├── input/ + outputs/ + reports/
-```
-
-### 依赖方向（单向）
-
-```
-展示/报告/审查/批量/API → books → libraries → core
-```
-禁止反向：core不导入libraries/books/UI，libraries不导入books/UI，报告不重算。
-
-## 各技能工作流
-
-每个技能执行时按以下步骤：
-
-### 第一阶段：参考获取（01-03）
-
-**01 充分性评估**：评估16个维度（领域/规范/辖区/设计基础/荷载/几何/参数/公式/查找/分支/单位/安全系数/算例/报告/审查）→ 填写覆盖矩阵 → 生成获取计划 → 判定证据门禁
-
-**02 发现与获取**：按源优先级搜索 → 每个缺口多查询 → 优先官方源 → 交叉检查版本/辖区 → 记录搜索日志/候选源/检索决策 → 更新覆盖矩阵。**即使有资料，也应主动联网验证**：搜索官方勘误、对比其他权威来源、补充算例、确认最新修订版本。
-
-**03 本地持久化**：分配稳定源ID → 按规则保存原始文件/源卡片 → 提取笔记 → 生成清单 → 创建获取交接文件
-
-### 第二阶段：逻辑蓝图（04-07）
-
-**04 源摄入**：读取证据库 → 分配/验证源ID → 按权威层级排序 → 记录冲突 → 生成源清单
-
-**05 逻辑蓝图**：提取概念图 → 构建规范化节点模型（14种节点类型）→ 输入/中间/输出清单 → 生成Mermaid视图 → 映射软件模块候选
-
-**06 公式提取**：提取公式清单 → 查找表清单（含插值规则）→ 分支清单 → 单位符号规则 → 适用性限制 → 假设登记 → 风险与问题。**建议联网验证**：搜索公式来源确认完整性、查找官方勘误、对比其他手册算例。
-
-**07 交接契约**：汇总分析产物 → 填写交接YAML → 判定编码门控 → 生成交接包
-
-### 第三阶段：实现验证发布（08-14）
-
-**08 架构**：读取交接文件 → 功能分类（7层）→ 设计项目结构 → 定义依赖规则
-
-**09 数据模型**：定义核心平台（10项职责）→ 定义公共数据模型（10+个）→ 定义状态/单位/路径
-
-**10 可复用模块**：按11条规则实现 → 类型化输入输出 → 公式追溯 → 独立测试
-
-**11 运行器**：实现唯一`run_book()` → 模块调用序列 → 管控摘要 → 警告错误聚合
-
-**12 接口路由**：选择报告、前端审查、批量包专项接口技能 → 保持接口薄层 → 冒烟测试
-
-**12a 报告渲染**：报告生产决策 → ReportContext → 模板边界 → 输出与预览
-
-**12b 前端审查**：输入映射 → API → 前端 JS → i18n/图表/净化 → Marimo 审查
-
-**12c 批量包**：导入导出 → 上传包 → manifest/hash → 批量流 → 摘要
-
-**13 验证**：10种测试 → 回归参考（6级优先）→ 追溯元数据（14字段）→ 18项验收检查
-
-**14 发布部署**：本地可运行 Web 客户端 → Linux/cloud 部署路径 → Docker/systemd/nginx/env → release checklist → health/API smoke tests → 证明交付不是静态 HTML-only
-
-## 硬交接产物
-
-```
-references/acquisition/acquisition_handoff.yaml  → 获取→分析
-handoff/implementation_handoff.yaml              → 分析→实现
-```
-
-## 技能文件索引
-
-执行具体任务时，读取对应文件获取完整指导：
-
-| 技能 | 文件路径 |
-|------|----------|
-| 00 路由 | `skills/00-engineering-calculation-router.skill.md` |
-| 01 充分性 | `skills/01-reference-adequacy-and-gap-assessment.skill.md` |
-| 02 发现获取 | `skills/02-reference-discovery-and-acquisition.skill.md` |
-| 03 持久化 | `skills/03-reference-persistence-and-local-library.skill.md` |
-| 04 源摄入 | `skills/04-source-intake-and-authority.skill.md` |
-| 05 逻辑蓝图 | `skills/05-engineering-logic-blueprint.skill.md` |
-| 06 公式提取 | `skills/06-formula-lookup-branch-extraction.skill.md` |
-| 07 交接契约 | `skills/07-implementation-handoff-contract.skill.md` |
-| 08 架构 | `skills/08-calculation-book-architecture.skill.md` |
-| 09 数据模型 | `skills/09-core-and-data-models.skill.md` |
-| 10 模块 | `skills/10-reusable-calculation-modules.skill.md` |
-| 11 运行器 | `skills/11-book-runner-and-governing-summary.skill.md` |
-| 12 接口路由 | `skills/12-report-review-batch-interfaces.skill.md` |
-| 12a 报告渲染 | `skills/12a-report-context-and-rendering.skill.md` |
-| 12b 前端审查 | `skills/12b-frontend-and-review-interfaces.skill.md` |
-| 12c 批量包 | `skills/12c-batch-import-export-packages.skill.md` |
-| 13 验证 | `skills/13-verification-regression-traceability.skill.md` |
-| 14 发布部署 | `skills/14-cloud-web-release-deployment.skill.md` |
-
-**父级编排器**：`parent/engineering-calculation-reference-acquisition.skill.md`、`parent/engineering-calculation-logic-architecture.skill.md`、`parent/engineering-calculation-book.skill.md`
-
-**模板**：`templates/`（acquisition/analysis/handoff/implementation/verification）
-**共享契约**：`shared/`
-**验证脚本**：`scripts/validate_artifacts.py`
-
-## Agent 与 MCP 适配
-
-跨 Agent 加载入口见 `../../../adapters/agent-entrypoints.md`。MCP 工具建议见 `../../../adapters/mcp-recommendations.md`。
-
-MCP 只作为加速器，不作为正确性依赖。优先按任务启用搜索/抓取、文档查询、公共代码搜索、诊断/LSP、授权文档提取和浏览器测试。不要默认启用带密钥、外部系统或可能绕过访问控制的 MCP。
-
-## 多 Agent 编排
-
-只有当用户明确要求多 Agent、子代理、委派或并行工作时，才进入多 Agent 编排。可读取 `../../../shared/multi-agent-orchestration.md`，并使用：
-
-```text
-templates/orchestration/parallel_work_plan.yaml
-templates/orchestration/agent_result_packet.yaml
-templates/orchestration/merge_review.md
-```
-
-推荐角色：
-
-| 角色 | 可负责 | 不可负责 |
-|------|--------|----------|
-| supervisor | 路由、分派、合并、门禁、最终验收 | 不应把最终判断外包 |
-| reference-acquirer | 不同缺口/辖区/来源族搜索、候选源记录 | source ID 最终分配、版权访问决策 |
-| source-intake | 单个文档/表格摄入、源卡片草稿、冲突候选 | 权威排序、冲突最终解决 |
-| logic-extractor | 公式、查找表、分支、单位、算例提取 | ID 命名空间、handoff 冻结 |
-| module-worker | 独立计算模块、模块测试、公式追溯 | `run_book()` 公共合同、跨模块路径 |
-| interface-worker | API、前端、报告、批量薄接口 | 公式实现、独立 pass/fail 逻辑 |
-| verification-worker | 单元/回归/smoke/部署检查 | production/release 最终标签 |
-
-并行前必须声明每个任务的 `owned_paths`。worker 只写自己的路径，输出 agent result packet；supervisor 通过 merge review 接受结果。
-
-不得委派：证据门禁、编码门禁、来源权威决策、ID 分配、`implementation_handoff.yaml` 冻结、`run_book(BookInput) -> BookResult` 公共合同变更、production/release 最终验收。
-
-## UI 交互
-
-### 何时显示控制台
-
-| 时机 | 条件 | 说明 |
-|------|------|------|
-| 任务开始 | 用户发起新的工程计算任务 | 展示项目总览，确认当前阶段 |
-| 阶段切换 | 完成一个技能阶段后 | 更新进度，引导下一步 |
-| 用户请求 | 用户要求查看项目状态 | 手动打开控制台 |
-| 批量操作 | 用户需要导入/导出数据 | 使用「数据导入」标签页 |
-
-**不应显示**：纯问答对话、简单文件操作、与生命周期无关的任务。
-
-**1. 任务开始时** — 展示项目总览和当前阶段：
-
-```
-show_widget(
-  widget_path: "engineering-calc-system/assets/lifecycle-console.html",
-  data: {
-    project_name: "<项目名称>",
-    version: "2.4.1",
-    current_stage: "<当前技能ID，如 02>",
-    completed_stages: ["01"],
-    gate_status: {
-      evidence: "search_required",
-      handoff: "no_go"
-    },
-    tasks: [
-      {
-        id: "T1",
-        title: "任务描述",
-        status: "pending|in_progress|done",
-        phase: 1,
-        parallel_group: "none|PWP-001",
-        owned_paths: [],
-        merge_review: "not_required|pending|accepted"
-      }
-    ]
-  },
-  title: "工程计算系统控制台",
-  i_have_seen_guidelines: true
-)
-```
-
-**2. 用户交互后** — 收到 `[Widget interaction]` 消息：
-
-- `{"action":"start_stage","stage_id":"02"}` → 开始执行指定技能
-- `{"action":"route_confirmed","state":"insufficient","route":["01","02","03"]}` → 确认路由，按路径执行
-- `{"action":"select_task","task_id":"T1","title":"..."}` → 聚焦到指定任务
-- `{"action":"select_parallel_task","task_id":"T1","plan_id":"PWP-001"}` → 聚焦到并行任务和合并状态
-
-**3. 批量数据导入** — 用户通过「数据导入」标签页操作：
-
-- `{"action":"batch_import","data":{...},"applied_count":N}` → 批量导入项目状态
-  - 支持 JSON / YAML / CSV 格式
-  - 可导入：项目名称、完成阶段、当前阶段、门禁状态、任务列表
-  - 支持拖放文件、粘贴文本、模板示例
-- `{"action":"batch_mark_done","stage_ids":["01","02"]}` → 批量标记阶段完成
-- `{"action":"batch_add_tasks","tasks":[...]}` → 批量添加任务
-- `{"action":"batch_reset_gates"}` → 重置所有门禁
-- `{"action":"batch_full_reset"}` → 完全重置
-
-**4. 阶段完成后** — 更新控制台状态，刷新进度和门禁。
-
----
-
-## 详细参考
-
-各技能的完整字段定义、产物清单、执行细节见 [reference.md](reference.md)
-
-## 工作约束
-
-**必须**：先读取相关技能文件 → 使用模板 → 遵循共享契约 → 保持ID一致 → Mermaid无样式 → 记录搜索日志 → 完成前运行验证
-
-**禁止**：发明工程逻辑 → 跳过门禁 → UI/报告中放公式 → 忽略版权 → 回收ID → 重命名已引用文件
+If validation fails, label the result as `prototype`, `incomplete`, or
+`not deployable`.
+
+## Static Report Triage
+
+If a project has calculation scripts or exported `reports/*.html` but lacks
+`webapp/`, `apps/review/`, `src/pkg/report/`, `latex/templates/`,
+`tests/smoke/`, `deploy/`, or `handoff/`, classify it as
+`static_report_or_cli_only`. Treat exported HTML as comparison evidence, not the
+deployable application runtime.
+
+## Marimo Review Closure
+
+For `web-complete`, create the Marimo review/admin closure instead of only a
+static HTML report or UI mockup. Required artifacts and entrypoints include
+`/admin/`, `/admin/review/`, `/admin/formulas/`, `/api/review/session`,
+`/api/review/state/<session_id>`, `apps/review/calculation_review.py`,
+`apps/review/admin_formula_review.py`, `src/pkg/review/bridge.py`,
+`ADMIN_REVIEW_PASSWORD`, and `ADMIN_REVIEW_TOKEN`. If Marimo is unavailable, the
+admin shell must show the install/config prompt while `/`, `/health`, and
+`/api/calculate` stay usable.
+
+## A4 HTML First
+
+Default calculation-book output to print-ready A4 HTML: `@page size: A4`,
+print-safe margins, formula traces, source result paths, warnings/errors,
+sources, assumptions, traceability, and chart data tables when charts are
+emitted. Use LaTeX/Overleaf/PDF only when explicitly requested or required by
+the handoff.
+
+## Detailed Reference
+
+Full lifecycle details live in `reference.md` or, in Qoder Project overlays,
+`.qoder/references/engineering-calc-system.md`. Complete executable guidance
+lives in the core package under `skills/`, `parent/`, `shared/`, `templates/`,
+`schemas/`, `scripts/validate_artifacts.py`, and `project_template/`.

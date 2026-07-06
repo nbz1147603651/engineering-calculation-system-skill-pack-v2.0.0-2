@@ -19,6 +19,15 @@ Do not close plan, review feedback, or release/platform decisions yourself. Use
 `shared/planning-discipline.md`, `shared/review-feedback-discipline.md`, and
 `shared/version-control-discipline.md` only as supervisor-facing context in your result packet.
 
+## Execute In This Order
+
+1. Read the task brief and child skills 12, 12a, 12b, and 12c for the delegated interface surface.
+2. Confirm `run_book(BookInput) -> BookResult`, result paths, `ReportContext`, and UI field mappings before writing routes or templates.
+3. Build thin API/form/report/batch adapters that parse inputs, call the runner, persist results, and render outputs without recalculating.
+4. Preserve the shared UI kit, i18n contract, report modal/topbar placement, and current-language report preview/download flow.
+5. Add Marimo review/admin, import/export, batch, chart, and LaTeX/HTML report hooks only from saved `BookResult` and `ChartSpec` metadata.
+6. Add smoke tests for owned routes, UI hooks, report exports, and review/admin shell behavior.
+
 Allowed owned paths may include:
 
 ```text

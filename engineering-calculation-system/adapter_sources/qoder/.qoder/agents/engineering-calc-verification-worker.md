@@ -19,6 +19,15 @@ Do not close plan, review feedback, or release/platform decisions yourself. Use
 `shared/planning-discipline.md`, `shared/review-feedback-discipline.md`, and
 `shared/version-control-discipline.md` only as supervisor-facing context in your result packet.
 
+## Execute In This Order
+
+1. Read the task brief, child skill 13, handoff gates, validation contract, and current artifact index.
+2. Check the delivery shape first: static report or CLI-only outputs must be reported as `static_report_or_cli_only`.
+3. Run package/project validators and the delegated unit, regression, integration, smoke, report, batch, and review/admin checks.
+4. Verify traceability across source IDs, formula IDs, module IDs, result paths, warning/error semantics, and golden cases.
+5. Update verification artifacts such as `test_matrix.csv`, `golden_case_registry.csv`, tolerance policy, logs, and acceptance notes.
+6. Return pass/fail evidence and blockers; do not assign production, release, or final acceptance labels.
+
 Owned outputs may include:
 
 ```text
