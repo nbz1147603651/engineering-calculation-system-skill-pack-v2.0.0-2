@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 import hashlib
 import json
 import os
+import re
 import shutil
 import struct
 import subprocess
@@ -31,6 +32,7 @@ WORKSPACE_ROOT = REPO_ROOT.parent
 CORE_SOURCE = REPO_ROOT / "core" / "engineering-calculation-system"
 LIGHT_ADAPTER_SOURCE = REPO_ROOT / "adapter_sources" / "light"
 QODER_ADAPTER_SOURCE = REPO_ROOT / "adapter_sources" / "qoder"
+CODEX_PLUGIN_SOURCE = WORKSPACE_ROOT / "plugins" / "engineering-calculation-system"
 ZCODE_PLUGIN_SOURCE = WORKSPACE_ROOT / "plugins" / "engineering-calculation-system-zcode"
 DIST_ROOT = REPO_ROOT / "dist"
 RELEASE_ROOT = DIST_ROOT / "release"
@@ -192,7 +194,7 @@ CANONICAL_BEHAVIOR_DOCS = (
 )
 
 PLATFORM_ENTRYPOINTS = {
-    "CODEX": "SKILL.md",
+    "CODEX": ".codex-plugin/plugin.json",
     "MiniMaxCode": "skills/engineering-calculation-system/SKILL.md",
     "ZCode": "skills/engineering-calculation-system/SKILL.md",
     "QODER": "SKILL.md",
@@ -220,6 +222,7 @@ UPLOAD_RELEASE_SENTINELS = {
 }
 
 PLATFORM_FALLBACKS = {
+    "CODEX": "Install as a Codex plugin through the local marketplace entry; raw ~/.codex/skills installs are legacy fallback only.",
     "QODER": "Direct skill is lightweight; use QODER Project plus complete core package before web-complete claims.",
     "Qoder CLI Plugin": "Install with Qoder CLI plugin management; if plugin install is unavailable, use QODER Project or the direct QODER Skill zip.",
     "QoderCN": "User-level resources are lightweight; use QoderCN Project plus complete core package for web-complete claims.",
@@ -553,6 +556,56 @@ def build_qoder_addon() -> Path:
     sync_frontmatter_versions(profile_root)
     assert_frontmatter_versions(profile_root)
     write_indexes(profile_root, "engineering-calculation-system-qoder-addon")
+    return profile_root
+
+
+def validate_codex_plugin(plugin_root: Path, *, context: str) -> None:
+    require_paths(
+        plugin_root,
+        [
+            ".codex-plugin/plugin.json",
+            "README.md",
+            "docs/CODEX_QUICKSTART.md",
+            "skills/engineering-calculation-system/SKILL.md",
+            "skills/engineering-calculation-system/shared/codex-plugin-adapter.md",
+            "skills/engineering-calculation-system/scripts/validate_artifacts.py",
+            "skills/engineering-calculation-system/scripts/ecs_execution.py",
+        ],
+        context=context,
+    )
+    require_text(
+        plugin_root / ".codex-plugin" / "plugin.json",
+        [
+            '"name": "engineering-calculation-system"',
+            '"codex-plugin"',
+            '"skills": "./skills/"',
+            '"Web-Complete Delivery"',
+            '"Codex Workspace Validation"',
+        ],
+        context=context,
+    )
+    require_text(
+        plugin_root / "skills" / "engineering-calculation-system" / "SKILL.md",
+        [
+            "name: engineering-calculation-system",
+            "shared/codex-plugin-adapter.md",
+            "skills/00-engineering-calculation-router.skill.md",
+            "run_book(BookInput) -> BookResult",
+            "web-complete",
+        ],
+        context=context,
+    )
+
+
+def build_codex_plugin() -> Path:
+    profile_root = DIST_ROOT / "codex-plugin"
+    plugin_root = profile_root / "engineering-calculation-system"
+    clean_dir(profile_root)
+    copy_tree(CODEX_PLUGIN_SOURCE, plugin_root)
+    sync_frontmatter_versions(plugin_root)
+    assert_frontmatter_versions(plugin_root)
+    validate_codex_plugin(plugin_root, context="Codex plugin profile")
+    write_indexes(profile_root, "engineering-calculation-system-codex-plugin")
     return profile_root
 
 
@@ -1585,6 +1638,7 @@ def build_ui_client() -> Path:
 def build_profile(profile: str) -> Path:
     builders = {
         "core": build_core,
+        "codex-plugin": build_codex_plugin,
         "adapters-light": build_adapters_light,
         "qoder-addon": build_qoder_addon,
         "qoder-plugin": build_qoder_plugin,
@@ -1796,6 +1850,10 @@ def stage_target_payload(profile_roots: dict[str, Path], target: BundleTarget, p
 
 def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
     context = f"{target.name} payload"
+    if target.name == "CODEX":
+        validate_codex_plugin(payload_root, context=context)
+        return
+
     if target.name in {"QODER", "QoderCN Cloud Agents"}:
         require_paths(
             payload_root,
@@ -2558,13 +2616,147 @@ def run_homepage_packager() -> Path:
     return archive_path
 
 
-def copy_gui_downloads(destination_root: Path) -> None:
-    downloads_root = destination_root / "downloads"
-    downloads_root.mkdir(parents=True, exist_ok=True)
-    copy_file(ui_client_installer_path(), downloads_root / ui_client_installer_name())
+def ensure_nginx_download_alias(path: Path, alias_target: str) -> None:
+    if not path.exists():
+        return
+    text = path.read_text(encoding="utf-8")
+    block = (
+        "    location /downloads/ {\n"
+        f"        alias {alias_target};\n"
+        "        expires 7d;\n"
+        "    }\n\n"
+    )
+    if "location /downloads/" in text:
+        text = re.sub(
+            r"    location /downloads/ \{\n(?:.*?\n)*?    \}\n\n",
+            block,
+            text,
+            count=1,
+        )
+    else:
+        text = text.replace("    location /home/ {\n", block + "    location /home/ {\n", 1)
+    path.write_text(text, encoding="utf-8")
+
+
+def ensure_deploy_script_download_check(path: Path) -> None:
+    if not path.exists():
+        return
+    text = path.read_text(encoding="utf-8")
+    if "download_file_path=" not in text:
+        text = text.replace(
+            'template_path="$package_root/deploy/nginx/ecs-homepage-linux.conf.template"\n',
+            'template_path="$package_root/deploy/nginx/ecs-homepage-linux.conf.template"\n'
+            'version_file="$package_root/VERSION"\n',
+            1,
+        )
+        text = text.replace(
+            '[[ -f "$template_path" ]] || fail "Missing Nginx template: $template_path"\n',
+            '[[ -f "$template_path" ]] || fail "Missing Nginx template: $template_path"\n'
+            '[[ -f "$version_file" ]] || fail "Missing VERSION file: $version_file"\n\n'
+            'version="$(tr -d \'[:space:]\' < "$version_file")"\n'
+            'gui_installer_name="engineering-calc-system-installer-v${version}.exe"\n'
+            'download_file_path="data/$gui_installer_name"\n'
+            'download_url_path="downloads/$gui_installer_name"\n'
+            '[[ -f "$site_source/$download_file_path" ]] || fail "Missing GUI installer download: $site_source/$download_file_path"\n',
+            1,
+        )
+    if 'curl -fsSI "http://127.0.0.1/$download_url_path" >/dev/null' not in text:
+        text = text.replace(
+            "  curl -fsSI http://127.0.0.1/home/ >/dev/null\n",
+            "  curl -fsSI http://127.0.0.1/home/ >/dev/null\n"
+            '  curl -fsSI "http://127.0.0.1/$download_url_path" >/dev/null\n',
+            1,
+        )
+    path.write_text(text, encoding="utf-8")
+
+
+def normalize_homepage_linux_web_package(archive_path: Path) -> None:
+    """Force the server package to use CAD-style data/ storage for downloads."""
+    with tempfile.TemporaryDirectory(prefix="ecs-homepage-normalize-") as temp_dir:
+        temp_root = Path(temp_dir)
+        with zipfile.ZipFile(archive_path) as archive:
+            archive.extractall(temp_root)
+        roots = [path for path in temp_root.iterdir() if path.is_dir()]
+        if len(roots) != 1:
+            raise RuntimeError(f"homepage package should contain one root directory: {archive_path}")
+        package_root = roots[0]
+        site_root = package_root / "site"
+        downloads_root = site_root / "downloads"
+        data_root = site_root / "data"
+        if downloads_root.exists():
+            data_root.mkdir(parents=True, exist_ok=True)
+            for item in downloads_root.iterdir():
+                target = data_root / item.name
+                if target.exists():
+                    if target.is_dir():
+                        shutil.rmtree(target)
+                    else:
+                        target.unlink()
+                shutil.move(str(item), str(target))
+            shutil.rmtree(downloads_root)
+        if not (data_root / ui_client_installer_name()).exists():
+            copy_gui_data(site_root)
+
+        manifest_path = package_root / "deployment-manifest.json"
+        if manifest_path.exists():
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            manifest["guiInstaller"] = f"site/data/{ui_client_installer_name()}"
+            manifest["guiInstallerUrl"] = f"/downloads/{ui_client_installer_name()}"
+            manifest["downloadPaths"] = [f"/downloads/{ui_client_installer_name()}"]
+            health_checks = list(manifest.get("healthChecks", []))
+            download_health = f"/downloads/{ui_client_installer_name()}"
+            if download_health not in health_checks:
+                health_checks.insert(2, download_health)
+            manifest["healthChecks"] = health_checks
+            write_json_lf(manifest_path, manifest)
+
+        ensure_nginx_download_alias(
+            package_root / "deploy" / "nginx" / "ecs-homepage-linux.conf.template",
+            "__ECS_HOMEPAGE_SITE_ROOT__/data/",
+        )
+        ensure_nginx_download_alias(
+            package_root / "deploy" / "nginx" / "default.conf",
+            "/usr/share/nginx/html/data/",
+        )
+        ensure_deploy_script_download_check(package_root / "deploy" / "linux" / "deploy.sh")
+
+        for readme_path in (package_root / "README.md", package_root / "deploy" / "README.md"):
+            if readme_path.exists():
+                text = readme_path.read_text(encoding="utf-8")
+                text = text.replace(
+                    f"site/downloads/{ui_client_installer_name()}",
+                    f"site/data/{ui_client_installer_name()}",
+                )
+                text = text.replace(
+                    "site/downloads/{{GUI_INSTALLER_NAME}}",
+                    "site/data/{{GUI_INSTALLER_NAME}}",
+                )
+                text = text.replace(
+                    "GUI installer served from `/downloads/`.",
+                    "GUI installer storage, served from `/downloads/`.",
+                )
+                text = text.replace(
+                    "copies it into the server `/downloads/` path",
+                    "copies it into the server `data/` storage path, maps it to `/downloads/`",
+                )
+                text = text.replace(
+                    "The homepage CTA uses the absolute `/downloads/` URL, so one installer copy\nserves both entrypoints.",
+                    "The homepage CTA uses the absolute `/downloads/` URL, which Nginx maps to the\n`site/data/` storage directory to match the CAD deployment layout.",
+                )
+                readme_path.write_text(text, encoding="utf-8")
+
+        write_zip(package_root, archive_path, archive_root_name=package_root.name)
+    hash_path = Path(str(archive_path) + ".sha256")
+    hash_path.write_text(f"{sha256(archive_path)}  {archive_path.name}\n", encoding="utf-8")
+
+
+def copy_gui_data(destination_root: Path) -> None:
+    data_root = destination_root / "data"
+    data_root.mkdir(parents=True, exist_ok=True)
+    copy_file(ui_client_installer_path(), data_root / ui_client_installer_name())
     gui_checksums = DIST_ROOT / "ui-client" / "CHECKSUMS.txt"
     if gui_checksums.exists():
-        copy_file(gui_checksums, downloads_root / "CHECKSUMS.txt")
+        copy_file(gui_checksums, data_root / "CHECKSUMS.txt")
 
 
 def write_update_manifest(path: Path, *, built_at: str, gui_sha: str, gui_size: int) -> None:
@@ -2599,7 +2791,7 @@ This directory is the server upload payload for the public homepage and the down
 ## Contents
 
 - `home/` - static homepage files for the server homepage path.
-- `downloads/` - Windows GUI installer served by the customer CTA.
+- `data/` - Windows GUI installer storage served by the customer CTA through `/downloads/`.
 - `dist/` - versioned release artifacts, the Linux web package, and the stable update manifest.
 - `version.json`, `VERSION`, and `CHECKSUMS.txt` - release identity and verification files.
 
@@ -2612,7 +2804,7 @@ def validate_server_upload_bundle(package_root: Path, archive_path: Path) -> Non
     required = [
         "home/index.html",
         "home/version.json",
-        f"downloads/{ui_client_installer_name()}",
+        f"data/{ui_client_installer_name()}",
         f"dist/{homepage_linux_web_archive_name()}",
         f"dist/{homepage_linux_web_archive_name()}.sha256",
         f"dist/{ui_client_installer_name()}",
@@ -2645,6 +2837,7 @@ def validate_server_upload_bundle(package_root: Path, archive_path: Path) -> Non
 
 def build_server_upload_bundle() -> Path:
     homepage_archive = run_homepage_packager()
+    normalize_homepage_linux_web_package(homepage_archive)
     homepage_hash = sha256(homepage_archive)
     gui_path = ui_client_installer_path()
     gui_hash = sha256(gui_path)
@@ -2660,7 +2853,7 @@ def build_server_upload_bundle() -> Path:
     dist_root.mkdir(parents=True, exist_ok=True)
 
     copy_tree(HOMEPAGE_DIST_ROOT, home_root)
-    copy_gui_downloads(package_root)
+    copy_gui_data(package_root)
     copy_file(homepage_archive, dist_root / homepage_archive.name)
     copy_file(Path(str(homepage_archive) + ".sha256"), dist_root / f"{homepage_archive.name}.sha256")
     copy_file(gui_path, dist_root / ui_client_installer_name())
@@ -2684,6 +2877,7 @@ def build_server_upload_bundle() -> Path:
         },
         "gui": {
             "package": f"dist/{ui_client_installer_name()}",
+            "data_path": f"data/{ui_client_installer_name()}",
             "download_path": f"/downloads/{ui_client_installer_name()}",
             "sha256": gui_hash,
             "size_bytes": gui_size,

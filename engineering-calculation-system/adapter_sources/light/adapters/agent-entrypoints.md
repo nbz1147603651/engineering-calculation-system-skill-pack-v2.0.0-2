@@ -125,14 +125,14 @@ fallback before claiming `web-complete`.
 
 Preferred setup:
 
-1. Install or expose `dist/core/engineering-calculation-system/` as a Codex skill folder.
-2. Use root `SKILL.md` as the primary trigger and entrypoint.
-3. Keep `agents/openai.yaml` with the package so Codex-compatible skill UIs can show metadata.
+1. Install or expose `plugins/engineering-calculation-system/` as the Codex plugin root through the local marketplace.
+2. Verify `.codex-plugin/plugin.json` plus `skills/engineering-calculation-system/SKILL.md` are present.
+3. Use the bundled Codex plugin skill entrypoint so `shared/codex-plugin-adapter.md` loads before the router.
 
 Fallback:
 
 - Paste or attach `dist/singlefile/engineering-calculation-system.all-in-one.md` when file-by-file progressive disclosure is unavailable.
-- If only repository rules are available, use `AGENTS.md` plus the root `SKILL.md`.
+- If plugin import is unavailable, use `AGENTS.md` plus the core `SKILL.md` as a legacy fallback.
 
 Multi-agent note:
 

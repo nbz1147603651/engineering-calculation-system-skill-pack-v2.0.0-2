@@ -60,16 +60,16 @@ function Copy-DirectoryContents {
     }
 }
 
-function Copy-GuiInstallerDownload {
+function Copy-GuiInstallerData {
     param(
         [Parameter(Mandatory)][string]$DestinationRoot
     )
 
-    $downloadsRoot = Join-Path $DestinationRoot "downloads"
-    New-Item -ItemType Directory -Force -Path $downloadsRoot | Out-Null
-    Copy-Item -LiteralPath $guiInstallerSource -Destination (Join-Path $downloadsRoot $guiInstallerName) -Force
+    $dataRoot = Join-Path $DestinationRoot "data"
+    New-Item -ItemType Directory -Force -Path $dataRoot | Out-Null
+    Copy-Item -LiteralPath $guiInstallerSource -Destination (Join-Path $dataRoot $guiInstallerName) -Force
     if (Test-Path -LiteralPath $guiChecksumsSource) {
-        Copy-Item -LiteralPath $guiChecksumsSource -Destination (Join-Path $downloadsRoot "CHECKSUMS.txt") -Force
+        Copy-Item -LiteralPath $guiChecksumsSource -Destination (Join-Path $dataRoot "CHECKSUMS.txt") -Force
     }
 }
 
@@ -147,7 +147,7 @@ try {
     $siteRoot = Join-Path $packageRoot "site"
     Copy-DirectoryContents -Source (Join-Path $root "dist") -Destination $siteRoot
     Copy-DirectoryContents -Source (Join-Path $root "dist") -Destination (Join-Path $siteRoot "home")
-    Copy-GuiInstallerDownload -DestinationRoot $siteRoot
+    Copy-GuiInstallerData -DestinationRoot $siteRoot
     Copy-Item -LiteralPath (Join-Path $root "deploy") -Destination $packageRoot -Recurse -Force
 
     $manifest = [ordered]@{
@@ -159,11 +159,12 @@ try {
         installScript = "deploy/linux/deploy.sh"
         nginxTemplate = "deploy/nginx/ecs-homepage-linux.conf.template"
         versionManifest = "site/version.json"
-        guiInstaller = "site/downloads/$guiInstallerName"
+        guiInstaller = "site/data/$guiInstallerName"
+        guiInstallerUrl = "/downloads/$guiInstallerName"
         downloadPaths = @("/downloads/$guiInstallerName")
         defaultInstallRoot = "/opt/ecs-homepage"
         defaultNginxConf = "/etc/nginx/conf.d/ecs-homepage.conf"
-        healthChecks = @("/", "/home/", "/healthz", "/version.json")
+        healthChecks = @("/", "/home/", "/downloads/$guiInstallerName", "/healthz", "/version.json")
         automation = [ordered]@{
             verifyChecksum = "sha256sum -c $(Split-Path $hashPath -Leaf)"
             deployCommand = "sudo bash deploy/linux/deploy.sh"
@@ -197,7 +198,7 @@ non-interactive deployment script for human operators or cloud agents.
 - `site/` - static web root for `/`.
 - `site/home/` - compatibility copy for `/home/`.
 - `site/version.json` - release identity served by the website.
-- `site/downloads/{{GUI_INSTALLER_NAME}}` - GUI installer served from `/downloads/`.
+- `site/data/{{GUI_INSTALLER_NAME}}` - GUI installer storage, served from `/downloads/`.
 - `deploy/linux/deploy.sh` - idempotent Linux deployment script.
 - `deploy/nginx/ecs-homepage-linux.conf.template` - Nginx server block template.
 - `deploy/AGENT_DEPLOYMENT.md` - automation-oriented deployment runbook.

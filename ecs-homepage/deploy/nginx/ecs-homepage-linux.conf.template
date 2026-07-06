@@ -38,6 +38,11 @@ server {
         try_files $uri =404;
     }
 
+    location /downloads/ {
+        alias __ECS_HOMEPAGE_SITE_ROOT__/data/;
+        expires 7d;
+    }
+
     location /home/ {
         try_files $uri $uri/ /home/index.html;
     }

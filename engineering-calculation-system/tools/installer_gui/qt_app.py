@@ -91,11 +91,14 @@ def _load_release_meta() -> tuple[str, tuple[str, ...]]:
 
         return pkg_version, (
             "core",
+            "codex-plugin",
             "adapters-light",
             "qoder-addon",
+            "qoder-plugin",
             "qoderworkcn-plugin",
             "singlefile",
             "source-dev",
+            "zcode-plugin",
             "ui-client",
         )
 
@@ -1351,7 +1354,13 @@ class AppWindow(QMainWindow):
         self._folder_btn.setText(t("btn_project_root") if spec.kind == "project" else t("btn_folder"))
         self._folder_btn.setEnabled(can_act)
         self._open_root_btn.setEnabled(row.root is not None and Path(row.root).exists())
-        self._remove_btn.setEnabled(can_act and spec.supports_uninstall and row.root is not None)
+        self._remove_btn.setEnabled(
+            can_act
+            and spec.supports_uninstall
+            and row.root is not None
+            and det is not None
+            and det.deployed
+        )
 
     def _on_mode_changed(self, _index: int = -1) -> None:
         source_index = self._selected_source_index()

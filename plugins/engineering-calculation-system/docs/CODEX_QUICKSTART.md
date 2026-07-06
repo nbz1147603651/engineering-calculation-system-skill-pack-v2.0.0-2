@@ -64,7 +64,7 @@ python scripts/validate_artifacts.py --package-root . --profile core \
 
 ## Maintenance Flow
 
-When the core skill changes, refresh the bundled Codex skill copy with:
+When the core skill changes, refresh the bundled Codex plugin skill copy with:
 
 ```bash
 python scripts/sync_from_core.py --dry-run

@@ -81,18 +81,18 @@ explaining `pip install pyinstaller` instead of failing the whole release.
 
 ## What it does
 
-The console lists eight agent products. Qoder and Qoder CN expose their user
+The console lists supported agent products. Qoder and Qoder CN expose their user
 folder / selected project deployment choice in the details panel instead of
 duplicating table rows. Each row shows the currently selected mode:
 
 - **program**: whether the agent CLI / home directory is present on this machine
-- **deployment**: whether the skill is already installed at that agent root
+- **deployment**: whether the plugin, skill, kit, or overlay is already installed at that target
 - **target**: the default install location or the selected project root
 - **profiles**: release profiles needed for that target
 
 | Agent | Target location | Verify |
 | --- | --- | --- |
-| Codex | `~/.codex/skills/engineering-calculation-system/` | `SKILL.md` sentinel |
+| Codex | Codex plugin root, typically the enabled local plugin cache under `~/.codex/plugins/cache/engineering-calculation-system-local/engineering-calculation-system/<version>/` | `.codex-plugin/plugin.json` + bundled skill sentinels |
 | MiniMax Code | `~/.mavis/skills/engineering-calculation-system/` | `mavis skill show ...` |
 | ZCode | `~/.zcode/plugins/engineering-calculation-system-zcode/` | root `marketplace.json` + `.zcode-plugin/plugin.json` + plugin skill sentinel |
 | Qoder | user folder: `QODER_HOME` or `~/.qoder`; selected project: writes `.qoder/` configuration | user audit or `.qoder/agents/engineering-calc-system.md` |

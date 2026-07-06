@@ -64,6 +64,7 @@ BUILD_SCRIPT: Path = TOOLS_DIR / "build_release.py"
 QODER_INSTALL_SCRIPT: Path = TOOLS_DIR / "install_qoder_user.py"
 DIST_ROOT: Path = (REPO_ROOT / "dist") if REPO_ROOT else Path("dist")
 DIST_CORE: Path = DIST_ROOT / "core" / "engineering-calculation-system"
+DIST_CODEX_PLUGIN: Path = DIST_ROOT / "codex-plugin" / "engineering-calculation-system"
 DIST_ADAPTERS_LIGHT: Path = DIST_ROOT / "adapters-light"
 DIST_QODER_ADDON: Path = DIST_ROOT / "qoder-addon"
 DIST_QODERWORKCN_PLUGIN: Path = DIST_ROOT / "qoderworkcn-plugin"
@@ -86,7 +87,7 @@ def set_repo_root(path: Path | None, *, validate: bool = True) -> None:
     False when pointing at a workspace directory that may not yet contain
     the full skill-pack source (deploy / build will fail gracefully later).
     """
-    global REPO_ROOT, TOOLS_DIR, BUILD_SCRIPT, QODER_INSTALL_SCRIPT, DIST_ROOT, DIST_CORE, DIST_ADAPTERS_LIGHT, DIST_QODER_ADDON, DIST_QODERWORKCN_PLUGIN, DIST_ZCODE_PLUGIN
+    global REPO_ROOT, TOOLS_DIR, BUILD_SCRIPT, QODER_INSTALL_SCRIPT, DIST_ROOT, DIST_CORE, DIST_CODEX_PLUGIN, DIST_ADAPTERS_LIGHT, DIST_QODER_ADDON, DIST_QODERWORKCN_PLUGIN, DIST_ZCODE_PLUGIN
     candidate = Path(path).expanduser() if path else None
     if validate and candidate is not None and not (candidate / "tools" / "build_release.py").exists():
         raise DeployError(
@@ -98,6 +99,7 @@ def set_repo_root(path: Path | None, *, validate: bool = True) -> None:
     QODER_INSTALL_SCRIPT = TOOLS_DIR / "install_qoder_user.py"
     DIST_ROOT = (REPO_ROOT / "dist") if REPO_ROOT else Path("dist")
     DIST_CORE = DIST_ROOT / "core" / "engineering-calculation-system"
+    DIST_CODEX_PLUGIN = DIST_ROOT / "codex-plugin" / "engineering-calculation-system"
     DIST_ADAPTERS_LIGHT = DIST_ROOT / "adapters-light"
     DIST_QODER_ADDON = DIST_ROOT / "qoder-addon"
     DIST_QODERWORKCN_PLUGIN = DIST_ROOT / "qoderworkcn-plugin"
@@ -229,6 +231,7 @@ def ensure_profiles(profiles: tuple[str, ...], *, log: LogFn, progress: Progress
     """
     profile_to_dist = {
         "core": DIST_CORE,
+        "codex-plugin": DIST_CODEX_PLUGIN,
         "adapters-light": DIST_ADAPTERS_LIGHT,
         "qoder-addon": DIST_QODER_ADDON,
         "qoderworkcn-plugin": DIST_QODERWORKCN_PLUGIN,
@@ -364,9 +367,9 @@ def _resolve_root(ctx: DeployContext) -> Path:
 
 def deploy_codex(ctx: DeployContext) -> None:
     root = _resolve_root(ctx)
-    ensure_profiles(("core",), log=ctx.log, progress=ctx.progress)
-    ctx.progress(0.7, "copying core skill")
-    _copy_tree(DIST_CORE, root, log=ctx.log)
+    ensure_profiles(("codex-plugin",), log=ctx.log, progress=ctx.progress)
+    ctx.progress(0.7, "copying Codex plugin")
+    _copy_tree(DIST_CODEX_PLUGIN, root, log=ctx.log)
     ctx.progress(1.0, t("deploy_codex_done"))
 
 
@@ -379,6 +382,8 @@ def verify_codex(ctx: DeployContext) -> bool:
 
 def uninstall_codex(ctx: DeployContext) -> None:
     root = _resolve_root(ctx)
+    if not (root / ".codex-plugin" / "plugin.json").is_file():
+        raise DeployError(t("deployer_codex_plugin_sentinel_missing", path=root))
     _remove_managed(root, log=ctx.log)
     ctx.log(t("uninstall_codex_done"))
 

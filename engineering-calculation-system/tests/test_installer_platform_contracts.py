@@ -33,6 +33,16 @@ def test_agent_specs_reuse_platform_contracts() -> None:
         assert spec.needs_profiles == contract.needs_profiles
 
 
+def test_codex_contract_targets_plugin_not_legacy_skill() -> None:
+    codex = next(contract for contract in CONTRACTS if contract.name == "codex")
+
+    assert codex.needs_profiles == ("codex-plugin",)
+    assert codex.sentinel_mode == "all"
+    assert ".codex-plugin/plugin.json" in codex.sentinel_paths
+    assert "skills/engineering-calculation-system/SKILL.md" in codex.sentinel_paths
+    assert "SKILL.md" not in codex.sentinel_paths
+
+
 def test_detector_sentinel_modes_follow_contracts(tmp_path: Path) -> None:
     for contract in CONTRACTS:
         root = tmp_path / contract.name

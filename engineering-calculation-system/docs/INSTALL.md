@@ -99,7 +99,7 @@ dist/release/engineering-calculation-system-AGENTS-Generic-v2.6.0.zip
 Each zip contains one install folder plus `INSTALL.md`, except MiniMaxCode which is packaged as a MiniMax skills repository root:
 
 ```text
-CODEX zip:         copy engineering-calculation-system/ to the Codex skills directory
+CODEX zip:         install engineering-calculation-system/ as the Codex plugin root through the local marketplace; .codex-plugin/plugin.json is the sentinel
 MiniMaxCode zip:   local install by copying skills/engineering-calculation-system/ to %USERPROFILE%/.mavis/skills/engineering-calculation-system/; Github import remains supported
 ZCode zip:         add engineering-calculation-system-zcode/ as a local marketplace source from Settings -> Plugins -> Discover -> +, then click Get on the plugin card
 QODER zip:         upload the zip directly in QODER Skills / Install Skill; this is a lightweight skill/resource entrypoint

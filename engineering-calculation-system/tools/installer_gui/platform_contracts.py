@@ -84,8 +84,49 @@ def _env_or_default(env_names: tuple[str, ...], fallback: Path) -> Path:
     return fallback
 
 
+CODEX_PLUGIN_NAME = "engineering-calculation-system"
+CODEX_LOCAL_MARKETPLACE_NAME = "engineering-calculation-system-local"
+
+
+def _existing_codex_plugin_cache_root() -> Path | None:
+    cache_parent = (
+        Path.home()
+        / ".codex"
+        / "plugins"
+        / "cache"
+        / CODEX_LOCAL_MARKETPLACE_NAME
+        / CODEX_PLUGIN_NAME
+    )
+    if not cache_parent.exists():
+        return None
+    try:
+        candidates = [
+            path
+            for path in cache_parent.iterdir()
+            if path.is_dir() and (path / ".codex-plugin" / "plugin.json").is_file()
+        ]
+    except OSError:
+        return None
+    if not candidates:
+        return None
+
+    def mtime(path: Path) -> float:
+        try:
+            return path.stat().st_mtime
+        except OSError:
+            return 0.0
+
+    return sorted(candidates, key=mtime, reverse=True)[0]
+
+
 def codex_root() -> Path:
-    return Path.home() / ".codex" / "skills" / "engineering-calculation-system"
+    configured = os.environ.get("ENGINEERING_CALC_CODEX_PLUGIN_ROOT") or os.environ.get("CODEX_PLUGIN_ROOT")
+    if configured:
+        return Path(configured).expanduser()
+    cached = _existing_codex_plugin_cache_root()
+    if cached is not None:
+        return cached
+    return Path.home() / ".codex" / "plugins" / CODEX_PLUGIN_NAME
 
 
 def mavis_root() -> Path:
@@ -152,13 +193,18 @@ CONTRACTS = (
         kind="user",
         summary_key="summary_codex",
         default_root_fn=codex_root,
-        needs_profiles=("core",),
+        needs_profiles=("codex-plugin",),
         program_probe=ProgramProbe(
             executable_names=("codex",),
             home_dirs=(HomeProbe(".codex"),),
             not_found_key="detector_codex_not_found",
         ),
-        sentinel_paths=("SKILL.md",),
+        sentinel_paths=(
+            ".codex-plugin/plugin.json",
+            "skills/engineering-calculation-system/SKILL.md",
+            "skills/engineering-calculation-system/shared/codex-plugin-adapter.md",
+        ),
+        sentinel_mode="all",
     ),
     AgentContract(
         name="minimax",

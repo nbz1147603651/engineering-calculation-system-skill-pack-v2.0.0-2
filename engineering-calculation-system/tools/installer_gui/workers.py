@@ -167,7 +167,9 @@ def _wrap_agent_action(
         # For multi-step deploys, sprinkle cancel checks between phases by
         # wrapping progress; the deployer itself checks cancellation implicitly
         # via the log/progress no-ops once cancelled.
-        action_fn(ctx)
+        result = action_fn(ctx)
+        if result is False:
+            raise deployer.DeployError(f"{spec.display_name} verification failed")
         if cancel.cancelled:
             return
         # Refresh this agent's deployed status after a mutating action.

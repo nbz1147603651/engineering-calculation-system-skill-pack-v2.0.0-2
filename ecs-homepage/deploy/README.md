@@ -39,8 +39,8 @@ npm run package:static
 ```
 
 The package script builds `dist/`, verifies the matching GUI installer exists,
-copies it into the server `/downloads/` path, creates a cloud-server-ready
-package, and writes both the zip and checksum to:
+copies it into the server `data/` storage path, maps it to `/downloads/`,
+creates a cloud-server-ready package, and writes both the zip and checksum to:
 
 ```text
 release/ecs-homepage-<version>-linux-web.zip
@@ -55,7 +55,7 @@ ecs-homepage-<version>-linux-web/
   VERSION
   deployment-manifest.json
   site/
-  site/downloads/engineering-calc-system-installer-v<version>.exe
+  site/data/engineering-calc-system-installer-v<version>.exe
   site/home/
   deploy/AGENT_DEPLOYMENT.md
   deploy/linux/deploy.sh
@@ -64,8 +64,8 @@ ecs-homepage-<version>-linux-web/
 
 The duplicated `site/home/` directory intentionally matches the Docker
 deployment shape, so the same Nginx routes work for `/` and `/home/`.
-The homepage CTA uses the absolute `/downloads/` URL, so one installer copy
-serves both entrypoints.
+The homepage CTA uses the absolute `/downloads/` URL, which Nginx maps to the
+`site/data/` storage directory to match the CAD deployment layout.
 
 ## Docker deployment
 
