@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import dataclass
+from datetime import datetime, timezone
 import hashlib
 import json
 import os
@@ -33,6 +34,10 @@ QODER_ADAPTER_SOURCE = REPO_ROOT / "adapter_sources" / "qoder"
 ZCODE_PLUGIN_SOURCE = WORKSPACE_ROOT / "plugins" / "engineering-calculation-system-zcode"
 DIST_ROOT = REPO_ROOT / "dist"
 RELEASE_ROOT = DIST_ROOT / "release"
+UPLOAD_ROOT = DIST_ROOT / "upload"
+HOMEPAGE_ROOT = WORKSPACE_ROOT / "ecs-homepage"
+HOMEPAGE_DIST_ROOT = HOMEPAGE_ROOT / "dist"
+HOMEPAGE_RELEASE_ROOT = HOMEPAGE_ROOT / "release"
 QODERWORKCN_PLUGIN_NAME = "engineering-calculation-system"
 
 EXCLUDED_DIR_NAMES = {
@@ -203,6 +208,15 @@ PLATFORM_ENTRYPOINTS = {
     "TRAE": ".trae/project_rules.md",
     "OpenCode": ".opencode/skills/engineering-calc-system/SKILL.md",
     "AGENTS Generic": "AGENTS.md",
+}
+
+UPLOAD_RELEASE_TARGETS = {"QoderWorkCN", "WorkBuddy"}
+UPLOAD_RELEASE_SENTINELS = {
+    ".qoder-plugin/plugin.json",
+    "qoder.md",
+    "skills/engineering-calculation-system/SKILL.md",
+    "skills/engineering-calc-system/SKILL.md",
+    "agents/engineering-calc-system.md",
 }
 
 PLATFORM_FALLBACKS = {
@@ -2424,6 +2438,276 @@ def write_platform_acceptance_report(archives: list[ReleaseArchive]) -> None:
     (RELEASE_ROOT / "PLATFORM_ACCEPTANCE.md").write_text("\n".join(lines), encoding="utf-8")
 
 
+def verify_upload_release_archives(archives: list[ReleaseArchive]) -> None:
+    """Ensure upload-oriented release zips are directly uploadable."""
+    for item in archives:
+        if item.target.name not in UPLOAD_RELEASE_TARGETS:
+            continue
+        with zipfile.ZipFile(item.archive_path) as archive:
+            names = set(archive.namelist())
+        missing = sorted(UPLOAD_RELEASE_SENTINELS - names)
+        if missing:
+            raise RuntimeError(
+                f"{item.target.name} upload archive is incomplete: "
+                f"{item.archive_path.name} missing {', '.join(missing)}"
+            )
+        nested_prefix = release_package_root_name(item.target).rstrip("/") + "/"
+        if any(name.startswith(nested_prefix) for name in names):
+            raise RuntimeError(
+                f"{item.target.name} upload archive must expose .qoder-plugin at zip root, "
+                f"but contains nested package prefix {nested_prefix!r}"
+            )
+
+
+def utc_now_iso() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def ui_client_installer_name() -> str:
+    if not UI_CLIENT_CONFIG:
+        raise RuntimeError("ui_client config missing from release_config.json")
+    return UI_CLIENT_CONFIG["exe_name_template"].format(version=VERSION) + ".exe"
+
+
+def ui_client_installer_path() -> Path:
+    return DIST_ROOT / "ui-client" / ui_client_installer_name()
+
+
+def homepage_linux_web_archive_name() -> str:
+    return f"ecs-homepage-{VERSION}-linux-web.zip"
+
+
+def upload_package_root_name() -> str:
+    return f"{PACKAGE_PREFIX}-v{VERSION}"
+
+
+def upload_archive_name() -> str:
+    return f"{upload_package_root_name()}-server-upload.zip"
+
+
+def iter_upload_files(root: Path) -> list[Path]:
+    """Return upload payload files without excluding the required dist/ folder."""
+    ignored_file_names = {".DS_Store"}
+    files: list[Path] = []
+    for path in root.rglob("*"):
+        if path.is_file() and path.name not in ignored_file_names and path.suffix not in FORBIDDEN_CACHE_SUFFIXES:
+            files.append(path)
+    return sorted(files)
+
+
+def write_upload_zip(source_root: Path, archive_path: Path, *, archive_root_name: str) -> None:
+    files = iter_upload_files(source_root)
+    with zipfile.ZipFile(archive_path, "w") as archive:
+        for file in files:
+            rel = file.relative_to(source_root).as_posix()
+            rel = f"{archive_root_name}/{rel}"
+            info = zipfile.ZipInfo(rel, date_time=(2026, 6, 17, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info.external_attr = 0o644 << 16
+            archive.writestr(info, file.read_bytes())
+
+
+def write_upload_checksums(package_root: Path) -> None:
+    files = [path for path in iter_upload_files(package_root) if path.name != "CHECKSUMS.txt"]
+    lines = [f"{sha256(path)}  {path.relative_to(package_root).as_posix()}" for path in files]
+    (package_root / "CHECKSUMS.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def powershell_command() -> str:
+    for command in ("pwsh", "powershell"):
+        resolved = shutil.which(command)
+        if resolved:
+            return resolved
+    raise RuntimeError("PowerShell is required to package ecs-homepage but was not found on PATH")
+
+
+def run_homepage_packager() -> Path:
+    script = HOMEPAGE_ROOT / "scripts" / "package-static.ps1"
+    if not HOMEPAGE_ROOT.exists():
+        raise RuntimeError(f"homepage project not found: {HOMEPAGE_ROOT}")
+    if not script.exists():
+        raise RuntimeError(f"homepage package script not found: {script}")
+    if not ui_client_installer_path().exists():
+        raise RuntimeError(
+            f"GUI installer is missing: {ui_client_installer_path()}. "
+            "Build it first with `python tools/build_release.py --profile ui-client`, "
+            "or run the default release build without --no-ui-client."
+        )
+
+    command = powershell_command()
+    args = [command, "-NoProfile"]
+    if os.name == "nt":
+        args.extend(["-ExecutionPolicy", "Bypass"])
+    args.extend(["-File", str(script), "-Version", VERSION])
+    print("upload: packaging ecs-homepage linux web bundle")
+    result = subprocess.run(args, cwd=str(HOMEPAGE_ROOT))
+    if result.returncode != 0:
+        raise RuntimeError(f"ecs-homepage package-static.ps1 failed (exit {result.returncode})")
+
+    archive_path = HOMEPAGE_RELEASE_ROOT / homepage_linux_web_archive_name()
+    hash_path = Path(str(archive_path) + ".sha256")
+    required_paths = [
+        HOMEPAGE_DIST_ROOT / "index.html",
+        HOMEPAGE_DIST_ROOT / "version.json",
+        archive_path,
+        hash_path,
+    ]
+    missing = [str(path) for path in required_paths if not path.exists()]
+    if missing:
+        raise RuntimeError("homepage packaging did not produce required path(s): " + ", ".join(missing))
+    return archive_path
+
+
+def copy_gui_downloads(destination_root: Path) -> None:
+    downloads_root = destination_root / "downloads"
+    downloads_root.mkdir(parents=True, exist_ok=True)
+    copy_file(ui_client_installer_path(), downloads_root / ui_client_installer_name())
+    gui_checksums = DIST_ROOT / "ui-client" / "CHECKSUMS.txt"
+    if gui_checksums.exists():
+        copy_file(gui_checksums, downloads_root / "CHECKSUMS.txt")
+
+
+def write_update_manifest(path: Path, *, built_at: str, gui_sha: str, gui_size: int) -> None:
+    manifest = {
+        "releases": [
+            {
+                "channel": "stable",
+                "version": VERSION,
+                "min_supported_version": VERSION,
+                "title": f"Engineering Calculation System {VERSION}",
+                "notes": f"Release {VERSION}.",
+                "package_url": ui_client_installer_name(),
+                "sha256": gui_sha,
+                "size_bytes": gui_size,
+                "mandatory": False,
+                "published_at": built_at,
+                "platforms": ["windows"],
+            }
+        ]
+    }
+    write_json_lf(path, manifest)
+
+
+def write_upload_readme(path: Path, *, built_at: str) -> None:
+    text = f"""# Engineering Calculation System Upload Bundle
+
+Version: {VERSION}
+Built: {built_at}
+
+This directory is the server upload payload for the public homepage and the downloadable GUI program.
+
+## Contents
+
+- `home/` - static homepage files for the server homepage path.
+- `downloads/` - Windows GUI installer served by the customer CTA.
+- `dist/` - versioned release artifacts, the Linux web package, and the stable update manifest.
+- `version.json`, `VERSION`, and `CHECKSUMS.txt` - release identity and verification files.
+
+Typical upload target: copy the contents of this directory to the same server root that serves the CAD-style `home/`, `downloads/`, and `dist/` directories.
+"""
+    path.write_text(text, encoding="utf-8")
+
+
+def validate_server_upload_bundle(package_root: Path, archive_path: Path) -> None:
+    required = [
+        "home/index.html",
+        "home/version.json",
+        f"downloads/{ui_client_installer_name()}",
+        f"dist/{homepage_linux_web_archive_name()}",
+        f"dist/{homepage_linux_web_archive_name()}.sha256",
+        f"dist/{ui_client_installer_name()}",
+        "dist/update-manifest.stable.json",
+        "dist/version.json",
+        "README_UPLOAD.md",
+        "VERSION",
+        "version.json",
+        "CHECKSUMS.txt",
+    ]
+    missing = [rel for rel in required if not (package_root / rel).exists()]
+    if missing:
+        raise RuntimeError("server upload bundle missing required path(s): " + ", ".join(missing))
+
+    upload_version = json.loads((package_root / "version.json").read_text(encoding="utf-8"))
+    update_manifest = json.loads((package_root / "dist" / "update-manifest.stable.json").read_text(encoding="utf-8"))
+    if upload_version.get("version") != VERSION:
+        raise RuntimeError(f"server upload version.json has wrong version: {upload_version.get('version')!r}")
+    release = update_manifest.get("releases", [{}])[0]
+    if release.get("version") != VERSION or release.get("package_url") != ui_client_installer_name():
+        raise RuntimeError("server upload update manifest is not synchronized with the GUI installer")
+
+    with zipfile.ZipFile(archive_path) as archive:
+        names = set(archive.namelist())
+    archive_required = [f"{package_root.name}/{rel}" for rel in required]
+    archive_missing = [rel for rel in archive_required if rel not in names]
+    if archive_missing:
+        raise RuntimeError("server upload zip missing required path(s): " + ", ".join(archive_missing))
+
+
+def build_server_upload_bundle() -> Path:
+    homepage_archive = run_homepage_packager()
+    homepage_hash = sha256(homepage_archive)
+    gui_path = ui_client_installer_path()
+    gui_hash = sha256(gui_path)
+    gui_size = gui_path.stat().st_size
+    built_at = utc_now_iso()
+
+    clean_dir(UPLOAD_ROOT)
+    package_root = UPLOAD_ROOT / upload_package_root_name()
+    package_root.mkdir(parents=True, exist_ok=True)
+
+    home_root = package_root / "home"
+    dist_root = package_root / "dist"
+    dist_root.mkdir(parents=True, exist_ok=True)
+
+    copy_tree(HOMEPAGE_DIST_ROOT, home_root)
+    copy_gui_downloads(package_root)
+    copy_file(homepage_archive, dist_root / homepage_archive.name)
+    copy_file(Path(str(homepage_archive) + ".sha256"), dist_root / f"{homepage_archive.name}.sha256")
+    copy_file(gui_path, dist_root / ui_client_installer_name())
+
+    write_update_manifest(dist_root / "update-manifest.stable.json", built_at=built_at, gui_sha=gui_hash, gui_size=gui_size)
+
+    upload_manifest = {
+        "name": PACKAGE_PREFIX,
+        "version": VERSION,
+        "created_at": CREATED_AT,
+        "built_at": built_at,
+        "layout": "cad-style-server-root",
+        "source": "engineering-calculation-system/tools/release_config.json",
+        "upload_root": package_root.name,
+        "homepage": {
+            "path": "home/",
+            "version_manifest": "home/version.json",
+            "linux_web_package": f"dist/{homepage_archive.name}",
+            "linux_web_package_sha256": homepage_hash,
+            "linux_web_package_size_bytes": homepage_archive.stat().st_size,
+        },
+        "gui": {
+            "package": f"dist/{ui_client_installer_name()}",
+            "download_path": f"/downloads/{ui_client_installer_name()}",
+            "sha256": gui_hash,
+            "size_bytes": gui_size,
+            "platform": "windows",
+        },
+        "update_manifest": "dist/update-manifest.stable.json",
+        "checksums": "CHECKSUMS.txt",
+    }
+    write_json_lf(package_root / "version.json", upload_manifest)
+    write_json_lf(dist_root / "version.json", upload_manifest)
+    (package_root / "VERSION").write_text(VERSION + "\n", encoding="utf-8")
+    write_upload_readme(package_root / "README_UPLOAD.md", built_at=built_at)
+    write_upload_checksums(package_root)
+
+    archive_path = UPLOAD_ROOT / upload_archive_name()
+    write_upload_zip(package_root, archive_path, archive_root_name=package_root.name)
+    (UPLOAD_ROOT / f"{archive_path.name}.sha256").write_text(
+        f"{sha256(archive_path)}  {archive_path.name}\n",
+        encoding="utf-8",
+    )
+    validate_server_upload_bundle(package_root, archive_path)
+    return archive_path
+
+
 def build_split_archives(built_profiles: dict[str, Path]) -> list[Path]:
     split_root = RELEASE_ROOT / "split-archives"
     split_root.mkdir(parents=True, exist_ok=True)
@@ -2499,6 +2783,11 @@ def main(argv: list[str] | None = None) -> int:
         help="Skip the ui-client profile (the PyInstaller exe build) when building all profiles. "
         "Has no effect when --profile ui-client is passed explicitly.",
     )
+    parser.add_argument(
+        "--no-upload",
+        action="store_true",
+        help="Do not create the CAD-style server upload bundle under dist/upload.",
+    )
     args = parser.parse_args(argv)
 
     if args.profile and args.all:
@@ -2513,6 +2802,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.no_ui_client and not args.profile:
         profiles = tuple(p for p in profiles if p != "ui-client")
     create_archives = args.archives or ((args.all or default_publish) and not args.no_archives)
+    create_upload = create_archives and not args.no_upload
 
     if default_publish:
         print("no profile specified; building all profiles and platform release packages")
@@ -2531,11 +2821,18 @@ def main(argv: list[str] | None = None) -> int:
             missing = ", ".join(sorted(set(RELEASE_REQUIRED_PROFILES) - set(built)))
             raise RuntimeError(f"platform release packages require all profiles; missing: {missing}")
         archives = build_release_packages(built, split_archives=args.split_archives)
+        verify_upload_release_archives(archives)
         print(f"built {RELEASE_ROOT.relative_to(REPO_ROOT).as_posix()} ({len(archives)} platform archives)")
         for archive in archives:
             print(
                 f"  {archive.archive_path.name} "
                 f"({archive.file_count} files, {archive.archive_path.stat().st_size / 1024:.1f} KB)"
+            )
+        if create_upload:
+            upload_archive = build_server_upload_bundle()
+            print(
+                f"built {UPLOAD_ROOT.relative_to(REPO_ROOT).as_posix()} "
+                f"({upload_archive.name}, {upload_archive.stat().st_size / 1024:.1f} KB)"
             )
     return 0
 

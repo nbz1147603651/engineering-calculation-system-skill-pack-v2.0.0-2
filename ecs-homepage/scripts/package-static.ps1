@@ -148,7 +148,6 @@ try {
     Copy-DirectoryContents -Source (Join-Path $root "dist") -Destination $siteRoot
     Copy-DirectoryContents -Source (Join-Path $root "dist") -Destination (Join-Path $siteRoot "home")
     Copy-GuiInstallerDownload -DestinationRoot $siteRoot
-    Copy-GuiInstallerDownload -DestinationRoot (Join-Path $siteRoot "home")
     Copy-Item -LiteralPath (Join-Path $root "deploy") -Destination $packageRoot -Recurse -Force
 
     $manifest = [ordered]@{
@@ -161,8 +160,7 @@ try {
         nginxTemplate = "deploy/nginx/ecs-homepage-linux.conf.template"
         versionManifest = "site/version.json"
         guiInstaller = "site/downloads/$guiInstallerName"
-        guiInstallerHomeCopy = "site/home/downloads/$guiInstallerName"
-        downloadPaths = @("/downloads/$guiInstallerName", "/home/downloads/$guiInstallerName")
+        downloadPaths = @("/downloads/$guiInstallerName")
         defaultInstallRoot = "/opt/ecs-homepage"
         defaultNginxConf = "/etc/nginx/conf.d/ecs-homepage.conf"
         healthChecks = @("/", "/home/", "/healthz", "/version.json")
@@ -200,7 +198,6 @@ non-interactive deployment script for human operators or cloud agents.
 - `site/home/` - compatibility copy for `/home/`.
 - `site/version.json` - release identity served by the website.
 - `site/downloads/{{GUI_INSTALLER_NAME}}` - GUI installer served from `/downloads/`.
-- `site/home/downloads/{{GUI_INSTALLER_NAME}}` - compatibility GUI download for `/home/`.
 - `deploy/linux/deploy.sh` - idempotent Linux deployment script.
 - `deploy/nginx/ecs-homepage-linux.conf.template` - Nginx server block template.
 - `deploy/AGENT_DEPLOYMENT.md` - automation-oriented deployment runbook.
