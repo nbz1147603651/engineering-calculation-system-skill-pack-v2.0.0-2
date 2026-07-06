@@ -4,6 +4,8 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 
 WORKSPACE_ROOT = Path(__file__).resolve().parents[2]
 PACKAGE_ROOT = WORKSPACE_ROOT / "engineering-calculation-system"
@@ -11,7 +13,7 @@ TOOLS_ROOT = PACKAGE_ROOT / "tools"
 if str(TOOLS_ROOT) not in sys.path:
     sys.path.insert(0, str(TOOLS_ROOT))
 
-from installer_gui import agents, detector  # noqa: E402
+from installer_gui import agents, deployer, detector  # noqa: E402
 from installer_gui.platform_contracts import CONTRACTS, CORE_FORBIDDEN_PATH_PARTS  # noqa: E402
 
 
@@ -20,6 +22,12 @@ def _touch(root: Path, relative: str) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("sentinel\n", encoding="utf-8")
     return path
+
+
+def _write_codex_profile(root: Path) -> None:
+    _touch(root, ".codex-plugin/plugin.json")
+    _touch(root, "skills/engineering-calculation-system/SKILL.md")
+    _touch(root, "skills/engineering-calculation-system/shared/codex-plugin-adapter.md")
 
 
 def test_agent_specs_reuse_platform_contracts() -> None:
@@ -98,6 +106,88 @@ def test_core_source_keeps_platform_install_markers_out() -> None:
             offenders.append(rel.as_posix())
 
     assert offenders == []
+
+
+def test_ensure_profiles_rebuilds_incomplete_codex_profile(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    profile_root = tmp_path / "dist" / "codex-plugin" / "engineering-calculation-system"
+    profile_root.mkdir(parents=True)
+    monkeypatch.setattr(deployer, "DIST_CODEX_PLUGIN", profile_root)
+
+    built: list[tuple[str, ...]] = []
+
+    def fake_build_profiles(
+        profiles: tuple[str, ...],
+        *,
+        log: deployer.LogFn,
+        progress: deployer.ProgressFn,
+    ) -> None:
+        built.append(profiles)
+        _write_codex_profile(profile_root)
+
+    monkeypatch.setattr(deployer, "build_profiles", fake_build_profiles)
+
+    deployer.ensure_profiles(("codex-plugin",), log=lambda _message: None, progress=lambda _value, _message: None)
+
+    assert built == [("codex-plugin",)]
+
+
+def test_ensure_profiles_skips_complete_codex_profile(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    profile_root = tmp_path / "dist" / "codex-plugin" / "engineering-calculation-system"
+    _write_codex_profile(profile_root)
+    monkeypatch.setattr(deployer, "DIST_CODEX_PLUGIN", profile_root)
+
+    def fail_build_profiles(
+        profiles: tuple[str, ...],
+        *,
+        log: deployer.LogFn,
+        progress: deployer.ProgressFn,
+    ) -> None:
+        raise AssertionError(f"unexpected rebuild: {profiles}")
+
+    monkeypatch.setattr(deployer, "build_profiles", fail_build_profiles)
+
+    deployer.ensure_profiles(("codex-plugin",), log=lambda _message: None, progress=lambda _value, _message: None)
+
+
+def test_codex_deploy_verify_uninstall_round_trip(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    profile_root = tmp_path / "dist" / "codex-plugin" / "engineering-calculation-system"
+    target = tmp_path / "codex-install"
+    _write_codex_profile(profile_root)
+    monkeypatch.setattr(deployer, "DIST_CODEX_PLUGIN", profile_root)
+    monkeypatch.setattr(
+        deployer,
+        "ensure_profiles",
+        lambda _profiles, *, log, progress: None,
+    )
+    ctx = deployer.DeployContext(
+        install_root=target,
+        log=lambda _message: None,
+        progress=lambda _value, _message: None,
+    )
+
+    deployer.deploy_codex(ctx)
+
+    assert deployer.verify_codex(ctx)
+    assert (target / ".codex-plugin" / "plugin.json").is_file()
+
+    deployer.uninstall_codex(ctx)
+
+    assert not target.exists()
+
+
+def test_codex_uninstall_rejects_missing_manifest(tmp_path: Path) -> None:
+    target = tmp_path / "codex-install"
+    _touch(target, "skills/engineering-calculation-system/SKILL.md")
+    ctx = deployer.DeployContext(
+        install_root=target,
+        log=lambda _message: None,
+        progress=lambda _value, _message: None,
+    )
+
+    with pytest.raises(deployer.DeployError):
+        deployer.uninstall_codex(ctx)
+
+    assert target.exists()
 
 
 def test_adapter_sources_keep_platform_markers_scoped() -> None:

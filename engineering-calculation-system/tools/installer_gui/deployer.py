@@ -71,6 +71,20 @@ DIST_QODERWORKCN_PLUGIN: Path = DIST_ROOT / "qoderworkcn-plugin"
 DIST_ZCODE_PLUGIN: Path = DIST_ROOT / "zcode-plugin" / "engineering-calculation-system-zcode"
 
 
+PROFILE_REQUIRED_PATHS: dict[str, tuple[str, ...]] = {
+    "core": ("SKILL.md",),
+    "codex-plugin": (
+        ".codex-plugin/plugin.json",
+        "skills/engineering-calculation-system/SKILL.md",
+        "skills/engineering-calculation-system/shared/codex-plugin-adapter.md",
+    ),
+    "adapters-light": ("AGENTS.md",),
+    "qoder-addon": (".qoder/skills/engineering-calc-system/SKILL.md",),
+    "qoderworkcn-plugin": (".qoder-plugin/plugin.json",),
+    "zcode-plugin": (".zcode-plugin/plugin.json", "marketplace.json"),
+}
+
+
 def is_frozen() -> bool:
     """True when running inside a PyInstaller bundle."""
     return getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS")
@@ -225,7 +239,7 @@ def build_profiles(
 
 
 def ensure_profiles(profiles: tuple[str, ...], *, log: LogFn, progress: ProgressFn) -> None:
-    """Build only profiles whose dist output is missing.
+    """Build only profiles whose dist output is missing or incomplete.
 
     Keeps re-deploys fast when dist/ is already populated.
     """
@@ -237,12 +251,22 @@ def ensure_profiles(profiles: tuple[str, ...], *, log: LogFn, progress: Progress
         "qoderworkcn-plugin": DIST_QODERWORKCN_PLUGIN,
         "zcode-plugin": DIST_ZCODE_PLUGIN,
     }
-    missing = tuple(p for p in profiles if not profile_to_dist.get(p, Path("__none__")).exists())
+    def profile_ready(profile: str) -> bool:
+        root = profile_to_dist.get(profile)
+        if root is None or not root.exists():
+            return False
+        required = PROFILE_REQUIRED_PATHS.get(profile, ())
+        return all((root / Path(relative)).exists() for relative in required)
+
+    missing = tuple(p for p in profiles if not profile_ready(p))
     if not missing:
         log("[skip] all required dist profiles already present")
         progress(1.0, "dist already built")
         return
     build_profiles(missing, log=log, progress=progress)
+    incomplete = tuple(profile for profile in profiles if not profile_ready(profile))
+    if incomplete:
+        raise DeployError(f"dist profile incomplete after build: {', '.join(incomplete)}")
 
 
 # --------------------------------------------------------------------------- #
