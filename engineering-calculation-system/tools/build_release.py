@@ -16,7 +16,7 @@ import subprocess
 import sys
 import tempfile
 import zipfile
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from versioning import (
     assert_skill_frontmatter_versions,
@@ -2535,6 +2535,10 @@ def homepage_linux_web_archive_name() -> str:
     return f"ecs-homepage-{VERSION}-linux-web.zip"
 
 
+def gui_download_path() -> str:
+    return f"/downloads/{ui_client_installer_name()}"
+
+
 def upload_package_root_name() -> str:
     return f"{PACKAGE_PREFIX}-v{VERSION}"
 
@@ -2544,7 +2548,7 @@ def upload_archive_name() -> str:
 
 
 def iter_upload_files(root: Path) -> list[Path]:
-    """Return upload payload files without excluding the required dist/ folder."""
+    """Return server-upload payload files."""
     ignored_file_names = {".DS_Store"}
     files: list[Path] = []
     for path in root.rglob("*"):
@@ -2577,6 +2581,51 @@ def powershell_command() -> str:
         if resolved:
             return resolved
     raise RuntimeError("PowerShell is required to package ecs-homepage but was not found on PATH")
+
+
+def npm_command() -> str:
+    candidates = ("npm.cmd", "npm") if os.name == "nt" else ("npm",)
+    for command in candidates:
+        resolved = shutil.which(command)
+        if resolved:
+            return resolved
+    raise RuntimeError("npm is required to build ecs-homepage but was not found on PATH")
+
+
+def run_homepage_static_build() -> None:
+    if not HOMEPAGE_ROOT.exists():
+        raise RuntimeError(f"homepage project not found: {HOMEPAGE_ROOT}")
+    check_script = HOMEPAGE_ROOT / "scripts" / "check-version.ps1"
+    if not check_script.exists():
+        raise RuntimeError(f"homepage version check script not found: {check_script}")
+
+    print("upload: building ecs-homepage static files")
+    result = subprocess.run([npm_command(), "run", "build"], cwd=str(HOMEPAGE_ROOT))
+    if result.returncode != 0:
+        raise RuntimeError(f"ecs-homepage npm build failed (exit {result.returncode})")
+
+    command = powershell_command()
+    args = [command, "-NoProfile"]
+    if os.name == "nt":
+        args.extend(["-ExecutionPolicy", "Bypass"])
+    args.extend(["-File", str(check_script)])
+    result = subprocess.run(args, cwd=str(HOMEPAGE_ROOT))
+    if result.returncode != 0:
+        raise RuntimeError(f"ecs-homepage check-version.ps1 failed (exit {result.returncode})")
+
+    required_paths = [
+        HOMEPAGE_DIST_ROOT / "index.html",
+        HOMEPAGE_DIST_ROOT / "version.json",
+    ]
+    missing = [str(path) for path in required_paths if not path.exists()]
+    if missing:
+        raise RuntimeError("homepage build did not produce required path(s): " + ", ".join(missing))
+
+    version_manifest = json.loads((HOMEPAGE_DIST_ROOT / "version.json").read_text(encoding="utf-8"))
+    if version_manifest.get("version") != VERSION:
+        raise RuntimeError(
+            f"homepage dist/version.json has wrong version: {version_manifest.get('version')!r}"
+        )
 
 
 def run_homepage_packager() -> Path:
@@ -2760,6 +2809,7 @@ def copy_gui_data(destination_root: Path) -> None:
 
 
 def write_update_manifest(path: Path, *, built_at: str, gui_sha: str, gui_size: int) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     manifest = {
         "releases": [
             {
@@ -2768,7 +2818,7 @@ def write_update_manifest(path: Path, *, built_at: str, gui_sha: str, gui_size: 
                 "min_supported_version": VERSION,
                 "title": f"Engineering Calculation System {VERSION}",
                 "notes": f"Release {VERSION}.",
-                "package_url": ui_client_installer_name(),
+                "package_url": gui_download_path(),
                 "sha256": gui_sha,
                 "size_bytes": gui_size,
                 "mandatory": False,
@@ -2792,12 +2842,50 @@ This directory is the server upload payload for the public homepage and the down
 
 - `home/` - static homepage files for the server homepage path.
 - `data/` - Windows GUI installer storage served by the customer CTA through `/downloads/`.
-- `dist/` - versioned release artifacts, the Linux web package, and the stable update manifest.
+- `dist/update-manifest.stable.json` - stable update metadata pointing at the `/downloads/` GUI file.
 - `version.json`, `VERSION`, and `CHECKSUMS.txt` - release identity and verification files.
 
-Typical upload target: copy the contents of this directory to the same server root that serves the CAD-style `home/`, `downloads/`, and `dist/` directories.
+Typical upload target: copy the contents of this directory to the same server root that serves the CAD-style `home/`, `downloads/`, and `dist/` directories. The upload payload intentionally contains one GUI installer copy only.
 """
     path.write_text(text, encoding="utf-8")
+
+
+def assert_no_duplicate_upload_payloads(package_root: Path) -> None:
+    installer_name = ui_client_installer_name()
+    installer_locations: list[str] = []
+    nested_archives: list[str] = []
+    binary_hash_locations: dict[str, list[str]] = {}
+
+    for path in iter_upload_files(package_root):
+        rel = path.relative_to(package_root).as_posix()
+        suffix = path.suffix.lower()
+        if path.name == installer_name:
+            installer_locations.append(rel)
+        if suffix == ".zip":
+            nested_archives.append(rel)
+            with zipfile.ZipFile(path) as archive:
+                for entry in archive.infolist():
+                    if not entry.is_dir() and PurePosixPath(entry.filename).name == installer_name:
+                        installer_locations.append(f"{rel}!/{entry.filename}")
+        if suffix in {".exe", ".zip"}:
+            binary_hash_locations.setdefault(sha256(path), []).append(rel)
+
+    if nested_archives:
+        raise RuntimeError(
+            "server upload bundle must not contain nested zip archive(s): "
+            + ", ".join(sorted(nested_archives))
+        )
+
+    if installer_locations != [f"data/{installer_name}"]:
+        raise RuntimeError(
+            "server upload bundle must contain exactly one GUI installer at "
+            f"data/{installer_name}; found: {', '.join(installer_locations) or 'none'}"
+        )
+
+    duplicate_binaries = [paths for paths in binary_hash_locations.values() if len(paths) > 1]
+    if duplicate_binaries:
+        duplicate_summary = "; ".join(", ".join(paths) for paths in duplicate_binaries)
+        raise RuntimeError(f"server upload bundle contains duplicate binary payloads: {duplicate_summary}")
 
 
 def validate_server_upload_bundle(package_root: Path, archive_path: Path) -> None:
@@ -2805,11 +2893,7 @@ def validate_server_upload_bundle(package_root: Path, archive_path: Path) -> Non
         "home/index.html",
         "home/version.json",
         f"data/{ui_client_installer_name()}",
-        f"dist/{homepage_linux_web_archive_name()}",
-        f"dist/{homepage_linux_web_archive_name()}.sha256",
-        f"dist/{ui_client_installer_name()}",
         "dist/update-manifest.stable.json",
-        "dist/version.json",
         "README_UPLOAD.md",
         "VERSION",
         "version.json",
@@ -2824,8 +2908,10 @@ def validate_server_upload_bundle(package_root: Path, archive_path: Path) -> Non
     if upload_version.get("version") != VERSION:
         raise RuntimeError(f"server upload version.json has wrong version: {upload_version.get('version')!r}")
     release = update_manifest.get("releases", [{}])[0]
-    if release.get("version") != VERSION or release.get("package_url") != ui_client_installer_name():
+    if release.get("version") != VERSION or release.get("package_url") != gui_download_path():
         raise RuntimeError("server upload update manifest is not synchronized with the GUI installer")
+
+    assert_no_duplicate_upload_payloads(package_root)
 
     with zipfile.ZipFile(archive_path) as archive:
         names = set(archive.namelist())
@@ -2834,11 +2920,26 @@ def validate_server_upload_bundle(package_root: Path, archive_path: Path) -> Non
     if archive_missing:
         raise RuntimeError("server upload zip missing required path(s): " + ", ".join(archive_missing))
 
+    archive_root = package_root.name
+    installer_entries = sorted(
+        name for name in names if PurePosixPath(name).name == ui_client_installer_name()
+    )
+    expected_installer_entry = f"{archive_root}/data/{ui_client_installer_name()}"
+    if installer_entries != [expected_installer_entry]:
+        raise RuntimeError(
+            "server upload zip must contain exactly one GUI installer at "
+            f"{expected_installer_entry}; found: {', '.join(installer_entries) or 'none'}"
+        )
+    nested_archive_entries = sorted(name for name in names if PurePosixPath(name).suffix.lower() == ".zip")
+    if nested_archive_entries:
+        raise RuntimeError(
+            "server upload zip must not contain nested zip archive(s): "
+            + ", ".join(nested_archive_entries)
+        )
+
 
 def build_server_upload_bundle() -> Path:
-    homepage_archive = run_homepage_packager()
-    normalize_homepage_linux_web_package(homepage_archive)
-    homepage_hash = sha256(homepage_archive)
+    run_homepage_static_build()
     gui_path = ui_client_installer_path()
     gui_hash = sha256(gui_path)
     gui_size = gui_path.stat().st_size
@@ -2854,9 +2955,6 @@ def build_server_upload_bundle() -> Path:
 
     copy_tree(HOMEPAGE_DIST_ROOT, home_root)
     copy_gui_data(package_root)
-    copy_file(homepage_archive, dist_root / homepage_archive.name)
-    copy_file(Path(str(homepage_archive) + ".sha256"), dist_root / f"{homepage_archive.name}.sha256")
-    copy_file(gui_path, dist_root / ui_client_installer_name())
 
     write_update_manifest(dist_root / "update-manifest.stable.json", built_at=built_at, gui_sha=gui_hash, gui_size=gui_size)
 
@@ -2871,14 +2969,11 @@ def build_server_upload_bundle() -> Path:
         "homepage": {
             "path": "home/",
             "version_manifest": "home/version.json",
-            "linux_web_package": f"dist/{homepage_archive.name}",
-            "linux_web_package_sha256": homepage_hash,
-            "linux_web_package_size_bytes": homepage_archive.stat().st_size,
         },
         "gui": {
-            "package": f"dist/{ui_client_installer_name()}",
+            "package": f"data/{ui_client_installer_name()}",
             "data_path": f"data/{ui_client_installer_name()}",
-            "download_path": f"/downloads/{ui_client_installer_name()}",
+            "download_path": gui_download_path(),
             "sha256": gui_hash,
             "size_bytes": gui_size,
             "platform": "windows",
@@ -2887,7 +2982,6 @@ def build_server_upload_bundle() -> Path:
         "checksums": "CHECKSUMS.txt",
     }
     write_json_lf(package_root / "version.json", upload_manifest)
-    write_json_lf(dist_root / "version.json", upload_manifest)
     (package_root / "VERSION").write_text(VERSION + "\n", encoding="utf-8")
     write_upload_readme(package_root / "README_UPLOAD.md", built_at=built_at)
     write_upload_checksums(package_root)

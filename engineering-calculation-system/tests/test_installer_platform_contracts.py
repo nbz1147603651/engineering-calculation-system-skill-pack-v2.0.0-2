@@ -13,7 +13,7 @@ TOOLS_ROOT = PACKAGE_ROOT / "tools"
 if str(TOOLS_ROOT) not in sys.path:
     sys.path.insert(0, str(TOOLS_ROOT))
 
-from installer_gui import agents, deployer, detector  # noqa: E402
+from installer_gui import agents, config, deployer, detector  # noqa: E402
 from installer_gui.platform_contracts import CONTRACTS, CORE_FORBIDDEN_PATH_PARTS  # noqa: E402
 
 
@@ -82,6 +82,48 @@ def test_contract_profiles_are_declared_in_release_config() -> None:
     )
 
     assert referenced <= declared
+
+
+def test_app_config_persists_agent_roots(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    config_file = tmp_path / "config.json"
+    monkeypatch.setattr(config, "_CONFIG_FILE", config_file)
+    saved = config.AppConfig(
+        language="zh",
+        repo_root="D:/repo",
+        theme="Dark",
+        agent_roots={
+            "qoder": "D:/Users/example/.qoder",
+            "qoder-project": "D:/Projects/qoder-app",
+            "qodercn": "D:/Users/example/.lingma",
+            "qodercn-project": "D:/Projects/qodercn-app",
+        },
+    )
+
+    saved.save()
+    loaded = config.AppConfig.load()
+
+    assert loaded.agent_roots == saved.agent_roots
+
+
+def test_app_config_ignores_invalid_agent_roots(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    config_file = tmp_path / "config.json"
+    monkeypatch.setattr(config, "_CONFIG_FILE", config_file)
+    config_file.write_text(
+        json.dumps(
+            {
+                "language": "en",
+                "agent_roots": {
+                    "qoder": "D:/Users/example/.qoder",
+                    "qoder-project": 42,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    loaded = config.AppConfig.load()
+
+    assert loaded.agent_roots == {"qoder": "D:/Users/example/.qoder"}
 
 
 def test_project_contracts_declare_overlay_boundaries() -> None:

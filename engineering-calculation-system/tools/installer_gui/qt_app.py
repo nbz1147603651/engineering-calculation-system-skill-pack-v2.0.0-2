@@ -180,6 +180,16 @@ def _root_detail_text(path: Path | None) -> str:
     return text
 
 
+def _dialog_start_dir(path: Path | None) -> str:
+    if path is None:
+        return ""
+    expanded = path.expanduser()
+    if expanded.is_dir():
+        return str(expanded)
+    parent = expanded.parent
+    return str(parent) if parent.is_dir() else ""
+
+
 @dataclass
 class AgentRow:
     specs: dict[str, AgentSpec]
@@ -540,7 +550,7 @@ class AppWindow(QMainWindow):
         self._init_repo_root()
 
         specs = agents.all_agents()
-        roots = {spec.name: spec.default_root_fn() for spec in specs}
+        roots = {spec.name: self._configured_root_for(spec) for spec in specs}
         self._model = AgentTableModel(specs, roots)
         self._proxy = AgentFilterProxyModel()
         self._proxy.setSourceModel(self._model)
@@ -566,6 +576,19 @@ class AppWindow(QMainWindow):
             app = QApplication.instance()
             if app is not None:
                 app.setWindowIcon(icon)
+
+    def _configured_root_for(self, spec: AgentSpec) -> Path | None:
+        configured = self._app_config.agent_roots.get(spec.name, "").strip()
+        if configured:
+            return Path(configured).expanduser()
+        return spec.default_root_fn()
+
+    def _save_agent_root(self, name: str, root: Path | None) -> None:
+        if root is None:
+            self._app_config.agent_roots.pop(name, None)
+        else:
+            self._app_config.agent_roots[name] = str(root)
+        self._app_config.save()
 
     def _init_repo_root(self) -> None:
         if not deployer.is_frozen():
@@ -1438,10 +1461,16 @@ class AppWindow(QMainWindow):
 
     def _on_pick_root(self, spec: AgentSpec) -> bool:
         title_key = "dlg_select_project_root" if spec.kind == "project" else "dlg_select_install_root"
-        chosen = QFileDialog.getExistingDirectory(self, t(title_key, name=spec.display_name))
+        chosen = QFileDialog.getExistingDirectory(
+            self,
+            t(title_key, name=spec.display_name),
+            _dialog_start_dir(self._model.root_for(spec.name)),
+        )
         if not chosen:
             return False
-        self._model.set_root(spec.name, Path(chosen))
+        root = Path(chosen).expanduser()
+        self._model.set_root(spec.name, root)
+        self._save_agent_root(spec.name, root)
         self._refresh_one(spec)
         return True
 
