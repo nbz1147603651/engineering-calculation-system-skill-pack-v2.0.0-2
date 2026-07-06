@@ -47,15 +47,25 @@ node model, not the product.
    visualization expectations, defaults used when the user does not answer, affected artifacts,
    and whether any decision blocks progress. Ask when the answer materially affects engineering
    correctness or final report status; otherwise record the default and continue.
-8. Seed early visualization candidates from output and intermediate inventories. Do not prescribe
+8. Build `templates/analysis/blueprint_validation_matrix.csv` from the accepted source material.
+   Each required check, method, required input, high-risk node, formula candidate, lookup candidate,
+   and branch candidate must have a validation row linking it to source_reference, verification
+   method, linked nodes, linked test targets, and review status. If any row has
+   `blocks_coding=true`, stop before implementation and route to source intake, formula extraction,
+   or user clarification as appropriate.
+9. Use `templates/analysis/blueprint_review_checklist.md` to review the blueprint as a package:
+   source coverage, method selection, input semantics, typed calculation graph, branch behavior,
+   computation graph coverage seeds, tests, assumptions, open questions, and module boundaries must
+   agree before moving to skill 06.
+10. Seed early visualization candidates from output and intermediate inventories. Do not prescribe
    chart IDs yet; identify repeated comparable values, profiles, envelopes, distributions, or
    review comparisons that may later become `ChartSpec` entries.
-9. Generate Mermaid views from the normalized logic (not from raw prose):
+11. Generate Mermaid views from the normalized logic (not from raw prose):
    `analysis/04_diagrams/global_flowchart.mmd`, `data_flow.mmd`, `branch_logic.mmd`,
    `module_dependency.mmd`.
-10. Map each important node to at least one future artifact: input model field, validator,
-   normalizer, lookup library, calculation-module function, book-runner step, CheckResult,
-   GoverningSummary, BookResult field, ReportContext field, test target.
+12. Map each important node to at least one future artifact: input model field, validator,
+    normalizer, lookup library, calculation-module function, book-runner step, CheckResult,
+    GoverningSummary, BookResult field, ReportContext field, test target.
 
 ## Artifacts
 
@@ -66,6 +76,8 @@ analysis/02_logic_blueprint/method_selection_matrix.csv
 analysis/02_logic_blueprint/input_semantics_ledger.csv
 analysis/02_logic_blueprint/concept_map.csv            (templates/analysis/concept_map.csv)
 analysis/02_logic_blueprint/calculation_nodes.csv      (templates/analysis/calculation_nodes.csv)
+analysis/02_logic_blueprint/blueprint_validation_matrix.csv
+analysis/02_logic_blueprint/blueprint_review_checklist.md
 analysis/02_logic_blueprint/input_inventory.csv        (templates/analysis/input_inventory.csv)
 analysis/02_logic_blueprint/intermediate_inventory.csv (templates/analysis/intermediate_inventory.csv)
 analysis/02_logic_blueprint/output_inventory.csv       (templates/analysis/output_inventory.csv)
@@ -75,6 +87,8 @@ analysis/04_diagrams/global_flowchart.mmd, data_flow.mmd, branch_logic.mmd, modu
 
 ## Exit gate
 
-Logic is traceable enough for extraction: calculation intent, method selection, input semantics,
-user decisions, and input/output/node traceability are present. See `shared/lifecycle.md` row 05.
-Next path: 06 for formula/lookup/branch extraction.
+Logic is traceable enough for extraction only when calculation intent, method selection, input
+semantics, user decisions, input/output/node traceability, and blueprint validation rows all agree
+with the accepted source material. If the validation matrix has blocking rows, route upstream before
+formula extraction. See `shared/lifecycle.md` row 05. Next path: 06 for formula/lookup/branch
+extraction.

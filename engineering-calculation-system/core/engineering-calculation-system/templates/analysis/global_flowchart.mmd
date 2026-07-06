@@ -1,7 +1,15 @@
 flowchart TD
-    A[Collect inputs] --> B[Validate inputs]
-    B --> C{Inputs valid?}
-    C -- No --> E[Stop with validation error]
-    C -- Yes --> D[Run calculation modules]
-    D --> F[Summarize governing results]
-    F --> G[Build structured outputs]
+    SRC["Accepted source material"] --> INTENT["Calculation intent contract"]
+    INTENT --> METHODS["Method selection matrix"]
+    INTENT --> INPUTS["Input semantics ledger"]
+    METHODS --> NODES["Typed calculation nodes"]
+    INPUTS --> NODES
+    NODES --> VALIDATE{"Blueprint validation matrix closed?"}
+    VALIDATE -- no --> BLOCK["Route to source intake / clarification / extraction"]
+    VALIDATE -- yes --> DETAILS["Formula, lookup, branch extraction"]
+    DETAILS --> COVERAGE["Computation graph coverage"]
+    COVERAGE --> HANDOFF{"Coding gate allows implementation?"}
+    HANDOFF -- no --> BLOCK
+    HANDOFF -- yes --> MODULES["Reusable modules and run_book()"]
+    MODULES --> VERIFY["Golden cases and artifact validation"]
+    VERIFY --> REPORT["BookResult, report, API, UI"]

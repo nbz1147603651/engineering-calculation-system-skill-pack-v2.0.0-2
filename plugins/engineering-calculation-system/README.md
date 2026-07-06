@@ -79,6 +79,11 @@ required Codex adapter files, overlay synchronization, bundled-source drift,
 the bundled core skill package, the bundled web-complete project template, and
 the executable golden-case runner.
 
+The same doctor can run from an installed Codex plugin cache. In that packaged
+context it skips source-checkout-only marketplace and bundled-source drift
+checks, but still validates the manifest, bundled skill, web-complete template,
+and golden-case runner.
+
 ## Codex Quickstart
 
 See `docs/CODEX_QUICKSTART.md` for Codex-first prompts, workspace rules, and

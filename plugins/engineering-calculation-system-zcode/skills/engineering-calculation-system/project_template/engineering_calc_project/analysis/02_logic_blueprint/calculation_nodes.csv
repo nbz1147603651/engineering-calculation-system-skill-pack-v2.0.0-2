@@ -1,0 +1,2 @@
+node_id,node_type,node_name,engineering_meaning,inputs,outputs,units,formula_or_method,source_reference,branch_condition,applicability,assumptions,module_candidate,result_visibility,report_visibility,test_requirement,risk_level
+N001,Check,Template demand capacity utilization,Evaluates template check demand over capacity,IN001;IN002;IN003,checks[0].utilization;checks[0].status,ratio,F001,S01,,Template demonstration only,none,example_book_runner,visible,visible,T001 verifies template pass case,low

@@ -54,8 +54,9 @@ handoff/implementation_handoff.yaml                connects analysis -> implemen
   interface (API, UI, batch, report) calls it; none reimplement it.
 - Production calculation correctness is gated by calculation semantic closure:
   `calculation_intent_contract.md`, `method_selection_matrix.csv`, `input_semantics_ledger.csv`,
-  `computation_graph_coverage.csv`, `runner_closure_map.csv`, and `golden_case_registry.csv` must
-  agree before `production_allowed`.
+  `calculation_nodes.csv`, `blueprint_validation_matrix.csv`, `computation_graph_coverage.csv`,
+  `runner_closure_map.csv`, and `golden_case_registry.csv` must agree before
+  `production_allowed`.
 - Visualization is a review artifact over computed results. Chart candidates and not-applicable
   decisions are recorded in `implementation/03_book_runner/chart_candidate_inventory.csv`; emitted
   charts are built from `BookResult`/`ChartSpec` values and never calculate.
@@ -82,9 +83,9 @@ Coding gate    (before implementation): no_go | prototype_allowed | production_a
 | 02 Discovery & acquisition | 01 finds gaps | Search, select candidates, record retrieval decisions, no unauthorized copying | Critical gaps have candidates or blockers | Search log for missing/stale sources |
 | 03 Local evidence library | Sources available/selected | Persist allowed metadata/extracts, source cards, hashes; write acquisition handoff | `analysis_allowed` or explicit blocker | Source IDs and access notes |
 | 04 Source intake | Evidence library present | Rank authority, extract applicability limits, identify conflicts, normalize IDs | Sources trusted or conflicts block work | Authority ranking |
-| 05 Logic blueprint | Trusted source set | Map concepts, inputs, outputs, nodes, assumptions, risks, visibility; freeze calculation intent, method selection, input semantics, user interaction decisions, and early visualization candidates | Logic traceable enough for extraction | Input/output/node traceability, user decisions, and semantic closure seeds |
-| 06 Formula/lookup/branch | Blueprint exists | Extract formulas, lookups, branches, units, sign conventions, test requirements; link each rule to method/input semantics and graph coverage | Every production rule has source + test requirement + closure target | Source-backed formula inventory |
-| 07 Implementation handoff | Analysis artifacts complete | Freeze public scope, runtime stack, module candidates, semantic closure contract, API/UI/report/batch/release contracts, report language/template decisions, visualization contract, coding gate | `production_allowed` for production; else prototype/no-go | Coding gate + `run_book` contract + semantic closure |
+| 05 Logic blueprint | Trusted source set | Map concepts, inputs, outputs, nodes, assumptions, risks, visibility; freeze calculation intent, method selection, input semantics, typed calculation nodes, blueprint validation matrix, user interaction decisions, and early visualization candidates | Logic traceable enough for extraction and no blueprint validation blockers | Input/output/node traceability, user decisions, source-backed blueprint validation, and semantic closure seeds |
+| 06 Formula/lookup/branch | Blueprint exists and validation matrix does not block extraction | Extract formulas, lookups, branches, units, sign conventions, test requirements; update blueprint validation rows and link each rule to method/input semantics and graph coverage | Every production rule has source + validation row + test requirement + closure target | Source-backed formula inventory |
+| 07 Implementation handoff | Analysis artifacts complete | Freeze public scope, runtime stack, module candidates, semantic closure contract, API/UI/report/batch/release contracts, report language/template decisions, visualization contract, coding gate | `production_allowed` for production only if blueprint validation and semantic closure pass; else prototype/no-go | Coding gate + `run_book` contract + semantic closure |
 | 08 Architecture | Coding gate allows work | Define project structure, dependency direction, feature layers, package layout | Architecture prevents formulas in UI/report/batch | Dependency direction |
 | 09 Core/data models | Architecture fixed | Typed inputs/results, statuses, hashes, serialization, errors, units, result paths | Models support `BookInput`/`BookResult` | Stable public models |
 | 10 Reusable modules | Models + source-backed formulas exist | Decoupled modules, typed interfaces, formula traces, explicit default/assumption warnings, unit tests, asset registry | Modules independently testable + traceable | Formula trace + module tests |
@@ -114,6 +115,7 @@ Before claiming `web-complete`, ALL of these must hold:
 - `coding_gate.status = production_allowed`
 - Real, non-empty project input exists
 - Calculation semantic closure artifacts exist and have no production blockers
+- Blueprint validation matrix is verified and contains no `blocks_coding=true` rows
 - Executable golden-case verification passes for production-blocking rows
 - `BookResult.checks` non-empty with at least one evaluated check
 - Reports include Formula Logic Trace, Template Boundary Statement, input summary, governing

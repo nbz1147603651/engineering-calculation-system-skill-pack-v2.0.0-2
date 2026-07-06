@@ -1,0 +1,8 @@
+flowchart TD
+    START["Branch input nodes"] --> COND{"BR-### condition from source"}
+    COND -- true --> TRUE_PATH["true path node(s)"]
+    COND -- false --> FALSE_PATH["false path node(s)"]
+    COND -- not applicable --> NA_PATH["warning or not-applicable result"]
+    TRUE_PATH --> CHECK["check or aggregate node"]
+    FALSE_PATH --> CHECK
+    NA_PATH --> CHECK

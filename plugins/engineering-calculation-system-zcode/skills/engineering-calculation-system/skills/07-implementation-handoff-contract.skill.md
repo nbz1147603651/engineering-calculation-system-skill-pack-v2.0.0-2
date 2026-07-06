@@ -17,8 +17,8 @@ not need to reinterpret raw references.
 references/acquisition/acquisition_handoff.yaml
 analysis/01_source_inventory/source_inventory.yaml
 analysis/02_logic_blueprint/calculation_blueprint.md, calculation_intent_contract.md,
-                      method_selection_matrix.csv, input_semantics_ledger.csv,
-                      calculation_nodes.csv
+                       method_selection_matrix.csv, input_semantics_ledger.csv,
+                       calculation_nodes.csv, blueprint_validation_matrix.csv
 analysis/06_user_interaction/user_interaction_decisions.csv
 analysis/03_logic_details/formula_inventory.csv, lookup_inventory.csv, branch_inventory.csv,
                       computation_graph_coverage.csv, applicability_limits.csv,
@@ -54,12 +54,13 @@ analysis/05_risks_and_questions/risk_register.csv, open_questions.csv
 5. Run the semantic production-gate check before setting `production_allowed`: acquisition status
    is `analysis_allowed`; critical/high coverage rows that block coding are covered with stable
    `current_source_id`; calculation intent is production-ready; method selection rows exist;
-   input semantics rows define units/sign/default/validation behavior; formula rows have
-   `source_reference` + `test_requirement`; lookup rows define interpolation + out-of-range
-   behavior; branch rows define source + true/false paths + required tests; computation graph rows
-   close formula/lookup/branch/input IDs to module, runner, result path, and tests; blocking open
-   questions, source conflicts, production-blocking assumptions, and user interaction decisions
-   are resolved. Downgrade to `prototype_allowed` or `no_go` if any fail.
+   input semantics rows define units/sign/default/validation behavior; calculation nodes have
+   source references and future module/test targets; blueprint validation rows are verified and do
+   not block coding; formula rows have `source_reference` + `test_requirement`; lookup rows define
+   interpolation + out-of-range behavior; branch rows define source + true/false paths + required
+   tests; computation graph rows close formula/lookup/branch/input IDs to module, runner, result
+   path, and tests; blocking open questions, source conflicts, production-blocking assumptions, and
+   user interaction decisions are resolved. Downgrade to `prototype_allowed` or `no_go` if any fail.
 6. When the validation script is available, run
    `python3 scripts/validate_artifacts.py --package-root <skill-pack-root> --profile core --project <project-root>`
    and treat failures as blockers (unless the user asks for a draft/prototype).

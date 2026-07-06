@@ -1,0 +1,7 @@
+flowchart LR
+    MODELS["BookInput / BookResult models"] --> VALIDATORS["validators and normalizers"]
+    VALIDATORS --> LIBS["src/<pkg>/libraries/* reusable modules"]
+    LIBS --> RUNNER["run_book(BookInput) -> BookResult"]
+    RUNNER --> REPORT["ReportContext and renderers"]
+    RUNNER --> API["web API and batch"]
+    RUNNER --> REVIEW["review/admin apps"]

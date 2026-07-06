@@ -15,20 +15,21 @@ from typing import Any
 
 PLUGIN_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = PLUGIN_ROOT.parents[1]
-TOOLS_ROOT = REPO_ROOT / "engineering-calculation-system" / "tools"
-sys.path.insert(0, str(TOOLS_ROOT))
-
-from versioning import codex_plugin_version, release_created_at, release_version
-
 MANIFEST_PATH = PLUGIN_ROOT / ".codex-plugin" / "plugin.json"
 MARKETPLACE_PATH = REPO_ROOT / ".agents" / "plugins" / "marketplace.json"
+RELEASE_CONFIG_PATH = REPO_ROOT / "engineering-calculation-system" / "tools" / "release_config.json"
 SOURCE_SKILL_ROOT = REPO_ROOT / "engineering-calculation-system" / "core" / "engineering-calculation-system"
 SKILL_ROOT = PLUGIN_ROOT / "skills" / "engineering-calculation-system"
 OVERLAY_ROOT = PLUGIN_ROOT / "overlays" / "engineering-calculation-system"
 TODO_PATTERN = re.compile(r"\[TODO:")
 HEX_COLOR_PATTERN = re.compile(r"^#[0-9A-Fa-f]{6}$")
-EXPECTED_SKILL_VERSION = release_version()
-EXPECTED_PLUGIN_VERSION = codex_plugin_version(EXPECTED_SKILL_VERSION, release_created_at())
+SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$")
+CODEX_PLUGIN_VERSION_RE = re.compile(
+    r"^(?P<skill_version>\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)\+codex\.(?P<date>\d{8})$"
+)
+FRONTMATTER_RE = re.compile(r"^---\n(?P<body>.*?)\n---\n", re.DOTALL)
+IGNORED_SYNC_NAMES = {"__pycache__"}
+IGNORED_SYNC_SUFFIXES = {".pyc", ".pyo"}
 
 CODEX_BLOCK = """## Codex Plugin Adapter
 
@@ -61,6 +62,26 @@ REQUIRED_PLUGIN_PATHS = [
 REQUIRED_SKILL_PATHS = [
     "SKILL.md",
     "skills/00-engineering-calculation-router.skill.md",
+    "skills/01-reference-adequacy-and-gap-assessment.skill.md",
+    "skills/02-reference-discovery-and-acquisition.skill.md",
+    "skills/03-reference-persistence-and-local-library.skill.md",
+    "skills/04-source-intake-and-authority.skill.md",
+    "skills/05-engineering-logic-blueprint.skill.md",
+    "skills/06-formula-lookup-branch-extraction.skill.md",
+    "skills/07-implementation-handoff-contract.skill.md",
+    "skills/08-calculation-book-architecture.skill.md",
+    "skills/09-core-and-data-models.skill.md",
+    "skills/10-reusable-calculation-modules.skill.md",
+    "skills/11-book-runner-and-governing-summary.skill.md",
+    "skills/12-report-review-batch-interfaces.skill.md",
+    "skills/12a-report-context-and-rendering.skill.md",
+    "skills/12b-frontend-and-review-interfaces.skill.md",
+    "skills/12c-batch-import-export-packages.skill.md",
+    "skills/13-verification-regression-traceability.skill.md",
+    "skills/14-cloud-web-release-deployment.skill.md",
+    "parent/engineering-calculation-reference-acquisition.skill.md",
+    "parent/engineering-calculation-logic-architecture.skill.md",
+    "parent/engineering-calculation-book.skill.md",
     "shared/codex-plugin-adapter.md",
     "shared/lifecycle.md",
     "shared/execution-discipline.md",
@@ -123,9 +144,150 @@ REQUIRED_MANIFEST_TEXT = (
     "web-complete",
 )
 
+REQUIRED_CODEX_ADAPTER_PHRASES = {
+    "resource root": [
+        "directory containing the root `SKILL.md`",
+        "Resolve `skills/`, `parent/`, `shared/`, `templates/`, `schemas/`",
+    ],
+    "workspace boundary": [
+        "Do not write into the plugin package during normal user project work",
+        "plugin package is read-only unless the user explicitly asks for plugin maintenance",
+    ],
+    "load order": [
+        "read this adapter, then the router",
+        "only the parent/child skills needed for the task",
+    ],
+    "Codex discovery": [
+        "If a target repository has `.codegraph/`, use CodeGraph before text search",
+        "Use `rg` or CodeGraph for code discovery",
+    ],
+    "tool limitations": [
+        "Record unavailable tools as validation or acquisition limitations",
+    ],
+    "route card": [
+        "task_type:",
+        "material_state:",
+        "required_skill_path:",
+        "delivery_mode:",
+        "gate_status:",
+        "completion_evidence_category:",
+    ],
+    "web-complete default": [
+        "Use `web-complete` by default",
+        "Default to `web-complete` for online calculators",
+    ],
+    "runner boundary": [
+        "run_book(BookInput) -> BookResult",
+    ],
+    "generated project validation": [
+        "python scripts/verify_golden_cases.py --project-root <project-root>",
+        "python -m pytest",
+        "validate_artifacts.py --package-root <skill-root>",
+    ],
+    "reference acquisition": [
+        "require current source verification",
+        "Persist accepted and rejected candidates",
+    ],
+    "multi-agent boundary": [
+        "Use Codex subagents only when the user explicitly asks",
+        "Keep lifecycle routing, evidence gates, source authority",
+    ],
+    "completion summary": [
+        "lifecycle route and gate status",
+        "validation commands run and results",
+    ],
+}
+
+REQUIRED_CODEX_QUICKSTART_PHRASES = [
+    "skills/engineering-calculation-system/shared/codex-plugin-adapter.md",
+    "skills/engineering-calculation-system/skills/00-engineering-calculation-router.skill.md",
+    "rather than jumping directly into code",
+    "If the target repository has `.codegraph/`, use CodeGraph",
+    "python scripts/validate_plugin.py",
+    "python scripts/verify_golden_cases.py --project-root .",
+    "python -m pytest",
+    "scripts/validate_artifacts.py --package-root . --profile core",
+    "python scripts/sync_from_core.py --dry-run",
+    "python scripts/sync_from_core.py --force",
+]
+
 
 def rel(path: Path) -> str:
     return path.relative_to(PLUGIN_ROOT).as_posix()
+
+
+def has_phrase(text: str, phrase: str) -> bool:
+    return " ".join(phrase.split()) in " ".join(text.split())
+
+
+def in_source_checkout() -> bool:
+    return (REPO_ROOT / ".git").exists() or SOURCE_SKILL_ROOT.exists() or MARKETPLACE_PATH.exists()
+
+
+def read_json_object(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def manifest_version() -> str:
+    value = read_json_object(MANIFEST_PATH).get("version")
+    return value if isinstance(value, str) else ""
+
+
+def release_config_value(key: str) -> str:
+    value = read_json_object(RELEASE_CONFIG_PATH).get(key)
+    return value if isinstance(value, str) else ""
+
+
+def skill_frontmatter_version(path: Path) -> str:
+    if not path.exists():
+        return ""
+    text = path.read_text(encoding="utf-8").replace("\r\n", "\n").replace("\r", "\n")
+    match = FRONTMATTER_RE.match(text)
+    if not match:
+        return ""
+    version_match = re.search(r"^version:\s*(.+)$", match.group("body"), re.MULTILINE)
+    return version_match.group(1).strip().strip('"').strip("'") if version_match else ""
+
+
+def parse_codex_plugin_version(version: str) -> tuple[str, str]:
+    match = CODEX_PLUGIN_VERSION_RE.match(version)
+    if not match:
+        return "", ""
+    raw_date = match.group("date")
+    return match.group("skill_version"), f"{raw_date[:4]}-{raw_date[4:6]}-{raw_date[6:]}"
+
+
+def expected_skill_version() -> str:
+    config_version = release_config_value("version")
+    if config_version and SEMVER_RE.match(config_version):
+        return config_version
+    skill_version = skill_frontmatter_version(SKILL_ROOT / "SKILL.md")
+    if skill_version and SEMVER_RE.match(skill_version):
+        return skill_version
+    parsed_version, _created_at = parse_codex_plugin_version(manifest_version())
+    return parsed_version
+
+
+def expected_release_created_at() -> str:
+    created_at = release_config_value("created_at")
+    if created_at:
+        return created_at
+    _skill_version, parsed_created_at = parse_codex_plugin_version(manifest_version())
+    return parsed_created_at
+
+
+def expected_codex_plugin_version() -> str:
+    skill_version = expected_skill_version()
+    created_at = expected_release_created_at()
+    if not skill_version or not created_at:
+        return ""
+    return f"{skill_version}+codex.{created_at.replace('-', '')}"
 
 
 def load_manifest(errors: list[str]) -> dict[str, Any]:
@@ -159,6 +321,10 @@ def require_path(path: Path, errors: list[str]) -> None:
         errors.append(f"missing required path: {rel(path)}")
 
 
+def valid_manifest_path_names() -> set[str]:
+    return {PLUGIN_ROOT.name, PLUGIN_ROOT.parent.name}
+
+
 def check_manifest(manifest: dict[str, Any], errors: list[str]) -> None:
     raw = json.dumps(manifest, sort_keys=True)
     if TODO_PATTERN.search(raw):
@@ -168,13 +334,20 @@ def check_manifest(manifest: dict[str, Any], errors: list[str]) -> None:
         if key not in manifest:
             errors.append(f"manifest is missing required key: {key}")
 
-    expected_name = PLUGIN_ROOT.name
-    if manifest.get("name") != expected_name:
-        errors.append(f"manifest name must match folder name {expected_name!r}")
+    valid_path_names = valid_manifest_path_names()
+    if manifest.get("name") not in valid_path_names:
+        errors.append(
+            "manifest name must match the plugin folder name "
+            f"(accepted: {', '.join(sorted(valid_path_names))})"
+        )
 
     version = str(manifest.get("version", ""))
-    if version != EXPECTED_PLUGIN_VERSION:
-        errors.append(f"manifest version must be {EXPECTED_PLUGIN_VERSION}")
+    expected_version = expected_codex_plugin_version()
+    if expected_version:
+        if version != expected_version:
+            errors.append(f"manifest version must be {expected_version}")
+    elif not CODEX_PLUGIN_VERSION_RE.match(version):
+        errors.append("manifest version must use <skill-version>+codex.<YYYYMMDD>")
 
     if manifest.get("skills") != "./skills/":
         errors.append("manifest skills path must be ./skills/")
@@ -263,6 +436,10 @@ def check_manifest(manifest: dict[str, Any], errors: list[str]) -> None:
 
 
 def check_marketplace(errors: list[str]) -> None:
+    if not MARKETPLACE_PATH.exists():
+        if in_source_checkout():
+            errors.append(f"missing local plugin marketplace: {MARKETPLACE_PATH.relative_to(REPO_ROOT).as_posix()}")
+        return
     marketplace = load_json(MARKETPLACE_PATH, errors, "local plugin marketplace")
     if not marketplace:
         return
@@ -323,6 +500,30 @@ def check_skill_frontmatter(errors: list[str]) -> None:
         errors.append("bundled SKILL.md must load the Codex adapter before the router")
 
 
+def check_codex_adapter_content(errors: list[str]) -> None:
+    adapter_path = SKILL_ROOT / "shared" / "codex-plugin-adapter.md"
+    if not adapter_path.exists():
+        return
+    text = adapter_path.read_text(encoding="utf-8")
+    for capability, phrases in REQUIRED_CODEX_ADAPTER_PHRASES.items():
+        missing = [phrase for phrase in phrases if not has_phrase(text, phrase)]
+        if missing:
+            errors.append(
+                f"Codex adapter missing {capability} marker(s): "
+                + ", ".join(repr(phrase) for phrase in missing)
+            )
+
+
+def check_quickstart_content(errors: list[str]) -> None:
+    quickstart_path = PLUGIN_ROOT / "docs" / "CODEX_QUICKSTART.md"
+    if not quickstart_path.exists():
+        return
+    text = quickstart_path.read_text(encoding="utf-8")
+    for phrase in REQUIRED_CODEX_QUICKSTART_PHRASES:
+        if not has_phrase(text, phrase):
+            errors.append(f"Codex quickstart missing marker: {phrase!r}")
+
+
 def check_overlay_sync(errors: list[str]) -> None:
     if not OVERLAY_ROOT.exists():
         errors.append(f"missing overlay root: {rel(OVERLAY_ROOT)}")
@@ -347,25 +548,35 @@ def check_sync_script_capabilities(errors: list[str]) -> None:
             errors.append(f"sync_from_core.py missing capability marker: {phrase}")
 
 
+def is_ignored_sync_file(path: Path) -> bool:
+    return (
+        any(part in IGNORED_SYNC_NAMES for part in path.parts)
+        or path.suffix in IGNORED_SYNC_SUFFIXES
+    )
+
+
+def sync_file_map(root: Path) -> dict[str, Path]:
+    if not root.exists():
+        return {}
+    return {
+        path.relative_to(root).as_posix(): path
+        for path in root.rglob("*")
+        if path.is_file() and not is_ignored_sync_file(path)
+    }
+
+
 def check_bundled_source_sync(errors: list[str]) -> None:
     if not SOURCE_SKILL_ROOT.exists():
-        errors.append(f"source skill root is missing: {SOURCE_SKILL_ROOT}")
+        if in_source_checkout():
+            errors.append(f"source skill root is missing: {SOURCE_SKILL_ROOT}")
         return
     overlay_rels = {
         path.relative_to(OVERLAY_ROOT).as_posix()
         for path in OVERLAY_ROOT.rglob("*")
-        if path.is_file()
+        if path.is_file() and not is_ignored_sync_file(path)
     } if OVERLAY_ROOT.exists() else set()
-    source_files = {
-        path.relative_to(SOURCE_SKILL_ROOT).as_posix(): path
-        for path in SOURCE_SKILL_ROOT.rglob("*")
-        if path.is_file()
-    }
-    bundled_files = {
-        path.relative_to(SKILL_ROOT).as_posix(): path
-        for path in SKILL_ROOT.rglob("*")
-        if path.is_file()
-    } if SKILL_ROOT.exists() else {}
+    source_files = sync_file_map(SOURCE_SKILL_ROOT)
+    bundled_files = sync_file_map(SKILL_ROOT)
 
     for rel_path, source_path in sorted(source_files.items()):
         if rel_path in overlay_rels:
@@ -481,6 +692,8 @@ def main() -> int:
         check_manifest(manifest, errors)
     check_marketplace(errors)
     check_skill_frontmatter(errors)
+    check_codex_adapter_content(errors)
+    check_quickstart_content(errors)
     check_overlay_sync(errors)
     check_sync_script_capabilities(errors)
     check_bundled_source_sync(errors)

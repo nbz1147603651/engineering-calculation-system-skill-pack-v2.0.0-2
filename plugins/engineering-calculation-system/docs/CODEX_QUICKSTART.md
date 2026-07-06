@@ -43,6 +43,10 @@ From the Codex plugin folder:
 python scripts/validate_plugin.py
 ```
 
+This command also works from an installed Codex plugin cache. Source-checkout
+checks such as local marketplace discovery and bundled-source drift run only
+when the source repository is present.
+
 For the bundled generated project template:
 
 ```bash

@@ -402,17 +402,24 @@ def check_gui_deployment_support(errors: list[str]) -> None:
             "_copy_tree(DIST_ZCODE_PLUGIN",
         ],
         "agents.py": [
+            "\"zcode\"",
+            "deploy_zcode",
+            "verify_zcode",
+            "uninstall_zcode",
+        ],
+        "platform_contracts.py": [
             ".zcode",
             "plugins",
             ZCODE_PLUGIN_NAME,
             f"needs_profiles=(\"{ZCODE_PROFILE}\",)",
-        ],
-        "detector.py": [
             "marketplace.json",
-            ".zcode-plugin",
+            ".zcode-plugin/plugin.json",
             "skills",
             "engineering-calculation-system",
+        ],
+        "detector.py": [
             "sentinels found:",
+            "sentinel found:",
         ],
     }
     for filename, phrases in installer_checks.items():

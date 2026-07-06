@@ -7,8 +7,9 @@ description: Extract and normalize engineering formulas, design methods, lookup 
 
 ## When to use
 
-After the high-level Calculation Logic Blueprint exists (skill 05). Freeze the high-risk
-calculation details that software implementation must not reinterpret later.
+After the high-level Calculation Logic Blueprint exists (skill 05) and
+`analysis/02_logic_blueprint/blueprint_validation_matrix.csv` has no blocking rows. Freeze the
+high-risk calculation details that software implementation must not reinterpret later.
 
 ## Steps
 
@@ -35,11 +36,15 @@ and computation graph coverage.
    report_visibility, closure_status. Every production formula, lookup, branch, and high-risk
    node must have a future module target, runner step, result path, and test target before coding
    is allowed.
-5. **Unit & sign rules** -> `templates/analysis/unit_and_sign_conventions.md`: input/internal/
+5. Update `analysis/02_logic_blueprint/blueprint_validation_matrix.csv` for formulas, lookups, and
+   branches discovered during extraction. A source-backed formula, lookup, or branch is not ready
+   for implementation until its validation row links the source excerpt/table/example, node IDs,
+   inventory IDs, and test requirement.
+6. **Unit & sign rules** -> `templates/analysis/unit_and_sign_conventions.md`: input/internal/
    output units, angle units, force/moment sign conventions, coordinate directions, pressure/stress
    conventions, settlement/displacement sign conventions. Mark unclear items `needs confirmation`.
    Use `shared/unit-convention.md` as the default internal system.
-6. **Applicability limits** -> `templates/analysis/applicability_limits.csv`; **assumptions** ->
+7. **Applicability limits** -> `templates/analysis/applicability_limits.csv`; **assumptions** ->
    `templates/analysis/assumption_register.csv`; **risks** ->
    `templates/analysis/risk_register.csv`; **open questions** ->
    `templates/analysis/open_questions.csv` (classify by coding impact).
@@ -56,9 +61,11 @@ analysis/03_logic_details/unit_and_sign_conventions.md   (templates/analysis/uni
 analysis/03_logic_details/assumption_register.csv
 analysis/05_risks_and_questions/risk_register.csv
 analysis/05_risks_and_questions/open_questions.csv
+analysis/02_logic_blueprint/blueprint_validation_matrix.csv (updated closure rows)
 ```
 
 ## Exit gate
 
-Every production rule has a source reference, test requirement, module target, runner target, and
-result path. See `shared/lifecycle.md` row 06. Next path: 07 for the implementation handoff.
+Every production rule has a source reference, blueprint validation row, test requirement, module
+target, runner target, and result path. See `shared/lifecycle.md` row 06. Next path: 07 for the
+implementation handoff.

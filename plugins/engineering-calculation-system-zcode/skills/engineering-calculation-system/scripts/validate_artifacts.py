@@ -56,6 +56,7 @@ PLACEHOLDER_VALUES = {
 TRUTHY_VALUES = {"1", "true", "yes", "y", "blocking", "blocks"}
 CLOSURE_PASS_VALUES = {"closed", "covered", "complete", "verified", "production_ready"}
 GOLDEN_CASE_PASS_VALUES = {"verified", "approved", "passed", "passing", "production_ready"}
+BLUEPRINT_VALIDATION_PASS_VALUES = {"verified", "accepted", "source_verified", "not_applicable", "closed", "complete"}
 CORE_FORBIDDEN_ROOT_PATHS = {
     "AGENTS.md",
     "README.md",
@@ -149,6 +150,14 @@ PRODUCTION_REQUIRED_PROJECT_ARTIFACTS = {
     "input semantics ledger": [
         "analysis/02_logic_blueprint/input_semantics_ledger.csv",
         "analysis/input_semantics_ledger.csv",
+    ],
+    "calculation nodes": [
+        "analysis/02_logic_blueprint/calculation_nodes.csv",
+        "analysis/calculation_nodes.csv",
+    ],
+    "blueprint validation matrix": [
+        "analysis/02_logic_blueprint/blueprint_validation_matrix.csv",
+        "analysis/blueprint_validation_matrix.csv",
     ],
     "formula inventory": [
         "analysis/03_logic_details/formula_inventory.csv",
@@ -556,6 +565,8 @@ WEB_COMPLETE_PLACEHOLDER_SCAN_PATHS = [
     "analysis/02_logic_blueprint/calculation_intent_contract.md",
     "analysis/02_logic_blueprint/method_selection_matrix.csv",
     "analysis/02_logic_blueprint/input_semantics_ledger.csv",
+    "analysis/02_logic_blueprint/calculation_nodes.csv",
+    "analysis/02_logic_blueprint/blueprint_validation_matrix.csv",
     "analysis/03_logic_details/computation_graph_coverage.csv",
     "analysis/03_logic_details/unit_and_sign_conventions.md",
     "analysis/03_logic_details/assumption_register.csv",
@@ -943,6 +954,87 @@ def check_method_selection_matrix(path: Path, errors: list[str]) -> list[dict[st
     return read_csv_rows(path, errors, label="method selection matrix")
 
 
+def check_calculation_nodes(path: Path, errors: list[str]) -> list[dict[str, str]]:
+    check_csv_required_fields(
+        path,
+        "calculation nodes",
+        [
+            "node_id",
+            "node_type",
+            "node_name",
+            "engineering_meaning",
+            "inputs",
+            "outputs",
+            "source_reference",
+            "module_candidate",
+            "test_requirement",
+            "risk_level",
+        ],
+        errors,
+        require_rows=True,
+    )
+    return read_csv_rows(path, errors, label="calculation nodes")
+
+
+def check_blueprint_validation_matrix(
+    path: Path,
+    errors: list[str],
+    *,
+    node_ids: set[str],
+    method_ids: set[str],
+    input_ids: set[str],
+) -> list[dict[str, str]]:
+    check_csv_required_fields(
+        path,
+        "blueprint validation matrix",
+        [
+            "validation_id",
+            "artifact_type",
+            "artifact_id",
+            "source_reference",
+            "verification_method",
+            "linked_nodes",
+            "review_status",
+            "blocks_coding",
+        ],
+        errors,
+        require_rows=True,
+    )
+    rows = check_status_field(
+        path,
+        "blueprint validation matrix",
+        "review_status",
+        BLUEPRINT_VALIDATION_PASS_VALUES,
+        errors,
+        require_rows=False,
+    )
+    for index, row in enumerate(rows, start=2):
+        if is_truthy(row.get("blocks_coding")):
+            errors.append(
+                "production gate blocked by blueprint validation matrix "
+                f"{row_identifier(row, index)} with blocks_coding=true"
+            )
+        for node_id in split_reference_values(row.get("linked_nodes")):
+            if node_ids and node_id not in node_ids:
+                errors.append(
+                    f"blueprint validation matrix {row_identifier(row, index)} "
+                    f"references unknown linked node {node_id!r}"
+                )
+        for method_id in split_reference_values(row.get("linked_methods")):
+            if method_ids and method_id not in method_ids:
+                errors.append(
+                    f"blueprint validation matrix {row_identifier(row, index)} "
+                    f"references unknown linked method {method_id!r}"
+                )
+        for input_id in split_reference_values(row.get("linked_inputs")):
+            if input_ids and input_id not in input_ids:
+                errors.append(
+                    f"blueprint validation matrix {row_identifier(row, index)} "
+                    f"references unknown linked input {input_id!r}"
+                )
+    return rows
+
+
 def check_module_asset_registry(path: Path, errors: list[str]) -> list[dict[str, str]]:
     check_csv_required_fields(
         path,
@@ -1159,6 +1251,20 @@ def check_project_semantic_gates(project_root: Path, errors: list[str]) -> None:
     input_rows: list[dict[str, str]] = []
     if "input semantics ledger" in found:
         input_rows = check_input_semantics_ledger(found["input semantics ledger"], errors)
+    node_rows: list[dict[str, str]] = []
+    if "calculation nodes" in found:
+        node_rows = check_calculation_nodes(found["calculation nodes"], errors)
+    node_ids = actionable_row_ids(node_rows, "node_id")
+    method_ids = actionable_row_ids(method_rows, "method_id")
+    input_ids = actionable_row_ids(input_rows, "input_id")
+    if "blueprint validation matrix" in found:
+        check_blueprint_validation_matrix(
+            found["blueprint validation matrix"],
+            errors,
+            node_ids=node_ids,
+            method_ids=method_ids,
+            input_ids=input_ids,
+        )
     module_rows: list[dict[str, str]] = []
     if "module asset registry" in found:
         module_rows = check_module_asset_registry(found["module asset registry"], errors)

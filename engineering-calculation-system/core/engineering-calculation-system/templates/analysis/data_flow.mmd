@@ -1,0 +1,8 @@
+flowchart LR
+    BI["BookInput fields"] --> VAL["Validation nodes"]
+    VAL --> NORM["Normalization and unit convention nodes"]
+    NORM --> SEL["Method selection nodes"]
+    SEL --> CORE["Lookup and compute nodes"]
+    CORE --> CHECKS["CheckResult values"]
+    CHECKS --> BR["BookResult"]
+    BR --> API["API / batch / report / UI"]
