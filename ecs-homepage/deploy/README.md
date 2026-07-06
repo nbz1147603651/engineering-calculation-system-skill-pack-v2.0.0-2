@@ -34,11 +34,13 @@ The production assets are written to `dist/`.
 ## Linux cloud web package
 
 ```powershell
+python ..\engineering-calculation-system\tools\build_release.py --profile ui-client
 npm run package:static
 ```
 
-The package script builds `dist/`, creates a cloud-server-ready package, and
-writes both the zip and checksum to:
+The package script builds `dist/`, verifies the matching GUI installer exists,
+copies it into the server download paths, creates a cloud-server-ready package,
+and writes both the zip and checksum to:
 
 ```text
 release/ecs-homepage-<version>-linux-web.zip
@@ -53,7 +55,9 @@ ecs-homepage-<version>-linux-web/
   VERSION
   deployment-manifest.json
   site/
+  site/downloads/engineering-calc-system-installer-v<version>.exe
   site/home/
+  site/home/downloads/engineering-calc-system-installer-v<version>.exe
   deploy/AGENT_DEPLOYMENT.md
   deploy/linux/deploy.sh
   deploy/nginx/ecs-homepage-linux.conf.template
@@ -61,6 +65,8 @@ ecs-homepage-<version>-linux-web/
 
 The duplicated `site/home/` directory intentionally matches the Docker
 deployment shape, so the same Nginx routes work for `/` and `/home/`.
+The GUI installer is duplicated under both download roots so homepage links work
+from either entrypoint.
 
 ## Docker deployment
 

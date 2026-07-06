@@ -26,6 +26,11 @@ $stagingRoot = Join-Path $releaseDir "staging"
 $packageRoot = Join-Path $stagingRoot $packageName
 $zipPath = Join-Path $releaseDir "$packageName.zip"
 $hashPath = "$zipPath.sha256"
+$repoRoot = Split-Path -Parent $root
+$guiInstallerName = "engineering-calc-system-installer-v$Version.exe"
+$uiClientRoot = Join-Path $repoRoot "engineering-calculation-system\dist\ui-client"
+$guiInstallerSource = Join-Path $uiClientRoot $guiInstallerName
+$guiChecksumsSource = Join-Path $uiClientRoot "CHECKSUMS.txt"
 
 function Assert-ChildPath {
     param(
@@ -52,6 +57,19 @@ function Copy-DirectoryContents {
     New-Item -ItemType Directory -Force -Path $Destination | Out-Null
     Get-ChildItem -LiteralPath $Source -Force | ForEach-Object {
         Copy-Item -LiteralPath $_.FullName -Destination $Destination -Recurse -Force
+    }
+}
+
+function Copy-GuiInstallerDownload {
+    param(
+        [Parameter(Mandatory)][string]$DestinationRoot
+    )
+
+    $downloadsRoot = Join-Path $DestinationRoot "downloads"
+    New-Item -ItemType Directory -Force -Path $downloadsRoot | Out-Null
+    Copy-Item -LiteralPath $guiInstallerSource -Destination (Join-Path $downloadsRoot $guiInstallerName) -Force
+    if (Test-Path -LiteralPath $guiChecksumsSource) {
+        Copy-Item -LiteralPath $guiChecksumsSource -Destination (Join-Path $downloadsRoot "CHECKSUMS.txt") -Force
     }
 }
 
@@ -108,6 +126,9 @@ try {
     if ([string]$versionManifest.version -ne $Version) {
         throw "dist/version.json version '$($versionManifest.version)' does not match package version '$Version'."
     }
+    if (-not (Test-Path -LiteralPath $guiInstallerSource)) {
+        throw "GUI installer download is missing: $guiInstallerSource. Build it first with `python engineering-calculation-system/tools/build_release.py --profile ui-client`."
+    }
 
     New-Item -ItemType Directory -Force -Path $releaseDir | Out-Null
     Assert-ChildPath -Path $stagingRoot -Parent $releaseDir
@@ -126,6 +147,8 @@ try {
     $siteRoot = Join-Path $packageRoot "site"
     Copy-DirectoryContents -Source (Join-Path $root "dist") -Destination $siteRoot
     Copy-DirectoryContents -Source (Join-Path $root "dist") -Destination (Join-Path $siteRoot "home")
+    Copy-GuiInstallerDownload -DestinationRoot $siteRoot
+    Copy-GuiInstallerDownload -DestinationRoot (Join-Path $siteRoot "home")
     Copy-Item -LiteralPath (Join-Path $root "deploy") -Destination $packageRoot -Recurse -Force
 
     $manifest = [ordered]@{
@@ -137,6 +160,9 @@ try {
         installScript = "deploy/linux/deploy.sh"
         nginxTemplate = "deploy/nginx/ecs-homepage-linux.conf.template"
         versionManifest = "site/version.json"
+        guiInstaller = "site/downloads/$guiInstallerName"
+        guiInstallerHomeCopy = "site/home/downloads/$guiInstallerName"
+        downloadPaths = @("/downloads/$guiInstallerName", "/home/downloads/$guiInstallerName")
         defaultInstallRoot = "/opt/ecs-homepage"
         defaultNginxConf = "/etc/nginx/conf.d/ecs-homepage.conf"
         healthChecks = @("/", "/home/", "/healthz", "/version.json")
@@ -173,6 +199,8 @@ non-interactive deployment script for human operators or cloud agents.
 - `site/` - static web root for `/`.
 - `site/home/` - compatibility copy for `/home/`.
 - `site/version.json` - release identity served by the website.
+- `site/downloads/{{GUI_INSTALLER_NAME}}` - GUI installer served from `/downloads/`.
+- `site/home/downloads/{{GUI_INSTALLER_NAME}}` - compatibility GUI download for `/home/`.
 - `deploy/linux/deploy.sh` - idempotent Linux deployment script.
 - `deploy/nginx/ecs-homepage-linux.conf.template` - Nginx server block template.
 - `deploy/AGENT_DEPLOYMENT.md` - automation-oriented deployment runbook.
@@ -198,6 +226,7 @@ sudo ECS_HOMEPAGE_SERVER_NAME=example.com bash deploy/linux/deploy.sh
 ```bash
 curl -fsSI http://127.0.0.1/
 curl -fsSI http://127.0.0.1/home/
+curl -fsSI http://127.0.0.1/downloads/{{GUI_INSTALLER_NAME}}
 curl -fsS http://127.0.0.1/healthz
 curl -fsS http://127.0.0.1/version.json
 ```
@@ -206,6 +235,7 @@ Read `deploy/AGENT_DEPLOYMENT.md` before making non-default choices such as a
 custom install root, custom Nginx config path, or containerized deployment.
 '@
     $readme = $readme.Replace("{{VERSION}}", $Version)
+    $readme = $readme.Replace("{{GUI_INSTALLER_NAME}}", $guiInstallerName)
     [System.IO.File]::WriteAllText(
         (Join-Path $packageRoot "README.md"),
         $readme + [Environment]::NewLine,

@@ -2,16 +2,14 @@
    ECS Homepage — Install Section Component
    ============================================ */
 
-import { useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Section } from '@/components/layout/Section'
-import { useCopyToClipboard } from '@/hooks/useCopyToClipboard'
-import { INSTALL_COMMAND } from '@/data/constants'
+import { GUI_INSTALLER_DOWNLOAD_PATH } from '@/data/constants'
 import type { Translation } from '@/types'
 
 export default function Install({ t }: { t: Translation }) {
-  const installCommandRef = useRef<HTMLElement>(null)
-  const { copyState, handleCopy } = useCopyToClipboard(INSTALL_COMMAND)
+  const highlights = 'highlights' in t.install ? t.install.highlights : []
+  const steps = 'steps' in t.install ? t.install.steps : []
 
   return (
     <Section id="install" className="bg-gradient-to-b from-[#F8FBFF] to-white">
@@ -28,42 +26,47 @@ export default function Install({ t }: { t: Translation }) {
           {t.install.subtitle}
         </p>
 
-        {/* CLI Install */}
-        <div className="relative group mb-8">
-          <div className="install-terminal bg-[#0F172A] rounded-lg p-6 text-left dark-blueprint-bg overflow-hidden">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="window-dot bg-[#FF5F56]" />
-              <div className="window-dot bg-[#FFBD2E]" />
-              <div className="window-dot bg-[#27C93F]" />
-              <span className="text-white/40 text-xs ml-2 font-mono">terminal</span>
-            </div>
-            <div className="font-mono text-sm flex items-center gap-3 min-w-0">
-              <span className="text-primary-light">$</span>
-              <code ref={installCommandRef} className="text-white/90 flex-1 min-w-0 overflow-x-auto whitespace-nowrap">{INSTALL_COMMAND}</code>
-              <button
-                type="button"
-                onClick={() => handleCopy(installCommandRef.current)}
-                aria-label={t.install.copyAria}
-                aria-live="polite"
-                className="text-white/40 hover:text-white transition-colors text-xs px-3 py-1 rounded-md border border-white/10 hover:border-white/30"
-              >
-                {t.install.copy[copyState]}
-              </button>
+        {/* Customer-facing download CTA */}
+        <div className="relative group mb-8 text-left">
+          <div className="install-terminal bg-white border border-border rounded-lg p-6 md:p-8 overflow-hidden">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+              <div className="min-w-0">
+                <p className="text-primary text-sm font-bold mb-2">{t.install.downloadLabel}</p>
+                <h3 className="text-2xl font-bold mb-3">{t.install.downloadTitle}</h3>
+                <p className="text-text2 leading-relaxed mb-5">{t.install.downloadDesc}</p>
+                <div className="flex flex-wrap gap-2">
+                  {highlights.map((highlight) => (
+                    <span key={highlight} className="text-xs font-semibold text-text2 bg-accent-pale border border-border px-3 py-1.5 rounded-full">
+                      {highlight}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row md:flex-col gap-2 md:min-w-40">
+                <a
+                  href={GUI_INSTALLER_DOWNLOAD_PATH}
+                  download
+                  className="btn-primary justify-center text-sm !py-3 !rounded-lg"
+                >
+                  {t.install.downloadCta}
+                </a>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Alternative methods */}
-        <div className="grid md:grid-cols-2 gap-4">
-          {t.install.methods.map((method) => (
-            <div key={method.title} className="glass-card install-method p-6 text-left">
+        {/* Customer onboarding */}
+        <div className="grid md:grid-cols-3 gap-4">
+          {steps.map((step) => (
+            <div key={step.title} className="glass-card install-method p-6 text-left">
               <h3 className="font-bold mb-2 flex items-center gap-2">
-                <span className="text-lg">{method.icon}</span> {method.title}
+                <span className="text-lg">{step.icon}</span> {step.title}
               </h3>
-              <p className="text-sm text-text2 mb-4">{method.desc}</p>
-              <code className="text-xs font-mono text-primary bg-accent-pale px-2 py-1 rounded">
-                {method.command}
-              </code>
+              <p className="text-sm text-text2 mb-4">{step.desc}</p>
+              <span className="text-xs font-semibold text-primary bg-accent-pale px-2.5 py-1 rounded-full">
+                {step.meta}
+              </span>
             </div>
           ))}
         </div>
