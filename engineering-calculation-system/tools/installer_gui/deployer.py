@@ -595,7 +595,7 @@ def _deploy_upload_kit(
     done_key: str,
 ) -> None:
     root = _resolve_root(ctx)
-    ensure_profiles(("qoderworkcn-plugin",), log=ctx.log, progress=ctx.progress)
+    build_profiles(("qoderworkcn-plugin",), log=ctx.log, progress=ctx.progress)
     ctx.progress(0.65, copy_message)
     _copy_tree(DIST_QODERWORKCN_PLUGIN, root, log=ctx.log)
     zip_path = root.with_suffix(".zip")
