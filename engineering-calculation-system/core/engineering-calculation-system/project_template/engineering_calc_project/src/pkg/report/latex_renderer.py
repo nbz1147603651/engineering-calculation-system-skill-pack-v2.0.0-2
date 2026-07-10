@@ -45,6 +45,36 @@ def latex_escape(value: Any) -> str:
     return "".join(LATEX_ESCAPE_MAP.get(char, char) for char in text)
 
 
+def flatten_dict(value: Any, prefix: str = "") -> list[tuple[str, Any]]:
+    """Recursively flatten a nested dict/list into (path, leaf_value) pairs.
+
+    Used by report templates to avoid dumping Python ``str(dict)`` repr into
+    table cells. Dicts/lists are expanded into dotted paths (e.g.
+    ``intersection.cycle_s``); scalars become a single pair with the given
+    prefix as the path.
+    """
+    if isinstance(value, dict):
+        pairs: list[tuple[str, Any]] = []
+        for key, item in value.items():
+            child_prefix = f"{prefix}.{key}" if prefix else str(key)
+            pairs.extend(flatten_dict(item, child_prefix))
+        return pairs
+    if isinstance(value, (list, tuple)):
+        pairs = []
+        for index, item in enumerate(value):
+            child_prefix = f"{prefix}[{index}]" if prefix else f"[{index}]"
+            pairs.extend(flatten_dict(item, child_prefix))
+        return pairs
+    return [(prefix, value)]
+
+
+def join_list(value: Any, separator: str = "; ") -> str:
+    """Render a value for LaTeX display; lists become separator-joined strings."""
+    if isinstance(value, (list, tuple)):
+        return separator.join(str(item) for item in value)
+    return "" if value is None else str(value)
+
+
 def report_sources_from_checks(checks: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Summarize source references already present in formula traces."""
     sources: dict[str, dict[str, Any]] = {}
@@ -148,6 +178,7 @@ def build_latex_report_context(
     sources = plain_report.get("sources") or report_sources_from_checks(checks)
     assumptions = report_assumptions_from_context(plain_input, plain_report)
     figures = report_figures_from_context(plain_report, plain_result)
+    intermediate_values = plain_result.get("intermediate_values", {}) or {}
     return {
         "lang": lang,
         "report_status": report_status,
@@ -165,7 +196,15 @@ def build_latex_report_context(
         "assumptions": assumptions,
         "warnings": plain_result.get("warnings", []),
         "errors": plain_result.get("errors", []),
-        "intermediate_values": plain_result.get("intermediate_values", {}),
+        "intermediate_values": intermediate_values,
+        # Domain-specific traffic-signal fields are optional. Downstream books
+        # populate them inside intermediate_values; the example scaffold does
+        # not, so templates guard with {% if intersection %} and degrade to the
+        # generic sections when absent.
+        "intersection": intermediate_values.get("intersection"),
+        "lane_groups": intermediate_values.get("lane_groups"),
+        "phases": intermediate_values.get("phases"),
+        "approaches": intermediate_values.get("approaches"),
         "traceability": {
             "formula_registry_version": plain_result.get("formula_registry_version", "unversioned"),
             "formula_hash": plain_result.get("formula_hash") or "untracked",
@@ -184,6 +223,8 @@ def _environment(template_dir: Path) -> Environment:
         lstrip_blocks=True,
     )
     env.filters["latex_escape"] = latex_escape
+    env.filters["flatten_dict"] = flatten_dict
+    env.filters["join_list"] = join_list
     return env
 
 
@@ -267,13 +308,49 @@ def compile_latex_project(context: dict[str, Any], template_dir: Path, output_di
         log = "\n".join(part for part in combined_output if part).strip()
         raise RuntimeError(f"LaTeX compilation did not produce main.pdf:\n{log[-4000:]}")
 
+    archive_path = _archive_compiled_pdf(pdf_path, context)
+
     return {
         "status": "ok",
         "tool": toolchain["tool"],
         "tool_path": toolchain["path"],
         "pdf_path": pdf_path,
+        "archive_path": archive_path,
         "log": "\n".join(part for part in combined_output if part),
     }
+
+
+def _archive_compiled_pdf(pdf_path: Path, context: dict[str, Any]) -> str | None:
+    """Copy the compiled PDF into reports_pdf/ for retrieval. Best-effort.
+
+    Archiving must never block the response: on any failure it returns ``None``
+    and leaves a warning in the result dict rather than raising. The file is
+    named ``<project_id>_<case_id>_<timestamp>.pdf`` when those fields are
+    available, falling back to a generic timestamped name.
+    """
+    import os
+    import time
+
+    output_dir = os.environ.get("OUTPUT_DIR")
+    if not output_dir:
+        return None
+
+    project = context.get("project") or {}
+    project_id = str(project.get("project_id") or "calc").strip() or "calc"
+    case_id = str(project.get("case_id") or "case").strip() or "case"
+    safe_project = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in project_id)
+    safe_case = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in case_id)
+    stamp = time.strftime("%Y%m%d_%H%M%S")
+    filename = f"{safe_project}_{safe_case}_{stamp}.pdf"
+
+    archive_dir = Path(output_dir) / "reports_pdf"
+    try:
+        archive_dir.mkdir(parents=True, exist_ok=True)
+        target = archive_dir / filename
+        shutil.copy2(pdf_path, target)
+        return str(target)
+    except OSError:
+        return None
 
 
 def render_latex_project_zip(context: dict[str, Any], template_dir: Path) -> bytes:
