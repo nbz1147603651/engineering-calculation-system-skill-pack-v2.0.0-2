@@ -1,0 +1,8 @@
+[
+  { "id": "brand", "name": "NIMO Software", "url": "https://nimoagi.cn/" },
+  { "id": "nimo-cad", "name": "NIMO CAD", "url": "https://nimoagi.cn/cad/" },
+  { "id": "nimo-geovision", "name": "NIMO GeoVision", "url": "https://nimoagi.cn/geovision/" },
+  { "id": "nimo-engineering", "name": "NIMO Engineering", "url": "https://nimoagi.cn/engineering/" },
+  { "id": "zjic-homepage", "name": "ZJIC", "url": "https://zjic.site/" },
+  { "id": "personal-homepage", "name": "Portfolio", "url": "https://nimoagi.cn/homepage/" }
+]
