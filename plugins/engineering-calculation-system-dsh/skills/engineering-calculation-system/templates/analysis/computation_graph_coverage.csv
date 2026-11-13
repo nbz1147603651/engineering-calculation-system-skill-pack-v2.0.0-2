@@ -1,0 +1,2 @@
+coverage_id,node_id,node_type,check_id,formula_ids,lookup_ids,branch_ids,input_ids,source_reference,module_id,public_function,runner_step,result_path,test_ids,report_visibility,closure_status
+COV-EXAMPLE-001,N-EXAMPLE-001,formula,CHK-EXAMPLE-001,F-EXAMPLE-001,L-EXAMPLE-001,B-EXAMPLE-001,I-EXAMPLE-001,S01:clause_x,MOD-EXAMPLE-001,compute_example,compute_module_results,BookResult.example.value,T-EXAMPLE-001,report,needs_confirmation

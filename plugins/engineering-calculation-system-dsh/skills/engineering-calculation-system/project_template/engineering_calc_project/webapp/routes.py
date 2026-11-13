@@ -1,0 +1,580 @@
+"""Flask route handlers for the engineering calculation web app.
+
+Scaffold: customize routes for each calculation book.
+All route handlers are thin: parse -> build model -> call runner -> convert -> return.
+"""
+
+from __future__ import annotations
+
+import json
+import re
+import traceback
+from hmac import compare_digest
+from io import BytesIO
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
+from flask import (
+    Blueprint, jsonify, redirect, render_template, request, session, url_for,
+    Response, send_file,
+)
+
+from . import config as cfg
+from .form_utils import build_case_input_from_form, case_result_to_ui
+from .i18n import get_translations
+
+bp = Blueprint("main", __name__)
+LATEX_TEMPLATE_ID_PATTERN = re.compile(r"^[A-Za-z0-9_.-]+$")
+
+
+def _read_latex_template_manifest(template_dir: Path) -> dict[str, object]:
+    """Read simple scalar metadata without adding a YAML dependency."""
+    manifest_path = template_dir / "template_manifest.yaml"
+    if not manifest_path.exists():
+        return {}
+
+    metadata: dict[str, object] = {}
+    for line in manifest_path.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#") or stripped.startswith("-") or ":" not in stripped:
+            continue
+        key, raw_value = stripped.split(":", 1)
+        value = raw_value.strip().strip("\"'")
+        if value.lower() == "true":
+            metadata[key.strip()] = True
+        elif value.lower() == "false":
+            metadata[key.strip()] = False
+        elif value:
+            metadata[key.strip()] = value
+    return metadata
+
+
+def _available_latex_templates() -> list[dict[str, object]]:
+    """List importable LaTeX templates. A template is a folder with main.tex.j2."""
+    if not cfg.LATEX_TEMPLATE_DIR.exists():
+        return []
+
+    templates: list[dict[str, object]] = []
+    for path in sorted(cfg.LATEX_TEMPLATE_DIR.iterdir()):
+        if not path.is_dir() or not (path / "main.tex.j2").exists():
+            continue
+        template_id = path.name
+        metadata = _read_latex_template_manifest(path)
+        label = (
+            "Default engineering calculation book"
+            if template_id == cfg.DEFAULT_LATEX_TEMPLATE_ID
+            else template_id.replace("_", " ").replace("-", " ").title()
+        )
+        templates.append({
+            "id": template_id,
+            "label": str(metadata.get("label") or label),
+            "version": str(metadata.get("version") or f"{template_id}-v1"),
+            "is_default": template_id == cfg.DEFAULT_LATEX_TEMPLATE_ID,
+            "supports_formula_trace": bool(metadata.get("supports_formula_trace", False)),
+            "supports_report_figures": bool(metadata.get("supports_report_figures", False)),
+            "replaceable_template": bool(metadata.get("replaceable_template", False)),
+        })
+    return templates
+
+
+def _resolve_latex_template_dir(template_id: str | None) -> tuple[str, Path]:
+    """Resolve a user-selected template ID, falling back to the default template."""
+    selected = (template_id or "").strip() or cfg.DEFAULT_LATEX_TEMPLATE_ID
+    if not LATEX_TEMPLATE_ID_PATTERN.match(selected):
+        raise ValueError("Invalid LaTeX template id.")
+
+    template_dir = cfg.LATEX_TEMPLATE_DIR / selected
+    if not template_dir.exists() or not (template_dir / "main.tex.j2").exists():
+        raise FileNotFoundError(f"LaTeX template not found or incomplete: {selected}")
+    return selected, template_dir
+
+
+def _admin_review_password() -> str:
+    """Return the configured admin password for the Flask admin shell."""
+    return cfg.ADMIN_REVIEW_PASSWORD
+
+
+def _admin_review_context(auth_error: str | None = None) -> dict[str, object]:
+    from pkg.core.capabilities import detect_capabilities
+
+    payload = detect_capabilities()
+    capabilities = payload["capabilities"]
+    authenticated = bool(session.get("admin_review_authenticated"))
+    password_configured = bool(_admin_review_password())
+    return {
+        "capabilities": capabilities,
+        "review": capabilities["marimo_review"],
+        "authenticated": authenticated,
+        "password_configured": password_configured,
+        "auth_error": auth_error,
+        "review_session_id": request.args.get("session_id", ""),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Page routes
+# ---------------------------------------------------------------------------
+
+@bp.route("/")
+def index():
+    """Serve the main single-page application."""
+    return render_template("index.html")
+
+
+@bp.route("/admin/", methods=["GET", "POST"])
+def admin_review():
+    """Serve the password-gated local review-admin status and launch page.
+
+    Marimo review itself is proxied under /admin/review/; this Flask shell is
+    the password gate and setup page that links into that token-protected service.
+    """
+    expected = _admin_review_password()
+    auth_error = None
+    status_code = 200
+    if request.method == "POST":
+        supplied = request.form.get("admin_password", "")
+        if not expected:
+            auth_error = "Set ADMIN_REVIEW_PASSWORD before opening admin review."
+            status_code = 503
+        elif compare_digest(supplied, expected):
+            session["admin_review_authenticated"] = True
+        else:
+            auth_error = "Invalid admin password."
+            status_code = 401
+
+    return render_template("admin_review.html", **_admin_review_context(auth_error)), status_code
+
+
+@bp.route("/admin/logout", methods=["POST"])
+def admin_review_logout():
+    """Clear the local admin-review password session."""
+    session.pop("admin_review_authenticated", None)
+    return redirect(url_for("main.admin_review"))
+
+
+# ---------------------------------------------------------------------------
+# API routes
+# ---------------------------------------------------------------------------
+
+@bp.route("/api/defaults")
+def api_defaults():
+    """Return default calculation parameters."""
+    return jsonify(cfg.DEFAULTS)
+
+
+@bp.route("/api/i18n/<lang>")
+def api_i18n(lang: str):
+    """Return i18n translations for the given language (en or zh)."""
+    if lang not in ("en", "zh"):
+        lang = "en"
+    return jsonify(get_translations(lang))
+
+
+@bp.route("/api/capabilities")
+def api_capabilities():
+    """Return optional runtime capability status without installing anything."""
+    from pkg.core.capabilities import detect_capabilities
+
+    return jsonify(detect_capabilities())
+
+
+@bp.route("/api/review/session", methods=["POST"])
+def api_review_session():
+    """Create a Marimo review session from the current frontend case."""
+    try:
+        data = request.get_json(force=True)
+        lang = data.pop("lang", "en")
+        book_input = build_case_input_from_form(data)
+
+        from pkg.books.example_book.book_runner import run_book
+        from pkg.books.example_book.report_context import build_report_context
+        from pkg.review.bridge import write_review_session
+
+        result = run_book(book_input)
+        report_context = build_report_context(result)
+        session = write_review_session(
+            book_input,
+            result,
+            report_context,
+            root=cfg.REVIEW_SESSION_DIR,
+        )
+        session["lang"] = lang
+        session["admin_url"] = f"/admin/?session_id={session['session_id']}"
+        session["review_url"] = f"/admin/review/?session_id={session['session_id']}"
+        return jsonify({"status": "ok", "review": session})
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e) if cfg.DEBUG else "Review session creation failed.",
+        }), 400
+
+
+@bp.route("/api/review/state/<session_id>")
+def api_review_state(session_id: str):
+    """Return current review state for frontend polling or audit display."""
+    try:
+        from pkg.review.bridge import read_review_session
+
+        session = read_review_session(session_id, root=cfg.REVIEW_SESSION_DIR)
+        return jsonify({"status": "ok", "review": session["state"]})
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e) if cfg.DEBUG else "Review session not found.",
+        }), 404
+
+
+@bp.route("/api/report/templates")
+def api_report_templates():
+    """Return available LaTeX/Overleaf report templates for user selection."""
+    return jsonify({
+        "status": "ok",
+        "default_template_id": cfg.DEFAULT_LATEX_TEMPLATE_ID,
+        "templates": _available_latex_templates(),
+    })
+
+
+@bp.route("/api/report/decision")
+def api_report_decision():
+    """Return the default print-ready calculation-book renderer decision."""
+    from pkg.report.report_selector import select_report_output
+
+    return jsonify({
+        "status": "ok",
+        "decision": select_report_output().to_dict(),
+    })
+
+
+@bp.route("/api/calculate", methods=["POST"])
+def api_calculate():
+    """Run engineering calculation and return structured results.
+
+    Flow: form JSON -> BookInput -> run_book() -> BookResult -> UI dict
+    """
+    try:
+        data = request.get_json(force=True)
+        book_input = build_case_input_from_form(data)
+
+        # Import the book runner - the ONLY official calculation path.
+        # Replace with the actual import for your calculation book.
+        from pkg.books.example_book.book_runner import run_book
+        result = run_book(book_input)
+
+        ui_data = case_result_to_ui(result, book_input)
+        return jsonify(ui_data)
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e) if cfg.DEBUG else "Calculation failed. Please check your inputs.",
+        }), 400
+
+
+@bp.route("/api/report/html", methods=["POST"])
+def api_report_html():
+    """Generate and download an HTML calculation report."""
+    try:
+        data = request.get_json(force=True)
+        lang = data.pop("lang", "en")
+        book_input = build_case_input_from_form(data)
+
+        from pkg.books.example_book.book_runner import run_book
+        from pkg.books.example_book.report_context import build_report_context
+        from pkg.report.html_renderer import build_html_report_context, render_a4_html_report
+
+        result = run_book(book_input)
+        report_context = build_report_context(result)
+        html_context = build_html_report_context(
+            book_input,
+            result,
+            report_context,
+            lang=lang,
+        )
+        html = render_a4_html_report(html_context)
+
+        return Response(
+            html,
+            mimetype="text/html",
+            headers={
+                "Content-Disposition": f"attachment; filename=report_{book_input.project.project_id}.html"
+            },
+        )
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e) if cfg.DEBUG else "Report generation failed.",
+        }), 400
+
+
+@bp.route("/api/report/latex", methods=["POST"])
+def api_report_latex():
+    """Generate an Overleaf-compatible LaTeX calculation report package."""
+    try:
+        data = request.get_json(force=True)
+        lang = data.pop("lang", "en")
+        template_request = data.pop("latex_template_id", None) or data.pop(
+            "latexTemplateId", None
+        )
+        template_id, template_dir = _resolve_latex_template_dir(template_request)
+        book_input = build_case_input_from_form(data)
+
+        from pkg.books.example_book.book_runner import run_book
+        from pkg.books.example_book.report_context import build_report_context
+        from pkg.report.latex_renderer import build_latex_report_context, render_latex_project_zip
+
+        result = run_book(book_input)
+        report_context = build_report_context(result)
+        template_version = str(
+            _read_latex_template_manifest(template_dir).get("version")
+            or f"{template_id}-v1"
+        )
+        latex_context = build_latex_report_context(
+            book_input,
+            result,
+            report_context,
+            lang=lang,
+            template_version=template_version,
+        )
+        package_bytes = render_latex_project_zip(latex_context, template_dir)
+
+        return Response(
+            package_bytes,
+            mimetype="application/zip",
+            headers={
+                "Content-Disposition": (
+                    f"attachment; filename=latex_report_{book_input.project.project_id}.zip"
+                )
+            },
+        )
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e) if cfg.DEBUG else "LaTeX report generation failed.",
+        }), 400
+
+
+@bp.route("/api/report/final", methods=["POST"])
+def api_report_final():
+    """Generate the default print-ready final calculation-book report."""
+    try:
+        data = request.get_json(force=True)
+        lang = data.pop("lang", "en")
+        template_request = data.pop("latex_template_id", None) or data.pop(
+            "latexTemplateId", None
+        )
+        preferred_format = data.pop("report_format", None) or data.pop(
+            "output_format", None
+        )
+        if preferred_format not in {"latex_pdf", "html_a4"}:
+            preferred_format = None
+        book_input = build_case_input_from_form(data)
+
+        from pkg.books.example_book.book_runner import run_book
+        from pkg.books.example_book.report_context import build_report_context
+        from pkg.report.html_renderer import build_html_report_context, render_a4_html_report
+        from pkg.report.latex_renderer import build_latex_report_context, compile_latex_project
+        from pkg.report.report_selector import select_report_output
+
+        result = run_book(book_input)
+        report_context = build_report_context(result)
+        decision = select_report_output(preferred_format=preferred_format)
+
+        if decision.output_format == "latex_pdf":
+            template_id, template_dir = _resolve_latex_template_dir(template_request)
+            template_version = str(
+                _read_latex_template_manifest(template_dir).get("version")
+                or f"{template_id}-v1"
+            )
+            latex_context = build_latex_report_context(
+                book_input,
+                result,
+                report_context,
+                lang=lang,
+                template_version=template_version,
+            )
+            with TemporaryDirectory(prefix="engineering_calc_latex_") as tmp:
+                compiled = compile_latex_project(latex_context, template_dir, Path(tmp))
+                pdf_bytes = Path(compiled["pdf_path"]).read_bytes()
+            return Response(
+                pdf_bytes,
+                mimetype="application/pdf",
+                headers={
+                    "Content-Disposition": (
+                        f"attachment; filename=calculation_report_{book_input.project.project_id}.pdf"
+                    ),
+                    "X-Report-Renderer": "latex_pdf",
+                    "X-Report-Compiler": str(decision.latex_tool),
+                    "X-Report-Decision": decision.reason,
+                },
+            )
+
+        html_context = build_html_report_context(
+            book_input,
+            result,
+            report_context,
+            lang=lang,
+        )
+        html = render_a4_html_report(html_context)
+        return Response(
+            html,
+            mimetype="text/html",
+            headers={
+                "Content-Disposition": (
+                    f"attachment; filename=calculation_report_{book_input.project.project_id}.html"
+                ),
+                "X-Report-Renderer": "html_a4",
+                "X-Report-Decision": decision.reason,
+            },
+        )
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e) if cfg.DEBUG else "Final report generation failed.",
+        }), 400
+
+
+@bp.route("/api/report/preview", methods=["POST"])
+def api_report_preview():
+    """Generate HTML report and return it as a string for inline preview."""
+    try:
+        data = request.get_json(force=True)
+        lang = data.pop("lang", "en")
+        book_input = build_case_input_from_form(data)
+
+        from pkg.books.example_book.book_runner import run_book
+        from pkg.books.example_book.report_context import build_report_context
+        from pkg.report.html_renderer import build_html_report_context, render_a4_html_report
+
+        result = run_book(book_input)
+        report_context = build_report_context(result)
+        html_context = build_html_report_context(
+            book_input,
+            result,
+            report_context,
+            lang=lang,
+        )
+        html = render_a4_html_report(html_context)
+
+        return jsonify({"status": "ok", "html": html})
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e) if cfg.DEBUG else "Report preview failed.",
+        }), 400
+
+
+@bp.route("/api/import/json", methods=["POST"])
+def api_import_json():
+    """Import a BookInput JSON configuration file."""
+    try:
+        if "file" in request.files:
+            f = request.files["file"]
+            raw = f.read().decode("utf-8")
+        else:
+            raw = request.get_data(as_text=True)
+
+        data = json.loads(raw)
+        book_input = build_case_input_from_form(data)
+
+        # Convert BookInput back to the web form structure.
+        from .form_utils import book_input_to_form
+        form_data = book_input_to_form(book_input)
+        return jsonify({"status": "ok", "data": form_data})
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e),
+        }), 400
+
+
+@bp.route("/api/export/json", methods=["GET", "POST"])
+def api_export_json():
+    """Export current configuration as JSON file."""
+    try:
+        data = request.get_json(silent=True)
+        if data is None:
+            data = cfg.DEFAULTS
+
+        book_input = build_case_input_from_form(data)
+
+        # Replace with your actual serialization.
+        from .form_utils import book_input_to_form
+        json_data = book_input_to_form(book_input)
+
+        return Response(
+            json.dumps(json_data, indent=2, ensure_ascii=False),
+            mimetype="application/json",
+            headers={
+                "Content-Disposition": f"attachment; filename=config_{book_input.project.project_id}.json"
+            },
+        )
+
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+
+
+@bp.route("/api/batch/run", methods=["POST"])
+def api_batch_run():
+    """Run a JSON batch through the official book runner, one case at a time."""
+    try:
+        payload = request.get_json(force=True) or {}
+        cases = payload.get("cases")
+        if cases is None and "project" in payload:
+            cases = [payload]
+        if not isinstance(cases, list) or not cases:
+            return jsonify({
+                "status": "error",
+                "message": "Batch payload must contain a non-empty cases list.",
+            }), 400
+
+        from pkg.books.example_book.book_runner import run_book
+
+        results = []
+        for index, case_data in enumerate(cases, start=1):
+            if not isinstance(case_data, dict):
+                return jsonify({
+                    "status": "error",
+                    "message": f"Case {index} must be a JSON object.",
+                }), 400
+
+            book_input = build_case_input_from_form(case_data)
+            result = run_book(book_input)
+            results.append({
+                "case_index": index,
+                "project_id": book_input.project.project_id,
+                "case_id": book_input.project.case_id,
+                "status": "ok",
+                "result": case_result_to_ui(result, book_input),
+            })
+
+        return jsonify({
+            "status": "ok",
+            "count": len(results),
+            "results": results,
+        })
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e) if cfg.DEBUG else "Batch run failed.",
+        }), 400
+
+
+# ---------------------------------------------------------------------------
+# Error handlers
+# ---------------------------------------------------------------------------
+
+@bp.app_errorhandler(404)
+def not_found(e):
+    return jsonify({"status": "error", "message": "Not found"}), 404
+
+
+@bp.app_errorhandler(500)
+def server_error(e):
+    return jsonify({"status": "error", "message": "Internal server error"}), 500

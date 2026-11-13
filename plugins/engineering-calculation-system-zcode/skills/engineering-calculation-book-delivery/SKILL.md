@@ -1,6 +1,7 @@
 ---
 name: engineering-calculation-book-delivery
 description: Use for calculation-book architecture, reusable modules, run_book runners, reports, review interfaces, batch import/export, verification, and deployable web delivery.
+version: 0.0.1
 ---
 
 # Engineering Calculation Book Delivery

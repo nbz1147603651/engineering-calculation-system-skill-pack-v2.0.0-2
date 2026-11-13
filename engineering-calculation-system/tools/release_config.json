@@ -1,6 +1,6 @@
 {
-  "version": "2.6.0",
-  "created_at": "2026-07-01",
+  "version": "0.0.1",
+  "created_at": "2026-11-10",
   "profiles": [
     "core",
     "codex-plugin",
@@ -11,7 +11,8 @@
     "singlefile",
     "source-dev",
     "zcode-plugin",
-    "ui-client"
+    "ui-client",
+    "dsh-plugin"
   ],
   "default_all_profiles": [
     "core",
@@ -23,7 +24,8 @@
     "singlefile",
     "source-dev",
     "zcode-plugin",
-    "ui-client"
+    "ui-client",
+    "dsh-plugin"
   ],
   "release_required_profiles": [
     "core",
@@ -34,7 +36,8 @@
     "qoderworkcn-plugin",
     "singlefile",
     "source-dev",
-    "zcode-plugin"
+    "zcode-plugin",
+    "dsh-plugin"
   ],
   "publish_targets": [
     "CODEX",
@@ -52,7 +55,8 @@
     "WorkBuddy",
     "TRAE",
     "OpenCode",
-    "AGENTS Generic"
+    "AGENTS Generic",
+    "DeepSeek Harness"
   ],
   "source_dev_includes": [
     "core",
@@ -71,7 +75,7 @@
     ],
     "onefile": true,
     "windowed": true,
-    "icon": "tools/installer_gui/assets/brand-logo.ico",
+    "icon": "tools/installer_gui/assets/nimo-mascot.ico",
     "data_files": [
       [
         "tools/installer_gui/assets/brand-logo.ico",
@@ -88,7 +92,52 @@
       [
         "tools/installer_gui/assets/platform-logos",
         "installer_gui/assets/platform-logos"
+      ],
+      [
+        "tools/installer_gui/assets/nimo-mascot.png",
+        "installer_gui/assets"
+      ],
+      [
+        "tools/installer_gui/assets/nimo-mascot.ico",
+        "installer_gui/assets"
+      ],
+      [
+        "tools/installer_gui/assets/nav-platforms.svg",
+        "installer_gui/assets"
+      ],
+      [
+        "tools/installer_gui/assets/nav-workflow.svg",
+        "installer_gui/assets"
+      ],
+      [
+        "tools/installer_gui/assets/nav-activity.svg",
+        "installer_gui/assets"
       ]
+    ],
+    "runtime_profiles": [
+      "core",
+      "codex-plugin",
+      "adapters-light",
+      "qoder-addon",
+      "qoderworkcn-plugin",
+      "zcode-plugin",
+      "dsh-plugin"
+    ],
+    "runtime_source_roots": [
+      "core",
+      "adapter_sources",
+      "../plugins/engineering-calculation-system",
+      "../plugins/engineering-calculation-system-zcode",
+      "../plugins/engineering-calculation-system-dsh"
+    ],
+    "runtime_source_excluded_dirs": [
+      ".git",
+      ".codegraph",
+      ".pytest_cache",
+      ".ruff_cache",
+      "__pycache__",
+      "node_modules",
+      "dist"
     ]
   },
   "singlefile_prefixes": [
@@ -110,7 +159,8 @@
     "project_template/engineering_calc_project/deploy/",
     "project_template/engineering_calc_project/release/",
     "project_template/engineering_calc_project/src/",
-    "project_template/engineering_calc_project/tests/"
+    "project_template/engineering_calc_project/tests/",
+    "scripts/delivery_policy.py"
   ],
   "classified_targets": [
     {
@@ -450,6 +500,22 @@
           "source": ".agents",
           "target": ".agents"
         }
+      ]
+    },
+    {
+      "name": "DeepSeek Harness",
+      "path": "DeepSeekHarness/engineering-calculation-system-dsh",
+      "include_core": false,
+      "install_text": "Install this native Harness bundle with dsh plugin --profile web add <absolute folder>. Use dsh --profile web --dump-config to verify the composition layer, then restart the client.",
+      "copies": [
+        {
+          "profile": "dsh-plugin",
+          "source": "engineering-calculation-system-dsh",
+          "target": "."
+        }
+      ],
+      "notes": [
+        "Uses the native Cordis skill provider and profile bundle manager. Does not overwrite profile settings, credentials, sessions, or unrelated plugins."
       ]
     }
   ]

@@ -1,6 +1,7 @@
 ---
 name: engineering-calculation-core-data-models
 description: Use when defining core utilities and typed models such as BookInput, BookResult, formula traces, validators, statuses, units, and serialization.
+version: 0.0.1
 ---
 
 # Engineering Calculation Core Data Models

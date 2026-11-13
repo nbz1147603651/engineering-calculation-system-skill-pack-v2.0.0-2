@@ -9,6 +9,11 @@ delivery bar.
 Before analysis, coding, verification, release, or completion claims, write these four cards in
 working notes or the final phase handoff.
 
+Use one durable record for these four cards, updating it as evidence changes. A concise user
+update may refer to that record rather than repeat every field. For a verified existing
+baseline, record changed layers and inherited gate evidence using the incremental routing
+rule in `shared/lifecycle.md`; do not regenerate unaffected artifacts.
+
 ### Route Card
 
 ```text

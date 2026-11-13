@@ -13,6 +13,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Literal
 
+from .dsh import default_profile_root
+
 
 SentinelMode = Literal["any", "all"]
 DefaultRootFn = Callable[[], Path | None]
@@ -446,6 +448,32 @@ CONTRACTS = (
             ),
             uninstall_paths=(".agents", "AGENTS.md"),
         ),
+    ),
+)
+
+CONTRACTS += (
+    AgentContract(
+        name="deepseek-harness",
+        display_name="DeepSeek Harness",
+        icon="DS",
+        kind="user",
+        summary_key="summary_deepseek_harness",
+        default_root_fn=default_profile_root,
+        needs_profiles=("dsh-plugin",),
+        program_probe=ProgramProbe(
+            executable_names=("dsh",),
+            env_home_names=("DSH_HOME",),
+            home_dirs=(HomeProbe(".dsh"), HomeProbe("AppData/Local/DSH Custom Client/app")),
+            not_found_key="detector_dsh_not_found",
+        ),
+        sentinel_paths=(
+            "package.json",
+            "node_modules/@engineering-calculation-system/dsh-plugin/package.json",
+            "node_modules/@engineering-calculation-system/dsh-plugin/cordis.patch.yml",
+            "node_modules/@engineering-calculation-system/dsh-plugin/lib/index.js",
+            "node_modules/@engineering-calculation-system/dsh-plugin/skills/engineering-calculation-system/SKILL.md",
+        ),
+        sentinel_mode="all",
     ),
 )
 

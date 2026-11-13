@@ -1,6 +1,7 @@
 ---
 name: engineering-calculation-book-architecture
 description: Use when designing package layout, dependency rules, reusable module boundaries, asset registry, deployment layout, and file placement for a calculation book.
+version: 0.0.1
 ---
 
 # Engineering Calculation Book Architecture

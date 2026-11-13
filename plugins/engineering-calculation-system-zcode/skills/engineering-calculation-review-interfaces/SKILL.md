@@ -1,6 +1,7 @@
 ---
 name: engineering-calculation-review-interfaces
 description: Use when building production web UI, API routes, form mapping, charts, i18n, numeric sanitization, or Marimo review interfaces over run_book().
+version: 0.0.1
 ---
 
 # Engineering Calculation Review Interfaces

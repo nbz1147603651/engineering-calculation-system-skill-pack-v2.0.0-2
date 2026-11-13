@@ -1,0 +1,2 @@
+validation_id,artifact_type,artifact_id,source_reference,source_evidence,verification_method,expected_rule_or_value,linked_nodes,linked_methods,linked_inputs,linked_formulas,linked_lookups,linked_branches,linked_outputs,test_ids,review_status,blocks_coding,reviewer_notes
+BV001,check,CHK-001,S01,Template source card supports demand capacity demonstration,source to node review,utilization equals demand divided by capacity,N001,M001,IN001;IN002;IN003,F001,,,checks[0].utilization;checks[0].status,T001,verified,false,Template project validation row

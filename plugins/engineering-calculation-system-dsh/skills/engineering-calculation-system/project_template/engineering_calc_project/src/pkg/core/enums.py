@@ -1,0 +1,11 @@
+from enum import Enum
+
+
+class Status(str, Enum):
+    PASS = "PASS"
+    FAIL = "FAIL"
+    WARNING = "WARNING"
+    ERROR = "ERROR"
+    NOT_APPLICABLE = "NOT_APPLICABLE"
+    NEEDS_CONFIRMATION = "NEEDS_CONFIRMATION"
+    NOT_EVALUATED = "NOT_EVALUATED"

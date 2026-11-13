@@ -1,0 +1,2 @@
+module_id,domain,category,module_name,public_function,input_model,options_model,result_model,source_references,formula_trace_path,unit_tests,regression_tests,reuse_status,asset_owner,notes
+MOD-EXAMPLE-001,example_domain,example_category,example_module,compute_example,ExampleInput,ExampleOptions,ExampleResult,S01,implementation/02_modules/example_formula_trace.md,tests/unit/test_example_module.py,tests/regression/test_example_module.py,draft,module-worker,Replace with real module ownership and source references

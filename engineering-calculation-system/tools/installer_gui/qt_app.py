@@ -29,6 +29,7 @@ from PySide6.QtGui import (
     QIcon,
     QPainter,
     QPixmap,
+    QPalette,
     QTextCursor,
 )
 from PySide6.QtWidgets import (
@@ -45,9 +46,11 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QProgressBar,
     QPushButton,
+    QScrollArea,
     QSizePolicy,
     QSplitter,
     QStyle,
+    QStackedWidget,
     QStyleOptionViewItem,
     QStyledItemDelegate,
     QTableView,
@@ -80,7 +83,8 @@ MAX_LOG_LINES = 1200
 
 
 def _load_release_meta() -> tuple[str, tuple[str, ...]]:
-    config_path = Path(__file__).resolve().parents[1] / "release_config.json"
+    bundled = deployer.bundled_runtime_root()
+    config_path = (bundled / "tools" / "release_config.json") if bundled else Path(__file__).resolve().parents[1] / "release_config.json"
     try:
         data = json.loads(config_path.read_text(encoding="utf-8"))
         version = data.get("version", "0.0.0")
@@ -177,6 +181,13 @@ def _root_detail_text(path: Path | None) -> str:
     prefix = t("root_prefix")
     if prefix and text.startswith(prefix):
         return text[len(prefix):].strip()
+    return text
+
+
+def _soft_wrap(text: str) -> str:
+    """Allow long native paths to wrap while tooltips retain their exact value."""
+    for separator in ("\\", "/", "_"):
+        text = text.replace(separator, separator + "\u200b")
     return text
 
 
@@ -325,7 +336,7 @@ class AgentTableModel(QAbstractTableModel):
             if col == self.COL_PROGRAM:
                 if det is None:
                     return t("checking")
-                return t("program_installed") if det.program else t("program_not_found")
+                return t("program_available") if det.program else t("program_unavailable")
             if col == self.COL_DEPLOYMENT:
                 if det is None:
                     return t("checking")
@@ -349,7 +360,7 @@ class AgentTableModel(QAbstractTableModel):
         if role == int(Qt.ItemDataRole.ForegroundRole):
             if col == self.COL_ROOT and row.root is None:
                 return QBrush(QColor(styles.TEXT_TERTIARY))
-            return QBrush(QColor(styles.TEXT_PRIMARY))
+            return None  # The native palette owns normal and selected text.
 
         if role == int(Qt.ItemDataRole.TextAlignmentRole):
             if col in (self.COL_PROGRAM, self.COL_DEPLOYMENT):
@@ -514,12 +525,13 @@ class StatusPillDelegate(QStyledItemDelegate):
         if option.widget is not None:
             option.widget.style().drawControl(QStyle.ControlElement.CE_ItemViewItem, opt, painter, option.widget)
 
+        dark = option.palette.color(QPalette.ColorRole.Base).lightness() < 128
         if ok is True:
-            bg = QColor(styles.SUCCESS if index.column() == AgentTableModel.COL_PROGRAM else styles.PRIMARY)
-            fg = QColor("#FFFFFF")
+            bg = QColor("#214438" if dark else "#E7F4EB")
+            fg = QColor("#9FE0BB" if dark else "#246C41")
         elif ok is False:
-            bg = QColor("#E8EDF2")
-            fg = QColor(styles.TEXT_SECONDARY)
+            bg = QColor("#35414B" if dark else "#EDF0F3")
+            fg = QColor("#CBD4DC" if dark else styles.TEXT_SECONDARY)
         else:
             bg = QColor("#F3F5F7")
             fg = QColor(styles.TEXT_TERTIARY)
@@ -529,7 +541,7 @@ class StatusPillDelegate(QStyledItemDelegate):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(bg)
-        painter.drawRoundedRect(rect, 12, 12)
+        painter.drawRoundedRect(rect, 5, 5)
         painter.setPen(fg)
         painter.setFont(_font(styles.FONT_TAG))
         painter.drawText(rect, Qt.AlignmentFlag.AlignCenter, text)
@@ -560,6 +572,9 @@ class AppWindow(QMainWindow):
         self._apply_theme(self._app_config.theme)
         self._refresh_static_texts()
         self._select_first_row()
+        codex_row = self._model.row_for_name("codex")
+        if codex_row is not None:
+            self._table.setCurrentIndex(self._proxy.mapFromSource(self._model.index(codex_row, 0)))
 
         self._timer = QTimer(self)
         self._timer.timeout.connect(self._drain_events)
@@ -567,8 +582,8 @@ class AppWindow(QMainWindow):
         QTimer.singleShot(0, self._refresh_all_detection)
 
     def _set_window_icon(self) -> None:
-        ico_path = _asset_path("brand-logo.ico")
-        png_path = _asset_path("brand-logo.png")
+        ico_path = _asset_path("nimo-mascot.ico")
+        png_path = _asset_path("nimo-mascot.png")
         path = ico_path if sys.platform.startswith("win") and ico_path.exists() else png_path
         if path.exists():
             icon = QIcon(str(path))
@@ -591,6 +606,8 @@ class AppWindow(QMainWindow):
         self._app_config.save()
 
     def _init_repo_root(self) -> None:
+        if deployer.using_bundled_runtime():
+            return
         if not deployer.is_frozen():
             return
 
@@ -632,68 +649,203 @@ class AppWindow(QMainWindow):
 
     def _build_ui(self) -> None:
         self.setMinimumSize(styles.WINDOW_MIN_W, styles.WINDOW_MIN_H)
-
+        self.resize(1536, 1024)
         central = QWidget(self)
-        root = QVBoxLayout(central)
+        shell = QHBoxLayout(central)
+        shell.setContentsMargins(0, 0, 0, 0)
+        shell.setSpacing(0)
+        self.setCentralWidget(central)
+        shell.addWidget(self._build_sidebar(central))
+
+        workspace = QWidget(central)
+        workspace.setObjectName("workspace")
+        root = QVBoxLayout(workspace)
         root.setContentsMargins(0, 0, 0, 0)
         root.setSpacing(0)
-        self.setCentralWidget(central)
-
+        shell.addWidget(workspace, 1)
         self._build_topbar(root)
 
-        main_splitter = QSplitter(Qt.Orientation.Vertical, central)
-        main_splitter.setChildrenCollapsible(False)
-        root.addWidget(main_splitter, 1)
-
-        body = QWidget(main_splitter)
-        body_layout = QHBoxLayout(body)
-        body_layout.setContentsMargins(styles.PAD, styles.PAD, styles.PAD, styles.PAD_SM)
-        body_layout.setSpacing(styles.PAD)
-        main_splitter.addWidget(body)
-
-        content_splitter = QSplitter(Qt.Orientation.Horizontal, body)
+        self._main_splitter = QSplitter(Qt.Orientation.Vertical, workspace)
+        self._main_splitter.setChildrenCollapsible(False)
+        root.addWidget(self._main_splitter, 1)
+        self._pages = QStackedWidget(self._main_splitter)
+        self._main_splitter.addWidget(self._pages)
+        deployment_page = QWidget(self._pages)
+        page_layout = QVBoxLayout(deployment_page)
+        page_layout.setContentsMargins(24, 12, 24, 12)
+        page_layout.setSpacing(14)
+        content_splitter = QSplitter(Qt.Orientation.Horizontal, deployment_page)
         content_splitter.setChildrenCollapsible(False)
-        body_layout.addWidget(content_splitter, 1)
-
+        content_splitter.setHandleWidth(14)
         content_splitter.addWidget(self._build_table_panel(content_splitter))
         content_splitter.addWidget(self._build_detail_panel(content_splitter))
-        content_splitter.setSizes([790, 370])
+        content_splitter.setSizes([740, 370])
+        page_layout.addWidget(content_splitter, 1)
+        page_layout.addWidget(self._build_action_strip(deployment_page))
+        self._pages.addWidget(deployment_page)
+        self._workflow_page = None
+        self._log_panel = self._build_log_panel(self._main_splitter)
+        self._main_splitter.addWidget(self._log_panel)
+        self._main_splitter.setSizes([720, 190])
 
-        main_splitter.addWidget(self._build_log_panel(main_splitter))
-        main_splitter.setSizes([600, 210])
+    def _build_sidebar(self, parent: QWidget) -> QFrame:
+        sidebar = QFrame(parent)
+        sidebar.setObjectName("sidebar")
+        sidebar.setFixedWidth(254)
+        layout = QVBoxLayout(sidebar)
+        layout.setContentsMargins(18, 26, 18, 20)
+        layout.setSpacing(8)
+        brand_row = QHBoxLayout()
+        mascot = QLabel(sidebar)
+        mascot.setPixmap(QPixmap(str(_asset_path("nimo-mascot.png"))).scaled(
+            56, 80, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation
+        ))
+        brand_row.addWidget(mascot)
+        brand = QLabel("NIMO\nEngineering", sidebar)
+        brand.setObjectName("sidebarBrand")
+        brand_row.addWidget(brand, 1)
+        layout.addLayout(brand_row)
+        layout.addSpacing(22)
+        self._nav_buttons = {}
+        for name, key in (("platforms", "nav_platforms"), ("workflow", "nav_workflow"), ("activity", "nav_activity")):
+            button = QPushButton(t(key), sidebar)
+            button.setIcon(QIcon(str(_asset_path(f"nav-{name}.svg"))))
+            button.setIconSize(QSize(19, 19))
+            button.setCheckable(True)
+            button.setMinimumHeight(46)
+            button.clicked.connect(lambda _checked=False, page=name: self._navigate(page))
+            self._nav_buttons[name] = button
+            layout.addWidget(button)
+        self._nav_buttons["platforms"].setChecked(True)
+        layout.addStretch(1)
+        self._sidebar_tools = QVBoxLayout()
+        self._sidebar_tools.setSpacing(8)
+        layout.addLayout(self._sidebar_tools)
+        self._sidebar_version = QLabel(sidebar)
+        self._sidebar_version.setObjectName("sidebarProduct")
+        layout.addSpacing(18)
+        layout.addWidget(self._sidebar_version)
+        self._sidebar_local = QLabel(sidebar)
+        self._sidebar_local.setObjectName("sidebarProduct")
+        layout.addWidget(self._sidebar_local)
+        return sidebar
 
     def _build_topbar(self, root: QVBoxLayout) -> None:
         topbar = QFrame(self)
         topbar.setObjectName("topbar")
-        topbar.setFixedHeight(styles.TOPBAR_HEIGHT)
+        topbar.setMinimumHeight(108)
         layout = QHBoxLayout(topbar)
-        layout.setContentsMargins(styles.PAD, 0, styles.PAD, 0)
-        layout.setSpacing(styles.PAD_SM)
-
+        layout.setContentsMargins(26, 16, 24, 14)
+        layout.setSpacing(12)
+        heading = QVBoxLayout()
+        heading.setSpacing(4)
         self._title_label = QLabel(topbar)
-        self._title_label.setFont(_font(styles.FONT_TITLE))
         self._title_label.setObjectName("topbarTitle")
-        self._title_label.setMinimumWidth(420)
-        self._title_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        layout.addWidget(self._title_label, 1)
-
+        self._subtitle_label = QLabel(topbar)
+        self._subtitle_label.setObjectName("topbarSubtitle")
+        self._subtitle_label.setWordWrap(True)
+        heading.addWidget(self._title_label)
+        heading.addWidget(self._subtitle_label)
+        layout.addLayout(heading, 1)
+        self._topbar_actions = QHBoxLayout()
+        self._topbar_actions.setSpacing(8)
+        layout.addLayout(self._topbar_actions)
         self._version_label = QLabel(topbar)
         self._version_label.setObjectName("versionTag")
-        self._version_label.setFont(_font(styles.FONT_TAG))
-        layout.addWidget(self._version_label, 0)
-        layout.addStretch(0)
-
+        self._version_label.hide()
         self._language_combo = QComboBox(topbar)
         self._language_combo.setObjectName("topbarCombo")
         self._language_combo.currentIndexChanged.connect(self._on_language_changed)
-        layout.addWidget(self._language_combo, 0)
-
+        self._topbar_actions.addWidget(self._language_combo)
         self._theme_combo = QComboBox(topbar)
         self._theme_combo.setObjectName("topbarCombo")
         self._theme_combo.currentIndexChanged.connect(self._on_theme_changed)
-        layout.addWidget(self._theme_combo, 0)
-
+        self._topbar_actions.addWidget(self._theme_combo)
         root.addWidget(topbar)
+
+    def _build_action_strip(self, parent: QWidget) -> QFrame:
+        strip = QFrame(parent)
+        strip.setObjectName("actionStrip")
+        layout = QHBoxLayout(strip)
+        layout.setContentsMargins(18, 8, 18, 8)
+        layout.setSpacing(14)
+        mascot = QLabel(strip)
+        mascot.setPixmap(QPixmap(str(_asset_path("nimo-mascot.png"))).scaled(
+            44, 62, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation
+        ))
+        layout.addWidget(mascot)
+        self._helper_label = QLabel(strip)
+        self._helper_label.setObjectName("actionHelper")
+        self._helper_label.setWordWrap(True)
+        layout.addWidget(self._helper_label, 1)
+        self._verify_btn.setMinimumSize(94, 42)
+        self._deploy_btn.setMinimumSize(120, 42)
+        layout.addWidget(self._verify_btn)
+        layout.addWidget(self._deploy_btn)
+        return strip
+
+    def _navigate(self, name: str) -> None:
+        self._current_page = name
+        for key, button in self._nav_buttons.items():
+            button.setChecked(key == name)
+        self._pages.setVisible(name != "activity")
+        if name == "workflow":
+            if self._workflow_page is None:
+                self._workflow_page = self._build_workflow_panel(self._pages)
+                self._pages.addWidget(self._workflow_page)
+            self._pages.setCurrentWidget(self._workflow_page)
+        elif name == "platforms":
+            self._pages.setCurrentIndex(0)
+        else:
+            self._log_text.setFocus()
+        self._title_label.setText(t("nav_" + name) if name != "platforms" else t("title"))
+        self._subtitle_label.setText(t(name + "_subtitle") if name != "platforms" else t("subtitle"))
+        self._rescan_btn.setVisible(name == "platforms")
+        self._scope_combo.setVisible(name == "platforms")
+
+    def _build_workflow_panel(self, parent: QWidget) -> QWidget:
+        from .workflow import overview
+
+        scroll = QScrollArea(parent)
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        page = QWidget(scroll)
+        page.setObjectName("workspace")
+        scroll.setWidget(page)
+        outer = QVBoxLayout(page)
+        outer.setContentsMargins(24, 12, 24, 16)
+        panel = QFrame(page)
+        panel.setObjectName("workflowPanel")
+        layout = QVBoxLayout(panel)
+        layout.setContentsMargins(24, 22, 24, 22)
+        layout.setSpacing(18)
+        for index, group in enumerate(overview(), 1):
+            row = QHBoxLayout()
+            number = QLabel(f"{index:02d}", panel)
+            number.setObjectName("workflowNumber")
+            number.setFixedWidth(48)
+            row.addWidget(number, 0, Qt.AlignmentFlag.AlignTop)
+            text = QVBoxLayout()
+            heading = QLabel(t("workflow_" + group["id"] + "_title"), panel)
+            heading.setObjectName("workflowHeading")
+            text.addWidget(heading)
+            description = QLabel(t("workflow_" + group["id"] + "_description"), panel)
+            description.setObjectName("workflowDescription")
+            description.setWordWrap(True)
+            text.addWidget(description)
+            stages = QLabel(t("workflow_stages") + " " + " / ".join(group["stages"]), panel)
+            stages.setObjectName("muted")
+            stages.setWordWrap(True)
+            text.addWidget(stages)
+            gate = QLabel(t("workflow_gate_" + group["gate"]), panel)
+            gate.setObjectName("muted")
+            gate.setWordWrap(True)
+            text.addWidget(gate)
+            row.addLayout(text, 1)
+            layout.addLayout(row)
+        layout.addStretch(1)
+        outer.addWidget(panel)
+        return scroll
 
     def _build_table_panel(self, parent: QWidget) -> QWidget:
         panel = QFrame(parent)
@@ -715,29 +867,28 @@ class AppWindow(QMainWindow):
         self._filter_edit.setClearButtonEnabled(True)
         self._filter_edit.setMinimumWidth(220)
         self._filter_edit.textChanged.connect(self._proxy.set_filter_text)
+        self._filter_edit.textChanged.connect(self._select_first_row)
         toolbar.addWidget(self._filter_edit)
 
         self._scope_combo = QComboBox(panel)
         self._scope_combo.currentIndexChanged.connect(self._on_scope_changed)
         self._scope_combo.setMinimumWidth(110)
-        toolbar.addWidget(self._scope_combo)
+        self._topbar_actions.insertWidget(0, self._scope_combo)
 
         self._rescan_btn = self._tool_button(
             t("btn_rescan"),
-            QStyle.StandardPixmap.SP_BrowserReload,
             self._refresh_all_detection,
             panel,
         )
-        toolbar.addWidget(self._rescan_btn)
+        self._topbar_actions.insertWidget(0, self._rescan_btn)
 
         self._build_all_btn = self._tool_button(
             t("btn_build_all"),
-            QStyle.StandardPixmap.SP_DialogApplyButton,
             self._on_build_all,
             panel,
-            variant="primary",
+            variant="secondary",
         )
-        toolbar.addWidget(self._build_all_btn)
+        self._sidebar_tools.addWidget(self._build_all_btn)
         layout.addLayout(toolbar)
 
         metric_row = QHBoxLayout()
@@ -768,25 +919,38 @@ class AppWindow(QMainWindow):
         self._table.setSelectionMode(QTableView.SelectionMode.SingleSelection)
         self._table.setShowGrid(False)
         self._table.verticalHeader().setVisible(False)
-        self._table.verticalHeader().setDefaultSectionSize(46)
+        self._table.verticalHeader().setDefaultSectionSize(40)
         self._table.horizontalHeader().setHighlightSections(False)
         self._table.horizontalHeader().setSectionResizeMode(AgentTableModel.COL_AGENT, QHeaderView.ResizeMode.ResizeToContents)
         self._table.horizontalHeader().setSectionResizeMode(AgentTableModel.COL_PROGRAM, QHeaderView.ResizeMode.Fixed)
         self._table.horizontalHeader().setSectionResizeMode(AgentTableModel.COL_DEPLOYMENT, QHeaderView.ResizeMode.Fixed)
         self._table.horizontalHeader().setSectionResizeMode(AgentTableModel.COL_ROOT, QHeaderView.ResizeMode.Stretch)
         self._table.horizontalHeader().setSectionResizeMode(AgentTableModel.COL_PROFILES, QHeaderView.ResizeMode.ResizeToContents)
-        self._table.setColumnWidth(AgentTableModel.COL_PROGRAM, 104)
-        self._table.setColumnWidth(AgentTableModel.COL_DEPLOYMENT, 88)
+        self._table.setColumnHidden(AgentTableModel.COL_ROOT, True)
+        self._table.setColumnHidden(AgentTableModel.COL_PROFILES, True)
+        self._table.horizontalHeader().setSectionResizeMode(AgentTableModel.COL_AGENT, QHeaderView.ResizeMode.Stretch)
+        self._table.setColumnWidth(AgentTableModel.COL_PROGRAM, 148)
+        self._table.setColumnWidth(AgentTableModel.COL_DEPLOYMENT, 122)
         self._table.selectionModel().currentChanged.connect(self._on_current_changed)
         self._table.doubleClicked.connect(lambda _index: self._on_verify_selected())
         layout.addWidget(self._table, 1)
 
+        self._empty_label = QLabel(t("empty_results"), panel)
+        self._empty_label.setObjectName("muted")
+        self._empty_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._empty_label.hide()
+        layout.addWidget(self._empty_label)
+
         return panel
 
     def _build_detail_panel(self, parent: QWidget) -> QWidget:
-        panel = QFrame(parent)
+        scroll = QScrollArea(parent)
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setMinimumWidth(350)
+        panel = QFrame(scroll)
         panel.setObjectName("panel")
-        panel.setMinimumWidth(350)
+        scroll.setWidget(panel)
         layout = QVBoxLayout(panel)
         layout.setContentsMargins(styles.PAD, styles.PAD, styles.PAD, styles.PAD)
         layout.setSpacing(styles.PAD_SM)
@@ -859,11 +1023,16 @@ class AppWindow(QMainWindow):
         for row_index, (caption, value) in enumerate(rows):
             caption.setObjectName("fieldCaption")
             caption.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight)
-            caption.setFixedWidth(50)
+            caption.setFixedWidth(78)
             value.setObjectName("fieldValue")
+            value.setMinimumWidth(0)
+            policy = value.sizePolicy()
+            policy.setHorizontalPolicy(QSizePolicy.Policy.Ignored)
+            policy.setHeightForWidth(True)
+            value.setSizePolicy(policy)
             details.addWidget(caption, row_index, 0)
             details.addWidget(value, row_index, 1)
-        details.setColumnMinimumWidth(0, 50)
+        details.setColumnMinimumWidth(0, 78)
         details.setColumnStretch(1, 1)
         layout.addLayout(details)
 
@@ -880,11 +1049,9 @@ class AppWindow(QMainWindow):
         self._folder_btn = self._push_button(t("btn_folder"), self._on_pick_root_selected, panel)
         self._open_root_btn = self._push_button(t("btn_open_root"), self._on_open_root, panel)
         self._remove_btn = self._push_button(t("btn_remove"), self._on_uninstall_selected, panel, "danger")
-        button_grid.addWidget(self._deploy_btn, 0, 0)
-        button_grid.addWidget(self._verify_btn, 0, 1)
-        button_grid.addWidget(self._folder_btn, 1, 0)
-        button_grid.addWidget(self._open_root_btn, 1, 1)
-        button_grid.addWidget(self._remove_btn, 2, 0, 1, 2)
+        button_grid.addWidget(self._folder_btn, 0, 0)
+        button_grid.addWidget(self._open_root_btn, 0, 1)
+        button_grid.addWidget(self._remove_btn, 1, 0, 1, 2)
         layout.addLayout(button_grid)
 
         layout.addStretch(1)
@@ -899,13 +1066,13 @@ class AppWindow(QMainWindow):
         repo_row.addWidget(self._repo_btn, 0)
         layout.addLayout(repo_row)
 
-        return panel
+        return scroll
 
     def _build_log_panel(self, parent: QWidget) -> QWidget:
         panel = QFrame(parent)
         panel.setObjectName("panel")
         layout = QVBoxLayout(panel)
-        layout.setContentsMargins(styles.PAD, styles.PAD_SM, styles.PAD, styles.PAD)
+        layout.setContentsMargins(24, styles.PAD_SM, 24, 16)
         layout.setSpacing(styles.PAD_SM)
 
         progress_row = QHBoxLayout()
@@ -929,14 +1096,12 @@ class AppWindow(QMainWindow):
         header.addStretch(1)
         self._clear_log_btn = self._tool_button(
             t("btn_clear_log"),
-            QStyle.StandardPixmap.SP_DialogResetButton,
             self._clear_log,
             panel,
         )
         header.addWidget(self._clear_log_btn)
         self._stop_btn = self._tool_button(
             t("btn_stop"),
-            QStyle.StandardPixmap.SP_MediaStop,
             self._on_stop,
             panel,
             variant="danger",
@@ -948,7 +1113,8 @@ class AppWindow(QMainWindow):
         self._log_text = QTextEdit(panel)
         self._log_text.setReadOnly(True)
         self._log_text.setFont(_font(("Consolas", 10)))
-        self._log_text.setMinimumHeight(130)
+        self._log_text.setMinimumHeight(80)
+        self._log_text.setPlaceholderText(t("log_placeholder"))
         layout.addWidget(self._log_text, 1)
 
         return panel
@@ -956,7 +1122,6 @@ class AppWindow(QMainWindow):
     def _tool_button(
         self,
         text: str,
-        icon: QStyle.StandardPixmap,
         slot: Any,
         parent: QWidget,
         *,
@@ -964,8 +1129,7 @@ class AppWindow(QMainWindow):
     ) -> QToolButton:
         button = QToolButton(parent)
         button.setText(text)
-        button.setIcon(self.style().standardIcon(icon))
-        button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
         button.setProperty("variant", variant)
         button.clicked.connect(slot)
         return button
@@ -986,6 +1150,14 @@ class AppWindow(QMainWindow):
     def _refresh_static_texts(self) -> None:
         self.setWindowTitle(f"{t('window_title')}  v{self.version}")
         self._title_label.setText(t("title"))
+        self._subtitle_label.setText(t("subtitle"))
+        self._helper_label.setText(t("nimo_helper"))
+        self._sidebar_version.setText(f"v{self.version}")
+        self._sidebar_local.setText(t("local_client"))
+        self._log_text.setPlaceholderText(t("log_placeholder"))
+        self._empty_label.setText(t("empty_results"))
+        for name, button in self._nav_buttons.items():
+            button.setText(t("nav_" + name))
         self._version_label.setText(f"v{self.version}")
         self._target_label.setText(t("target_agents"))
         self._filter_edit.setPlaceholderText(t("filter_placeholder"))
@@ -1011,6 +1183,11 @@ class AppWindow(QMainWindow):
         self._refresh_combo_texts()
         self._refresh_metrics()
         self._refresh_detail()
+        if self._workflow_page is not None:
+            self._pages.removeWidget(self._workflow_page)
+            self._workflow_page.deleteLater()
+            self._workflow_page = None
+        self._navigate(getattr(self, "_current_page", "platforms"))
 
     def _refresh_combo_texts(self) -> None:
         current_lang = self._app_config.language
@@ -1043,205 +1220,18 @@ class AppWindow(QMainWindow):
         self._scope_combo.blockSignals(False)
 
     def _apply_theme(self, mode: str) -> None:
-        dark = mode.lower() == "dark"
-        colors = self._theme_colors(dark)
-        self.setStyleSheet(
-            f"""
-            QMainWindow {{
-                background: {colors['windowGradient']};
-            }}
-            QWidget {{
-                color: {colors['text']};
-                font-family: "{styles.FONT_FAMILY}";
-            }}
-            QFrame#topbar {{
-                background: {colors['topbarGradient']};
-            }}
-            QFrame#topbar QLabel {{
-                background: transparent;
-            }}
-            QLabel#topbarTitle {{
-                color: white;
-            }}
-            QLabel#versionTag {{
-                color: {styles.ACCENT_PALE};
-                background: rgba(255, 255, 255, 0.12);
-                border: 1px solid rgba(255, 255, 255, 0.20);
-                border-radius: 10px;
-                padding: 3px 9px;
-            }}
-            QComboBox#topbarCombo {{
-                background: rgba(255, 255, 255, 0.18);
-                color: white;
-                border: 1px solid rgba(255, 255, 255, 0.30);
-                border-radius: 9px;
-                padding: 5px 9px;
-            }}
-            QFrame#panel {{
-                background: {colors['panelGlass']};
-                border: 1px solid {colors['panelBorder']};
-                border-radius: 14px;
-            }}
-            QLabel#sectionTitle, QLabel#detailTitle {{
-                color: {colors['text']};
-            }}
-            QLabel#muted, QLabel#fieldCaption {{
-                color: {colors['muted']};
-            }}
-            QLabel#rootHint {{
-                background: {colors['hintGlass']};
-                color: {colors['muted']};
-                border: 1px solid {colors['panelBorder']};
-                border-radius: 9px;
-                padding: 8px 10px;
-            }}
-            QLabel#fieldValue {{
-                color: {colors['text']};
-            }}
-            QLabel#agentIcon {{
-                background: {colors['chipGlass']};
-                color: {colors['text']};
-                border: 1px solid {colors['panelBorder']};
-                border-radius: 11px;
-            }}
-            QLabel#metric {{
-                background: {colors['chipGlass']};
-                color: {colors['text']};
-                border: 1px solid {colors['panelBorder']};
-                border-radius: 12px;
-                padding: 4px 10px;
-            }}
-            QLineEdit, QComboBox {{
-                background: {colors['inputGlass']};
-                color: {colors['text']};
-                border: 1px solid {colors['panelBorder']};
-                border-radius: 9px;
-                padding: 6px 9px;
-                selection-background-color: {colors['selection']};
-            }}
-            QLineEdit:focus, QComboBox:focus {{
-                border: 1px solid {styles.PRIMARY_LIGHT};
-            }}
-            QTableView {{
-                background: {colors['tableGlass']};
-                alternate-background-color: {colors['alt']};
-                color: {colors['text']};
-                border: 1px solid {colors['panelBorder']};
-                border-radius: 11px;
-                selection-background-color: {colors['selection']};
-                selection-color: {colors['selectionText']};
-            }}
-            QHeaderView::section {{
-                background: {colors['headerGlass']};
-                color: {colors['muted']};
-                border: none;
-                border-bottom: 1px solid {colors['panelBorder']};
-                padding: 8px 8px;
-                font-weight: 700;
-            }}
-            QTextEdit {{
-                background: {colors['inputGlass']};
-                color: {colors['text']};
-                border: 1px solid {colors['panelBorder']};
-                border-radius: 11px;
-                padding: 8px;
-            }}
-            QProgressBar {{
-                background: {colors['chipGlass']};
-                border: none;
-                border-radius: 5px;
-            }}
-            QProgressBar::chunk {{
-                background: {colors['progressGradient']};
-                border-radius: 5px;
-            }}
-            QPushButton, QToolButton {{
-                background: {colors['buttonGlass']};
-                color: {colors['text']};
-                border: 1px solid {colors['panelBorder']};
-                border-radius: 9px;
-                padding: 8px 12px;
-            }}
-            QPushButton:hover, QToolButton:hover {{
-                background: {colors['buttonHover']};
-            }}
-            QPushButton[variant="primary"], QToolButton[variant="primary"] {{
-                background: {colors['primaryButton']};
-                color: white;
-                border: 1px solid rgba(255, 255, 255, 0.18);
-            }}
-            QPushButton[variant="primary"]:hover, QToolButton[variant="primary"]:hover {{
-                background: {colors['primaryButtonHover']};
-            }}
-            QPushButton[variant="danger"], QToolButton[variant="danger"] {{
-                background: {colors['dangerButton']};
-                color: white;
-                border: 1px solid rgba(255, 255, 255, 0.14);
-            }}
-            QPushButton[variant="danger"]:hover, QToolButton[variant="danger"]:hover {{
-                background: {styles.DANGER_HOVER};
-            }}
-            QPushButton:disabled, QToolButton:disabled {{
-                color: {colors['disabledText']};
-                background: {colors['disabled']};
-                border-color: {colors['border']};
-            }}
-            """
+        dark = mode.lower() == "dark" or (
+            mode.lower() == "system"
+            and QApplication.styleHints().colorScheme() == Qt.ColorScheme.Dark
         )
+        self.setStyleSheet(styles.stylesheet(dark))
+        self._dark_theme = dark
+        self._table.viewport().update()
+        self._rebuild_log()
 
     @staticmethod
     def _theme_colors(dark: bool) -> dict[str, str]:
-        if dark:
-            return {
-                "windowGradient": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #0E1724, stop:1 #172338)",
-                "topbarGradient": "qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #005EB8, stop:0.55 #0B73CE, stop:1 #003C7A)",
-                "panelGlass": "rgba(22, 36, 54, 218)",
-                "panelBorder": "rgba(148, 176, 205, 0.22)",
-                "inputGlass": "rgba(13, 20, 28, 185)",
-                "buttonGlass": "rgba(28, 48, 71, 195)",
-                "buttonHover": "rgba(38, 62, 89, 230)",
-                "chipGlass": "rgba(28, 48, 71, 185)",
-                "hintGlass": "rgba(19, 32, 51, 185)",
-                "tableGlass": "rgba(22, 36, 54, 200)",
-                "headerGlass": "rgba(16, 24, 32, 210)",
-                "primaryButton": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #0B73CE, stop:1 #005EB8)",
-                "primaryButtonHover": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #1383E4, stop:1 #0068C9)",
-                "dangerButton": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #E34034, stop:1 #C52418)",
-                "progressGradient": "qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #4EA3F1, stop:1 #005EB8)",
-                "alt": "#132033",
-                "border": "#2C4158",
-                "text": "#E8EDF2",
-                "muted": "#9AA8B7",
-                "selection": "#204F7F",
-                "selectionText": "#FFFFFF",
-                "disabled": "#172535",
-                "disabledText": "#66788A",
-            }
-        return {
-            "windowGradient": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #E8F1F8, stop:0.48 #F6F8FB, stop:1 #EAF0F5)",
-            "topbarGradient": "qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #005EB8, stop:0.55 #0878D8, stop:1 #003087)",
-            "panelGlass": "rgba(255, 255, 255, 218)",
-            "panelBorder": "rgba(124, 145, 164, 0.32)",
-            "inputGlass": "rgba(255, 255, 255, 224)",
-            "buttonGlass": "rgba(255, 255, 255, 212)",
-            "buttonHover": "rgba(232, 241, 248, 238)",
-            "chipGlass": "rgba(255, 255, 255, 180)",
-            "hintGlass": "rgba(247, 249, 250, 214)",
-            "tableGlass": "rgba(255, 255, 255, 205)",
-            "headerGlass": "rgba(240, 244, 245, 225)",
-            "primaryButton": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #0878D8, stop:1 #005EB8)",
-            "primaryButtonHover": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #0B86EA, stop:1 #0068C9)",
-            "dangerButton": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #E34034, stop:1 #C52418)",
-            "progressGradient": "qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #51A7F5, stop:1 #005EB8)",
-            "alt": "rgba(247, 249, 250, 210)",
-            "border": styles.BORDER,
-            "text": styles.TEXT_PRIMARY,
-            "muted": styles.TEXT_SECONDARY,
-            "selection": "#D7E8F6",
-            "selectionText": styles.TEXT_PRIMARY,
-            "disabled": "#F3F5F7",
-            "disabledText": "#9AA5B1",
-        }
+        return styles.theme_colors(dark)
 
     def _on_language_changed(self) -> None:
         lang = self._language_combo.currentData()
@@ -1267,12 +1257,23 @@ class AppWindow(QMainWindow):
         self._select_first_row()
 
     def _refresh_repo_label(self) -> None:
+        bundled = deployer.using_bundled_runtime()
+        self._repo_btn.setVisible(not bundled)
+        self._build_all_btn.setVisible(not bundled)
+        if bundled:
+            status = deployer.runtime_status()
+            self._repo_label.setText(t("runtime_ready") if status["ready"] else t("runtime_unavailable"))
+            self._repo_label.setToolTip(f"NIMO Engineering {status['version']}")
+            return
         if deployer.REPO_ROOT is None:
             self._repo_label.setText(t("repo_not_set"))
         else:
-            self._repo_label.setText(f"{t('repo_prefix')}{deployer.REPO_ROOT}")
+            value = f"{t('repo_prefix')}{deployer.REPO_ROOT}"
+            self._repo_label.setToolTip(value)
+            self._repo_label.setText(_soft_wrap(value))
 
     def _select_first_row(self) -> None:
+        self._empty_label.setVisible(self._proxy.rowCount() <= 0)
         if self._proxy.rowCount() <= 0:
             self._refresh_detail()
             return
@@ -1317,6 +1318,8 @@ class AppWindow(QMainWindow):
             self._program_value.setText("")
             self._deploy_value.setText("")
             self._profiles_value.setText("")
+            for label in (self._root_value, self._program_value, self._deploy_value):
+                label.setToolTip("")
             self._set_action_buttons_enabled(False)
             self._folder_btn.setText(t("btn_folder"))
             self._mode_caption.setVisible(False)
@@ -1358,18 +1361,22 @@ class AppWindow(QMainWindow):
             self._root_hint.setText(t(hint_key))
         else:
             self._root_hint.setText("")
-        self._root_value.setText(_root_detail_text(row.root))
+        root_text = _root_detail_text(row.root)
+        self._root_value.setText(_soft_wrap(root_text))
+        self._root_value.setToolTip(root_text)
         self._profiles_value.setText(", ".join(spec.needs_profiles) if spec.needs_profiles else "-")
         if det is None:
             self._program_value.setText(t("checking"))
             self._deploy_value.setText(t("checking"))
+            self._program_value.setToolTip("")
+            self._deploy_value.setToolTip("")
         else:
-            self._program_value.setText(
-                f"{t('program_installed') if det.program else t('program_not_found')}\n{det.program_detail}"
-            )
-            self._deploy_value.setText(
-                f"{t('deployed') if det.deployed else t('not_deployed')}\n{det.deployed_detail}"
-            )
+            program_text = f"{t('program_installed') if det.program else t('program_not_found')}\n{det.program_detail}"
+            deployment_text = f"{t('deployed') if det.deployed else t('not_deployed')}\n{det.deployed_detail}"
+            self._program_value.setText(_soft_wrap(program_text))
+            self._program_value.setToolTip(program_text)
+            self._deploy_value.setText(t("deployed") if det.deployed else t("not_deployed"))
+            self._deploy_value.setToolTip(deployment_text)
 
         can_act = not busy
         self._deploy_btn.setEnabled(can_act)
@@ -1619,7 +1626,7 @@ class AppWindow(QMainWindow):
         self._log_text.verticalScrollBar().setValue(self._log_text.verticalScrollBar().maximum())
 
     def _rebuild_log(self) -> None:
-        html = "".join(f'<span style="color:{color}">{escape(line)}</span><br>' for line, color in self._log_lines)
+        html = "".join(f'<span style="color:{self._log_color(line)}">{escape(line)}</span><br>' for line, _color in self._log_lines)
         self._log_text.setHtml(html)
         self._log_text.verticalScrollBar().setValue(self._log_text.verticalScrollBar().maximum())
 
@@ -1627,18 +1634,18 @@ class AppWindow(QMainWindow):
         self._log_lines.clear()
         self._log_text.clear()
 
-    @staticmethod
-    def _log_color(line: str) -> str:
+    def _log_color(self, line: str) -> str:
         lower = line.lower()
+        dark = getattr(self, "_dark_theme", False)
         if line.startswith("$ "):
-            return styles.TEXT_SECONDARY
+            return "#AFBBC5" if dark else styles.TEXT_SECONDARY
         if "[error]" in lower or "traceback" in lower or "failed" in lower or "[错误]" in line:
-            return styles.DANGER
+            return "#FFA099" if dark else styles.DANGER
         if "[verify]" in lower or "[done]" in lower or "complete" in lower or "[完成]" in line:
-            return styles.SUCCESS
+            return "#9FE0BB" if dark else styles.SUCCESS
         if "[backup]" in lower or "[skip]" in lower or "warning" in lower or "[警告]" in line:
-            return "#B36B00"
-        return styles.TEXT_PRIMARY
+            return "#F0AE60" if dark else "#9C5F09"
+        return "#F0F3F6" if dark else styles.TEXT_PRIMARY
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -1648,6 +1655,17 @@ def main(argv: list[str] | None = None) -> int:
     if "--smoke" in args:
         window.show()
         app.processEvents()
+        smoke_language = os.environ.get("NIMO_SMOKE_LANGUAGE")
+        if smoke_language in ("en", "zh"):
+            window._language_combo.setCurrentIndex(window._language_combo.findData(smoke_language))
+            app.processEvents()
+        if deployer.using_bundled_runtime():
+            assert window._repo_btn.isHidden() and window._build_all_btn.isHidden()
+            assert window._repo_label.text() == t("runtime_ready")
+            assert all("_MEI" not in label.text() for label in window.findChildren(QLabel))
+        screenshot = os.environ.get("NIMO_SMOKE_SCREENSHOT")
+        if screenshot:
+            assert window.grab().save(screenshot), "Unable to save runtime smoke screenshot"
         window.close()
         return 0
     window.show()

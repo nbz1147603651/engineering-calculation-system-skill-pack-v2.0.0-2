@@ -1,6 +1,7 @@
 ---
 name: engineering-calculation-book-runner
 description: Use when building the official run_book() orchestration, governing summary, BookResult, result paths, chart specs, and integration tests.
+version: 0.0.1
 ---
 
 # Engineering Calculation Book Runner

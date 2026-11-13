@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row g-3">
+    <!-- ─── LEFT PANEL: Input Forms ─────────────────────────────── -->
+    <div class="col-lg-4 col-xl-3">
+        <div class="input-panel">
+            <!-- Project Info -->
+            <div class="card mb-3 shadow-sm">
+                <div class="card-header"><h6 class="mb-0" data-i18n="section_project">Project Information</h6></div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <label class="form-label small" data-i18n="project_id">Project ID</label>
+                        <input type="text" class="form-control form-control-sm" id="project_id" value="DEMO_001">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small" data-i18n="project_name">Project Name</label>
+                        <input type="text" class="form-control form-control-sm" id="project_name" value="Template Demonstration Project">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small" data-i18n="case_id">Case ID</label>
+                        <input type="text" class="form-control form-control-sm" id="case_id" value="DEMO_CASE_001">
+                    </div>
+                    <!-- Scaffold: add book-specific input cards here -->
+                </div>
+            </div>
+
+            <div class="card mb-3 shadow-sm">
+                <div class="card-header"><h6 class="mb-0">Template Check</h6></div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <label class="form-label small" for="check_name">Check Name</label>
+                        <input type="text" class="form-control form-control-sm" id="check_name" value="Template demand/capacity check">
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label small" for="check_demand">Demand</label>
+                            <input type="number" step="any" class="form-control form-control-sm" id="check_demand" value="45">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small" for="check_capacity">Capacity</label>
+                            <input type="number" step="any" class="form-control form-control-sm" id="check_capacity" value="90">
+                        </div>
+                    </div>
+                    <div class="row g-2 mt-1">
+                        <div class="col-6">
+                            <label class="form-label small" for="check_limit">Limit</label>
+                            <input type="number" step="any" class="form-control form-control-sm" id="check_limit" value="1">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small" for="check_unit">Unit</label>
+                            <input type="text" class="form-control form-control-sm" id="check_unit" value="kN">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calculate button (sticky bottom) -->
+            <div class="sticky-bottom bg-white border-top p-3 mt-3">
+                <button class="btn btn-primary btn-lg w-100 fw-bold shadow-sm" id="btnCalculate">
+                    <i class="bi bi-play-fill me-1"></i>
+                    <span data-i18n="btn_calculate">Run Calculation</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── RIGHT PANEL: Results ────────────────────────────────── -->
+    <div class="col-lg-8 col-xl-9">
+        <div id="resultsPanel" class="results-panel">
+            <!-- Placeholder -->
+            <div id="resultsPlaceholder" class="text-center py-5">
+                <div class="mb-3">
+                    <i class="bi bi-clipboard2-data display-1 text-muted"></i>
+                </div>
+                <h4 class="text-muted" data-i18n="result_placeholder">Click "Run Calculation" to see results.</h4>
+            </div>
+
+            <!-- Runtime capabilities and governing status (hidden until populated) -->
+            <div id="capabilityStrip" class="status-strip d-none mb-3"></div>
+            <div id="governingBox" class="alert d-none mb-3" role="alert"></div>
+            <div id="formulaRegistryStrip" class="status-strip d-none mb-3"></div>
+            <div id="warningsBox" class="alert alert-warning d-none mb-3"></div>
+            <div id="errorsBox" class="alert alert-danger d-none mb-3"></div>
+
+            <div id="chartsSection" class="card result-card mb-3 shadow-sm d-none">
+                <div class="card-header result-card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-bar-chart-line me-2"></i>
+                        <span>Engineering Charts</span>
+                    </h6>
+                </div>
+                <div class="card-body py-2" id="chartsBody"></div>
+            </div>
+
+            <div id="checksSection" class="card result-card mb-3 shadow-sm d-none">
+                <div class="card-header result-card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-check2-square me-2"></i>
+                        <span>Calculation Checks</span>
+                    </h6>
+                </div>
+                <div class="card-body py-2">
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Check</th>
+                                    <th>Status</th>
+                                    <th>Demand</th>
+                                    <th>Capacity</th>
+                                    <th>Utilization</th>
+                                    <th>Limit</th>
+                                    <th>Unit</th>
+                                </tr>
+                            </thead>
+                            <tbody id="checksTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="traceSection" class="card result-card mb-3 shadow-sm d-none">
+                <div class="card-header result-card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-diagram-3 me-2"></i>
+                        <span>Formula Trace</span>
+                    </h6>
+                </div>
+                <div class="card-body py-2" id="traceBody"></div>
+            </div>
+
+            <!-- Scaffold: add book-specific result cards here -->
+            <!-- Each card follows the pattern:
+            <div id="xxxSection" class="card result-card mb-3 shadow-sm d-none">
+                <div class="card-header result-card-header" data-bs-toggle="collapse" data-bs-target="#collapseXxx">
+                    <h6 class="mb-0">
+                        <i class="bi bi-icon me-2"></i>
+                        <span data-i18n="result_xxx">Section Title</span>
+                        <span class="float-end" id="xxxStatusBadge"></span>
+                    </h6>
+                </div>
+                <div id="collapseXxx" class="collapse show">
+                    <div class="card-body py-2" id="xxxBody"></div>
+                </div>
+            </div>
+            -->
+        </div>
+    </div>
+</div>
+{% endblock %}

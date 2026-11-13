@@ -1,6 +1,7 @@
 ---
 name: engineering-calculation-source-intake
 description: Use when source materials are already available and need stable IDs, authority ranking, conflict notes, and an inventory for logic analysis.
+version: 0.0.1
 ---
 
 # Engineering Calculation Source Intake

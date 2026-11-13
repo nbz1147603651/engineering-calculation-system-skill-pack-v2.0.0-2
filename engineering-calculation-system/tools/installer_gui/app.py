@@ -45,6 +45,14 @@ def _ensure_pyside6() -> None:
 
 def main(argv: list[str] | None = None) -> int:
     _ensure_package_importable()
+    args = list(sys.argv[1:] if argv is None else argv)
+    if "--self-test-runtime" in args:
+        from installer_gui.service import runtime_self_test
+        index = args.index("--self-test-runtime")
+        if index + 1 >= len(args):
+            raise SystemExit("--self-test-runtime requires an empty sandbox path")
+        runtime_self_test(Path(args[index + 1]))
+        return 0
     _ensure_pyside6()
 
     if __package__:

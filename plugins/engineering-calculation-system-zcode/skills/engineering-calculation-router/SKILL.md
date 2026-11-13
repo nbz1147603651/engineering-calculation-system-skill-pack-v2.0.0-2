@@ -1,6 +1,7 @@
 ---
 name: engineering-calculation-router
 description: Use when an engineering calculation request spans multiple stages or needs routing across references, logic extraction, implementation, reporting, verification, or deployment.
+version: 0.0.1
 ---
 
 # Engineering Calculation Router

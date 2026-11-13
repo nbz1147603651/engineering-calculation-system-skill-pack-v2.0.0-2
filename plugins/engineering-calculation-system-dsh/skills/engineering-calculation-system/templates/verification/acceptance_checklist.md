@@ -1,0 +1,55 @@
+# Acceptance Checklist
+
+- [ ] Source basis recorded
+- [ ] Acquisition handoff exists when sources were searched
+- [ ] Implementation handoff exists
+- [ ] Semantic production gate validation passes when `production_allowed`
+- [ ] Calculation intent contract is production-ready before production coding
+- [ ] Method selection matrix covers every production check and method family
+- [ ] Input semantics ledger defines units, sign conventions, defaults, validation, and blockers
+- [ ] User interaction decisions record selected/defaulted source, scope, report language, template, visualization, and review decisions with no unresolved blockers
+- [ ] Computation graph coverage maps formulas/lookups/branches/inputs to module, runner, result path, and tests
+- [ ] Runner closure map proves production modules/checks are called by `run_book`
+- [ ] Chart candidate inventory records emitted, deferred, and not-applicable visualization decisions with source result paths
+- [ ] Golden case registry covers production-relevant high-risk checks or records blockers
+- [ ] Executable golden-case runner passes for production-blocking rows
+- [ ] Runtime stack is recorded and defaults to Python 3.9+ unless an explicit adapter plan exists
+- [ ] Frontend format is recorded and defaults to Jinja2 + Bootstrap 5 + vanilla JavaScript modules unless explicitly overridden
+- [ ] Operator workflow decisions preserve input quality, review convenience, traceability, report preview, and import/export usability
+- [ ] Report production decision is recorded when a report/export is produced
+- [ ] Automatic report output decision is recorded: print-ready A4 HTML is the default final calculation book; LaTeX/PDF is explicit or handoff-required
+- [ ] HTML report uses `@page size: A4`, formal calculation-book sections, formula logic traces, a template boundary statement, and chart data tables when charts are emitted
+- [ ] Report status is explicit and matches evidence/coding gate state
+- [ ] Formulas are only in calculation modules/books
+- [ ] Reusable calculation modules are decoupled and registered in module_asset_registry.csv
+- [ ] One official run_book() exists
+- [ ] Typed BookInput and BookResult exist
+- [ ] Unit policy is explicit
+- [ ] Report/UI/batch do not calculate
+- [ ] Report/UI/API/review/batch consume `BookResult` and do not override statuses or result values
+- [ ] UI follows the unified layout when a frontend exists
+- [ ] Interactive UI includes Chinese/English switching, persists the selected language, and uses the selected language for report preview/download when a frontend exists
+- [ ] Report preview/download supports the selected `en`, `zh`, or `bilingual` language mode when multilingual reporting is in scope
+- [ ] Marimo review pages do not calculate outside trusted modules or run_book
+- [ ] `/admin/` requires `ADMIN_REVIEW_PASSWORD` before exposing review or formula-publishing controls
+- [ ] Marimo review and formula publishing ports bind to localhost or an internal network when deployed
+- [ ] Formula registry version/hash/published_at are exposed in BookResult when editable formulas are enabled
+- [ ] Formula publish failures do not update active_versions.yaml
+- [ ] Formula publish log is written when Marimo admin review is enabled, and formula publisher is routed under `/admin/formulas/`
+- [ ] Upload/import packages have manifests and hashes when present
+- [ ] Imported reports are labeled as review/reference artifacts
+- [ ] Reports are generated from saved final input or trusted BookResult
+- [ ] ReportContext preserves source basis, limitations, warnings/errors, and traceability metadata
+- [ ] Unit tests exist
+- [ ] Regression tests exist when references exist
+- [ ] Integration test exists
+- [ ] Smoke tests exist for reports/interfaces
+- [ ] Smoke tests cover `/api/i18n/en`, `/api/i18n/zh`, and the language toggle shell when a frontend exists
+- [ ] Web app exposes /health when frontend/API exists
+- [ ] Local run command is documented and smoke-tested when frontend/API exists
+- [ ] Cloud Linux deployment path is documented when final delivery is expected
+- [ ] One-click deployment script `deploy/one_click_deploy.sh` is present and smoke-checked or syntax-checked
+- [ ] Final web delivery is not only a static `.html` file, exported report HTML, or mockup
+- [ ] Release checklist records deployment smoke tests and remaining assumptions when final delivery is expected
+- [ ] Report renderer/export path has a documented run command
+- [ ] Traceability metadata exists for production outputs

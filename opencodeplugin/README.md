@@ -1,9 +1,17 @@
 # Engineering Calculation System OpenCode Plugin
 
+NIMO Engineering / skill pack `0.0.1` is a local preview and has not been
+formally released. Its product version was intentionally reset from historical
+`2.6.0`. Existing `2.6.0` users must manually install the verified `0.0.1` preview
+and matching host adapter; version comparison and automatic updates cannot
+perform this migration. Preserve configuration, business data, and the `2.6.0`
+rollback package. The OpenCode adapter keeps its own package version; this reset
+concerns the target skill pack.
+
 Standalone OpenCode plugin for the Engineering Calculation System skill pack.
 
 Current plugin version: `0.5.0`
-Target skill pack schema: `2.6.0`
+Target skill pack schema: `0.0.1`
 
 This package is the OpenCode-specific adapter layer. The shared skill
 pack under `engineering-calculation-system/core/` remains the workflow

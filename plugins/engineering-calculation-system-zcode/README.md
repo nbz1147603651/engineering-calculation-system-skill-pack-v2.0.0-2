@@ -1,5 +1,12 @@
 # Engineering Calculation System ZCode Plugin
 
+NIMO Engineering / skill pack `0.0.1` is a local preview and has not been
+formally released. Its product version was intentionally reset from historical
+`2.6.0`. Existing `2.6.0` users must manually install the verified `0.0.1` preview
+and matching host adapter; version comparison and automatic updates cannot
+perform this migration. Preserve configuration, business data, and the `2.6.0`
+rollback package. Host adapter package versions may be independent of the skill pack.
+
 This plugin packages the Engineering Calculation System skill pack for ZCode.
 The skill pack remains the core runtime; the plugin is the installation and
 discovery boundary for ZCode's Codex-like plugin manager.
@@ -118,6 +125,10 @@ python scripts/validate_plugin.py
 
 The plugin doctor checks the manifest, ZCode adapter files, overlay
 synchronization, bundled-source drift, and the bundled core skill package.
+
+It also runs from a standalone delivered plugin folder. Version checks use the
+bundled artifact contract and plugin metadata; a source checkout additionally
+checks the canonical release config, installer integration, and source drift.
 
 ## Refresh From Core
 

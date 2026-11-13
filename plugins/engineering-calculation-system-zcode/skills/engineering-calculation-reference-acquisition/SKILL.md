@@ -1,6 +1,7 @@
 ---
 name: engineering-calculation-reference-acquisition
 description: Use for engineering reference adequacy checks, source discovery, acquisition planning, and local reference-library setup before formula extraction or implementation.
+version: 0.0.1
 ---
 
 # Engineering Calculation Reference Acquisition

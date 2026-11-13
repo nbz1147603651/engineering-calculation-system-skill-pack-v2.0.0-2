@@ -1,7 +1,7 @@
 ---
 name: engineering-calc-system
 description: 工程计算系统全生命周期专家。用于工程计算、计算书、规范/标准、公式提取、查找表、分支逻辑、单位换算、批量计算、在线计算器、报告、验算、部署、Qoder/QoderCN/QoderCN CLI/Cloud Agents 适配。Use when a task involves engineering calculation references, formula/lookup/branch extraction, calculation logic blueprints, implementation handoff, auditable calculation-book software, reports, batch flows, verification, or release.
-version: 2.6.0
+version: 0.0.1
 ---
 
 # Engineering Calculation System - Qoder Entry

@@ -177,7 +177,7 @@ def _run_case(root: Path, row: dict[str, str]) -> GoldenCaseResult:
     if not input_path.exists():
         return GoldenCaseResult(case_id, "fail", f"input file does not exist: {input_path}", result_path)
 
-    form_utils = importlib.import_module("webapp.form_utils")
+    form_utils = importlib.import_module("pkg.interfaces.input_mapping")
     book_runner = importlib.import_module(f"pkg.books.{_book_name(root)}.book_runner")
     payload = json.loads(input_path.read_text(encoding="utf-8"))
     book_input = form_utils.build_case_input_from_form(payload)

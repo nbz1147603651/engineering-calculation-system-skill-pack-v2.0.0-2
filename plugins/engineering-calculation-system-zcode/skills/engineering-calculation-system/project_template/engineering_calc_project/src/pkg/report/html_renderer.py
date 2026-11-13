@@ -5,7 +5,7 @@ from html import escape
 import math
 from typing import Any
 
-from .latex_renderer import (
+from .context_helpers import (
     report_assumptions_from_context,
     report_figures_from_context,
     report_sources_from_checks,
@@ -31,6 +31,7 @@ def build_html_report_context(
     sources = plain_report.get("sources") or report_sources_from_checks(checks)
     assumptions = report_assumptions_from_context(plain_input, plain_report)
     figures = report_figures_from_context(plain_report, plain_result)
+    intermediate_values = plain_result.get("intermediate_values", {}) or {}
     return {
         "lang": lang,
         "report_status": report_status,
@@ -48,7 +49,15 @@ def build_html_report_context(
         "assumptions": assumptions,
         "warnings": plain_result.get("warnings", []),
         "errors": plain_result.get("errors", []),
-        "intermediate_values": plain_result.get("intermediate_values", {}),
+        "intermediate_values": intermediate_values,
+        # Domain-specific traffic-signal fields are optional. Downstream books
+        # populate them inside intermediate_values; the example scaffold does
+        # not, so the HTML report guards each section with a truthiness check
+        # and degrades to the generic layout when absent.
+        "intersection": intermediate_values.get("intersection"),
+        "lane_groups": intermediate_values.get("lane_groups"),
+        "phases": intermediate_values.get("phases"),
+        "approaches": intermediate_values.get("approaches"),
         "traceability": {
             "formula_registry_version": plain_result.get("formula_registry_version", "unversioned"),
             "formula_hash": plain_result.get("formula_hash") or "untracked",

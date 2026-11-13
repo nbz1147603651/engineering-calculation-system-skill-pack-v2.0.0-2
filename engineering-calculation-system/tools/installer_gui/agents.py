@@ -61,6 +61,7 @@ def _build_specs() -> list[AgentSpec]:
         return [mavis_cmd, "skill", "show", "engineering-calculation-system"]
 
     callables = {
+        "deepseek-harness": (deployer.deploy_dsh, deployer.verify_dsh, deployer.uninstall_dsh),
         "codex": (deployer.deploy_codex, deployer.verify_codex, deployer.uninstall_codex),
         "minimax": (deployer.deploy_minimax, deployer.verify_minimax, deployer.uninstall_minimax),
         "zcode": (deployer.deploy_zcode, deployer.verify_zcode, deployer.uninstall_zcode),

@@ -97,6 +97,12 @@ def _detect_with_probe(agent_name: str, probe: ProgramProbe) -> tuple[bool, str]
 
 
 def _detect_program(agent_name: str) -> tuple[bool, str]:
+    if agent_name == "deepseek-harness":
+        from .dsh import launcher
+        try:
+            return True, f"Harness launcher: {launcher()[0]}"
+        except ValueError:
+            return False, t("detector_dsh_not_found")
     contract = get_contract(agent_name)
     if contract is None:
         return False, f"{t('detector_unknown_agent')}: {agent_name}"
@@ -172,6 +178,10 @@ def skill_deployed(agent_name: str, install_root: Path | None) -> tuple[bool, st
         return False, t("detector_no_root_selected")
 
     root = Path(install_root).expanduser()
+
+    if agent_name == "deepseek-harness":
+        from .dsh import installed
+        return installed(root)
 
     contract = get_contract(agent_name)
     if contract is None or not contract.sentinel_paths:

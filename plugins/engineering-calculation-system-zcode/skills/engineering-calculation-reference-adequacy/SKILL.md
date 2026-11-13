@@ -1,6 +1,7 @@
 ---
 name: engineering-calculation-reference-adequacy
 description: Use when checking whether available engineering references are sufficient, authoritative, and complete before search, formula extraction, or implementation.
+version: 0.0.1
 ---
 
 # Engineering Calculation Reference Adequacy

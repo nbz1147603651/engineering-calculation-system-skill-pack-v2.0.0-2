@@ -1,12 +1,7 @@
-"""Visual constants for the deployment console.
+"""NIMO Engineering design tokens and native Qt theme.
 
-Kept in one place so the whole app restyles from a single source.
-Design language follows the ZJIC International / NHS.UK design system:
-  - NHS Blue primary (#005EB8)
-  - Minimal border-radius (2-4px) for a formal engineering feel
-  - Border-based hierarchy (no shadows)
-  - High contrast, information-dense layouts
-  - Left accent bars for panels
+The application shell consumes this module; application logic never owns colors
+or a second copy of the stylesheet. Surfaces are opaque for cheap native paints.
 """
 
 from __future__ import annotations
@@ -14,14 +9,15 @@ from __future__ import annotations
 import platform
 
 # --------------------------------------------------------------------------- #
-# NHS.UK / ZJIC Color System
+# NIMO color system
 # --------------------------------------------------------------------------- #
 
 # Primary palette
-PRIMARY = "#005EB8"              # NHS Blue - primary actions, accents
-PRIMARY_DARK = "#003087"         # Deep blue - hover states, dark bg
-PRIMARY_LIGHT = "#418ED8"        # Light blue - secondary elements
-ACCENT_PALE = "#E8F1F8"          # Very pale blue - tag bg, panel bg
+PRIMARY = "#E58A24"
+PRIMARY_DARK = "#CB7419"
+PRIMARY_LIGHT = "#F0AE60"
+ACCENT_PALE = "#FFF1DF"
+SIDEBAR = "#202B36"
 
 # Legacy aliases for backward compatibility
 ACCENT = PRIMARY
@@ -46,14 +42,14 @@ COLOR_ERROR = DANGER
 
 # Surface colors
 SURFACE_WHITE = "#FFFFFF"
-SURFACE_ALT = "#F0F4F5"          # Alternating section bg
-BORDER = "#D8DDE0"               # Card/panel borders
+SURFACE_ALT = "#F5F6F8"
+BORDER = "#E2E6EB"
 BORDER_HOVER = PRIMARY           # Border on hover
 
 # Text colors
-TEXT_PRIMARY = "#212B32"          # Main text
-TEXT_SECONDARY = "#4C6272"        # Secondary text (grey-blue)
-TEXT_TERTIARY = "#768692"         # Tertiary text (lightest)
+TEXT_PRIMARY = "#202B36"
+TEXT_SECONDARY = "#64717D"
+TEXT_TERTIARY = "#82909C"
 TEXT_ON_PRIMARY = "#FFFFFF"       # Text on primary bg
 
 # Dark mode surfaces
@@ -103,7 +99,7 @@ BORDER_W = 1
 BORDER_W_THICK = 3               # Left accent bar
 
 # Top bar
-TOPBAR_HEIGHT = 56
+TOPBAR_HEIGHT = 82
 TOPBAR_FG = PRIMARY
 TOPBAR_FG_DARK = PRIMARY_DARK
 
@@ -111,6 +107,101 @@ TOPBAR_FG_DARK = PRIMARY_DARK
 # Window
 # --------------------------------------------------------------------------- #
 
-WINDOW_TITLE = "Engineering Calculation System - Deployment Console"
-WINDOW_MIN_W = 1140
+WINDOW_TITLE = "NIMO Engineering"
+WINDOW_MIN_W = 1200
 WINDOW_MIN_H = 800
+
+
+def theme_colors(dark: bool) -> dict[str, str]:
+    """Return one opaque palette for all native controls."""
+    return {
+        "window": "#151E27" if dark else SURFACE_ALT,
+        "surface": "#202B36" if dark else SURFACE_WHITE,
+        "input": "#18222D" if dark else SURFACE_WHITE,
+        "subtle": "#263440" if dark else "#F7F8FA",
+        "border": "#364450" if dark else BORDER,
+        "text": "#F0F3F6" if dark else TEXT_PRIMARY,
+        "muted": "#AFBBC5" if dark else TEXT_SECONDARY,
+        "selection": "#4B3925" if dark else ACCENT_PALE,
+        "hover": "#30404F" if dark else "#F0F2F5",
+        "disabled": "#26313B" if dark else "#F0F2F4",
+        "disabledText": "#778692" if dark else "#8C99A4",
+    }
+
+
+def stylesheet(dark: bool) -> str:
+    """Render the shared theme without animation, gradients or glass layers."""
+    c = theme_colors(dark)
+    return f"""
+        QMainWindow, QWidget#workspace {{ background: {c['window']}; }}
+        QWidget {{ color: {c['text']}; font-family: "{FONT_FAMILY}"; font-size: 12px; }}
+        QFrame#topbar {{ background: {c['surface']}; border-bottom: 1px solid {c['border']}; }}
+        QLabel {{ background: transparent; }}
+        QLabel#topbarTitle {{ color: {c['text']}; font-size: 24px; font-weight: 700; }}
+        QLabel#topbarSubtitle {{ color: {c['muted']}; font-size: 12px; }}
+        QLabel#versionTag {{ color: {c['muted']}; padding: 3px 8px; }}
+        QFrame#sidebar {{ background: {SIDEBAR}; border: none; }}
+        QFrame#sidebar QLabel {{ color: #DDE3E9; background: transparent; }}
+        QLabel#sidebarBrand {{ color: #FFFFFF; font-size: 22px; font-weight: 800; }}
+        QLabel#sidebarProduct {{ color: #A8B5C1; font-size: 11px; }}
+        QLabel#sidebarSection {{ color: #8D9DAA; font-size: 10px; padding-top: 18px; }}
+        QLabel#sidebarHelper {{ color: #CDD5DC; font-size: 11px; line-height: 1.7; }}
+        QFrame#sidebar QPushButton {{
+            color: #D8E0E6; background: transparent; border: none;
+            border-radius: 7px; text-align: left; padding: 12px; font-size: 13px;
+        }}
+        QFrame#sidebar QPushButton:hover {{ background: #2D3B47; }}
+        QFrame#sidebar QPushButton:checked {{ background: {PRIMARY}; color: #202B36; font-weight: 700; }}
+        QFrame#sidebar QToolButton {{ background: #293743; color: #DDE3E9; border: 1px solid #43515D; }}
+        QFrame#sidebar QToolButton:hover {{ background: #354551; }}
+        QScrollArea {{ background: {c['window']}; border: none; }}
+        QFrame#panel, QFrame#workflowPanel {{ background: {c['surface']}; border: 1px solid {c['border']}; border-radius: 10px; }}
+        QLabel#sectionTitle, QLabel#detailTitle {{ font-size: 17px; font-weight: 700; color: {c['text']}; }}
+        QLabel#muted, QLabel#fieldCaption {{ color: {c['muted']}; font-size: 11px; }}
+        QLabel#rootHint {{ background: {c['selection']}; color: {c['muted']}; border-radius: 6px; padding: 9px; }}
+        QLabel#fieldValue {{ color: {c['text']}; font-size: 11px; }}
+        QLabel#agentIcon {{ background: {c['subtle']}; border: 1px solid {c['border']}; border-radius: 8px; }}
+        QLabel#metric {{ color: {c['muted']}; padding: 7px 10px; font-size: 11px; }}
+        QLabel#workflowNumber {{ color: {PRIMARY_DARK}; font-size: 19px; font-weight: 700; }}
+        QLabel#workflowHeading {{ color: {c['text']}; font-size: 16px; font-weight: 700; }}
+        QLabel#workflowDescription {{ color: {c['muted']}; font-size: 12px; }}
+        QFrame#actionStrip {{ background: {c['selection']}; border: none; border-radius: 9px; }}
+        QLabel#actionHelper {{ color: {c['text']}; font-size: 16px; font-weight: 700; }}
+        QTableView {{ font-size: 14px; }}
+        QLineEdit, QComboBox {{
+            background: {c['input']}; color: {c['text']}; border: 1px solid {c['border']};
+            border-radius: 6px; padding: 7px 9px; min-height: 18px; font-size: 12px;
+            selection-background-color: {c['selection']};
+        }}
+        QLineEdit:focus, QComboBox:focus {{ border: 1px solid {PRIMARY}; }}
+        QComboBox::drop-down {{ border: none; width: 20px; }}
+        QComboBox QAbstractItemView {{ background: {c['surface']}; color: {c['text']}; selection-background-color: {c['selection']}; }}
+        QTableView {{
+            background: {c['surface']}; alternate-background-color: {c['subtle']}; color: {c['text']};
+            border: 1px solid {c['border']}; border-radius: 7px;
+            selection-background-color: {c['selection']}; selection-color: {c['text']};
+        }}
+        QTableView::item {{ padding: 6px; border: none; }}
+        QHeaderView::section {{
+            background: {c['subtle']}; color: {c['muted']}; border: none;
+            border-bottom: 1px solid {c['border']}; padding: 11px 8px; font-weight: 600; font-size: 11px;
+        }}
+        QTextEdit {{ background: {c['input']}; color: {c['text']}; border: 1px solid {c['border']}; border-radius: 7px; padding: 8px; }}
+        QProgressBar {{ background: {c['subtle']}; border: none; border-radius: 3px; }}
+        QProgressBar::chunk {{ background: {PRIMARY}; border-radius: 3px; }}
+        QPushButton, QToolButton {{
+            background: {c['surface']}; color: {c['text']}; border: 1px solid {c['border']};
+            border-radius: 6px; padding: 8px 11px; font-size: 12px;
+        }}
+        QPushButton:hover, QToolButton:hover {{ background: {c['hover']}; }}
+        QPushButton[variant="primary"], QToolButton[variant="primary"] {{ background: {PRIMARY}; color: #202B36; border-color: {PRIMARY}; font-weight: 700; }}
+        QPushButton[variant="primary"]:hover, QToolButton[variant="primary"]:hover {{ background: {PRIMARY_LIGHT}; border-color: {PRIMARY_LIGHT}; }}
+        QPushButton[variant="danger"], QToolButton[variant="danger"] {{ background: {c['surface']}; color: #C3473C; border-color: {c['border']}; }}
+        QPushButton[variant="danger"]:hover, QToolButton[variant="danger"]:hover {{ background: #FFE7E2; color: #8F2A20; }}
+        QPushButton:disabled, QToolButton:disabled {{ color: {c['disabledText']}; background: {c['disabled']}; border-color: {c['border']}; }}
+        QSplitter::handle {{ background: {c['window']}; }}
+        QScrollBar:vertical {{ width: 9px; background: {c['subtle']}; }}
+        QScrollBar::handle:vertical {{ background: #A9B3BC; border-radius: 4px; min-height: 24px; }}
+        QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0; }}
+        QToolTip {{ background: {c['surface']}; color: {c['text']}; border: 1px solid {c['border']}; padding: 6px; }}
+    """

@@ -1,6 +1,7 @@
 ---
 name: engineering-calculation-reference-library
 description: Use when acquired references, source cards, metadata, search logs, notes, and coverage matrices must be persisted as a local evidence library.
+version: 0.0.1
 ---
 
 # Engineering Calculation Reference Library

@@ -15,11 +15,6 @@ from typing import Any, Sequence
 
 PLUGIN_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = PLUGIN_ROOT.parents[1]
-TOOLS_ROOT = REPO_ROOT / "engineering-calculation-system" / "tools"
-sys.path.insert(0, str(TOOLS_ROOT))
-
-from versioning import release_created_at, release_version, zcode_plugin_version
-
 MANIFEST_PATH = PLUGIN_ROOT / ".zcode-plugin" / "plugin.json"
 MARKETPLACE_PATH = PLUGIN_ROOT / "marketplace.json"
 PACKAGE_JSON_PATH = PLUGIN_ROOT / "package.json"
@@ -30,8 +25,8 @@ SKILL_ROOT = PLUGIN_ROOT / "skills" / "engineering-calculation-system"
 OVERLAY_ROOT = PLUGIN_ROOT / "overlays" / "engineering-calculation-system"
 TODO_PATTERN = re.compile(r"\[TODO:")
 HEX_COLOR_PATTERN = re.compile(r"^#[0-9A-Fa-f]{6}$")
-EXPECTED_SKILL_VERSION = release_version()
-EXPECTED_PLUGIN_VERSION = zcode_plugin_version(EXPECTED_SKILL_VERSION, release_created_at())
+SEMVER_PATTERN = re.compile(r"^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$")
+PLUGIN_VERSION_PATTERN = re.compile(r"^(?P<core>\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)\+zcode\.(?P<date>\d{8})$")
 ZCODE_PROFILE = "zcode-plugin"
 ZCODE_PLUGIN_NAME = PLUGIN_ROOT.name
 ZCODE_SKILL_ROOT = "skills/engineering-calculation-system"
@@ -165,6 +160,37 @@ def load_json(path: Path, errors: list[str], context: str) -> dict[str, Any]:
     return data
 
 
+def in_source_checkout() -> bool:
+    return (REPO_ROOT / ".git").exists() or SOURCE_SKILL_ROOT.exists() or RELEASE_CONFIG_PATH.exists()
+
+
+def expected_plugin_version(manifest: dict[str, Any], errors: list[str]) -> str:
+    """Use the shipped core contract, with canonical release metadata when present."""
+    contract = load_json(SKILL_ROOT / "schemas/artifact_contracts.json", errors, "bundled artifact contract")
+    core_version = contract.get("version")
+    if not isinstance(core_version, str) or not SEMVER_PATTERN.fullmatch(core_version):
+        errors.append("bundled artifact contract must contain a valid core version")
+        return ""
+    if in_source_checkout():
+        release = load_json(RELEASE_CONFIG_PATH, errors, "release config")
+        if release.get("version") != core_version:
+            errors.append("bundled artifact contract version must match release_config.json")
+        created_at = release.get("created_at")
+        if not isinstance(created_at, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", created_at):
+            errors.append("release_config.json must contain a valid created_at date")
+            return ""
+        stamp = created_at.replace("-", "")
+    else:
+        match = PLUGIN_VERSION_PATTERN.fullmatch(str(manifest.get("version", "")))
+        if match is None:
+            errors.append("manifest version must use <core-version>+zcode.<YYYYMMDD>")
+            return ""
+        if match.group("core") != core_version:
+            errors.append("manifest core version must match the bundled artifact contract")
+        stamp = match.group("date")
+    return f"{core_version}+zcode.{stamp}"
+
+
 def require_path(path: Path, errors: list[str]) -> None:
     if not path.exists():
         errors.append(f"missing required path: {rel(path)}")
@@ -183,7 +209,7 @@ def require_file_phrases(path: Path, phrases: Sequence[str], errors: list[str], 
     require_phrases(path.read_text(encoding="utf-8"), phrases, errors, context)
 
 
-def check_manifest(manifest: dict[str, Any], errors: list[str]) -> None:
+def check_manifest(manifest: dict[str, Any], errors: list[str], expected_version: str) -> None:
     raw = json.dumps(manifest, sort_keys=True)
     if TODO_PATTERN.search(raw):
         errors.append("manifest still contains [TODO:] placeholders")
@@ -196,8 +222,8 @@ def check_manifest(manifest: dict[str, Any], errors: list[str]) -> None:
         errors.append(f"manifest name must match folder name {ZCODE_PLUGIN_NAME!r}")
 
     version = str(manifest.get("version", ""))
-    if version != EXPECTED_PLUGIN_VERSION:
-        errors.append(f"manifest version must be {EXPECTED_PLUGIN_VERSION}")
+    if expected_version and version != expected_version:
+        errors.append(f"manifest version must be {expected_version}")
 
     if manifest.get("skills") != "skills":
         errors.append('manifest skills component must be "skills" for ZCode plugin discovery')
@@ -262,7 +288,7 @@ def check_manifest(manifest: dict[str, Any], errors: list[str]) -> None:
         errors.append("manifest zcode.skillName must be engineering-calculation-system")
 
 
-def check_marketplace(errors: list[str]) -> None:
+def check_marketplace(errors: list[str], expected_version: str) -> None:
     marketplace = load_json(MARKETPLACE_PATH, errors, "ZCode marketplace")
     if not marketplace:
         return
@@ -283,18 +309,18 @@ def check_marketplace(errors: list[str]) -> None:
         errors.append("ZCode marketplace entry source must be .")
     if entry.get("category") != "development":
         errors.append("ZCode marketplace entry category must be development")
-    if entry.get("version") != EXPECTED_PLUGIN_VERSION:
-        errors.append(f"ZCode marketplace plugin version must be {EXPECTED_PLUGIN_VERSION}")
+    if expected_version and entry.get("version") != expected_version:
+        errors.append(f"ZCode marketplace plugin version must be {expected_version}")
 
 
-def check_package_json(errors: list[str]) -> None:
+def check_package_json(errors: list[str], expected_version: str) -> None:
     package = load_json(PACKAGE_JSON_PATH, errors, "ZCode plugin package metadata")
     if not package:
         return
     if package.get("name") != "@engineering-calculation-system/zcode-plugin":
         errors.append("package.json name must be @engineering-calculation-system/zcode-plugin")
-    if package.get("version") != EXPECTED_PLUGIN_VERSION:
-        errors.append(f"package.json version must be {EXPECTED_PLUGIN_VERSION}")
+    if expected_version and package.get("version") != expected_version:
+        errors.append(f"package.json version must be {expected_version}")
     if package.get("private") is not True:
         errors.append("package.json private must be true")
     if not isinstance(package.get("description"), str) or not package["description"].strip():
@@ -509,15 +535,17 @@ def main() -> int:
         require_path(SKILL_ROOT / required, errors)
 
     manifest = load_json(MANIFEST_PATH, errors, "ZCode plugin manifest")
+    expected_version = expected_plugin_version(manifest, errors)
     if manifest:
-        check_manifest(manifest, errors)
-    check_marketplace(errors)
-    check_package_json(errors)
+        check_manifest(manifest, errors, expected_version)
+    check_marketplace(errors, expected_version)
+    check_package_json(errors, expected_version)
     check_skill_frontmatter(errors)
     check_overlay_sync(errors)
     check_sync_script_capabilities(errors)
-    check_gui_deployment_support(errors)
-    check_bundled_source_sync(errors)
+    if in_source_checkout():
+        check_gui_deployment_support(errors)
+        check_bundled_source_sync(errors)
 
     if not args.skip_skill_validation:
         run_skill_validation(errors)

@@ -17,10 +17,12 @@ calculation book AND a complete web calculation system.
 missing, incomplete, not source-backed, or missing `semantic_closure_contract`, route upstream
 through 01-07 first. For any implementation, release, or validation task, read
 `shared/lifecycle.md`; it defines the required 08-14 sequence, exit gates, and the web-complete
-bar. Also read `shared/execution-discipline.md` and `shared/completion-evidence.md` before acting
+bar. Choose the scope from the requested output: modules/CLI/batch use `core-only`, reports use
+`report-only`, mockups use `prototype-web`, and operational web systems use `web-complete`.
+Marimo is opt-in; source, unit, trace and golden-case evidence are unchanged. Also read `shared/execution-discipline.md` and `shared/completion-evidence.md` before acting
 on or declaring implementation status.
 
-## Child skills (run in order; default `web-complete` path)
+## Child skills (run applicable stages in dependency order)
 
 ```text
 08-calculation-book-architecture

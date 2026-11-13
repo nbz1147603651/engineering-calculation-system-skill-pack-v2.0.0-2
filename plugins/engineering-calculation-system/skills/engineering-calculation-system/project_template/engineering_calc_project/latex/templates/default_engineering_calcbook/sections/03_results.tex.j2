@@ -81,14 +81,21 @@ No chart specifications were exposed in the BookResult.
 {% endif %}
 
 \subsection{Intermediate Values Selected for Audit}
+{# Flatten nested intermediate_values into dotted paths so the audit table
+   shows ``intersection.cycle_s`` rows instead of a raw Python dict repr. #}
+{% set flat_iv = intermediate_values | flatten_dict %}
+{% if flat_iv %}
 \rowcolors{2}{white}{resultBg}
-\begin{longtable}{p{0.35\linewidth}p{0.55\linewidth}}
+\begin{longtable}{p{0.42\linewidth}p{0.48\linewidth}}
 \toprule
 \rowcolor{tablehead}
 Path & Value \\
 \midrule
-{% for path, value in intermediate_values.items() %}
+{% for path, value in flat_iv %}
 {{ path | latex_escape }} & {{ value | latex_escape }} \\
 {% endfor %}
 \bottomrule
 \end{longtable}
+{% else %}
+No intermediate values were recorded for this result.
+{% endif %}

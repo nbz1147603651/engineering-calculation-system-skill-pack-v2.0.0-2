@@ -1,0 +1,67 @@
+services:
+  web:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    env_file:
+      - ${ECS_ENV_FILE:-env.example}
+    ports:
+      - "5000:5000"
+    volumes:
+      - ../data:/app/data
+      - ../outputs:/app/outputs
+    restart: unless-stopped
+
+  marimo-review:
+    profiles: ["review"]
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      args:
+        ENABLE_MARIMO_REVIEW: "true"
+    env_file:
+      - ${ECS_ENV_FILE:-env.example}
+    command: >
+      sh -c 'test -n "$${ADMIN_REVIEW_TOKEN}" ||
+      (echo "ADMIN_REVIEW_TOKEN is required" >&2; exit 1);
+      marimo run apps/review/calculation_review.py
+      --host 0.0.0.0
+      --port "$${MARIMO_PORT:-2718}"
+      --base-url "$${MARIMO_BASE_URL:-/admin/review}"
+      --headless
+      --token
+      --token-password "$${ADMIN_REVIEW_TOKEN}"'
+    ports:
+      - "127.0.0.1:2718:2718"
+    volumes:
+      - ../apps:/app/apps:ro
+      - ../data:/app/data
+      - ../outputs:/app/outputs
+    restart: unless-stopped
+
+  marimo-formula-admin:
+    profiles: ["review"]
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      args:
+        ENABLE_MARIMO_REVIEW: "true"
+    env_file:
+      - ${ECS_ENV_FILE:-env.example}
+    command: >
+      sh -c 'test -n "$${ADMIN_REVIEW_TOKEN}" ||
+      (echo "ADMIN_REVIEW_TOKEN is required" >&2; exit 1);
+      marimo run apps/review/admin_formula_review.py
+      --host 0.0.0.0
+      --port "$${FORMULA_ADMIN_PORT:-2719}"
+      --base-url "$${FORMULA_ADMIN_BASE_URL:-/admin/formulas}"
+      --headless
+      --token
+      --token-password "$${ADMIN_REVIEW_TOKEN}"'
+    ports:
+      - "127.0.0.1:2719:2719"
+    volumes:
+      - ../apps:/app/apps:ro
+      - ../data:/app/data
+      - ../outputs:/app/outputs
+    restart: unless-stopped

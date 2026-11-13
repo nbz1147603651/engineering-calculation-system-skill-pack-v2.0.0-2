@@ -1,0 +1,2 @@
+method_id,check_id,method_name,source_reference,applicability,selection_condition,rejection_conditions,required_inputs,required_outputs,branch_id,test_requirement,risk_level
+M-EXAMPLE-001,CHK-EXAMPLE-001,Example source-backed method,S01:clause_x,Replace with source applicability,Use when source conditions are met,Reject when outside source scope,BookInput.example_field,BookResult.example.status,B-EXAMPLE-001,T-EXAMPLE-001,high

@@ -1,5 +1,5 @@
 {
-  "version": "2.6.0",
+  "version": "0.0.1",
   "package_required_paths": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -106,7 +106,10 @@
     "project_template/engineering_calc_project/scripts/verify_golden_cases.py",
     "project_template/engineering_calc_project/tests/regression/test_golden_cases.py",
     "project_template/engineering_calc_project/tests/smoke/test_web_routes.py",
-    "project_template/engineering_calc_project/tests/smoke/test_latex_report.py"
+    "project_template/engineering_calc_project/tests/smoke/test_latex_report.py",
+    "scripts/delivery_policy.py",
+    "project_template/engineering_calc_project/src/pkg/interfaces/input_mapping.py",
+    "project_template/engineering_calc_project/src/pkg/report/context_helpers.py"
   ],
   "skill_files": [
     "SKILL.md",
@@ -768,7 +771,9 @@
     "tests/regression/test_golden_cases.py",
     "tests/unit/test_formula_registry.py",
     "tests/smoke/test_web_routes.py",
-    "tests/smoke/test_latex_report.py"
+    "tests/smoke/test_latex_report.py",
+    "src/pkg/interfaces/input_mapping.py",
+    "src/pkg/report/context_helpers.py"
   ],
   "project_csv_headers": {
     "implementation/02_modules/module_asset_registry.csv": "module_id,domain,category,module_name,public_function,input_model,options_model,result_model,source_references,formula_trace_path,unit_tests,regression_tests,reuse_status,asset_owner,notes",

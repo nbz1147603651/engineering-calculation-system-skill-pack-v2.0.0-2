@@ -1,0 +1,136 @@
+/* Project-level additions for the unified engineering calculator layout.
+ * Keep structural styles in tokens.css and components.css.
+ */
+
+.input-panel {
+    max-height: calc(100vh - 92px);
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.sticky-bottom {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    border-radius: var(--ecs-radius-md);
+}
+
+.result-card .card-header {
+    cursor: pointer;
+    user-select: none;
+}
+
+.result-card .card-header:hover {
+    background-color: var(--ecs-color-accent-pale);
+}
+
+.result-card .card-body table {
+    font-size: 0.875rem;
+}
+
+.status-pass {
+    color: var(--ecs-color-pass);
+}
+
+.status-fail {
+    color: var(--ecs-color-fail);
+}
+
+.status-warn {
+    color: var(--ecs-color-warn);
+}
+
+.util-bar {
+    height: 8px;
+    border-radius: 4px;
+    background-color: var(--ecs-color-border-light);
+    overflow: hidden;
+}
+
+.util-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.util-bar-fill.safe {
+    background-color: var(--ecs-color-pass);
+}
+
+.util-bar-fill.caution {
+    background-color: var(--ecs-color-accent);
+}
+
+.util-bar-fill.fail {
+    background-color: var(--ecs-color-fail);
+}
+
+.status-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid var(--ecs-color-border);
+    border-left: 4px solid var(--ecs-color-primary);
+    border-radius: var(--ecs-radius-md);
+    background-color: var(--ecs-color-surface);
+    color: var(--ecs-color-muted);
+    font-size: 0.875rem;
+}
+
+.chart-container {
+    margin: 0.75rem 0;
+    text-align: center;
+}
+
+.chart-container svg {
+    max-width: 100%;
+    height: auto;
+}
+
+.chart-panel {
+    border: 1px solid var(--ecs-color-border);
+    border-radius: var(--ecs-radius-md);
+    padding: 0.75rem;
+    background-color: var(--ecs-color-surface);
+    margin-bottom: 0.75rem;
+}
+
+.chart-panel:last-child {
+    margin-bottom: 0;
+}
+
+.chart-svg {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    margin: 0.5rem 0 0.75rem;
+    background: var(--ecs-color-surface);
+    border: 1px solid var(--ecs-color-border-light);
+    border-radius: var(--ecs-radius-md);
+}
+
+.chart-data-table {
+    font-size: 0.8125rem;
+}
+
+.form-label {
+    margin-bottom: 0.15rem;
+    font-weight: 600;
+}
+
+.form-control-sm {
+    font-size: 0.8125rem;
+}
+
+.results-icon {
+    opacity: 0.3;
+}
+
+@media (max-width: 991px) {
+    .input-panel {
+        max-height: none;
+        overflow-y: visible;
+    }
+}

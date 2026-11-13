@@ -1,6 +1,6 @@
 {
   "name": "engineering-calculation-system",
-  "version": "2.6.0+codex.20260701",
+  "version": "0.0.1+codex.20261110",
   "description": "Codex plugin wrapper for source-backed engineering calculators, calculation books, verification, and web-complete delivery.",
   "license": "UNLICENSED",
   "keywords": [

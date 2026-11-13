@@ -1,0 +1,52 @@
+{# Signal Timing section (consulting-oriented).
+   Renders only when the downstream book supplies traffic-signal data via
+   intermediate_values. The example scaffold does not, so this section is
+   omitted entirely for generic runs. #}
+{% if intersection or phases %}
+\section{Signal Timing}
+
+{% if intersection %}
+\subsection{Intersection Timing Summary}
+
+\rowcolors{2}{white}{resultBg}
+\begin{tabular}{>{\bfseries}p{0.42\linewidth}p{0.42\linewidth}}
+\toprule
+\rowcolor{tablehead}
+Item & Value \\
+\midrule
+Cycle length & {{ intersection.cycle_s | default("--") | latex_escape }} s \\
+Webster cycle & {{ intersection.raw_webster_cycle_s | default("--") | latex_escape }} s \\
+Lost time & {{ intersection.lost_time_s | default("--") | latex_escape }} s \\
+Available green & {{ intersection.available_green_s | default("--") | latex_escape }} s \\
+Critical flow ratio sum (Y) & {{ intersection.critical_flow_ratio_sum_y | default("--") | latex_escape }} \\
+Demand & {{ intersection.demand_pcu_h | default("--") | latex_escape }} pcu/h \\
+Capacity & {{ intersection.capacity_pcu_h | default("--") | latex_escape }} pcu/h \\
+Average delay & {{ intersection.average_delay_s_per_veh | default("--") | latex_escape }} s/veh \\
+Level of service & {{ intersection.los | default("--") | latex_escape }} \\
+Worst degree of saturation & {{ intersection.worst_degree_of_saturation_x | default("--") | latex_escape }} \\
+\bottomrule
+\end{tabular}
+{% endif %}
+
+{% if phases %}
+\subsection{Phase Allocation}
+
+\rowcolors{2}{white}{resultBg}
+\begin{longtable}{p{0.10\linewidth}p{0.30\linewidth}p{0.13\linewidth}p{0.13\linewidth}p{0.09\linewidth}p{0.09\linewidth}p{0.13\linewidth}}
+\toprule
+\rowcolor{tablehead}
+Phase & Name & Critical Y & Green (s) & Yellow (s) & All-red (s) & Eff. green ratio \\
+\midrule
+{% for phase in phases %}
+{{ phase.phase_id | default("--") | latex_escape }} &
+{{ phase.name | default("--") | latex_escape }} &
+{{ phase.critical_flow_ratio | default("--") | latex_escape }} &
+{{ phase.displayed_green_s | default("--") | latex_escape }} &
+{{ phase.yellow_s | default("--") | latex_escape }} &
+{{ phase.all_red_s | default("--") | latex_escape }} &
+{{ phase.effective_green_ratio_nominal | default("--") | latex_escape }} \\
+{% endfor %}
+\bottomrule
+\end{longtable}
+{% endif %}
+{% endif %}

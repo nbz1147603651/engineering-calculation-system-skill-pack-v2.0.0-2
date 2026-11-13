@@ -1,0 +1,2 @@
+formula_id,name,purpose,inputs,outputs,units,source_reference,applicability,branch_dependencies,lookup_dependencies,implementation_note,test_requirement,risk_level
+F-EXAMPLE-001,Example formula,Compute sourced example output,I-EXAMPLE-001,BookResult.example.value,kPa,S01:equation_x,Replace with source applicability,B-EXAMPLE-001,L-EXAMPLE-001,Implement only in reusable module with formula trace,T-EXAMPLE-001,high

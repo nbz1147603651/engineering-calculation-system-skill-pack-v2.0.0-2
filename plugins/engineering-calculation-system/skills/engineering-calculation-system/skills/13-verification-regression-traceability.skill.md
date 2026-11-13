@@ -15,7 +15,7 @@ orchestration, report context, interfaces, and traceability.
 1. Build the test matrix (`templates/verification/test_matrix.csv`) covering: unit (isolated
    formulas), lookup (tables/interpolation), branch (method selection), edge-case (boundary),
    invalid-input, regression (against references), integration (full `run_book`), report smoke,
-   web/API smoke, Chinese/English i18n + language-toggle smoke, Marimo review smoke, upload/import
+   web/API smoke, Chinese/English i18n + language-toggle smoke, Marimo review smoke only when selected, upload/import
    package manifest + hash, chart-candidate inventory and emitted chart data tables, user
    interaction decision defaults/blockers, batch smoke, serialization + hash,
    formula-registry validation + publish-gate, and deployment smoke (local + Linux cloud).

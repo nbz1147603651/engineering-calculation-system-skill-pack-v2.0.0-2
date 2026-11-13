@@ -1,0 +1,26 @@
+/*
+ * UI tokens for engineering calculation tools.
+ * Project-specific screens should use these variables instead of inventing palettes.
+ */
+:root {
+    --ecs-color-bg: #f0f4f5;
+    --ecs-color-surface: #ffffff;
+    --ecs-color-surface-muted: #f8fafc;
+    --ecs-color-border: #d8dde0;
+    --ecs-color-border-light: #e8edee;
+    --ecs-color-text: #212b32;
+    --ecs-color-muted: #4c6272;
+    --ecs-color-muted-2: #768692;
+    --ecs-color-primary: #005eb8;
+    --ecs-color-primary-2: #003087;
+    --ecs-color-primary-light: #418ed8;
+    --ecs-color-accent: #ffb81c;
+    --ecs-color-accent-pale: #e8f1f8;
+    --ecs-color-pass: #007f3b;
+    --ecs-color-fail: #da291c;
+    --ecs-color-warn: #b8860b;
+    --ecs-radius-sm: 2px;
+    --ecs-radius-md: 4px;
+    --ecs-shadow-sm: 0 4px 8px rgba(0, 48, 135, 0.08);
+    --ecs-topbar-height: 68px;
+}

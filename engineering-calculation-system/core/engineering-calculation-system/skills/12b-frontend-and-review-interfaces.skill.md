@@ -35,8 +35,9 @@ use. The static-HTML guard and `run_book()` contract live in `shared/lifecycle.m
    `POST /api/calculate`, `GET /api/report/decision`, `GET /api/report/templates`,
    `POST /api/report/html`, `POST /api/report/preview`, `POST /api/report/latex`,
    `POST /api/report/final`, `GET /api/capabilities`, `POST /api/review/session`,
-   `GET /api/review/state/<session_id>`, the password-gated `/admin/` shell, and
-   proxied Marimo services at `/admin/review/` and `/admin/formulas/`.
+   `GET /api/review/state/<session_id>` for saved trace evidence. The password-gated `/admin/`
+   shell and proxied Marimo services at `/admin/review/` and `/admin/formulas/` are required
+   only when the handoff selects `review_adapter: marimo`.
 3. Apply the unified frontend layout (`templates/implementation/ui_layout_spec.md`) unless an
    existing product design overrides it: top bar (title, case selector, report status, import/
    export, report preview, language switch); left input panel (grouped BookInput forms, units,
@@ -83,7 +84,13 @@ use. The static-HTML guard and `run_book()` contract live in `shared/lifecycle.m
    `BookResult.charts`/`ChartSpec` with source result paths, data tables, and recommended UI/report
    locations; when it does not, record charts as not applicable. Charts visualize; they never
    calculate, override pass/fail, choose governing cases, or do official unit conversion.
-9. For `web-complete`, always add the frontend-connected Marimo review/admin scaffold.
+9. Keep saved review evidence independent of notebook technology: `src/<pkg>/review/bridge.py`
+   and review-session APIs persist exact BookInput, BookResult, ReportContext and review decisions.
+   Reports and saved results retain formula sources, units and result paths; verification replays
+   recorded inputs and golden cases through the official runner. With `review_adapter: none`,
+   do not add a notebook dependency, proxy or service merely to satisfy the lifecycle.
+   Only when notebook review is requested and `review_adapter: marimo` is recorded, add the
+   frontend-connected Marimo review/admin scaffold described below.
    The required bridge from `templates/implementation/marimo_frontend_bridge_spec.md` is:
    `/api/review/session`, `/api/review/state/<session_id>`,
    `src/<pkg>/review/bridge.py`, `apps/review/calculation_review.py`, and
@@ -131,7 +138,8 @@ implementation/03_book_runner/chart_candidate_inventory.csv
 
 ## Exit gate
 
-API/UI calculate through `run_book` and render real results; `/admin/`, `/admin/review/`,
-`/admin/formulas/`, review-session APIs, and the Marimo missing-install fallback exist for
-`web-complete`; delivery is not static-HTML-only when production delivery is expected.
+API/UI calculate through `run_book` and render real results. Web-complete retains saved JSON
+review-session evidence and reproducible verification. `/admin/`, `/admin/review/`,
+`/admin/formulas/` and the Marimo fallback apply when that adapter is selected. Delivery is
+not static-HTML-only when production web delivery is expected.
 See `shared/lifecycle.md` row 12b. Next path: 12c if batch/import-export is needed, else 13.

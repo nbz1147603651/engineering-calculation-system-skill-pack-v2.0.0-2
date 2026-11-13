@@ -1,4 +1,10 @@
-# 工程计算系统技能包 v2.6.0
+# 工程计算系统技能包 v0.0.1
+
+NIMO Engineering / 技能包 `0.0.1` 是本地预览，尚未正式发布。产品版本有意从历史
+`2.6.0` 重置为 `0.0.1`，数值更低，不属于按语义版本排序的升级。已有 `2.6.0`
+用户需要手动安装经过校验的 `0.0.1` 预览版及匹配的宿主适配器，再执行安装验证；
+不能依赖版本比较或自动升级完成迁移。保留用户配置、业务数据和 `2.6.0` 回退包。
+详见[安装与迁移说明](INSTALL.md)；本地构建或安装成功不代表已正式发布或完成生产部署。
 
 本技能包把工程计算软件开发组织成完整交付生命周期：
 
@@ -151,7 +157,7 @@ Codex 兼容环境优先从根目录加载：
 dist/core/engineering-calculation-system/SKILL.md
 ```
 
-默认安装 `dist/core/engineering-calculation-system/`。MiniMax Code 标准技能导入或自动发现时使用 `dist/release/engineering-calculation-system-MiniMaxCode-v2.6.0.zip`。QODER 直接上传 Skill 时使用 `dist/release/engineering-calculation-system-QODER-v2.6.0.zip`；需要复制到 QODER 项目根时使用 `dist/release/engineering-calculation-system-QODER-Project-v2.6.0.zip`。Qoder 原始入口位于 `dist/qoder-addon/`，OpenCode、AGENTS.md 和 TRAE 兼容入口位于 `dist/adapters-light/`。
+默认安装 `dist/core/engineering-calculation-system/`。MiniMax Code 标准技能导入或自动发现时使用 `dist/release/engineering-calculation-system-MiniMaxCode-v0.0.1.zip`。QODER 直接上传 Skill 时使用 `dist/release/engineering-calculation-system-QODER-v0.0.1.zip`；需要复制到 QODER 项目根时使用 `dist/release/engineering-calculation-system-QODER-Project-v0.0.1.zip`。Qoder 原始入口位于 `dist/qoder-addon/`，OpenCode、AGENTS.md 和 TRAE 兼容入口位于 `dist/adapters-light/`。
 
 Qoder / Qoder CN 推荐采用两层部署：用户级安装一次，项目级按项目安装。用户级安装负责让 IDE 全局发现可复用的 agents、skills 和 references；项目级安装负责把完整 core 包、模板、schema、validator、项目脚手架以及 `.qoder/` 或 `.lingma/` overlay 放进当前工作区。正式工程、生产级交付、`web-complete` 或可部署在线计算器，都应使用：
 
@@ -221,7 +227,7 @@ python -B -m pytest -q -p no:cacheprovider
 ## 版本
 
 ```text
-version: 2.6.0
-created_at: 2026-07-01
+version: 0.0.1
+created_at: 2026-11-10
 status: complete_packaged_release
 ```

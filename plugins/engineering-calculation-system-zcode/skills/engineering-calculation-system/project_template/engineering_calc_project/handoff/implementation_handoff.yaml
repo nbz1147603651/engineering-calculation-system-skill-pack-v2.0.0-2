@@ -1,5 +1,7 @@
 handoff_id: H001
 book_name: example_book
+delivery_mode: web-complete # core-only | report-only | prototype-web | web-complete; select from requested outputs
+review_adapter: none # none | marimo; saved trace evidence is independent of notebooks
 version: 0.1.0
 status: production_allowed # no_go | prototype_allowed | production_allowed
 
@@ -32,7 +34,7 @@ runtime_stack:
   backend_runtime: flask # flask | fastapi
   frontend_format: jinja2_bootstrap5_vanilla_js
   frontend_root: webapp
-  review_runtime: marimo_optional
+  review_runtime: none # none | marimo; notebook runtime is opt-in
   non_python_adapter_required: false
 
 input_model_groups:

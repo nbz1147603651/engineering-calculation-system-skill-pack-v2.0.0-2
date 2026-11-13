@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
   "name": "@engineering-calculation-system/zcode-plugin",
-  "version": "2.6.0+zcode.20260701",
+  "version": "0.0.1+zcode.20261110",
   "private": true,
   "license": "UNLICENSED",
   "description": "ZCode plugin metadata for the Engineering Calculation System skill pack."

@@ -31,8 +31,10 @@ One-click Linux deploy: `bash deploy/one_click_deploy.sh`
 
 The browser UI is a web application served by the Python backend. It is not a standalone static HTML deliverable, and it must not contain engineering formulas.
 
-Delivery mode: `web-complete` unless the user explicitly requests `core-only`,
-`report-only`, or `prototype-web`. A CLI runner, static HTML, exported report
+Delivery mode follows the requested output: modules/CLI/batch use `core-only`; a calculation
+book/report uses `report-only`; a mockup uses `prototype-web`; an operational website uses
+`web-complete`. A scope can be complete after its own production verification without becoming
+a web deployment. Marimo is an explicit optional review adapter; JSON traces and replay remain required. A CLI runner, static HTML, exported report
 HTML, notebook demo, or UI mockup is not a deployable web calculation system.
 
 When migrating an existing static calculation book, treat `reports/*.html` and
@@ -56,7 +58,7 @@ python3 scripts/verify_golden_cases.py --project-root .
 ## Run Locally
 
 ```bash
-python3 -m pip install "flask>=3.0" "gunicorn>=21.2" "marimo>=0.8"
+python3 -m pip install -e ".[web,report]"
 python3 -m webapp.app
 ```
 
@@ -65,6 +67,12 @@ Health check:
 ```bash
 curl -fsS http://127.0.0.1:5000/health
 ```
+
+Notebook review is opt-in: set `review_adapter: marimo` in the handoff and install
+`python3 -m pip install -e ".[review]"`. For deployment set `ENABLE_MARIMO_REVIEW=true`
+or run `docker compose --profile review up -d --build`; the default starts only the web
+service. The dependency-free JSON review/session bridge still stores source and formula traces
+when Marimo is absent.
 
 ## Deploy on Linux
 

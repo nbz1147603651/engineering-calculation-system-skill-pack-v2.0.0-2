@@ -28,7 +28,10 @@ produce only scaffold or architecture notes — do not implement production form
    report, batch job, database, or file layout; expose typed input/options/result models; own
    source-backed formulas/lookup behavior/intermediate values; return warnings/errors instead of
    hiding assumptions; be registered in `module_asset_registry.csv`.
-4. Define the package layout and default project structure
+4. Define only the layers needed by the declared delivery mode; web/review/deploy directories
+   are optional for core/report deliverables. Keep JSON input mapping under
+   `src/<pkg>/interfaces/input_mapping.py` so CLI and golden cases never import `webapp`.
+   Define the package layout and default project structure
    (`templates/implementation/package_layout.md`, `templates/implementation/project_structure.md`):
    `src/<pkg>/{core,libraries,books/<book_name>,interfaces,report}`, `webapp/`, `apps/review/`,
    `data/{input,imported,staging,normalized/cases,packages}`, `outputs/{results_json,reports_*,

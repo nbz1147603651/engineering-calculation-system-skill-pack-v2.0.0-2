@@ -1,0 +1,2 @@
+branch_id,condition,engineering_meaning,source_reference,path_if_true,path_if_false,not_applicable_behavior,program_representation,required_tests,risk_level
+B-EXAMPLE-001,BookInput.example.option == source_condition,Example source branch meaning,S01:clause_y,use_method_a,use_method_b,return_not_applicable_with_reason,enum_or_predicate,T-EXAMPLE-001,high

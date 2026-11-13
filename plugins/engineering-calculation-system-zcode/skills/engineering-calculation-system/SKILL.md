@@ -1,7 +1,7 @@
 ---
 name: engineering-calculation-system
 description: Build, verify, package, or deploy source-backed engineering calculation web apps and calculation books. Use when the user needs to assess or acquire engineering references, turn standards/manuals/PDFs/spreadsheets into a Calculation Logic Blueprint and implementation handoff, build decoupled reusable calculation modules and an official run_book() runner, build an auditable web calculation app with a reusable UI kit and HTML/LaTeX/Overleaf reports, verify formulas/reports/batch/traceability, or package a runnable local and Linux-cloud deployable online calculator - even when "calculation", "engineering", or "calculation book" is not named explicitly.
-version: 2.6.0
+version: 0.0.1
 ---
 
 # Engineering Calculation System
@@ -66,6 +66,13 @@ Do not copy full gate rules into adapters or child skills. Use these files as th
   repair rule.
 - `shared/multi-agent-orchestration.md`: task brief, owned paths, result packet, review package,
   and ledger contract.
+
+Select scope from the requested deliverable using `scripts/delivery_policy.py` and
+`shared/lifecycle.md`: module/batch → core-only, book/report → report-only, prototype →
+prototype-web, operational web system → web-complete. Marimo is an opt-in adapter, while source,
+unit, formula trace and executable verification gates stay mandatory.
+These canonical scope/adapter rules supersede older host-adapter instructions that force
+unrequested web or Marimo layers; host-specific installation mechanics remain applicable.
 
 For `web-complete`, the lifecycle's dual closure rule remains mandatory: a readable calculation
 book and a complete web calculation system must both close before completion is claimed.

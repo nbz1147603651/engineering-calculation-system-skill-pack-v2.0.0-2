@@ -1,6 +1,7 @@
 ---
 name: engineering-calculation-formula-extraction
 description: Use when extracting formulas, lookup tables, branch conditions, unit/sign conventions, assumptions, applicability limits, warnings, and test needs from sources.
+version: 0.0.1
 ---
 
 # Engineering Calculation Formula Extraction

@@ -1,0 +1,2 @@
+requirement_id,requirement,importance,covered,current_source_id,gap,needed_source_type,blocks_analysis,blocks_coding
+REQ-EXAMPLE-001,Define governing calculation method,critical,not_covered,,Need official method and applicability limits,governing_standard,true,true

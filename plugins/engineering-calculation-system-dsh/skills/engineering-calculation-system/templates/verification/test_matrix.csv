@@ -1,0 +1,2 @@
+test_id,target,type,reference_basis,input_case,expected_result,tolerance,priority,notes
+T-EXAMPLE-001,MOD-EXAMPLE-001,unit,S01:worked_example,tests/fixtures/example_input.json,BookResult.example.value within source tolerance,relative_or_absolute_tolerance,high,Replace with real source-backed expected value

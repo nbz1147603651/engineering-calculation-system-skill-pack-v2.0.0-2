@@ -1,6 +1,7 @@
 ---
 name: engineering-calculation-logic-blueprint
 description: Use when turning inventoried sources into a Calculation Logic Blueprint with method selection, node model, input semantics, diagrams, and traceability.
+version: 0.0.1
 ---
 
 # Engineering Calculation Logic Blueprint

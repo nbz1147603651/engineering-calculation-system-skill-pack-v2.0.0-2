@@ -1,13 +1,21 @@
 \section{Input Summary}
 
+{# Flatten the nested BookInput into dotted path -> value rows so the PDF
+   never shows raw Python dict/list repr. Leaf scalars render directly;
+   nested structures expand into rows like ``signal.cycle_s``. #}
+{% set flat_input = input | flatten_dict %}
+{% if flat_input %}
 \rowcolors{2}{white}{resultBg}
-\begin{longtable}{p{0.35\linewidth}p{0.55\linewidth}}
+\begin{longtable}{p{0.42\linewidth}p{0.48\linewidth}}
 \toprule
 \rowcolor{tablehead}
 Field & Value \\
 \midrule
-{% for group_name, group_value in input.items() %}
-{{ group_name | latex_escape }} & {{ group_value | latex_escape }} \\
+{% for path, value in flat_input %}
+{{ path | latex_escape }} & {{ value | latex_escape }} \\
 {% endfor %}
 \bottomrule
 \end{longtable}
+{% else %}
+No input fields were exposed in the BookInput.
+{% endif %}

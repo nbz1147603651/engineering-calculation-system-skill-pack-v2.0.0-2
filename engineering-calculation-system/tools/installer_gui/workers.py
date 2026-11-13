@@ -23,7 +23,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Callable
 
-from . import deployer
+from . import deployer, service
 from .agents import AgentSpec
 from .i18n import t
 
@@ -162,22 +162,8 @@ def _wrap_agent_action(
 
     def fn(log: deployer.LogFn, progress: deployer.ProgressFn, cancel: CancelToken) -> None:
         root = install_root_provider()
-        ctx = deployer.DeployContext(install_root=root, log=log, progress=progress)
-
-        # For multi-step deploys, sprinkle cancel checks between phases by
-        # wrapping progress; the deployer itself checks cancellation implicitly
-        # via the log/progress no-ops once cancelled.
-        result = action_fn(ctx)
-        if result is False:
-            raise deployer.DeployError(f"{spec.display_name} verification failed")
-        if cancel.cancelled:
-            return
-        # Refresh this agent's deployed status after a mutating action.
-        from . import detector
-        ok, _ = detector.skill_deployed(spec.name, root)
-        # Push a STATUS event by abusing the log channel? No - emit via the
-        # worker's queue directly is not possible from here. Instead the UI
-        # re-runs detection on DONE for the targeted agent. We keep it simple.
+        action = {"job_deploy": "install", "job_verify": "verify", "job_uninstall": "uninstall"}[action_key]
+        service.execute(spec.name, action, root, log, progress, lambda: cancel.cancelled)
 
     title = f"{t(action_key)} {spec.display_name}"
     return Job(title=title, fn=fn, agent_name=spec.name)

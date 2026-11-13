@@ -8,7 +8,7 @@
   "plugins": [
     {
       "name": "engineering-calculation-system-zcode",
-      "version": "2.6.0+zcode.20260701",
+      "version": "0.0.1+zcode.20261110",
       "description": "Source-backed engineering calculation workflow packaged as a ZCode plugin.",
       "author": {
         "name": "Engineering Calculation System"

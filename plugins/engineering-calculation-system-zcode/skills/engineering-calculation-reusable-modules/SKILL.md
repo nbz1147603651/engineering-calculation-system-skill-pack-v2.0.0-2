@@ -1,6 +1,7 @@
 ---
 name: engineering-calculation-reusable-modules
 description: Use when implementing or designing reusable engineering calculation modules with typed I/O, source traces, lookup behavior, warnings, and unit tests.
+version: 0.0.1
 ---
 
 # Engineering Calculation Reusable Modules

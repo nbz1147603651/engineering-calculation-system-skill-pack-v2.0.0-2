@@ -3,6 +3,12 @@
 A Qt desktop UI to detect target agent programs and deploy the Engineering
 Calculation System skill pack / plugin to each of them in one click.
 
+The `0.0.1` product/skill pack is a local preview and has not been formally
+released. Existing `2.6.0` users must manually install the verified preview;
+version comparison and automatic updates cannot migrate this intentional
+version reset. Preserve configuration, business data, and the `2.6.0` rollback
+package; follow [installation and migration](INSTALL.md).
+
 ```text
 engineering-calculation-system/tools/installer_gui/
 |-- app.py        # lightweight entry point and PySide6 dependency check
@@ -64,7 +70,7 @@ to run `build_release.py` for skill-pack builds.
 
 ```powershell
 $env:ECS_REPO_ROOT = "C:\path\to\engineering-calculation-system"
-.\engineering-calc-system-installer-v2.6.0.exe
+.\engineering-calc-system-installer-v0.0.1.exe
 ```
 
 To rebuild the whole release (skill packs + UI exe) in one command, drop the

@@ -1,6 +1,6 @@
 {
   "name": "engineering-calculation-system-zcode",
-  "version": "2.6.0+zcode.20260701",
+  "version": "0.0.1+zcode.20261110",
   "description": "ZCode plugin wrapper for the Engineering Calculation System skill pack.",
   "author": {
     "name": "Engineering Calculation System"

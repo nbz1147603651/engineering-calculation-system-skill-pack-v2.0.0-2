@@ -1,0 +1,30 @@
+{# Lane Group Capacity section (consulting-oriented).
+   Renders only when the downstream book supplies lane_groups via
+   intermediate_values. #}
+{% if lane_groups %}
+\section{Lane Group Capacity}
+
+\rowcolors{2}{white}{resultBg}
+\begin{longtable}{p{0.12\linewidth}p{0.10\linewidth}p{0.06\linewidth}p{0.10\linewidth}p{0.09\linewidth}p{0.07\linewidth}p{0.07\linewidth}p{0.07\linewidth}p{0.07\linewidth}p{0.07\linewidth}p{0.10\linewidth}p{0.08\linewidth}}
+\toprule
+\rowcolor{tablehead}
+ID & Dir & Lanes & Demand & Sat. flow & $f_w$ & $f_g$ & $f_{HV}$ & $f_t$ & Flow ratio & Capacity & Sat. deg. \\
+ & & & (pcu/h) & (pcu/h) & & & & & $y$ & (pcu/h) & $x$ \\
+\midrule
+{% for lg in lane_groups %}
+{{ lg.id | default("--") | latex_escape }} &
+{{ lg.direction | default("--") | latex_escape }} &
+{{ lg.lanes | default("--") | latex_escape }} &
+{{ lg.demand_pcu_h | default("--") | latex_escape }} &
+{{ lg.saturation_flow_pcu_h | default("--") | latex_escape }} &
+{{ lg.f_lane_width | default("--") | latex_escape }} &
+{{ lg.f_grade | default("--") | latex_escape }} &
+{{ lg.f_heavy_vehicle | default("--") | latex_escape }} &
+{{ lg.f_turn | default("--") | latex_escape }} &
+{{ lg.flow_ratio_y | default("--") | latex_escape }} &
+{{ lg.capacity_pcu_h | default("--") | latex_escape }} &
+{{ lg.degree_of_saturation_x | default("--") | latex_escape }} \\
+{% endfor %}
+\bottomrule
+\end{longtable}
+{% endif %}

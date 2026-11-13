@@ -1,0 +1,2 @@
+KaTeX 0.16.11 vendored from cdn.jsdelivr.net
+See ../../../scripts/vendor_katex.sh to refresh.

@@ -1,6 +1,7 @@
 ---
 name: engineering-calculation-logic-architecture
 description: Use for source intake, formula authority review, calculation logic blueprints, branch extraction, and implementation handoff contracts.
+version: 0.0.1
 ---
 
 # Engineering Calculation Logic Architecture

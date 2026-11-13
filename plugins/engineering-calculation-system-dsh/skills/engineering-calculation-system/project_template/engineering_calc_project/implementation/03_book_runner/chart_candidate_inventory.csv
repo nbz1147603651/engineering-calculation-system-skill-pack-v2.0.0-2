@@ -1,0 +1,2 @@
+chart_id,title,chart_type,purpose,result_paths,units,trigger_condition,recommended_ui_location,recommended_report_location,decision,reason,source_result_paths,test_ids
+CHART-001,Check utilization summary,bar,Compare evaluated check utilizations,checks[*].utilization,ratio,repeated comparable checks,after_governing_summary,after_governing_summary,emit,Template project has repeated check utilizations,checks[*].utilization,T-SMOKE-WEB

@@ -5,7 +5,11 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory=/opt/engineering-calc
-EnvironmentFile=/opt/engineering-calc/deploy/env.example
+# Read the generated .env (created from env.example by one_click_deploy.sh).
+# Do NOT point this at env.example directly — that file ships placeholder
+# secrets (change-this-admin-review-password) and would start the service
+# with insecure defaults.
+EnvironmentFile=/opt/engineering-calc/deploy/.env
 Environment=PYTHONPATH=/opt/engineering-calc/src
 ExecStart=/opt/engineering-calc/.venv/bin/gunicorn "webapp.app:create_app()" --bind 127.0.0.1:5000 --workers 2
 Restart=on-failure

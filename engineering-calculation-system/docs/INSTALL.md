@@ -1,5 +1,20 @@
 # Installation
 
+## 0.0.1 Preview and Migration from 2.6.0
+
+NIMO Engineering / skill pack `0.0.1` is a local preview and has not been
+formally released. The product version was intentionally reset from the
+historical `2.6.0` line; `0.0.1` is numerically lower, so this is not a SemVer
+upgrade. Existing `2.6.0` users must explicitly select and manually install the
+verified `0.0.1` preview and its matching host adapter, then run the host's
+installation verification. Do not rely on version comparison, marketplace
+refresh, or automatic updates to perform this migration.
+
+Preserve user configuration, business data, and the existing `2.6.0` package for
+rollback. Host adapters may keep independent package versions; this reset
+concerns the product/skill pack. A successful local build or installation does
+not mean a formal release or a verified production deployment.
+
 Build releases from the source checkout:
 
 ```bash
@@ -78,22 +93,22 @@ placeholder until the user chooses the repo with the **Repo...** button. See
 publish files:
 
 ```text
-dist/release/engineering-calculation-system-CODEX-v2.6.0.zip
-dist/release/engineering-calculation-system-MiniMaxCode-v2.6.0.zip
-dist/release/engineering-calculation-system-ZCode-v2.6.0.zip
-dist/release/engineering-calculation-system-QODER-v2.6.0.zip
-dist/release/engineering-calculation-system-QODER-Project-v2.6.0.zip
-dist/release/engineering-calculation-system-Qoder-CLI-Plugin-v2.6.0.zip
-dist/release/engineering-calculation-system-QoderCN-v2.6.0.zip
-dist/release/engineering-calculation-system-QoderCN-Project-v2.6.0.zip
-dist/release/engineering-calculation-system-QoderCN-CLI-v2.6.0.zip
-dist/release/engineering-calculation-system-QoderCN-CLI-Project-v2.6.0.zip
-dist/release/engineering-calculation-system-QoderCN-Cloud-Agents-v2.6.0.zip
-dist/release/engineering-calculation-system-QoderWorkCN-v2.6.0.zip
-dist/release/engineering-calculation-system-WorkBuddy-v2.6.0.zip
-dist/release/engineering-calculation-system-TRAE-v2.6.0.zip
-dist/release/engineering-calculation-system-OpenCode-v2.6.0.zip
-dist/release/engineering-calculation-system-AGENTS-Generic-v2.6.0.zip
+dist/release/engineering-calculation-system-CODEX-v0.0.1.zip
+dist/release/engineering-calculation-system-MiniMaxCode-v0.0.1.zip
+dist/release/engineering-calculation-system-ZCode-v0.0.1.zip
+dist/release/engineering-calculation-system-QODER-v0.0.1.zip
+dist/release/engineering-calculation-system-QODER-Project-v0.0.1.zip
+dist/release/engineering-calculation-system-Qoder-CLI-Plugin-v0.0.1.zip
+dist/release/engineering-calculation-system-QoderCN-v0.0.1.zip
+dist/release/engineering-calculation-system-QoderCN-Project-v0.0.1.zip
+dist/release/engineering-calculation-system-QoderCN-CLI-v0.0.1.zip
+dist/release/engineering-calculation-system-QoderCN-CLI-Project-v0.0.1.zip
+dist/release/engineering-calculation-system-QoderCN-Cloud-Agents-v0.0.1.zip
+dist/release/engineering-calculation-system-QoderWorkCN-v0.0.1.zip
+dist/release/engineering-calculation-system-WorkBuddy-v0.0.1.zip
+dist/release/engineering-calculation-system-TRAE-v0.0.1.zip
+dist/release/engineering-calculation-system-OpenCode-v0.0.1.zip
+dist/release/engineering-calculation-system-AGENTS-Generic-v0.0.1.zip
 ```
 
 Each zip contains one install folder plus `INSTALL.md`, except MiniMaxCode which is packaged as a MiniMax skills repository root:
@@ -146,13 +161,13 @@ Product-specific paths:
 
 | Product | User/global layer | Project layer | Recommended release zip |
 | --- | --- | --- | --- |
-| Qoder direct Skill | root `SKILL.md` upload | use QODER Project for production | `engineering-calculation-system-QODER-v2.6.0.zip` |
-| Qoder Project | `~/.qoder/skills`, `~/.qoder/agents` via `install_qoder_user.py` | `.qoder/skills`, `.qoder/agents` | `engineering-calculation-system-QODER-Project-v2.6.0.zip` |
-| Qoder CLI Plugin | plugin root `.qoder-plugin/plugin.json` | plugin-managed `skills/` and `agents/` | `engineering-calculation-system-Qoder-CLI-Plugin-v2.6.0.zip` |
-| QoderCN IDE | `~/.lingma/skills`, `~/.lingma/agents` | `.lingma/skills`, `.lingma/agents` | `engineering-calculation-system-QoderCN-v2.6.0.zip`, `engineering-calculation-system-QoderCN-Project-v2.6.0.zip` |
-| QoderCN CLI | `~/.qoder-cn/skills`, `~/.qodercn/agents` | `.qoder/skills`, `.qodercn/agents` | `engineering-calculation-system-QoderCN-CLI-v2.6.0.zip`, `engineering-calculation-system-QoderCN-CLI-Project-v2.6.0.zip` |
-| QoderCN Cloud Agents | uploaded Skill zip, then bind to Agent | cloud Agent skill list | `engineering-calculation-system-QoderCN-Cloud-Agents-v2.6.0.zip` |
-| QoderWorkCN | Expert Kit upload | kit-managed | `engineering-calculation-system-QoderWorkCN-v2.6.0.zip` |
+| Qoder direct Skill | root `SKILL.md` upload | use QODER Project for production | `engineering-calculation-system-QODER-v0.0.1.zip` |
+| Qoder Project | `~/.qoder/skills`, `~/.qoder/agents` via `install_qoder_user.py` | `.qoder/skills`, `.qoder/agents` | `engineering-calculation-system-QODER-Project-v0.0.1.zip` |
+| Qoder CLI Plugin | plugin root `.qoder-plugin/plugin.json` | plugin-managed `skills/` and `agents/` | `engineering-calculation-system-Qoder-CLI-Plugin-v0.0.1.zip` |
+| QoderCN IDE | `~/.lingma/skills`, `~/.lingma/agents` | `.lingma/skills`, `.lingma/agents` | `engineering-calculation-system-QoderCN-v0.0.1.zip`, `engineering-calculation-system-QoderCN-Project-v0.0.1.zip` |
+| QoderCN CLI | `~/.qoder-cn/skills`, `~/.qodercn/agents` | `.qoder/skills`, `.qodercn/agents` | `engineering-calculation-system-QoderCN-CLI-v0.0.1.zip`, `engineering-calculation-system-QoderCN-CLI-Project-v0.0.1.zip` |
+| QoderCN Cloud Agents | uploaded Skill zip, then bind to Agent | cloud Agent skill list | `engineering-calculation-system-QoderCN-Cloud-Agents-v0.0.1.zip` |
+| QoderWorkCN | Expert Kit upload | kit-managed | `engineering-calculation-system-QoderWorkCN-v0.0.1.zip` |
 
 MiniMax Code local verification on Windows:
 
@@ -223,7 +238,7 @@ Do not substitute the QoderCN IDE `.lingma` package for the QoderCN CLI
 surfaces.
 
 For QoderCN Cloud Agents, upload
-`engineering-calculation-system-QoderCN-Cloud-Agents-v2.6.0.zip` as a custom
+`engineering-calculation-system-QoderCN-Cloud-Agents-v0.0.1.zip` as a custom
 Skill. The archive root contains `SKILL.md`, `reference.md`,
 `qoder_quickstart.md`, and `assets/`, and is intentionally small for the Cloud
 Agents Skill upload limit. After upload, bind the returned Skill ID/version to
@@ -233,7 +248,7 @@ lightweight router; production `web-complete` work must use a complete
 core/project package.
 
 For Qoder CLI plugin installs, use
-`engineering-calculation-system-Qoder-CLI-Plugin-v2.6.0.zip`. Its root contains
+`engineering-calculation-system-Qoder-CLI-Plugin-v0.0.1.zip`. Its root contains
 `.qoder-plugin/plugin.json`, `skills/engineering-calculation-system/`,
 `skills/engineering-calc-system/`, `agents/`, `references/`, and `adapters/`.
 The plugin is the best Qoder CLI packaging shape when you want one installable
@@ -263,27 +278,27 @@ This command builds every platform package (and the UI deployment exe). Pass
 Qoder, it creates:
 
 ```text
-engineering-calculation-system-QODER-v2.6.0.zip
+engineering-calculation-system-QODER-v0.0.1.zip
   Direct Skill import package with root SKILL.md, reference.md, and assets/.
 
-engineering-calculation-system-QODER-Project-v2.6.0.zip
+engineering-calculation-system-QODER-Project-v0.0.1.zip
   Project-root package with the supervisor agent, delegated worker agents,
   skill/resource layer, references, core templates, schemas, validator, and
   project scaffold.
 
-engineering-calculation-system-Qoder-CLI-Plugin-v2.6.0.zip
+engineering-calculation-system-Qoder-CLI-Plugin-v0.0.1.zip
   Qoder CLI plugin package with .qoder-plugin/plugin.json at the zip root and
   complete core skill resources under skills/engineering-calculation-system/.
 
-engineering-calculation-system-QoderCN-CLI-v2.6.0.zip
+engineering-calculation-system-QoderCN-CLI-v0.0.1.zip
   QoderCN CLI user-level split package for ~/.qoder-cn/skills and
   ~/.qodercn/agents.
 
-engineering-calculation-system-QoderCN-CLI-Project-v2.6.0.zip
+engineering-calculation-system-QoderCN-CLI-Project-v0.0.1.zip
   QoderCN CLI project-root package with .qoder/skills, .qodercn/agents,
   complete core templates, schemas, validator, and project scaffold.
 
-engineering-calculation-system-QoderCN-Cloud-Agents-v2.6.0.zip
+engineering-calculation-system-QoderCN-Cloud-Agents-v0.0.1.zip
   QoderCN Cloud Agents Skill upload package with root SKILL.md.
 ```
 

@@ -13,9 +13,12 @@ services:
     restart: unless-stopped
 
   marimo-review:
+    profiles: ["review"]
     build:
       context: ..
       dockerfile: deploy/Dockerfile
+      args:
+        ENABLE_MARIMO_REVIEW: "true"
     env_file:
       - ${ECS_ENV_FILE:-env.example}
     command: >
@@ -31,14 +34,18 @@ services:
     ports:
       - "127.0.0.1:2718:2718"
     volumes:
+      - ../apps:/app/apps:ro
       - ../data:/app/data
       - ../outputs:/app/outputs
     restart: unless-stopped
 
   marimo-formula-admin:
+    profiles: ["review"]
     build:
       context: ..
       dockerfile: deploy/Dockerfile
+      args:
+        ENABLE_MARIMO_REVIEW: "true"
     env_file:
       - ${ECS_ENV_FILE:-env.example}
     command: >
@@ -54,6 +61,7 @@ services:
     ports:
       - "127.0.0.1:2719:2719"
     volumes:
+      - ../apps:/app/apps:ro
       - ../data:/app/data
       - ../outputs:/app/outputs
     restart: unless-stopped

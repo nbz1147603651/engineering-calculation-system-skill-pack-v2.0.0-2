@@ -1,0 +1,16 @@
+sources:
+  - source_id: S01
+    title: example source
+    source_type: official_manual
+    publisher_or_author: example publisher
+    version_or_date: 2026
+    jurisdiction: to_be_defined
+    role_in_analysis: governing_source
+    authority_level: high
+    priority: 1
+    raw_file_path: null
+    source_card_path: references/source_cards/S01_source_card.md
+    extracted_paths: []
+    coverage_tags: []
+    limitations: []
+    license_or_access_notes: source card only unless authorized

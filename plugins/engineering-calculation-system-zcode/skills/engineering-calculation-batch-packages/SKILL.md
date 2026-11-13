@@ -1,6 +1,7 @@
 ---
 name: engineering-calculation-batch-packages
 description: Use when building managed import/export, uploaded packages, saved inputs, BookResult JSON, manifests, batch execution, and batch summaries.
+version: 0.0.1
 ---
 
 # Engineering Calculation Batch Packages

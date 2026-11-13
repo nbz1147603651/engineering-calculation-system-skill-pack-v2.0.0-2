@@ -5,7 +5,7 @@ from html import escape
 import math
 from typing import Any
 
-from .latex_renderer import (
+from .context_helpers import (
     report_assumptions_from_context,
     report_figures_from_context,
     report_sources_from_checks,

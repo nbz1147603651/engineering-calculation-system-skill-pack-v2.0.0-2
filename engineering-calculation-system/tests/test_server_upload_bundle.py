@@ -27,6 +27,18 @@ def _write_file(root: Path, relative: str, content: bytes | str = "sentinel\n") 
     return path
 
 
+def test_desktop_receipt_inputs_include_runtime_assets_and_exclude_bytecode(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(build_release, "REPO_ROOT", tmp_path)
+    for relative in ("tools/installer_gui/app.py", "tools/installer_gui/assets/nimo.png", "tools/release_config.json", "tools/build_release.py"):
+        _write_file(tmp_path, relative)
+    _write_file(tmp_path, "tools/installer_gui/__pycache__/app.pyc", b"cache")
+    before = build_release.ui_client_source_files()
+    assert len(before) == 4
+    assert "tools/installer_gui/assets/nimo.png" in before
+    _write_file(tmp_path, "tools/installer_gui/assets/nimo.png", b"changed mascot")
+    assert before != build_release.ui_client_source_files()
+
+
 def test_server_upload_validation_accepts_single_gui_copy(tmp_path: Path) -> None:
     package_root = tmp_path / build_release.upload_package_root_name()
     installer = build_release.ui_client_installer_name()

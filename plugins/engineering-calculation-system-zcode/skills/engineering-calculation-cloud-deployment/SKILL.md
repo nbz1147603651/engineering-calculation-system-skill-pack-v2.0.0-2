@@ -1,6 +1,7 @@
 ---
 name: engineering-calculation-cloud-deployment
 description: Use when packaging a verified engineering calculation web app for local operation, Docker/systemd/nginx/Linux cloud deployment, or final release.
+version: 0.0.1
 ---
 
 # Engineering Calculation Cloud Deployment

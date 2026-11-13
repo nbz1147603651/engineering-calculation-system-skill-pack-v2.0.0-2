@@ -3,9 +3,10 @@
 This is the single source of truth for the 01-14 lifecycle gates, the delivery-mode bar, and the
 quality checks behind each gate. Every adapter and release target uses the same rules.
 `web-complete` means dual closure: a reviewable calculation book AND a complete web calculation
-system with mandatory Marimo review/admin closure. Reduced modes (`core-only`, `report-only`,
-`prototype-web`) are valid only when the user explicitly narrows scope and must be labeled
-not-complete / not-deployable.
+system. Scope follows the user's requested deliverable: `core-only` and `report-only` may be
+complete within their declared scope after production verification; they are not a web-complete
+or deployable web system. `prototype-web` remains explicitly non-production. Marimo is an
+optional review adapter, not a numerical correctness requirement.
 
 ## Delivery Mode
 
@@ -15,14 +16,34 @@ Before implementation work starts, declare one mode in the working notes or hand
 core-only | report-only | prototype-web | web-complete
 ```
 
-Default to `web-complete` for any calculation system, calculation-book software, web app, online
-calculator, deployable tool, reusable package, batch workflow, or request that does not explicitly
-ask for narrower scope. For `web-complete` the default path is
-`08 -> 09 -> 10 -> 11 -> 12a -> 12b -> 12c -> 13 -> 14`.
+Select the mode from the deliverable, without requiring users to know these enum names:
 
-Existing code does not lower the delivery bar. If a project contains calculation scripts, a CLI,
-generated report HTML, or a static page but lacks `run_book`, `webapp/`, Marimo review apps,
-password-gated admin shell, report renderers, import/export, deployment files, or smoke tests,
+| Explicit requested output | Mode | Applicable implementation path |
+| --- | --- | --- |
+| Reusable module/library, CLI, or batch computation | `core-only` | 08-11, 12c when batch/import-export is requested, 13 |
+| Calculation book or report/export without a web app | `report-only` | 08-11, 12a, 12c when batch is requested, 13 |
+| Mockup or prototype web experience | `prototype-web` | Relevant 08-12 stages, 13; no production/deployment claim |
+| Operational website, online calculator, or deployable web system | `web-complete` | 08-11, 12a-12c, 13-14 |
+
+An explicit user-selected mode wins. A mixed report+batch request remains `report-only` with
+12c included. If a new system's deliverable is unspecified, retain `web-complete` as the
+conservative default. Record the selected mode and requested outputs in the handoff. Use
+`scripts/delivery_policy.py --deliverable batch` (repeat `--deliverable` for mixed scope) for a
+machine-readable selection; the selector does not pass an engineering gate.
+
+Also record `review_adapter: none | marimo` (default `none`, meaning no notebook runtime).
+Select Marimo only when notebook review is requested. Traceable saved inputs/results, formula
+sources, units, stable result paths, reproducible runner output and executable golden cases
+remain required. A web-complete delivery additionally keeps its dependency-free JSON review
+session bridge and decision log; no notebook package is required to inspect this evidence.
+
+These scope and adapter rules are authoritative over legacy host-adapter wording that defaults
+all tasks to a full website or mandatory Marimo. Host adapters translate installation/tool
+mechanics; they do not expand the user's requested output or override engineering gates.
+
+For a requested `web-complete` system, existing code does not lower the delivery bar. If a project contains calculation scripts, a CLI,
+generated report HTML, or a static page but lacks `run_book`, `webapp/`, traceable review evidence,
+report renderers, import/export, deployment files, or smoke tests,
 classify it as `static_report_or_cli_only` and label it incomplete/not-deployable until the missing
 web-complete layers are added.
 
@@ -37,7 +58,39 @@ template style, review workflow, or output format must be recorded in
 may proceed with an explicit default, but blocking decisions must be resolved before final or
 production status is claimed.
 
-## Hard Handoffs
+## Incremental Work on a Verified Baseline
+
+The 01-14 matrix describes dependencies and acceptance gates, not a mandatory restart wizard.
+For a change to an existing system, first record the baseline revision, its validation evidence,
+the changed layers, affected contracts, and the evidence that other layers remain valid. Reuse
+existing source libraries, handoffs and passing artifacts when their inputs have not changed.
+An unknown, stale or unverified baseline requires the full applicable route.
+
+| Changed layer | Minimum owning stages; extend when a dependent contract changes |
+| --- | --- |
+| Source authority / applicability | 01-14 dependency review; invalidate downstream evidence |
+| Formula / unit / branch | 05-07, 10-11, 13; review affected inputs, reports and interfaces |
+| Models / public result shape | 09-11, 13 plus every affected consumer |
+| Runner | 10-11, 13 plus affected consumer contracts |
+| Report only | 12a, 13; validate the rendered report against real BookResult |
+| UI / interaction only | 12b, 13; run the changed interaction and API boundary checks |
+| Batch only | 12c, 13; prove per-case runner reuse and input/result integrity |
+| Packaging / deployment only | 13-14; validate package content and runtime smoke |
+
+Unchanged upstream gates are inherited only with valid evidence. A UI-only change cannot
+invalidate a source-backed calculation or silently bypass an explicit `no_go`. A source or
+formula change must revisit the owning upstream gate. Every completion claim still requires
+fresh checks of the changed behavior; route planning itself is not validation evidence.
+Preserve the declared delivery mode and final exit bar: a scoped repair of an existing
+`web-complete` system does not require regenerating its unchanged runtime.
+
+Present progress to users as five workstreams (evidence, blueprint/handoff, calculation,
+delivery, verification/release), with 01-14 available as detailed traceability. Store one
+route/gate/artifact/evidence record in the progress ledger and update it in place; do not
+repeat the same four cards in every conversational update. Keep distinct reviewed artifacts
+when they carry distinct engineering meaning.
+
+## Hard Handoff Paths
 
 ```text
 references/acquisition/acquisition_handoff.yaml   connects acquisition -> analysis
@@ -92,7 +145,7 @@ Coding gate    (before implementation): no_go | prototype_allowed | production_a
 | 11 Book runner | Modules or source-backed checks exist | Official orchestration, validation, governing summary, warnings/errors, chart candidate inventory, emitted chart specs, result hashes; close every production graph node through `runner_closure_map.csv` | Non-empty checks for real input; governing status traceable | Official runner path |
 | 12 Interface routing | Runner exists | Select report / frontend-review / batch subskills per delivery mode | Required subskills selected | Thin interface over `run_book` |
 | 12a Report context/rendering | Calc-book or preview in scope | Report context + print-ready A4 HTML by default, optional LaTeX/PDF exports; preserve warnings/errors/traces; no template calculations; honor recorded language and template decisions | Readable A4 HTML/exports with required sections | Formula Logic Trace + Template Boundary Statement |
-| 12b Frontend/review/API | Web or review UI in scope | Backend API, UI kit, i18n, charts, trace display, capability detection, recorded report language mode, mandatory Marimo review/admin scaffold for `web-complete` | API/UI calculate through `run_book` and render real results | Web API/UI framework |
+| 12b Frontend/review/API | Web or review UI in scope | Backend API, UI kit, i18n, charts, trace display, capability detection, recorded report language mode, JSON review evidence for `web-complete`; optional Marimo adapter when requested | API/UI calculate through `run_book` and render real results | Web API/UI framework |
 | 12c Batch/import/export | Repeated use or packages in scope | JSON import/export, batch runner/API, package manifests, hashes, output registries | Batch uses `run_book` once per case | Batch + reproducible inputs |
 | 13 Verification/traceability | Core/report/web/batch pieces exist | Unit, regression, golden-case, branch, smoke, i18n, report, chart inventory, user-decision, batch, traceability, artifact validation | Hard blockers fixed or delivery downgraded | Validator before completion claim |
 | 14 Release/deployment | Web-complete requested, tests pass | Local/cloud run path, Docker or systemd/nginx, env examples, release checklist, deploy smoke | Runnable local + Linux-cloud path exists | Deployment artifacts for production |
@@ -127,12 +180,14 @@ Before claiming `web-complete`, ALL of these must hold:
 - Chart candidate inventory records every useful chart candidate as `emit` or records why charting
   is not applicable; emitted charts preserve source result paths and printable data tables
 - Web API/UI, import/export, batch, report generation, deployment files, and smoke tests all exist
-- Marimo review/admin closure exists: `/admin/`, `/admin/review/`, `/admin/formulas/`,
-  `/api/review/session`, `/api/review/state/<session_id>`,
-  `apps/review/calculation_review.py`, `apps/review/admin_formula_review.py`,
-  `src/<pkg>/review/bridge.py`, `ADMIN_REVIEW_PASSWORD`, and `ADMIN_REVIEW_TOKEN` are wired; if
-  Marimo is missing, the admin shell shows the install/config prompt and the calculator remains
-  usable
+- Dependency-free review evidence is wired: `/api/review/session`,
+  `/api/review/state/<session_id>`, and `src/<pkg>/review/bridge.py` persist the exact input,
+  result, report context, review state and append-only decisions. Formula/source/unit traces
+  remain available in reports and saved results, and repeated runs plus golden-case replay pass
+- Only when `review_adapter: marimo` is selected: add the notebook review/admin scaffold,
+  password-gated `/admin/`, proxied `/admin/review/` and `/admin/formulas/`, review apps,
+  `ADMIN_REVIEW_PASSWORD` and `ADMIN_REVIEW_TOKEN`. Missing optional Marimo never blocks the
+  main calculator; a requested notebook feature remains incomplete until its own smoke passes
 - `scripts/validate_artifacts.py --delivery web-complete` passes
 
 If any fails, return a remediation list and label the delivery draft / prototype / incomplete /

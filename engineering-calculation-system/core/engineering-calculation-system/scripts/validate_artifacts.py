@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import argparse
 import csv
+from dataclasses import asdict, is_dataclass
+from enum import Enum
 import importlib
 import importlib.util
 import json
@@ -23,7 +25,7 @@ FRONTMATTER_RE = re.compile(r"^---\n(?P<body>.*?)\n---\n", re.DOTALL)
 YAML_KEY_RE = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*):")
 
 PROFILE_CHOICES = {"core", "adapters-light", "qoder-addon", "singlefile"}
-DELIVERY_CHOICES = {"standard", "web-complete"}
+DELIVERY_CHOICES = {"standard", "core-only", "report-only", "prototype-web", "web-complete"}
 QODER_AGENT_FILES = [
     ".qoder/agents/engineering-calc-system.md",
     ".qoder/agents/engineering-calc-reference-acquirer.md",
@@ -1458,28 +1460,28 @@ def check_static_html_delivery_guard(project_root: Path, errors: list[str]) -> N
             "web system; static HTML/report HTML alone is not a production-ready web calculation "
             f"system; missing runtime artifacts: {', '.join(missing)}. Remediate through "
             "08->09->10->11->12a->12b->12c->13->14 and add webapp, report renderers, "
-            "mandatory Marimo review/admin bridge, import/export outputs, deployment files, and "
+            "traceable review evidence (plus Marimo only when selected), import/export outputs, deployment files, and "
             "smoke tests."
             )
 
 
-def check_web_complete_gate_status(project_root: Path, errors: list[str]) -> None:
+def check_web_complete_gate_status(project_root: Path, errors: list[str], *, delivery: str = "web-complete") -> None:
     handoff_path = project_root / "handoff" / "implementation_handoff.yaml"
     handoff_status = normalize_token(yaml_top_scalar(handoff_path, "status"))
     coding_status = project_coding_gate_status(project_root)
     markdown_status = markdown_gate_status(project_root / "handoff" / "coding_go_no_go.md")
     if handoff_status == "prototype_allowed" or coding_status == "prototype_allowed" or markdown_status == "prototype_allowed":
         errors.append(
-            "web-complete cannot be claimed while handoff or coding gate is prototype_allowed"
+            f"{delivery} cannot be claimed while handoff or coding gate is prototype_allowed"
         )
     if coding_status != PRODUCTION_ALLOWED:
         errors.append(
-            "web-complete requires handoff/implementation_handoff.yaml "
+            f"{delivery} requires handoff/implementation_handoff.yaml "
             f"coding_gate.status={PRODUCTION_ALLOWED!r}, got {coding_status or 'missing'}"
         )
     if markdown_status and markdown_status != PRODUCTION_ALLOWED:
         errors.append(
-            "web-complete requires handoff/coding_go_no_go.md "
+            f"{delivery} requires handoff/coding_go_no_go.md "
             f"status={PRODUCTION_ALLOWED!r}, got {markdown_status}"
         )
 
@@ -1591,7 +1593,9 @@ def check_chart_contract(charts: list[object], errors: list[str]) -> None:
             errors.append(f"{context} must include source_result_paths or per-series result_paths")
 
 
-def check_marimo_review_app_imports(project_root: Path, errors: list[str]) -> None:
+def check_marimo_review_app_imports(project_root: Path, errors: list[str], *, require_runtime: bool = False) -> None:
+    if require_runtime and importlib.util.find_spec("marimo") is None:
+        errors.append("selected Marimo adapter requires the installed marimo runtime; a missing-install fallback is not completion evidence")
     previous_path = list(sys.path)
     purge_project_modules()
     sys.path.insert(0, str(project_root))
@@ -1626,7 +1630,45 @@ def check_marimo_review_app_imports(project_root: Path, errors: list[str]) -> No
         purge_project_modules()
 
 
-def check_web_complete_runtime_closure(project_root: Path, errors: list[str]) -> None:
+def runtime_plain(value: object) -> object:
+    if isinstance(value, Enum):
+        return value.value
+    if is_dataclass(value):
+        return runtime_plain(asdict(value))
+    if isinstance(value, dict):
+        return {str(key): runtime_plain(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [runtime_plain(item) for item in value]
+    return value
+
+
+def check_executable_golden_cases(project_root: Path, errors: list[str]) -> None:
+    """A CSV claiming 'verified' is insufficient; replay its expected values now."""
+    path = project_root / "scripts/verify_golden_cases.py"
+    if not path.is_file():
+        errors.append("production runtime closure requires scripts/verify_golden_cases.py")
+        return
+    module_name = "ecs_validator_golden_cases"
+    try:
+        spec = importlib.util.spec_from_file_location(module_name, path)
+        if spec is None or spec.loader is None:
+            raise RuntimeError("golden-case runner is not importable")
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = module
+        spec.loader.exec_module(module)
+        results = list(module.run_golden_cases(project_root))
+        if not results:
+            errors.append("production runtime closure requires at least one executed golden case")
+        for result in results:
+            if status_value(object_field(result, "status")) != "pass":
+                errors.append(f"golden-case replay failed: {object_field(result, 'case_id')}: {object_field(result, 'message')}")
+    except Exception as exc:
+        errors.append(f"golden-case replay failed: {exc}")
+    finally:
+        sys.modules.pop(module_name, None)
+
+
+def check_web_complete_runtime_closure(project_root: Path, errors: list[str], *, delivery: str = "web-complete") -> None:
     example_data = check_example_input_payload(project_root, errors)
     if not example_data:
         return
@@ -1641,14 +1683,18 @@ def check_web_complete_runtime_closure(project_root: Path, errors: list[str]) ->
     sys.path.insert(0, str(project_root))
     sys.path.insert(0, str(project_root / "src"))
     try:
-        form_utils = importlib.import_module("webapp.form_utils")
+        input_mapping = importlib.import_module("pkg.interfaces.input_mapping")
         book_runner = importlib.import_module(f"pkg.books.{book_name}.book_runner")
-        report_context_module = importlib.import_module(f"pkg.books.{book_name}.report_context")
-        html_renderer = importlib.import_module("pkg.report.html_renderer")
-        review_bridge = importlib.import_module("pkg.review.bridge")
-
-        book_input = form_utils.build_case_input_from_form(example_data)
+        book_input = input_mapping.build_case_input_from_form(example_data)
         result = book_runner.run_book(book_input)
+        rerun = book_runner.run_book(input_mapping.build_case_input_from_form(example_data))
+        if runtime_plain(result) != runtime_plain(rerun):
+            errors.append(f"{delivery} runtime closure is not reproducible for the recorded input")
+        if delivery == "web-complete":
+            form_utils = importlib.import_module("webapp.form_utils")
+            if runtime_plain(form_utils.build_case_input_from_form(example_data)) != runtime_plain(book_input):
+                errors.append("web form mapping differs from the canonical JSON input mapping")
+        check_executable_golden_cases(project_root, errors)
         checks = list(getattr(result, "checks", []) or [])
         if not checks:
             errors.append("web-complete runtime closure requires non-empty BookResult.checks")
@@ -1658,6 +1704,8 @@ def check_web_complete_runtime_closure(project_root: Path, errors: list[str]) ->
         if not any(getattr(check, "formula_traces", None) for check in checks):
             errors.append("web-complete runtime closure requires formula traces on BookResult.checks")
         for check_index, check in enumerate(checks):
+            if not has_actionable_text(object_field(check, "unit")):
+                errors.append(f"BookResult.checks[{check_index}] is missing an explicit unit")
             traces = list(getattr(check, "formula_traces", []) or [])
             if not traces:
                 errors.append(f"web-complete runtime closure requires formula traces on BookResult.checks[{check_index}]")
@@ -1673,6 +1721,10 @@ def check_web_complete_runtime_closure(project_root: Path, errors: list[str]) ->
         charts = list(getattr(result, "charts", []) or [])
         check_chart_contract(charts, errors)
 
+        if delivery == "core-only":
+            return
+        report_context_module = importlib.import_module(f"pkg.books.{book_name}.report_context")
+        html_renderer = importlib.import_module("pkg.report.html_renderer")
         report_context = report_context_module.build_report_context(result)
         html_context = html_renderer.build_html_report_context(book_input, result, report_context)
         html = html_renderer.render_a4_html_report(html_context)
@@ -1683,6 +1735,9 @@ def check_web_complete_runtime_closure(project_root: Path, errors: list[str]) ->
             if phrase in html:
                 errors.append(f"web-complete report contains incomplete placeholder phrase: {phrase}")
 
+        if delivery == "report-only":
+            return
+        review_bridge = importlib.import_module("pkg.review.bridge")
         with TemporaryDirectory(prefix="ecs_review_validator_") as tmp_dir:
             review_root = Path(tmp_dir)
             session = review_bridge.write_review_session(
@@ -1720,18 +1775,20 @@ def check_web_complete_runtime_closure(project_root: Path, errors: list[str]) ->
             if not (review_root / "review_decisions.jsonl").exists():
                 errors.append("web-complete review decision log was not written")
     except Exception as exc:  # pragma: no cover - validator must report import/runtime failures cleanly.
-        errors.append(f"web-complete runtime closure failed: {exc}")
+        errors.append(f"{delivery} runtime closure failed: {exc}")
     finally:
         sys.path[:] = previous_path
         purge_project_modules()
 
 
-def check_web_complete_delivery(project_root: Path, errors: list[str]) -> None:
+def check_web_complete_delivery(project_root: Path, errors: list[str], *, review_adapter: str = "none") -> None:
     """Validate the strict web-complete delivery shape."""
     for rel_path in WEB_COMPLETE_REQUIRED_PROJECT_PATHS:
-        check_exists(project_root, rel_path, errors)
-    check_text_required_phrases(project_root, WEB_COMPLETE_TEXT_REQUIRED_PHRASES, errors)
-    check_marimo_review_app_imports(project_root, errors)
+        if path_in_delivery(rel_path, "web-complete", review_adapter):
+            check_exists(project_root, rel_path, errors)
+    check_text_required_phrases(project_root, scoped_phrases(WEB_COMPLETE_TEXT_REQUIRED_PHRASES, "web-complete", review_adapter), errors)
+    if review_adapter == "marimo":
+        check_marimo_review_app_imports(project_root, errors, require_runtime=True)
     check_web_complete_gate_status(project_root, errors)
     check_web_complete_placeholders(project_root, errors)
     check_web_complete_runtime_closure(project_root, errors)
@@ -1953,17 +2010,114 @@ def validate_profile(package_root: Path, profile: str, contract: dict | None) ->
     return [f"unknown profile: {profile}"]
 
 
-def validate_project(project_root: Path, contract: dict, *, delivery: str = "standard") -> list[str]:
+MARIMO_ONLY_PATHS = {
+    "webapp/templates/admin_review.html", "tests/unit/test_marimo_review.py",
+    "deploy/systemd/engineering-calc-review.service", "deploy/systemd/engineering-calc-formula-admin.service",
+}
+MARIMO_ONLY_PHRASES = (
+    "Marimo", "marimo", "ADMIN_REVIEW", "adminReview", "btnAdminReview", "configureReviewAdmin",
+    "/admin/", "/admin/formulas", "admin_review", "admin_url", "review_url", "formula_admin_url",
+    "review.", "Formula Publishing Effect", "calculation_review.py", "admin_formula_review.py", "admin_password_set",
+)
+LATEX_ONLY_PHRASES = ("latex", "Latex", "LaTeX", "ReportRenderDecision")
+
+
+def selected_review_adapter(project_root: Path, override: str | None = None) -> str:
+    handoff = project_root / "handoff/implementation_handoff.yaml"
+    value = normalize_token(override or yaml_top_scalar(handoff, "review_adapter")
+                            or yaml_nested_scalar(handoff, "runtime_stack", "review_runtime") or "none")
+    aliases = {"marimo_optional": "none", "evidence": "none", "marimo_required": "marimo"}
+    value = aliases.get(value, value)
+    if value not in {"none", "marimo"}:
+        raise ValueError(f"Unknown review adapter: {value}; expected none or marimo")
+    return value
+
+
+def path_in_delivery(relative: str, delivery: str, review_adapter: str) -> bool:
+    """Filter presentation/deployment features, never numerical/source artifacts."""
+    if review_adapter == "none" and (relative.startswith("apps/review/") or relative in MARIMO_ONLY_PATHS):
+        return False
+    if delivery in {"core-only", "report-only"}:
+        if relative.startswith(("webapp/", "deploy/", "release/", "apps/review/")):
+            return False
+        if relative in {"tests/smoke/test_web_routes.py", "src/pkg/core/capabilities.py"}:
+            return False
+    if delivery in {"core-only", "report-only", "prototype-web"}:
+        if relative.startswith(("latex/", "outputs/reports_latex/", "outputs/reports_pdf/", "outputs/reports_docx/")):
+            return False
+        if relative in {"src/pkg/report/latex_renderer.py", "src/pkg/report/report_selector.py", "tests/smoke/test_latex_report.py"}:
+            return False
+    if delivery == "core-only":
+        if relative.startswith(("src/pkg/report/", "outputs/reports_", "data/imported/reports/")) or relative.endswith("/report_context.py"):
+            return False
+    if delivery == "prototype-web" and relative.startswith(("deploy/", "release/")):
+        return False
+    return True
+
+
+def scoped_phrases(required: dict[str, list[str]], delivery: str, review_adapter: str) -> dict[str, list[str]]:
+    scoped = {}
+    for relative, phrases in required.items():
+        if not path_in_delivery(relative, delivery, review_adapter):
+            continue
+        kept = []
+        for phrase in phrases:
+            if review_adapter == "none" and any(token in phrase for token in MARIMO_ONLY_PHRASES):
+                continue
+            if delivery in {"core-only", "report-only", "prototype-web"} and any(token in phrase for token in LATEX_ONLY_PHRASES):
+                continue
+            if delivery in {"core-only", "report-only"} and "Frontend format:" in phrase:
+                continue
+            kept.append(phrase)
+        scoped[relative] = kept
+    return scoped
+
+
+def scoped_yaml_keys(required: dict[str, list[str]], delivery: str) -> dict[str, list[str]]:
+    excluded = set()
+    if delivery in {"core-only", "report-only"}:
+        excluded.update(("backend_api_contract", "frontend_contract", "release_contract", "operator_workflow_contract"))
+    if delivery == "core-only":
+        excluded.update(("report_localization_contract", "report_template_contract"))
+    return {path: [key for key in keys if key not in excluded] for path, keys in required.items()}
+
+
+def validate_project(project_root: Path, contract: dict, *, delivery: str = "standard", review_adapter: str | None = None) -> list[str]:
     errors: list[str] = []
+    if delivery not in DELIVERY_CHOICES:
+        return [f"Unknown delivery mode: {delivery}"]
+    recorded_mode = yaml_top_scalar(project_root / "handoff/implementation_handoff.yaml", "delivery_mode")
+    if delivery != "standard" and recorded_mode and recorded_mode != delivery:
+        errors.append(f"Requested delivery {delivery} conflicts with recorded handoff delivery_mode={recorded_mode}")
+    try:
+        review_adapter = selected_review_adapter(project_root, review_adapter)
+    except ValueError as exc:
+        return [str(exc)]
     for rel_path in contract["project_required_paths"]:
-        check_exists(project_root, rel_path, errors)
+        if path_in_delivery(rel_path, delivery, review_adapter):
+            check_exists(project_root, rel_path, errors)
     check_csv_headers(project_root, contract["project_csv_headers"], errors)
-    check_yaml_required_keys(project_root, contract.get("project_yaml_required_keys", {}), errors)
-    check_text_required_phrases(project_root, contract.get("project_text_required_phrases", {}), errors)
+    check_yaml_required_keys(project_root, scoped_yaml_keys(contract.get("project_yaml_required_keys", {}), delivery), errors)
+    check_text_required_phrases(project_root, scoped_phrases(contract.get("project_text_required_phrases", {}), delivery, review_adapter), errors)
     check_no_mojibake_markers(project_root, errors)
-    check_static_html_delivery_guard(project_root, errors)
+    if delivery in {"standard", "prototype-web", "web-complete"}:
+        check_static_html_delivery_guard(project_root, errors)
     if delivery == "web-complete":
-        check_web_complete_delivery(project_root, errors)
+        check_web_complete_delivery(project_root, errors, review_adapter=review_adapter)
+    elif delivery in {"core-only", "report-only"}:
+        # A smaller deliverable is still production engineering work, not a
+        # shortcut around source, semantic, unit, trace or golden-case gates.
+        check_web_complete_gate_status(project_root, errors, delivery=delivery)
+        check_web_complete_placeholders(project_root, errors)
+        check_exists(project_root, "src/pkg/interfaces/input_mapping.py", errors)
+        check_web_complete_runtime_closure(project_root, errors, delivery=delivery)
+    elif delivery == "prototype-web":
+        if project_coding_gate_status(project_root) not in {"prototype_allowed", PRODUCTION_ALLOWED}:
+            errors.append("prototype-web requires an explicit prototype_allowed or production_allowed coding gate")
+    if review_adapter == "marimo" and delivery != "web-complete":
+        check_exists(project_root, "apps/review/calculation_review.py", errors)
+        check_exists(project_root, "src/pkg/review/bridge.py", errors)
+        check_marimo_review_app_imports(project_root, errors, require_runtime=True)
     check_project_semantic_gates(project_root, errors)
     return errors
 
@@ -1996,10 +2150,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--project", help="Generated engineering calculation project root")
     parser.add_argument(
         "--delivery",
-        default="standard",
+        default=None,
         choices=sorted(DELIVERY_CHOICES),
         help="Generated project delivery contract to validate",
     )
+    parser.add_argument("--deliverable", action="append", default=[],
+                        choices=["module", "library", "batch", "cli", "report", "calculation-book", "prototype", "mockup", "web", "online-calculator", "deployable-system"],
+                        help="Explicit requested output; selects the matching delivery scope")
+    parser.add_argument("--review-adapter", choices=["none", "marimo"],
+                        help="Optional notebook adapter; JSON trace evidence remains mandatory for web-complete")
     args = parser.parse_args(argv)
 
     package_root = Path(args.package_root).resolve()
@@ -2010,11 +2169,21 @@ def main(argv: list[str] | None = None) -> int:
         if contract is None:
             errors.append("--project validation requires schemas/artifact_contracts.json under --package-root")
         else:
+            project = Path(args.project).resolve()
+            delivery = args.delivery
+            if args.deliverable:
+                policy_spec = importlib.util.spec_from_file_location("ecs_delivery_policy", Path(__file__).with_name("delivery_policy.py"))
+                assert policy_spec is not None and policy_spec.loader is not None
+                policy = importlib.util.module_from_spec(policy_spec)
+                policy_spec.loader.exec_module(policy)
+                delivery = policy.select_delivery(args.deliverable, delivery)
+            delivery = delivery or yaml_top_scalar(project / "handoff/implementation_handoff.yaml", "delivery_mode") or "standard"
             errors.extend(
                 validate_project(
-                    Path(args.project).resolve(),
+                    project,
                     contract,
-                    delivery=args.delivery,
+                    delivery=delivery,
+                    review_adapter=args.review_adapter,
                 )
             )
 

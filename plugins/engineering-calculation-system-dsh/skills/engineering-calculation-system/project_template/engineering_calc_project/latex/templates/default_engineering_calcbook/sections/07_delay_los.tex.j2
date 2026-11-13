@@ -1,0 +1,66 @@
+{# Delay and Level of Service section (consulting-oriented).
+   Renders only when the downstream book supplies lane_groups/approaches via
+   intermediate_values. #}
+{% if lane_groups or approaches or intersection %}
+\section{Delay and Level of Service}
+
+{% if lane_groups %}
+\subsection{Lane Group Delay}
+
+\rowcolors{2}{white}{resultBg}
+\begin{longtable}{p{0.12\linewidth}p{0.10\linewidth}p{0.13\linewidth}p{0.13\linewidth}p{0.13\linewidth}p{0.10\linewidth}p{0.10\linewidth}p{0.10\linewidth}}
+\toprule
+\rowcolor{tablehead}
+ID & Dir & Uniform (s) & Incremental (s) & Control (s) & LOS & 95\% queue (pcu) & Status \\
+\midrule
+{% for lg in lane_groups %}
+{{ lg.id | default("--") | latex_escape }} &
+{{ lg.direction | default("--") | latex_escape }} &
+{{ lg.uniform_delay_s_per_veh | default("--") | latex_escape }} &
+{{ lg.incremental_delay_s_per_veh | default("--") | latex_escape }} &
+{{ lg.control_delay_s_per_veh | default("--") | latex_escape }} &
+{{ lg.los | default("--") | latex_escape }} &
+{{ lg.queue_95_pcu | default("--") | latex_escape }} &
+{{ lg.status | default("--") | latex_escape }} \\
+{% endfor %}
+\bottomrule
+\end{longtable}
+{% endif %}
+
+{% if approaches %}
+\subsection{Approach Summary}
+
+\rowcolors{2}{white}{resultBg}
+\begin{longtable}{p{0.16\linewidth}p{0.16\linewidth}p{0.16\linewidth}p{0.18\linewidth}p{0.12\linewidth}p{0.18\linewidth}}
+\toprule
+\rowcolor{tablehead}
+Approach & Demand (pcu/h) & Capacity (pcu/h) & Avg delay (s/veh) & LOS & Lane groups \\
+\midrule
+{% for ap in approaches %}
+{{ ap.approach | default("--") | latex_escape }} &
+{{ ap.demand_pcu_h | default("--") | latex_escape }} &
+{{ ap.capacity_pcu_h | default("--") | latex_escape }} &
+{{ ap.average_delay_s_per_veh | default("--") | latex_escape }} &
+{{ ap.los | default("--") | latex_escape }} &
+{{ ap.lane_group_ids | join_list | latex_escape }} \\
+{% endfor %}
+\bottomrule
+\end{longtable}
+{% endif %}
+
+{% if intersection %}
+\subsection{Intersection Overall}
+
+\rowcolors{2}{white}{resultBg}
+\begin{tabular}{>{\bfseries}p{0.42\linewidth}p{0.42\linewidth}}
+\toprule
+\rowcolor{tablehead}
+Item & Value \\
+\midrule
+Average delay & {{ intersection.average_delay_s_per_veh | default("--") | latex_escape }} s/veh \\
+Level of service & {{ intersection.los | default("--") | latex_escape }} \\
+Worst degree of saturation & {{ intersection.worst_degree_of_saturation_x | default("--") | latex_escape }} \\
+\bottomrule
+\end{tabular}
+{% endif %}
+{% endif %}

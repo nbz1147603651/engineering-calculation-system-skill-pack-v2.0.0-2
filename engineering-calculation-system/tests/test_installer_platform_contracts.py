@@ -53,7 +53,7 @@ def test_codex_contract_targets_plugin_not_legacy_skill() -> None:
 
 def test_detector_sentinel_modes_follow_contracts(tmp_path: Path) -> None:
     for contract in CONTRACTS:
-        root = tmp_path / contract.name
+        root = tmp_path / "profiles" / "web" if contract.name == "deepseek-harness" else tmp_path / contract.name
         ok, _detail = detector.skill_deployed(contract.name, root)
         assert not ok
 
@@ -66,6 +66,9 @@ def test_detector_sentinel_modes_follow_contracts(tmp_path: Path) -> None:
         else:
             _touch(root, contract.sentinel_paths[0])
 
+        if contract.name == "deepseek-harness":
+            from installer_gui.dsh import PACKAGE_NAME
+            (root / "package.json").write_text(json.dumps({"dependencies": {PACKAGE_NAME: "file:bundle"}, "dsh": {"profile": {"bundles": [PACKAGE_NAME]}}}), encoding="utf-8")
         ok, detail = detector.skill_deployed(contract.name, root)
         assert ok, detail
 
@@ -124,6 +127,16 @@ def test_app_config_ignores_invalid_agent_roots(tmp_path: Path, monkeypatch: pyt
     loaded = config.AppConfig.load()
 
     assert loaded.agent_roots == {"qoder": "D:/Users/example/.qoder"}
+
+
+def test_app_config_recovers_invalid_shape_and_preferences(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    config_file = tmp_path / "config.json"
+    monkeypatch.setattr(config, "_CONFIG_FILE", config_file)
+    config_file.write_text("[]", encoding="utf-8")
+    assert config.AppConfig.load() == config.AppConfig()
+    config_file.write_text(json.dumps({"language": "invalid", "repo_root": 42, "theme": "invalid"}), encoding="utf-8")
+    loaded = config.AppConfig.load()
+    assert loaded.language == config.default_language() and loaded.repo_root == "" and loaded.theme == "System"
 
 
 def test_project_contracts_declare_overlay_boundaries() -> None:

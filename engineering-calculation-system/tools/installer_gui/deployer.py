@@ -2,11 +2,10 @@
 
 Design rules (mirrors the approved plan):
 
-* **Reuse, don't reinvent.** Release artifacts are produced by the existing
-  ``tools/build_release.py``; the Qoder user-level install is delegated to the
-  existing ``tools/install_qoder_user.py`` (which already builds, installs,
-  verifies, audits and uninstalls). This module only orchestrates subprocess
-  calls + filesystem copies.
+* Release artifacts are produced once by ``tools/build_release.py``. The
+  standalone client verifies and installs prebuilt resources directly; source
+  development can still rebuild profiles. Native host package managers retain
+  responsibility for their own profile registration.
 * **No silent overwrite.** When a target path already exists it is backed up to
   ``<path>.bak.<timestamp>`` before being replaced.
 * **Streaming logs.** Every deploy/verify/uninstall callable accepts a
@@ -20,16 +19,22 @@ Design rules (mirrors the approved plan):
 from __future__ import annotations
 
 import os
+import hashlib
+import json
+import queue
+import re
+import signal
 import shutil
 import subprocess
 import sys
+import threading
 import time
 import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 
-from . import detector
+from . import detector, dsh, managed_files
 from .i18n import t
 from .platform_contracts import ProfileCopy, UPLOAD_KIT_SENTINELS, get_contract
 
@@ -42,15 +47,59 @@ from .platform_contracts import ProfileCopy, UPLOAD_KIT_SENTINELS, get_contract
 # so the repo root is ``parents[2]`` and build_release.py is invoked with the
 # current interpreter (``sys.executable``).
 #
-# In frozen mode (PyInstaller exe) ``__file__`` points at a temp extraction
-# directory, so neither trick works. The exe is a *deployment tool*, not a
-# bundle of the skill source, so it must be told where the skill-pack repo
-# lives (via ``ECS_REPO_ROOT`` env var, set by app.py from a folder picker) and
-# must find a system Python on PATH to run build_release.py / install_qoder_user.py
-# (the exe carries no interpreter of its own).
+# The standalone executable carries prebuilt platform profiles. Frozen installs
+# verify/copy these resources directly, using neither a source checkout nor a
+# system Python. Development builds from a checkout remain available in source mode.
+
+def bundled_runtime_root() -> Path | None:
+    """Locate the versioned, prebuilt skill payload inside a standalone client."""
+    if not getattr(sys, "frozen", False) or not hasattr(sys, "_MEIPASS"):
+        return None
+    root = Path(sys._MEIPASS) / "nimo-runtime"
+    return root if (root / "NIMO-RUNTIME.json").is_file() else None
+
+
+# Public spelling retained for the application shell.
+embedded_runtime_root = bundled_runtime_root
+
+
+def using_bundled_runtime() -> bool:
+    root = bundled_runtime_root()
+    return root is not None and REPO_ROOT is not None and root.resolve() == REPO_ROOT.resolve()
+
+
+def runtime_status() -> dict:
+    root = bundled_runtime_root()
+    if root is None:
+        return {"bundled": False, "ready": False, "profiles": [], "version": ""}
+    try:
+        manifest = json.loads((root / "NIMO-RUNTIME.json").read_text(encoding="utf-8"))
+        profiles = manifest.get("profiles", [])
+        ready = manifest.get("schemaVersion") == 1 and bool(profiles) and all((root / "dist" / profile).is_dir() for profile in profiles)
+        return {"bundled": True, "ready": ready, "profiles": profiles, "version": manifest.get("version", "")}
+    except (OSError, ValueError, AttributeError):
+        return {"bundled": True, "ready": False, "profiles": [], "version": ""}
+
+
+def _verify_bundled_profiles(profiles: tuple[str, ...]) -> None:
+    root = bundled_runtime_root()
+    if root is None:
+        raise DeployError("Standalone engineering resources are missing; reinstall the client")
+    manifest = json.loads((root / "NIMO-RUNTIME.json").read_text(encoding="utf-8"))
+    if set(profiles) - set(manifest.get("profiles", [])):
+        raise DeployError("This resource is not included in the client; use a current standalone installer")
+    for relative, expected in manifest.get("files", {}).items():
+        if not any(relative.startswith(f"dist/{profile}/") for profile in profiles):
+            continue
+        path = (root / relative).resolve()
+        if not path.is_relative_to(root.resolve()) or not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != expected:
+            raise DeployError(f"Packaged engineering resource failed integrity verification: {relative}")
 
 def _default_repo_root() -> Path | None:
     """Best-effort repo root when running from source. ``None`` if unknown."""
+    embedded = bundled_runtime_root()
+    if embedded is not None:
+        return embedded
     here = Path(__file__).resolve()
     candidate = here.parents[2]               # .../engineering-calculation-system
     if (candidate / "tools" / "build_release.py").exists():
@@ -61,7 +110,6 @@ def _default_repo_root() -> Path | None:
 REPO_ROOT: Path | None = _default_repo_root()
 TOOLS_DIR: Path = (REPO_ROOT / "tools") if REPO_ROOT else Path("tools")
 BUILD_SCRIPT: Path = TOOLS_DIR / "build_release.py"
-QODER_INSTALL_SCRIPT: Path = TOOLS_DIR / "install_qoder_user.py"
 DIST_ROOT: Path = (REPO_ROOT / "dist") if REPO_ROOT else Path("dist")
 DIST_CORE: Path = DIST_ROOT / "core" / "engineering-calculation-system"
 DIST_CODEX_PLUGIN: Path = DIST_ROOT / "codex-plugin" / "engineering-calculation-system"
@@ -69,10 +117,12 @@ DIST_ADAPTERS_LIGHT: Path = DIST_ROOT / "adapters-light"
 DIST_QODER_ADDON: Path = DIST_ROOT / "qoder-addon"
 DIST_QODERWORKCN_PLUGIN: Path = DIST_ROOT / "qoderworkcn-plugin"
 DIST_ZCODE_PLUGIN: Path = DIST_ROOT / "zcode-plugin" / "engineering-calculation-system-zcode"
+DIST_DSH_PLUGIN: Path = DIST_ROOT / "dsh-plugin" / "engineering-calculation-system-dsh"
 
 
 PROFILE_REQUIRED_PATHS: dict[str, tuple[str, ...]] = {
     "core": ("SKILL.md",),
+    "dsh-plugin": ("package.json", "cordis.patch.yml", "lib/index.js", "skills/engineering-calculation-system/SKILL.md"),
     "codex-plugin": (
         ".codex-plugin/plugin.json",
         "skills/engineering-calculation-system/SKILL.md",
@@ -101,7 +151,7 @@ def set_repo_root(path: Path | None, *, validate: bool = True) -> None:
     False when pointing at a workspace directory that may not yet contain
     the full skill-pack source (deploy / build will fail gracefully later).
     """
-    global REPO_ROOT, TOOLS_DIR, BUILD_SCRIPT, QODER_INSTALL_SCRIPT, DIST_ROOT, DIST_CORE, DIST_CODEX_PLUGIN, DIST_ADAPTERS_LIGHT, DIST_QODER_ADDON, DIST_QODERWORKCN_PLUGIN, DIST_ZCODE_PLUGIN
+    global REPO_ROOT, TOOLS_DIR, BUILD_SCRIPT, DIST_ROOT, DIST_CORE, DIST_CODEX_PLUGIN, DIST_ADAPTERS_LIGHT, DIST_QODER_ADDON, DIST_QODERWORKCN_PLUGIN, DIST_ZCODE_PLUGIN, DIST_DSH_PLUGIN
     candidate = Path(path).expanduser() if path else None
     if validate and candidate is not None and not (candidate / "tools" / "build_release.py").exists():
         raise DeployError(
@@ -110,7 +160,6 @@ def set_repo_root(path: Path | None, *, validate: bool = True) -> None:
     REPO_ROOT = candidate
     TOOLS_DIR = (REPO_ROOT / "tools") if REPO_ROOT else Path("tools")
     BUILD_SCRIPT = TOOLS_DIR / "build_release.py"
-    QODER_INSTALL_SCRIPT = TOOLS_DIR / "install_qoder_user.py"
     DIST_ROOT = (REPO_ROOT / "dist") if REPO_ROOT else Path("dist")
     DIST_CORE = DIST_ROOT / "core" / "engineering-calculation-system"
     DIST_CODEX_PLUGIN = DIST_ROOT / "codex-plugin" / "engineering-calculation-system"
@@ -118,23 +167,18 @@ def set_repo_root(path: Path | None, *, validate: bool = True) -> None:
     DIST_QODER_ADDON = DIST_ROOT / "qoder-addon"
     DIST_QODERWORKCN_PLUGIN = DIST_ROOT / "qoderworkcn-plugin"
     DIST_ZCODE_PLUGIN = DIST_ROOT / "zcode-plugin" / "engineering-calculation-system-zcode"
+    DIST_DSH_PLUGIN = DIST_ROOT / "dsh-plugin" / "engineering-calculation-system-dsh"
 
 
 def resolve_python() -> str:
     """Return the Python interpreter to use for subprocess calls.
 
-    Source mode: the current interpreter (``sys.executable``).
-    Frozen mode: a system ``python`` on PATH (the exe has no embedded one).
-    Raises :class:`DeployError` if frozen and no system Python is reachable.
+    This is only for developer builds from source. A frozen deployment never
+    treats its executable as an interpreter and never needs a system Python.
     """
-    if not is_frozen():
-        return sys.executable
-    found = shutil.which("python") or shutil.which("python3") or shutil.which("py")
-    if found:
-        return found
-    raise DeployError(
-        t("deployer_no_python")
-    )
+    if is_frozen():
+        raise DeployError("Developer builds require source mode; the standalone client uses prebuilt engineering resources")
+    return sys.executable
 
 
 def require_repo_root() -> Path:
@@ -172,6 +216,7 @@ def _run_streaming(
     cwd: Path | None = None,
     timeout: float | None = None,
     env: dict[str, str] | None = None,
+    cancelled: Callable[[], bool] = lambda: False,
 ) -> int:
     """Run ``argv`` and stream stdout/stderr to ``log`` line by line.
 
@@ -193,16 +238,57 @@ def _run_streaming(
             errors="replace",
             bufsize=1,
             env=proc_env,
+            creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
+            start_new_session=os.name != "nt",
         )
     except FileNotFoundError as exc:
         log(f"[error] failed to launch: {exc}")
         raise DeployError(str(exc)) from exc
 
     assert proc.stdout is not None
-    for line in proc.stdout:
-        log(line.rstrip("\n"))
-    proc.wait(timeout=timeout)
-    return proc.returncode
+    lines: queue.Queue[str | None] = queue.Queue()
+
+    def read_output() -> None:
+        try:
+            for line in proc.stdout:
+                lines.put(line.rstrip("\n"))
+        finally:
+            lines.put(None)
+
+    reader = threading.Thread(target=read_output, daemon=True, name="nimo-process-output")
+    reader.start()
+    deadline = time.monotonic() + timeout if timeout is not None else None
+    try:
+        while True:
+            if cancelled():
+                raise DeployError("Operation cancelled")
+            if deadline is not None and time.monotonic() >= deadline:
+                raise DeployError(f"Command timed out after {timeout:g} seconds")
+            try:
+                line = lines.get(timeout=0.1)
+            except queue.Empty:
+                continue
+            if line is None:
+                break
+            log(line)
+        remaining = max(0.01, deadline - time.monotonic()) if deadline is not None else None
+        return proc.wait(timeout=remaining)
+    except (DeployError, subprocess.TimeoutExpired):
+        if os.name == "nt":
+            subprocess.run(["taskkill", "/PID", str(proc.pid), "/T", "/F"],
+                           capture_output=True, timeout=5, creationflags=subprocess.CREATE_NO_WINDOW)
+        else:
+            try:
+                os.killpg(proc.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+        if proc.poll() is None:
+            proc.kill()
+        proc.wait(timeout=5)
+        raise DeployError("Operation cancelled" if cancelled() else f"Command timed out after {timeout:g} seconds")
+    finally:
+        reader.join(timeout=1)
+        proc.stdout.close()
 
 
 # --------------------------------------------------------------------------- #
@@ -222,6 +308,11 @@ def build_profiles(
     safe to re-run.
     """
     if not profiles:
+        return
+    if using_bundled_runtime():
+        _verify_bundled_profiles(profiles)
+        log("[verify] prebuilt engineering resources are ready; no developer checkout or Python build is required")
+        progress(1.0, "Engineering skills are ready")
         return
     repo = require_build_script()
     python = resolve_python()
@@ -243,6 +334,9 @@ def ensure_profiles(profiles: tuple[str, ...], *, log: LogFn, progress: Progress
 
     Keeps re-deploys fast when dist/ is already populated.
     """
+    if using_bundled_runtime():
+        build_profiles(profiles, log=log, progress=progress)
+        return
     profile_to_dist = {
         "core": DIST_CORE,
         "codex-plugin": DIST_CODEX_PLUGIN,
@@ -250,6 +344,7 @@ def ensure_profiles(profiles: tuple[str, ...], *, log: LogFn, progress: Progress
         "qoder-addon": DIST_QODER_ADDON,
         "qoderworkcn-plugin": DIST_QODERWORKCN_PLUGIN,
         "zcode-plugin": DIST_ZCODE_PLUGIN,
+        "dsh-plugin": DIST_DSH_PLUGIN,
     }
     def profile_ready(profile: str) -> bool:
         root = profile_to_dist.get(profile)
@@ -281,7 +376,7 @@ def _backup(path: Path, *, log: LogFn) -> None:
     """Rename an existing path to ``<path>.bak.<ts>`` so it can be restored."""
     if not path.exists():
         return
-    backup = path.with_name(f"{path.name}.bak.{_timestamp()}")
+    backup = path.with_name(f"{path.name}.bak.{_timestamp()}.{time.time_ns()}")
     log(f"[backup] {path} -> {backup}")
     shutil.move(str(path), str(backup))
 
@@ -310,6 +405,8 @@ def _copy_tree(src: Path, dst: Path, *, log: LogFn, merge: bool = False) -> None
     """
     if not src.exists():
         raise DeployError(t("deployer_source_missing", src=src))
+    if src.resolve() == dst.resolve() or dst.resolve().is_relative_to(src.resolve()):
+        raise DeployError(f"Deployment target overlaps its source: {dst}")
     dst.parent.mkdir(parents=True, exist_ok=True)
     if merge:
         backed = 0
@@ -344,26 +441,18 @@ def _copy_file(src: Path, dst: Path, *, log: LogFn) -> None:
 
 
 def _remove_managed(path: Path, *, log: LogFn) -> None:
-    """Remove a path this package owns, tolerating absence."""
+    """Detach a managed path and keep a recoverable copy, tolerating absence."""
     if not path.exists():
         return
-    if path.is_dir():
-        shutil.rmtree(path)
-        log(f"[remove] {path}/")
-    else:
-        path.unlink()
-        log(f"[remove] {path}")
-
-
-def _remove_managed_and_backups(name: str, parent: Path, *, log: LogFn) -> None:
-    """Remove a managed entry plus any ``<name>.bak.<ts>`` siblings we created.
-
-    Used by project-overlay uninstalls so re-deploy/uninstall cycles do not
-    leave stray backup files lying around in the user's project root.
-    """
-    _remove_managed(parent / name, log=log)
-    for sibling in parent.glob(f"{name}.bak.*"):
-        _remove_managed(sibling, log=log)
+    # A separate container prevents a skill scanner from discovering the backup
+    # as another direct <skills>/<name>/SKILL.md entry after uninstall.
+    recovery = path.parent / ".engineering-calc-recovery"
+    if not recovery.resolve().is_relative_to(path.parent.resolve()):
+        raise DeployError(f"Recovery directory leaves the selected install parent: {recovery}")
+    recovery.mkdir(exist_ok=True)
+    archive = recovery / f"{path.name}.uninstalled.{time.time_ns()}"
+    path.rename(archive)
+    log(f"[uninstall] {path} -> {archive} (retained for recovery)")
 
 
 # --------------------------------------------------------------------------- #
@@ -377,6 +466,7 @@ class DeployContext:
     install_root: Path | None
     log: LogFn
     progress: ProgressFn
+    cancelled: Callable[[], bool] = lambda: False
 
 
 def _resolve_root(ctx: DeployContext) -> Path:
@@ -485,112 +575,65 @@ def uninstall_zcode(ctx: DeployContext) -> None:
 
 
 # --------------------------------------------------------------------------- #
-# Qoder (user-level) - delegate to install_qoder_user.py
+# Qoder / Qoder CN (user-level) - shared prebuilt file installation
 # --------------------------------------------------------------------------- #
 
-def _qoder_home(ctx: DeployContext) -> Path:
+def _deploy_qoder_user_overlay(ctx: DeployContext, agent_name: str) -> None:
+    ensure_profiles(("qoder-addon",), log=ctx.log, progress=ctx.progress)
     root = _resolve_root(ctx)
-    return root
+    try:
+        managed_files.install(root, agent_name, [(DIST_QODER_ADDON / ".qoder", Path("."))], ctx.log)
+    except (OSError, ValueError) as error:
+        raise DeployError(str(error)) from error
+    ctx.progress(1.0, f"{agent_name} engineering skills installed")
+
+
+def _verify_qoder_user_overlay(ctx: DeployContext, agent_name: str) -> bool:
+    root = _resolve_root(ctx)
+    ok, detail = detector.skill_deployed(agent_name, root)
+    ctx.log(f"[verify] {detail}")
+    if not ok:
+        return False
+    try:
+        files = managed_files.read_manifest(root.resolve(), agent_name)["files"]
+        return bool(files) and all(managed_files.child(root, relative).is_file() and
+                                   managed_files.digest(managed_files.child(root, relative)) == entry["sha256"]
+                                   for relative, entry in files.items())
+    except (OSError, ValueError) as error:
+        ctx.log(f"[verify] {error}")
+        return False
+
+
+def _uninstall_qoder_user_overlay(ctx: DeployContext, agent_name: str) -> None:
+    try:
+        managed_files.uninstall(_resolve_root(ctx), agent_name, ctx.log)
+    except (OSError, ValueError) as error:
+        raise DeployError(str(error)) from error
+    ctx.progress(1.0, f"{agent_name} managed engineering skills removed")
 
 
 def deploy_qoder_user(ctx: DeployContext) -> None:
-    home = _qoder_home(ctx)
-    repo = require_build_script()
-    python = resolve_python()
-    ctx.progress(0.2, "building qoder-addon + installing overlay")
-    rc = _run_streaming(
-        [python, str(QODER_INSTALL_SCRIPT), "--build", "--qoder-home", str(home)],
-        log=ctx.log,
-        cwd=repo,
-    )
-    if rc != 0:
-        raise DeployError(f"install_qoder_user.py failed (exit {rc})")
-    ctx.progress(1.0, t("deploy_qoder_user_done"))
+    _deploy_qoder_user_overlay(ctx, "qoder")
 
 
 def verify_qoder_user(ctx: DeployContext) -> bool:
-    home = _qoder_home(ctx)
-    ok, detail = detector.skill_deployed("qoder", home)
-    ctx.log(f"[verify] {detail}")
-    if ok:
-        # Run the script's own audit for a thorough check.
-        repo = require_build_script()
-        python = resolve_python()
-        rc = _run_streaming(
-            [python, str(QODER_INSTALL_SCRIPT), "--audit", "--qoder-home", str(home)],
-            log=ctx.log,
-            cwd=repo,
-        )
-        return rc == 0
-    return False
+    return _verify_qoder_user_overlay(ctx, "qoder")
 
 
 def uninstall_qoder_user(ctx: DeployContext) -> None:
-    home = _qoder_home(ctx)
-    repo = require_build_script()
-    python = resolve_python()
-    rc = _run_streaming(
-        [python, str(QODER_INSTALL_SCRIPT), "--uninstall", "--qoder-home", str(home)],
-        log=ctx.log,
-        cwd=repo,
-    )
-    if rc != 0:
-        raise DeployError(f"install_qoder_user.py --uninstall failed (exit {rc})")
-    ctx.log(t("uninstall_qoder_user_done"))
-
-
-# --------------------------------------------------------------------------- #
-# Qoder CN (user-level) - same overlay shape, Qoder CN/Lingma user directory
-# --------------------------------------------------------------------------- #
-
-def _qodercn_home(ctx: DeployContext) -> Path:
-    root = _resolve_root(ctx)
-    return root
+    _uninstall_qoder_user_overlay(ctx, "qoder")
 
 
 def deploy_qodercn_user(ctx: DeployContext) -> None:
-    home = _qodercn_home(ctx)
-    repo = require_build_script()
-    python = resolve_python()
-    ctx.progress(0.2, "building qoder-addon + installing Qoder CN overlay")
-    rc = _run_streaming(
-        [python, str(QODER_INSTALL_SCRIPT), "--product", "qodercn", "--build", "--qoder-home", str(home)],
-        log=ctx.log,
-        cwd=repo,
-    )
-    if rc != 0:
-        raise DeployError(f"install_qoder_user.py --product qodercn failed (exit {rc})")
-    ctx.progress(1.0, t("deploy_qodercn_user_done"))
+    _deploy_qoder_user_overlay(ctx, "qodercn")
 
 
 def verify_qodercn_user(ctx: DeployContext) -> bool:
-    home = _qodercn_home(ctx)
-    ok, detail = detector.skill_deployed("qodercn", home)
-    ctx.log(f"[verify] {detail}")
-    if ok:
-        repo = require_build_script()
-        python = resolve_python()
-        rc = _run_streaming(
-            [python, str(QODER_INSTALL_SCRIPT), "--product", "qodercn", "--audit", "--qoder-home", str(home)],
-            log=ctx.log,
-            cwd=repo,
-        )
-        return rc == 0
-    return False
+    return _verify_qoder_user_overlay(ctx, "qodercn")
 
 
 def uninstall_qodercn_user(ctx: DeployContext) -> None:
-    home = _qodercn_home(ctx)
-    repo = require_build_script()
-    python = resolve_python()
-    rc = _run_streaming(
-        [python, str(QODER_INSTALL_SCRIPT), "--product", "qodercn", "--uninstall", "--qoder-home", str(home)],
-        log=ctx.log,
-        cwd=repo,
-    )
-    if rc != 0:
-        raise DeployError(f"install_qoder_user.py --product qodercn --uninstall failed (exit {rc})")
-    ctx.log(t("uninstall_qodercn_user_done"))
+    _uninstall_qoder_user_overlay(ctx, "qodercn")
 
 
 # --------------------------------------------------------------------------- #
@@ -659,10 +702,6 @@ def _uninstall_upload_kit(ctx: DeployContext, *, done_key: str) -> None:
     root = _resolve_root(ctx)
     _remove_managed(root, log=ctx.log)
     _remove_managed(root.with_suffix(".zip"), log=ctx.log)
-    for sibling in root.parent.glob(f"{root.name}.bak.*"):
-        _remove_managed(sibling, log=ctx.log)
-    for sibling in root.parent.glob(f"{root.name}.zip.bak.*"):
-        _remove_managed(sibling, log=ctx.log)
     ctx.log(t(done_key))
 
 
@@ -706,46 +745,6 @@ def uninstall_workbuddy_plugin(ctx: DeployContext) -> None:
 # Project-overlay agents (Qoder / Qoder CN / Trae / OpenCode / AGENTS Generic)
 # --------------------------------------------------------------------------- #
 
-def _deploy_project_overlay(
-    ctx: DeployContext,
-    *,
-    agent_name: str,
-    overlay_copies: list[tuple[Path, Path]],
-    include_core: bool,
-) -> None:
-    """Common path for project-root overlays.
-
-    ``overlay_copies`` is a list of (src_under_dist, rel_target) pairs.
-    ``include_core`` also drops the full core skill at the project root.
-    """
-    project_root = _resolve_root(ctx)
-    profiles: list[str] = ["core"]
-    # add the adapter profile any copy needs
-    for src, _ in overlay_copies:
-        if "adapters-light" in src.parts:
-            if "adapters-light" not in profiles:
-                profiles.append("adapters-light")
-        if "qoder-addon" in src.parts:
-            if "qoder-addon" not in profiles:
-                profiles.append("qoder-addon")
-    ensure_profiles(tuple(profiles), log=ctx.log, progress=ctx.progress)
-
-    ctx.progress(0.6, f"copying overlay into {project_root}")
-    if include_core:
-        # Merge core skill into the project root - never replace the root itself,
-        # only back up individual files we are about to overwrite.
-        _copy_tree(DIST_CORE, project_root, log=ctx.log, merge=True)
-    steps = len(overlay_copies) or 1
-    for index, (src, rel) in enumerate(overlay_copies):
-        dst = project_root / rel
-        if src.is_dir():
-            _copy_tree(src, dst, log=ctx.log, merge=True)
-        else:
-            _copy_file(src, dst, log=ctx.log)
-        ctx.progress(0.6 + 0.35 * (index + 1) / steps, f"copied {rel}")
-    ctx.progress(1.0, t("deploy_project_done", agent=agent_name))
-
-
 def _profile_root(profile: str) -> Path:
     roots = {
         "core": DIST_CORE,
@@ -753,6 +752,7 @@ def _profile_root(profile: str) -> Path:
         "qoder-addon": DIST_QODER_ADDON,
         "qoderworkcn-plugin": DIST_QODERWORKCN_PLUGIN,
         "zcode-plugin": DIST_ZCODE_PLUGIN,
+        "dsh-plugin": DIST_DSH_PLUGIN,
     }
     try:
         return roots[profile]
@@ -774,13 +774,18 @@ def _project_overlay_for(agent_name: str):
 
 
 def _deploy_contract_project_overlay(ctx: DeployContext, *, agent_name: str) -> None:
+    contract = get_contract(agent_name)
     overlay = _project_overlay_for(agent_name)
-    _deploy_project_overlay(
-        ctx,
-        agent_name=overlay.agent_label,
-        overlay_copies=[_resolve_profile_copy(copy) for copy in overlay.copies],
-        include_core=overlay.include_core,
-    )
+    assert contract is not None
+    ensure_profiles(contract.needs_profiles, log=ctx.log, progress=ctx.progress)
+    copies = [_resolve_profile_copy(copy) for copy in overlay.copies]
+    if overlay.include_core:
+        copies.insert(0, (DIST_CORE, Path(".")))
+    try:
+        managed_files.install(_resolve_root(ctx), agent_name, copies, ctx.log)
+    except (OSError, ValueError) as error:
+        raise DeployError(str(error)) from error
+    ctx.progress(1.0, t("deploy_project_done", agent=overlay.agent_label))
 
 
 def _verify_contract_agent(ctx: DeployContext, *, agent_name: str) -> bool:
@@ -791,10 +796,10 @@ def _verify_contract_agent(ctx: DeployContext, *, agent_name: str) -> bool:
 
 
 def _uninstall_contract_project_overlay(ctx: DeployContext, *, agent_name: str, done_key: str) -> None:
-    root = _resolve_root(ctx)
-    overlay = _project_overlay_for(agent_name)
-    for path in overlay.uninstall_paths:
-        _remove_managed_and_backups(path, root, log=ctx.log)
+    try:
+        managed_files.uninstall(_resolve_root(ctx), agent_name, ctx.log)
+    except (OSError, ValueError) as error:
+        raise DeployError(str(error)) from error
     ctx.log(t(done_key))
 
 
@@ -878,3 +883,91 @@ def uninstall_agents_generic(ctx: DeployContext) -> None:
         agent_name="agents-generic",
         done_key="uninstall_agents_generic_done",
     )
+
+
+# Native Harness profile operations. The host owns profile reconciliation.
+def _dsh_install_source(ctx: DeployContext) -> Path:
+    if not using_bundled_runtime():
+        return DIST_DSH_PLUGIN
+    root = bundled_runtime_root()
+    assert root is not None
+    manifest = json.loads((root / "NIMO-RUNTIME.json").read_text(encoding="utf-8"))
+    package_id = manifest["payloadId"]
+    if not re.fullmatch(r"[a-f0-9]{64}", package_id):
+        raise DeployError("Invalid bundled engineering payload identifier")
+    base = Path(os.environ.get("LOCALAPPDATA", Path.home() / ".local/share")) / "NIMO Engineering/runtime" / package_id
+    destination = base / "dsh-plugin"
+    source_files = {path.relative_to(DIST_DSH_PLUGIN).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+                    for path in DIST_DSH_PLUGIN.rglob("*") if path.is_file()}
+
+    def matches(candidate: Path) -> bool:
+        if not candidate.is_dir():
+            return False
+        actual = {path.relative_to(candidate).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+                  for path in candidate.rglob("*") if path.is_file()}
+        return actual == source_files
+
+    if matches(destination):
+        return destination
+    if destination.exists():
+        # Preserve a modified cache rather than overwrite user material.
+        destination = base / f"dsh-plugin-{time.time_ns()}"
+    if not destination.resolve().is_relative_to(base.resolve()):
+        raise DeployError("Harness runtime cache leaves its managed directory")
+    base.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(DIST_DSH_PLUGIN, destination)
+    if not matches(destination):
+        raise DeployError("Persistent Harness bundle failed integrity verification")
+    ctx.log("[ready] Harness bundle retained in the application runtime cache for future repair")
+    return destination
+
+
+def _dsh_action(ctx: DeployContext, action: str, output: list[str] | None = None) -> int:
+    root = _resolve_root(ctx)
+    try:
+        argv, environment = dsh.command(root, action, _dsh_install_source(ctx) if action == "install" else None)
+    except ValueError as error:
+        raise DeployError(str(error)) from error
+    def log(line: str) -> None:
+        # A composed profile may contain credentials/settings. Inspect its row
+        # identifiers in memory, never dump the full configuration into UI logs.
+        if action != "verify":
+            ctx.log(line)
+        if output is not None:
+            output.append(line)
+    return _run_streaming(argv, log=log, env=environment, timeout=300, cancelled=ctx.cancelled)
+
+
+def deploy_dsh(ctx: DeployContext) -> None:
+    # Validate the launcher/profile before doing build work.
+    try:
+        dsh.command(_resolve_root(ctx), "install", DIST_DSH_PLUGIN)
+    except ValueError as error:
+        raise DeployError(str(error)) from error
+    build_profiles(("dsh-plugin",), log=ctx.log, progress=ctx.progress)
+    ctx.progress(0.7, "Installing native Harness profile bundle")
+    if _dsh_action(ctx, "install") != 0:
+        raise DeployError("Harness plugin installation failed")
+    if not verify_dsh(ctx):
+        raise DeployError("Harness bundle installation did not pass profile verification")
+    ctx.progress(1.0, "Harness bundle installed; restart the client to reload skills")
+
+
+def verify_dsh(ctx: DeployContext) -> bool:
+    ok, detail = dsh.installed(_resolve_root(ctx))
+    ctx.log(f"[verify] {detail}")
+    if not ok:
+        return False
+    output: list[str] = []
+    if _dsh_action(ctx, "verify", output) != 0:
+        return False
+    mounted = any(re.match(r"^\s*-\s+id:\s*['\"]?engineering-calculation-system['\"]?\s*$", line) for line in output)
+    if not mounted:
+        ctx.log("[verify] Harness composition did not include the skill provider row")
+    return mounted
+
+
+def uninstall_dsh(ctx: DeployContext) -> None:
+    if _dsh_action(ctx, "uninstall") != 0:
+        raise DeployError("Harness plugin removal failed")
+    ctx.progress(1.0, "Harness bundle removed; profile data and unrelated plugins retained")

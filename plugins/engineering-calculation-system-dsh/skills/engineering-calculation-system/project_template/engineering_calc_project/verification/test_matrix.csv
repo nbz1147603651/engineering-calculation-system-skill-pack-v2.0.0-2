@@ -1,0 +1,2 @@
+test_id,target,type,reference_basis,input_case,expected_result,tolerance,priority,notes
+T001,run_book,integration,S01 template demonstration,tests/smoke/example_input.json,checks[0].utilization = 0.5 and status PASS,exact,high,Proves the official runner returns an evaluated traceable check

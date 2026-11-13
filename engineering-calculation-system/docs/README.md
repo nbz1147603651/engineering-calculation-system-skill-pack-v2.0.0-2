@@ -1,4 +1,11 @@
-# Engineering Calculation System Skill Pack v2.6.0
+# Engineering Calculation System Skill Pack v0.0.1
+
+NIMO Engineering / skill pack `0.0.1` is a local preview and has not been
+formally released. Its product version was intentionally reset from historical
+`2.6.0`. Existing `2.6.0` users must manually install the verified `0.0.1` preview
+and matching host adapter; version comparison and automatic updates cannot
+perform this migration. Preserve configuration, business data, and the `2.6.0`
+rollback package. See [installation and migration](INSTALL.md).
 
 This package organizes engineering calculation software development into a full delivery lifecycle:
 
@@ -138,16 +145,16 @@ dist/release/          CODEX, MiniMaxCode, ZCode, QODER Skill, QODER project, Qo
 For publishing or manual installation, use the package for the target tool:
 
 ```text
-dist/release/engineering-calculation-system-CODEX-v2.6.0.zip
-dist/release/engineering-calculation-system-MiniMaxCode-v2.6.0.zip
-dist/release/engineering-calculation-system-ZCode-v2.6.0.zip
-dist/release/engineering-calculation-system-QODER-v2.6.0.zip
-dist/release/engineering-calculation-system-QODER-Project-v2.6.0.zip
-dist/release/engineering-calculation-system-QoderCN-v2.6.0.zip
-dist/release/engineering-calculation-system-QoderCN-Project-v2.6.0.zip
-dist/release/engineering-calculation-system-TRAE-v2.6.0.zip
-dist/release/engineering-calculation-system-OpenCode-v2.6.0.zip
-dist/release/engineering-calculation-system-AGENTS-Generic-v2.6.0.zip
+dist/release/engineering-calculation-system-CODEX-v0.0.1.zip
+dist/release/engineering-calculation-system-MiniMaxCode-v0.0.1.zip
+dist/release/engineering-calculation-system-ZCode-v0.0.1.zip
+dist/release/engineering-calculation-system-QODER-v0.0.1.zip
+dist/release/engineering-calculation-system-QODER-Project-v0.0.1.zip
+dist/release/engineering-calculation-system-QoderCN-v0.0.1.zip
+dist/release/engineering-calculation-system-QoderCN-Project-v0.0.1.zip
+dist/release/engineering-calculation-system-TRAE-v0.0.1.zip
+dist/release/engineering-calculation-system-OpenCode-v0.0.1.zip
+dist/release/engineering-calculation-system-AGENTS-Generic-v0.0.1.zip
 ```
 
 Each package contains one install folder plus `INSTALL.md`, except MiniMaxCode which is packaged as a MiniMax skills repository root:

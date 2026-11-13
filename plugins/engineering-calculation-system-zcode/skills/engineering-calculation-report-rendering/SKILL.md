@@ -1,6 +1,7 @@
 ---
 name: engineering-calculation-report-rendering
 description: Use when building source-backed report context, calculation book rendering, report preview, and HTML/LaTeX/PDF/DOCX/XLSX/JSON exports.
+version: 0.0.1
 ---
 
 # Engineering Calculation Report Rendering

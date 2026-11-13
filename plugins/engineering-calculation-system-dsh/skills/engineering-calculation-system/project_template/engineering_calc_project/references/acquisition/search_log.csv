@@ -1,0 +1,2 @@
+search_id,gap_id,query,tool_or_location,date,results_reviewed,candidates_selected,notes
+SEARCH-001,GAP-001,official template calculation example source,web_search,YYYY-MM-DD,3,CAND-001,Replace this row with project-specific search evidence

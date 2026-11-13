@@ -1,0 +1,2 @@
+node_id,node_type,node_name,engineering_meaning,inputs,outputs,units,formula_or_method,source_reference,branch_condition,applicability,assumptions,module_candidate,result_visibility,report_visibility,test_requirement,risk_level
+N-EXAMPLE-001,formula,Example calculation node,Replace with sourced engineering meaning,I-EXAMPLE-001,BookResult.example.value,kPa,F-EXAMPLE-001,S01:clause_x,B-EXAMPLE-001,Replace with applicability,A-EXAMPLE-001,MOD-EXAMPLE-001,public,report,T-EXAMPLE-001,high

@@ -48,6 +48,13 @@ ensure_env() {
   fi
 }
 
+review_enabled() {
+  case "${ENABLE_MARIMO_REVIEW:-false}" in
+    1|true|TRUE|yes) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
 compose_available() {
   command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1
 }
@@ -69,7 +76,11 @@ deploy_compose() {
   log "Starting Docker Compose services with $ENV_FILE"
   (
     cd "$DEPLOY_DIR"
-    ECS_ENV_FILE="$ENV_FILE" docker compose up -d --build
+    if review_enabled; then
+      ECS_ENV_FILE="$ENV_FILE" docker compose --profile review up -d --build
+    else
+      ECS_ENV_FILE="$ENV_FILE" docker compose up -d --build
+    fi
   )
   log "Docker Compose services started."
 }
@@ -82,6 +93,9 @@ install_local_python_deps() {
   "$ROOT_DIR/.venv/bin/python" -m pip install --upgrade pip
   "$ROOT_DIR/.venv/bin/python" -m pip install -e "$ROOT_DIR[web,report]" || \
     "$ROOT_DIR/.venv/bin/python" -m pip install "flask>=3.0" "gunicorn>=21.2" "jinja2>=3.1"
+  if review_enabled; then
+    "$ROOT_DIR/.venv/bin/python" -m pip install -e "$ROOT_DIR[review]"
+  fi
 }
 
 start_local_service() {
@@ -95,6 +109,10 @@ start_local_service() {
     > "$ROOT_DIR/outputs/logs/web.log" 2>&1 &
   echo "$!" > "$ROOT_DIR/outputs/logs/web.pid"
 
+  if ! review_enabled; then
+    log "Optional Marimo services disabled; JSON trace/session evidence remains available."
+    return
+  fi
   if "$ROOT_DIR/.venv/bin/python" - <<'PY' >/dev/null 2>&1
 import importlib.util
 raise SystemExit(0 if importlib.util.find_spec("marimo") else 1)
@@ -146,7 +164,7 @@ health_check() {
 
 main() {
   ensure_env
-  check_marimo_host
+  if review_enabled; then check_marimo_host; fi
 
   case "$MODE" in
     auto)

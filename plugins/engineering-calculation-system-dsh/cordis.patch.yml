@@ -1,0 +1,9 @@
+# The bundle layer this package contributes when a DeepSeek Harness profile
+# lists it in `dsh.profile.bundles`. The row mounts the packaged
+# @engineering-calculation-system/dsh-plugin module, which registers one
+# bundled skill provider on ctx.skills. A later patch layer (the profile's own
+# cordis.patch.yml or a --patch overlay) can override this row by id, or
+# disable it to run a profile without the skill pack.
+- insert:
+    - id: engineering-calculation-system
+      name: '@engineering-calculation-system/dsh-plugin'

@@ -1,0 +1,2 @@
+chart_id,title,chart_type,purpose,result_paths,units,trigger_condition,recommended_ui_location,recommended_report_location,decision,reason,source_result_paths,test_ids
+CHART-EXAMPLE-001,Example result trend,line,Show useful chartable BookResult values,BookResult.example.series,kPa,Only when series has two or more points,results_panel,calculation_book,needs_confirmation,Replace with real chart decision from result paths,BookResult.example.series,T-EXAMPLE-001

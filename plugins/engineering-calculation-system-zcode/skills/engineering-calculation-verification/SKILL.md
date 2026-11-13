@@ -1,6 +1,7 @@
 ---
 name: engineering-calculation-verification
 description: Use when creating verification, golden-case regression, formula trace checks, report/web/API smoke tests, package checks, and acceptance gates.
+version: 0.0.1
 ---
 
 # Engineering Calculation Verification

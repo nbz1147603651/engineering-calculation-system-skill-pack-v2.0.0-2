@@ -1,6 +1,7 @@
 ---
 name: engineering-calculation-implementation-handoff
 description: Use when freezing source-backed analysis into an Implementation Handoff Contract for downstream calculation-book software work.
+version: 0.0.1
 ---
 
 # Engineering Calculation Implementation Handoff

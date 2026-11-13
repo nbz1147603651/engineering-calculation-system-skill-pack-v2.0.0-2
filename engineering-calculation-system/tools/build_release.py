@@ -7,6 +7,7 @@ import argparse
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import hashlib
+import importlib.util
 import json
 import os
 import re
@@ -34,6 +35,7 @@ LIGHT_ADAPTER_SOURCE = REPO_ROOT / "adapter_sources" / "light"
 QODER_ADAPTER_SOURCE = REPO_ROOT / "adapter_sources" / "qoder"
 CODEX_PLUGIN_SOURCE = WORKSPACE_ROOT / "plugins" / "engineering-calculation-system"
 ZCODE_PLUGIN_SOURCE = WORKSPACE_ROOT / "plugins" / "engineering-calculation-system-zcode"
+DSH_PLUGIN_SOURCE = WORKSPACE_ROOT / "plugins" / "engineering-calculation-system-dsh"
 DIST_ROOT = REPO_ROOT / "dist"
 RELEASE_ROOT = DIST_ROOT / "release"
 UPLOAD_ROOT = DIST_ROOT / "upload"
@@ -44,8 +46,11 @@ QODERWORKCN_PLUGIN_NAME = "engineering-calculation-system"
 
 EXCLUDED_DIR_NAMES = {
     ".git",
+    ".codegraph",
     ".pytest_cache",
+    ".ruff_cache",
     "__pycache__",
+    "node_modules",
     ".blocked_pytest_cache_container",
     "dist",
 }
@@ -355,7 +360,7 @@ def should_skip(path: Path, *, include_indexes: bool = False) -> bool:
 def clean_dir(path: Path) -> None:
     resolved = path.resolve()
     dist_resolved = DIST_ROOT.resolve()
-    if not str(resolved).startswith(str(dist_resolved)):
+    if resolved == dist_resolved or not resolved.is_relative_to(dist_resolved):
         raise RuntimeError(f"refusing to clean outside dist: {resolved}")
     if path.exists():
         shutil.rmtree(path)
@@ -602,6 +607,7 @@ def build_codex_plugin() -> Path:
     plugin_root = profile_root / "engineering-calculation-system"
     clean_dir(profile_root)
     copy_tree(CODEX_PLUGIN_SOURCE, plugin_root)
+    stage_host_core(CODEX_PLUGIN_SOURCE, plugin_root)
     sync_frontmatter_versions(plugin_root)
     assert_frontmatter_versions(plugin_root)
     validate_codex_plugin(plugin_root, context="Codex plugin profile")
@@ -1523,11 +1529,57 @@ def build_zcode_plugin() -> Path:
     profile_root = DIST_ROOT / "zcode-plugin"
     clean_dir(profile_root)
     copy_tree(ZCODE_PLUGIN_SOURCE, profile_root / ZCODE_PLUGIN_NAME)
+    stage_host_core(ZCODE_PLUGIN_SOURCE, profile_root / ZCODE_PLUGIN_NAME)
     sync_frontmatter_versions(profile_root)
     assert_frontmatter_versions(profile_root)
     sync_zcode_plugin_metadata(profile_root / ZCODE_PLUGIN_NAME)
     write_indexes(profile_root, "engineering-calculation-system-zcode-plugin")
     return profile_root
+
+
+def ui_client_source_files() -> dict[str, str]:
+    """Content-addressed inputs consumed by the bundled desktop application."""
+    source_root = REPO_ROOT / "tools/installer_gui"
+    files = [path for path in source_root.rglob("*") if path.is_file()
+             and "__pycache__" not in path.parts and path.suffix not in {".pyc", ".pyo"}]
+    files.extend((REPO_ROOT / "tools/release_config.json", REPO_ROOT / "tools/build_release.py"))
+    return {path.relative_to(REPO_ROOT).as_posix(): sha256(path) for path in sorted(files)}
+
+
+def ui_client_payload_source_files() -> dict[str, str]:
+    """Hash declarative raw inputs, including native wrappers beside the package."""
+    excluded = set(UI_CLIENT_CONFIG.get("runtime_source_excluded_dirs", []))
+    files: dict[str, str] = {}
+    for relative_root in UI_CLIENT_CONFIG.get("runtime_source_roots", []):
+        source_root = (REPO_ROOT / relative_root).resolve()
+        if not source_root.is_relative_to(WORKSPACE_ROOT.resolve()) or not source_root.exists():
+            raise RuntimeError(f"Invalid standalone runtime input root: {relative_root}")
+        candidates = source_root.rglob("*") if source_root.is_dir() else [source_root]
+        for path in candidates:
+            relative = path.relative_to(source_root) if source_root.is_dir() else Path(path.name)
+            if not path.is_file() or any(part in excluded for part in relative.parts) or path.suffix in {".pyc", ".pyo"}:
+                continue
+            files[Path(os.path.relpath(path, REPO_ROOT)).as_posix()] = sha256(path)
+    if not files:
+        raise RuntimeError("Standalone client has no declared engineering payload inputs")
+    return dict(sorted(files.items()))
+
+
+def stage_ui_client_runtime(profile_root: Path) -> tuple[Path, dict]:
+    profiles = tuple(UI_CLIENT_CONFIG.get("runtime_profiles", ()))
+    if not profiles or any(profile not in PROFILE_CHOICES or profile == "ui-client" for profile in profiles):
+        raise RuntimeError("Standalone client requires valid prebuilt runtime_profiles")
+    runtime_root = profile_root / "_runtime"
+    for profile in profiles:
+        built = build_profile(profile)
+        copy_tree(built, runtime_root / "dist" / profile)
+    copy_file(REPO_ROOT / "tools/release_config.json", runtime_root / "tools/release_config.json")
+    files = {path.relative_to(runtime_root).as_posix(): sha256(path)
+             for path in sorted(runtime_root.rglob("*")) if path.is_file()}
+    payload_id = hashlib.sha256(json.dumps({"version": VERSION, "files": files}, sort_keys=True).encode("utf-8")).hexdigest()
+    manifest = {"schemaVersion": 1, "version": VERSION, "profiles": list(profiles), "payloadId": payload_id, "files": files}
+    write_json_lf(runtime_root / "NIMO-RUNTIME.json", manifest)
+    return runtime_root, manifest
 
 
 def build_ui_client() -> Path:
@@ -1540,6 +1592,8 @@ def build_ui_client() -> Path:
     build is not blocked.
     """
     profile_root = DIST_ROOT / "ui-client"
+    source_files = ui_client_source_files()
+    payload_sources = ui_client_payload_source_files()
     clean_dir(profile_root)
 
     if not UI_CLIENT_CONFIG:
@@ -1575,7 +1629,7 @@ def build_ui_client() -> Path:
     bootstrap = profile_root / "_entry_bootstrap.py"
     bootstrap.write_text(
         f"from {entry_module} import main\n"
-        "main()\n",
+        "raise SystemExit(main())\n",
         encoding="utf-8",
     )
 
@@ -1614,11 +1668,13 @@ def build_ui_client() -> Path:
         if not source.exists():
             raise RuntimeError(f"ui-client data file not found: {source}")
         argv.append(f"--add-data={source}{os.pathsep}{target}")
+    runtime_root, runtime_manifest = stage_ui_client_runtime(profile_root)
+    argv.append(f"--add-data={runtime_root}{os.pathsep}nimo-runtime")
 
     print(f"ui-client: running PyInstaller -> {exe_name}")
     result = subprocess.run(argv, cwd=str(REPO_ROOT))
     # Clean up build scratch dirs PyInstaller leaves behind.
-    for scratch in ("_build", "_spec"):
+    for scratch in ("_build", "_spec", "_runtime"):
         scratch_dir = profile_root / scratch
         if scratch_dir.exists():
             shutil.rmtree(scratch_dir, ignore_errors=True)
@@ -1630,8 +1686,71 @@ def build_ui_client() -> Path:
     exe_path = profile_root / (exe_name + ".exe")
     if not exe_path.exists():
         raise RuntimeError(f"PyInstaller reported success but {exe_path} was not produced")
+    if source_files != ui_client_source_files() or payload_sources != ui_client_payload_source_files():
+        raise RuntimeError("Desktop sources changed during packaging. Rebuild before publishing this installer.")
+    write_json_lf(profile_root / "CLIENT-BUILD.json", {
+        "schemaVersion": 1,
+        "version": VERSION,
+        "installer": exe_path.name,
+        "sha256": sha256(exe_path),
+        "sourceFiles": source_files,
+        "payloadSourceFiles": payload_sources,
+        "runtimeProfiles": runtime_manifest["profiles"],
+        "payloadId": runtime_manifest["payloadId"],
+    })
 
     write_indexes(profile_root, "engineering-calculation-system-ui-client")
+    return profile_root
+
+
+def stage_host_core(plugin_source: Path, plugin_root: Path) -> None:
+    """One canonical core + the existing host overlay, staged only in generated dist."""
+    helper_path = plugin_source / "scripts/sync_from_core.py"
+    module_spec = importlib.util.spec_from_file_location("ecs_release_adapter", helper_path)
+    if module_spec is None or module_spec.loader is None:
+        raise RuntimeError(f"Cannot load host adapter staging helper: {helper_path}")
+    helper = importlib.util.module_from_spec(module_spec)
+    exec(compile(helper_path.read_text(encoding="utf-8"), str(helper_path), "exec"), helper.__dict__)
+    destination = plugin_root / "skills/engineering-calculation-system"
+    clean_dir(destination)
+    with tempfile.TemporaryDirectory(prefix="nimo-core-stage-") as temporary:
+        staged = helper.staged_skill(CORE_SOURCE, Path(temporary))
+        copy_tree(staged, destination)
+
+
+def validate_dsh_plugin(plugin_root: Path, *, context: str) -> None:
+    require_paths(plugin_root, ["package.json", "cordis.patch.yml", "lib/index.js", "skills/engineering-calculation-system/SKILL.md"], context=context)
+    result = subprocess.run(
+        [sys.executable, str(DSH_PLUGIN_SOURCE / "scripts" / "validate_plugin.py"), "--plugin-root", str(plugin_root)],
+        capture_output=True, text=True, encoding="utf-8",
+    )
+    if result.returncode:
+        raise RuntimeError(f"{context}: {result.stdout}{result.stderr}")
+
+
+def build_dsh_plugin() -> Path:
+    """Stage the existing native wrapper over the canonical core, never edit its source."""
+    profile_root = DIST_ROOT / "dsh-plugin"
+    plugin_root = profile_root / "engineering-calculation-system-dsh"
+    require_paths(DSH_PLUGIN_SOURCE, ["package.json", "scripts/sync_from_core.py", "scripts/validate_plugin.py"], context="Harness source")
+    clean_dir(profile_root)
+    metadata = json.loads((DSH_PLUGIN_SOURCE / "package.json").read_text(encoding="utf-8"))
+    for relative in ("package.json", *metadata.get("files", [])):
+        if relative == "skills":
+            continue
+        source = DSH_PLUGIN_SOURCE / relative
+        if source.is_dir():
+            copy_tree(source, plugin_root / relative)
+        else:
+            (plugin_root / relative).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, plugin_root / relative)
+    stage_host_core(DSH_PLUGIN_SOURCE, plugin_root)
+    metadata["version"] = VERSION
+    write_json_lf(plugin_root / "package.json", metadata)
+    sync_frontmatter_versions(plugin_root)
+    assert_frontmatter_versions(plugin_root)
+    validate_dsh_plugin(plugin_root, context="Harness release profile")
+    write_indexes(profile_root, "engineering-calculation-system-dsh-plugin")
     return profile_root
 
 
@@ -1646,6 +1765,7 @@ def build_profile(profile: str) -> Path:
         "singlefile": build_singlefile,
         "source-dev": build_source_dev,
         "zcode-plugin": build_zcode_plugin,
+        "dsh-plugin": build_dsh_plugin,
         "ui-client": build_ui_client,
     }
     return builders[profile]()
@@ -1850,6 +1970,9 @@ def stage_target_payload(profile_roots: dict[str, Path], target: BundleTarget, p
 
 def validate_target_payload(target: BundleTarget, payload_root: Path) -> None:
     context = f"{target.name} payload"
+    if target.name == "DeepSeek Harness":
+        validate_dsh_plugin(payload_root, context=context)
+        return
     if target.name == "CODEX":
         validate_codex_plugin(payload_root, context=context)
         return

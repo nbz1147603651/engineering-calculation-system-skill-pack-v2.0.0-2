@@ -1,6 +1,7 @@
 ---
 name: engineering-calculation-reference-discovery
 description: Use when authoritative engineering codes, manuals, examples, tables, or guidance must be found to fill reference gaps before analysis.
+version: 0.0.1
 ---
 
 # Engineering Calculation Reference Discovery

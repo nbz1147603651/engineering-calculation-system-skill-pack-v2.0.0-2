@@ -1,0 +1,58 @@
+{# Formula Substitution section (consulting-oriented).
+   Shows the engineering meaning of each formula with the substituted values
+   and result, without developer-only fields (result_path/inputs/intermediates
+   are deferred to the traceability appendix in 90). #}
+{% set ns = namespace(count=0) %}
+{% for check in checks %}
+{% for trace in check.formula_traces %}
+{% set ns.count = ns.count + 1 %}
+{% endfor %}
+{% endfor %}
+{% if ns.count > 0 %}
+\section{Formula Substitution}
+
+{% for check in checks %}
+{% for trace in check.formula_traces %}
+\subsection{ {{ trace.formula_id | default("--") | latex_escape }} -- {{ trace.formula_name | default("--") | latex_escape }} }
+
+{% if trace.engineering_explanation %}
+{{ trace.engineering_explanation | latex_escape }}
+{% endif %}
+
+{% if trace.expression_tex %}
+\colorbox{formulaBg}{\parbox{0.96\linewidth}{
+\[
+{{ trace.expression_tex }}
+\]
+}}
+{% elif trace.expression_plain %}
+\colorbox{formulaBg}{\parbox{0.96\linewidth}{\textbf{Formula:} {{ trace.expression_plain | latex_escape }}}}
+{% endif %}
+
+{% if trace.substitutions %}
+\rowcolors{2}{white}{resultBg}
+\begin{longtable}{p{0.30\linewidth}p{0.30\linewidth}p{0.30\linewidth}}
+\toprule
+\rowcolor{tablehead}
+Variable & Value & Unit/Note \\
+\midrule
+{% for var, val in trace.substitutions.items() %}
+{{ var | latex_escape }} &
+{{ val | latex_escape }} &
+{% if trace.variable_definitions and trace.variable_definitions.get(var) %}{{ trace.variable_definitions[var] | latex_escape }}{% endif %} \\
+{% endfor %}
+\bottomrule
+\end{longtable}
+{% endif %}
+
+\noindent\textbf{Result:} ${{ trace.result_symbol | latex_escape }} = {{ trace.result_value | latex_escape }}${% if trace.unit %} \;({{ trace.unit | latex_escape }}){% endif %}
+
+{% if trace.notes %}
+{% for note in trace.notes %}
+\noindent\textit{{ "{" }}{{ note | latex_escape }}{{ "}" }}
+{% endfor %}
+{% endif %}
+
+{% endfor %}
+{% endfor %}
+{% endif %}

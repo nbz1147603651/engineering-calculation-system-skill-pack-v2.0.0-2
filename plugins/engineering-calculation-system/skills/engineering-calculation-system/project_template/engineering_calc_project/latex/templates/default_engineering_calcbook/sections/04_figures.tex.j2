@@ -30,7 +30,7 @@ Item & Value \\
 Placement & {{ figure.recommended_report_location | default("after_input_summary") | latex_escape }} \\
 Source & {{ figure.source_reference | default(figure.source | default("--")) | latex_escape }} \\
 Result path & {{ figure.result_path | default(figure.source_result_path | default("--")) | latex_escape }} \\
-Notes & {{ figure.notes | default("--") | latex_escape }} \\
+Notes & {{ figure.notes | default("--") | join_list | latex_escape }} \\
 \bottomrule
 \end{longtable}
 

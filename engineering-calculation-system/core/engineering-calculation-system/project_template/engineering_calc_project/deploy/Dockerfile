@@ -15,11 +15,13 @@ ENV FLASK_DEBUG=0
 WORKDIR /app
 
 COPY pyproject.toml README.md ./
-RUN pip install --no-cache-dir "flask>=3.0" "gunicorn>=21.2" "marimo>=0.8"
+ARG ENABLE_MARIMO_REVIEW=false
+RUN pip install --no-cache-dir "flask>=3.0" "gunicorn>=21.2" "jinja2>=3.1" \
+    && if [ "$ENABLE_MARIMO_REVIEW" = "true" ]; then pip install --no-cache-dir "marimo>=0.8"; fi
 
 COPY src ./src
 COPY webapp ./webapp
-COPY apps ./apps
+RUN mkdir -p /app/apps
 COPY data ./data
 RUN mkdir -p /app/outputs/logs
 

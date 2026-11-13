@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "@engineering-calculation-system/dsh-plugin",
+  "version": "0.0.1+dsh.20261110",
+  "private": true,
+  "license": "UNLICENSED",
+  "description": "DeepSeek Harness bundle that ships the Engineering Calculation System skill pack and registers it on ctx.skills.",
+  "type": "module",
+  "main": "./lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "skills",
+    "cordis.patch.yml",
+    "README.md",
+    "docs"
+  ],
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.2"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}
